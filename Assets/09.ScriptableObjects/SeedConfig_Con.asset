@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: SeedConfig_Con
   m_EditorClassIdentifier: Assembly-CSharp::SeedConfig
   SeedId: 
-  SeedName: 
+  SeedName: Con
   SeedIcon: {fileID: 0}
-  SeedGrowthStage: []
-  BaseSellingPrice: 0
+  SeedGrowthStage:
+  - SeedName: 
+    RequireTime: 0
+    SeedStageItem: {fileID: 0}
+  BaseSellingPrice: 100
   SeedGrade: 0

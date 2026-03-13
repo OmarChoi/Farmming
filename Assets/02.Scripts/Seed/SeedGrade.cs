@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum SeedGrade
+public enum ESeedGrade
 {
     Normal,
     Epic,
