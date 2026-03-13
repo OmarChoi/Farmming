@@ -16,5 +16,5 @@ public class SeedConfig : ScriptableObject
     public int BaseSellingPrice; // 기본 판매 가격
 
     [Header("성장 등급")]
-    public SeedGrade SeedGrade; // 씨앗 등급
+    public ESeedGrade SeedGrade; // 씨앗 등급
 }
