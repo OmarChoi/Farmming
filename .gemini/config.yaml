@@ -1,0 +1,263 @@
+# Gemini Code Assist Configuration for PlanetCrasher
+# StyleGuide.md 기반 통합 설정
+
+# Code Analysis Settings
+analysis:
+  include:
+    - "Assets/02.Scripts/**/*.cs"
+
+  exclude:
+    - "Assets/Plugins/**"
+    - "Library/**"
+    - "Temp/**"
+    - "Obj/**"
+    - "Build/**"
+    - "Builds/**"
+    - "Logs/**"
+    - "MemoryCaptures/**"
+    - "UserSettings/**"
+    - "*.meta"
+
+# Coding Standards (StyleGuide.md §3, §4)
+standards:
+  csharp:
+    naming_conventions:
+      class: "PascalCase"
+      struct: "PascalCase"
+      record: "PascalCase"
+      delegate: "PascalCase"
+      method: "PascalCase"
+      property: "PascalCase"
+      constant: "PascalCase"
+      variable: "camelCase"
+      parameter: "camelCase"
+      private_field: "_camelCase"
+      protected_field: "_camelCase"
+      serialize_field: "_camelCase"
+      static_field: "s_camelCase"
+      thread_static_field: "t_camelCase"
+      interface: "IPascalCase"
+      enum: "EPascalCase"
+      ui_class: "UI_PascalCase"
+      scriptable_object: "PascalCaseSO"
+      coroutine: "MethodName_Coroutine"
+      event_handler: "OnPascalCase"
+      boolean_method: "Is/Has/Can + PascalCase"
+
+    member_ordering:
+      - "Static members"
+      - "SerializeField"
+      - "Private fields"
+      - "Properties"
+      - "Unity Lifecycle (Awake, OnEnable, Start, Update, OnDisable, OnDestroy)"
+      - "Public methods"
+      - "Private methods"
+      - "Coroutines"
+
+    code_style:
+      indentation: "4 spaces (no tabs)"
+      bracing: "Allman style"
+      access_modifiers: "always explicit"
+      readonly: "use aggressively"
+      var_usage: "only when type is obvious"
+      one_statement_per_line: true
+      blank_line_between_members: true
+
+    comments:
+      style: "// on separate line"
+      xml_comments: "do NOT write"
+      comment_format: "capitalize first letter, end with period"
+
+    language_usage:
+      prefer_language_keywords: true        # int over System.Int32
+      string_interpolation: true            # for short concatenation
+      string_builder: "for loops"
+      raw_string_literals: "for long messages"
+      collection_expressions: true          # [] syntax
+      delegates: "Func<> / Action<> over custom delegates"
+
+    patterns:
+      # Architecture (StyleGuide.md §1)
+      - "Separate layers: Presentation → Application → Domain ← Infrastructure"
+      - "Presentation → Application → Domain dependency direction only"
+      - "Infrastructure implements Domain interfaces"
+      - "Domain must NOT depend on Unity or external SDKs"
+      - "No circular references between layers"
+      - "Follow 3-tier architecture for OutGame features: Repository → Domain → Manager"
+
+      # Repository (StyleGuide.md §1.2)
+      - "Define interface first, depend on interface not implementation"
+      - "Storage/load operations in Infrastructure layer only"
+      - "No business logic in Repository"
+
+      # Events (StyleGuide.md §1.3)
+      - "Use static events: public static event Action OnDataChanged"
+      - "Subscribe in Awake/OnEnable, unsubscribe in OnDisable/OnDestroy"
+      - "Prefer event-based communication over direct references"
+
+      # Data Separation (StyleGuide.md §1.4)
+      - "Separate MetaData (ScriptableObject) from Runtime data (Domain Object)"
+      - "Never modify ScriptableObject values at runtime"
+      - "Use readonly struct for Value Objects (Currency, ClickInfo, etc.)"
+
+      # Design Principles (StyleGuide.md §2)
+      - "SOLID: SRP - one reason to change per class"
+      - "SOLID: OCP - open for extension, closed for modification"
+      - "SOLID: LSP - subtypes must be substitutable"
+      - "SOLID: ISP - prefer small, single-purpose interfaces"
+      - "SOLID: DIP - depend on abstractions, not concretions"
+      - "Law of Demeter: no train wreck chaining (max 2 depth)"
+
+      # Methods (StyleGuide.md §3.2)
+      - "Functions must do one thing only"
+      - "Method names: Verb + Object"
+      - "Boolean methods: Is/Has/Can prefix (question form)"
+      - "Event handlers: On prefix"
+
+      # General (StyleGuide.md §4, §5)
+      - "Always specify access modifiers for all members"
+      - "Use [SerializeField] for Inspector-exposed private fields"
+      - "Use UniTask for I/O async, Coroutine for timing-based sequences"
+      - "Catch specific exceptions only, never catch System.Exception"
+
+# Review Bot Settings (StyleGuide.md §0)
+review:
+  language: "Korean (한국어)"
+  mandatory_checks:
+    - "SOLID 원칙 위반 여부"
+    - "디미터의 법칙 위반 여부"
+    - "계층 구조 위반 여부"
+    - "의존성 방향 위반 여부"
+    - "이벤트 구독/해제 누락 여부"
+    - "런타임 데이터와 설정 데이터 혼재 여부"
+    - "성능상 위험 요소 존재 여부"
+    - "보이스카우트 법칙 적용 여부"
+    - "함수가 한 가지 일만 수행하는지 여부"
+
+  output_format: |
+    ## 📌 PR 요약
+    - 무엇을 변경했는지 요약
+
+    ## ❗ 주요 문제점
+    - [심각] 계층 위반
+    - [중간] SOLID 위반
+    - [경미] 네이밍 문제
+
+    ## 💡 개선 제안
+    - 코드 예시 포함
+
+    ## ✅ 잘된 점
+    - 설계상 우수한 부분
+
+  boy_scout_rule:
+    enabled: true
+    checks:
+      - "가독성 개선: 변수명/함수명 명확화, 복잡한 조건문 단순화, 긴 메서드 분리"
+      - "중복 코드 정리: 반복 로직 함수화"
+      - "불필요한 코드 제거: 미사용 변수/필드/함수, Debug.Log, 빈 Update()"
+      - "안정성 강화: null-check, guard clause, 구체적 예외 타입"
+      - "매직 넘버 처리: const 또는 static readonly로 분리"
+
+# AI Assistant Context
+context:
+  frameworks:
+    - "Unity Engine"
+    - "LeanPool (Object Pooling)"
+    - "DOTween (Tweening/Animation)"
+    - "Firebase (Auth, Firestore)"
+    - "UniTask (Async)"
+    - "TextMeshPro"
+
+  common_patterns:
+    - "Singleton pattern for managers (GameManager, CurrencyManager, UpgradeManager, SoundManager, AccountManager)"
+    - "Repository pattern with Local/Firebase implementations"
+    - "Strategy pattern (IFeedback, IClickable)"
+    - "Observer pattern with static events"
+    - "Object pooling with LeanPool"
+    - "Value Object pattern (readonly struct)"
+    - "Specification pattern for validation"
+    - "3-tier OutGame architecture: 1.Repository → 2.Domain → 3.Manager"
+
+  best_practices:
+    - "Avoid heavy operations in Update()"
+    - "Use LeanPool for frequently instantiated objects (Bullet, Missile, etc.)"
+    - "Cache component references in Awake()"
+    - "Use Coroutine for time-based operations, UniTask for I/O"
+    - "Communicate between layers via static events, not direct references"
+    - "Keep InGame (game mechanics) and OutGame (business logic) separated"
+
+# Documentation (StyleGuide.md §4.2)
+documentation:
+  style: "None"
+  xml_comments: false
+  inline_comments: "// on separate line, capitalize, end with period"
+  required_for: []
+
+# Performance Considerations (StyleGuide.md §7)
+performance:
+  optimization_level: "balanced"
+  focus_areas:
+    - "GC allocation reduction in Update()"
+    - "GetComponent<T>() caching"
+    - "Object pooling (LeanPool)"
+    - "Event-driven updates over polling"
+    - "Avoid LINQ in hot paths"
+    - "No string allocation in loops (use StringBuilder)"
+
+# Async Rules (StyleGuide.md §6)
+async:
+  io_operations: "UniTask (async/await)"
+  timing_sequences: "Coroutine"
+  checks:
+    - "No Coroutine for I/O operations"
+    - "async UniTaskVoid must call .Forget()"
+    - "Consider ConfigureAwait for deadlock prevention"
+
+# Error Handling (StyleGuide.md §6.2)
+error_handling:
+  patterns:
+    simple_result: "bool TryXxx(...)"
+    detailed_result: "UniTask<ResultType> TryXxx(...)"
+  rules:
+    - "Catch specific exceptions only"
+    - "Never catch System.Exception broadly"
+    - "TryXxx methods must not throw exceptions"
+
+# Git Integration
+git:
+  ignore_generated: true
+  auto_commit_message_style: "conventional"
+
+# Custom Instructions
+custom_instructions: |
+  When reviewing code for PlanetCrasher:
+
+  [아키텍처 - StyleGuide §1]
+  1. 계층 분리 준수 확인: Presentation → Application → Domain ← Infrastructure
+  2. InGame/OutGame 계층이 static event로 통신하는지 확인
+  3. OutGame 3-tier 아키텍처 준수 여부: Repository → Domain → Manager
+  4. MetaData(ScriptableObject)와 Runtime data(Domain Object)가 분리되어 있는지 확인
+  5. Repository가 인터페이스 기반이며, 비즈니스 로직을 포함하지 않는지 확인
+
+  [디자인 원칙 - StyleGuide §2]
+  6. SOLID 원칙 위반 여부 (특히 SRP, DIP 중점)
+  7. 디미터의 법칙: 체이닝 2 depth 이상 확인
+
+  [이벤트 - StyleGuide §1.3]
+  8. 이벤트 구독(OnEnable) / 해제(OnDisable) 쌍이 맞는지 확인
+
+  [명명 규칙 - StyleGuide §3]
+  9. 함수가 한 가지 일만 수행하는지, Boolean 함수는 질문형인지, 이벤트 핸들러는 On 접두사인지 확인
+
+  [성능 - StyleGuide §7]
+  10. Update() 내 GC Alloc 유발 코드 확인 (LINQ, new, string 결합, GetComponent 반복)
+
+  [프로젝트 전용]
+  11. readonly struct 사용 여부 (Value Objects)
+  12. 새 UpgradeContent는 UpgradeContent 베이스 클래스 상속 확인
+  13. IFeedback 구현체가 Planet/Asteroid 자식에 부착되어 있는지 확인
+
+  [보이스카우트 법칙 - StyleGuide §8]
+  14. 수정한 파일 주변 코드의 가독성, 중복, 불필요 코드, 안정성, 매직 넘버를 개선했는지 확인
+
+  모든 리뷰와 요약은 반드시 한국어(Korean)로 작성합니다.
