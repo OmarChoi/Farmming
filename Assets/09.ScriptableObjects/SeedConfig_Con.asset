@@ -12,12 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c542c9b62affa5a47a5bb4b0571377ee, type: 3}
   m_Name: SeedConfig_Con
   m_EditorClassIdentifier: Assembly-CSharp::SeedConfig
-  SeedId: 
+  SeedId: seed_corn
   SeedName: Con
   SeedIcon: {fileID: 0}
   SeedGrowthStage:
-  - SeedName: 
+  - SeedName: "\uC0C8\uC2F9(1\uB2E8\uACC4)"
+    RequireTime: 30
+    SeedStageItem: {fileID: 5497211735150880983, guid: e4d6cf5dfac217e4aa57b954b8cc1105, type: 3}
+  - SeedName: "\uC131\uC7A5\uC911(2\uB2E8\uACC4)"
+    RequireTime: 60
+    SeedStageItem: {fileID: 5962430241588196273, guid: ff4ed0f60d4a5a54b9b1a0b2fad77c78, type: 3}
+  - SeedName: "\uB2E4\uC790\uB78C(3\uB2E8\uACC4)"
     RequireTime: 0
-    SeedStageItem: {fileID: 0}
+    SeedStageItem: {fileID: 2658104347403863969, guid: 530671a6dcce5b84992a7417b0d91c86, type: 3}
   BaseSellingPrice: 100
   SeedGrade: 0
