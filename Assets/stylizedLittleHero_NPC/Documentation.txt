@@ -1,0 +1,488 @@
+================================================================================
+  STYLIZED LITTLE HERO NPC
+  COMPLETE DOCUMENTATION
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1. Introduction
+2. System Architecture
+3. CharacterPartSwapper API Reference
+4. CharacterCustomizeUI API Reference
+5. Creating Custom Parts
+6. Advanced Usage
+7. Performance Tips
+8. Common Issues & Solutions
+
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+The Character Customization System allows you to swap character parts at
+runtime or in the editor. It handles complex operations like:
+
+- Bone rebinding for SkinnedMeshRenderer
+- Material assignment
+- Transform hierarchy management
+- Unity rendering bug workarounds
+
+The system supports 7 part types:
+- Body (SkinnedMeshRenderer with full skeleton)
+- Hair, Hat, Eye, Mouth, Eyebrow, Cheek (instantiated under head_dummy)
+
+
+================================================================================
+2. SYSTEM ARCHITECTURE
+================================================================================
+
+COMPONENT HIERARCHY
+-------------------
+Character GameObject
+├── CharacterPartSwapper (Main customization script)
+├── Body (SkinnedMeshRenderer)
+└── Armature
+    ├── Bip001 (Root bone)
+    └── ... (other bones)
+        └── head_dummy
+            ├── Hair (instantiated prefab)
+            ├── Eye (instantiated prefab)
+            ├── Mouth (instantiated prefab)
+            └── etc.
+
+
+HOW IT WORKS
+------------
+
+BODY SWAPPING:
+1. Backs up existing bone array
+2. Disables renderer to clear internal buffers
+3. Sets sharedMesh to null (important!)
+4. Assigns new mesh and materials
+5. Rebinds bones by name matching
+6. Updates bounds and re-enables renderer
+
+FACE PART SWAPPING:
+1. Destroys current part GameObject
+2. Instantiates new prefab under head_dummy
+3. Resets local transform to (0,0,0)
+
+
+================================================================================
+3. CHARACTERPARTSWAPPER API REFERENCE
+================================================================================
+
+PUBLIC FIELDS
+-------------
+
+// Basic Setup
+SkinnedMeshRenderer baseBodyRenderer
+    - Reference to the character's body SkinnedMeshRenderer
+    - Used for bone structure reference
+    - Auto-found if not set
+
+Transform headDummy
+    - Transform where face parts are instantiated
+    - Auto-found by searching for "head_dummy"
+
+// Part Prefab Arrays
+GameObject[] bodyPrefabs
+GameObject[] hairPrefabs
+GameObject[] hatPrefabs
+GameObject[] eyePrefabs
+GameObject[] mouthPrefabs
+GameObject[] eyebrowPrefabs
+GameObject[] cheekPrefabs
+
+// Current Indices (public, can be set directly)
+int currentBodyIndex
+int currentHairIndex
+int currentHatIndex
+int currentEyeIndex
+int currentMouthIndex
+int currentEyebrowIndex
+int currentCheekIndex
+
+// Current Part GameObjects (read-only, updated automatically)
+GameObject currentHair
+GameObject currentHat
+GameObject currentEye
+GameObject currentMouth
+GameObject currentEyebrow
+GameObject currentCheek
+
+
+PUBLIC METHODS
+--------------
+
+BODY PARTS
+----------
+void NextBody()
+    - Switches to next body in bodyPrefabs array
+    - Loops back to 0 when reaching end
+
+void PreviousBody()
+    - Switches to previous body
+    - Loops to end when at 0
+
+void SetBody(int index)
+    - Sets body to specific index
+    - Validates index range
+    - Performs bone rebinding automatically
+
+
+HAIR PARTS
+----------
+void NextHair()
+void PreviousHair()
+void SetHair(int index)
+
+
+HAT PARTS
+---------
+void NextHat()
+void PreviousHat()
+void SetHat(int index)
+
+
+EYE PARTS
+---------
+void NextEye()
+void PreviousEye()
+void SetEye(int index)
+
+
+MOUTH PARTS
+-----------
+void NextMouth()
+void PreviousMouth()
+void SetMouth(int index)
+
+
+EYEBROW PARTS
+-------------
+void NextEyebrow()
+void PreviousEyebrow()
+void SetEyebrow(int index)
+
+
+CHEEK PARTS
+-----------
+void NextCheek()
+void PreviousCheek()
+void SetCheek(int index)
+
+
+UTILITY METHODS
+---------------
+void SetPartByType(string partType, int index)
+    - Generic method to set any part by type name
+    - partType: "body", "hair", "hat", "eye", "mouth", "eyebrow", "cheek"
+    - Example: SetPartByType("hair", 3)
+
+void RandomizeAll()
+    - Randomizes all parts to random indices
+    - Useful for NPC generation
+
+
+USAGE EXAMPLES
+--------------
+
+// Example 1: Simple part switching
+CharacterPartSwapper swapper = GetComponent<CharacterPartSwapper>();
+swapper.NextHair();
+swapper.SetBody(2);
+
+// Example 2: Random NPC generator
+void GenerateRandomNPC()
+{
+    CharacterPartSwapper swapper = GetComponent<CharacterPartSwapper>();
+    swapper.RandomizeAll();
+}
+
+// Example 3: Save/Load customization
+[System.Serializable]
+public class CharacterData
+{
+    public int bodyIndex;
+    public int hairIndex;
+    public int eyeIndex;
+    // ... other indices
+}
+
+void SaveCustomization()
+{
+    CharacterData data = new CharacterData();
+    data.bodyIndex = swapper.currentBodyIndex;
+    data.hairIndex = swapper.currentHairIndex;
+    data.eyeIndex = swapper.currentEyeIndex;
+    // Save to PlayerPrefs or file...
+}
+
+void LoadCustomization(CharacterData data)
+{
+    swapper.SetBody(data.bodyIndex);
+    swapper.SetHair(data.hairIndex);
+    swapper.SetEye(data.eyeIndex);
+    // ... load other parts
+}
+
+// Example 4: UI Button integration
+public void OnHairNextButtonClick()
+{
+    swapper.NextHair();
+    UpdateUI();
+}
+
+
+================================================================================
+4. CHARACTERCUSTOMIZEUI API REFERENCE
+================================================================================
+
+This script provides UI integration for the customization system.
+
+PUBLIC FIELDS
+-------------
+CharacterPartSwapper partSwapper
+    - Reference to the CharacterPartSwapper component
+    - Auto-found if not set
+
+// Buttons for each part (optional)
+Button bodyPrevButton, bodyNextButton
+Button hairPrevButton, hairNextButton
+Button hatPrevButton, hatNextButton
+Button eyePrevButton, eyeNextButton
+Button mouthPrevButton, mouthNextButton
+Button eyebrowPrevButton, eyebrowNextButton
+Button cheekPrevButton, cheekNextButton
+
+// Text displays for current index (optional)
+Text bodyIndexText
+Text hairIndexText
+// ... etc
+
+Button randomizeButton
+
+
+SETUP
+-----
+1. Add CharacterCustomizeUI to your Canvas or UI Manager GameObject
+2. Assign partSwapper reference
+3. Assign buttons and text fields in Inspector
+4. Script automatically connects button onClick events
+
+
+================================================================================
+5. CREATING CUSTOM PARTS
+================================================================================
+
+BODY PARTS
+----------
+Requirements:
+- Must be FBX with SkinnedMeshRenderer
+- Must have same bone structure as existing bodies (Bip001 skeleton)
+- Bone names must match exactly
+
+Steps:
+1. Export from Blender with same armature as base character
+2. Import to Unity
+3. Add to bodyPrefabs array in Inspector
+4. Done! Bone rebinding is automatic
+
+
+FACE PARTS (Hair, Eye, Mouth, etc.)
+------------------------------------
+Requirements:
+- Can be FBX or Prefab
+- Should have SkinnedMeshRenderer bound to head bones
+- Will be instantiated as child of head_dummy
+
+Steps:
+1. Create part in Blender, bind to head bones
+2. Export as FBX
+3. Import to Unity
+4. Add to appropriate prefabs array (hairPrefabs, eyePrefabs, etc.)
+
+
+IMPORTANT NOTES
+---------------
+- All parts must use the same bone structure (Bip001)
+- Bone names are case-sensitive
+- Face parts are destroyed/instantiated (not just mesh swap)
+- Body parts reuse the same SkinnedMeshRenderer
+
+
+================================================================================
+6. ADVANCED USAGE
+================================================================================
+
+CUSTOMIZING MULTIPLE CHARACTERS
+--------------------------------
+// Option 1: Multiple swapper instances
+CharacterPartSwapper character1 = npc1.GetComponent<CharacterPartSwapper>();
+CharacterPartSwapper character2 = npc2.GetComponent<CharacterPartSwapper>();
+
+character1.SetHair(0);
+character2.SetHair(1);
+
+// Option 2: Array of characters
+CharacterPartSwapper[] allNPCs = FindObjectsOfType<CharacterPartSwapper>();
+foreach (var npc in allNPCs)
+{
+    npc.RandomizeAll();
+}
+
+
+CONDITIONAL CUSTOMIZATION
+--------------------------
+// Only allow certain combinations
+void SetMaleCharacter()
+{
+    swapper.bodyPrefabs = maleBodies;  // Different array for males
+    swapper.hairPrefabs = maleHairs;
+    swapper.SetBody(0);
+    swapper.SetHair(0);
+}
+
+void SetFemaleCharacter()
+{
+    swapper.bodyPrefabs = femaleBodies;
+    swapper.hairPrefabs = femaleHairs;
+    swapper.SetBody(0);
+    swapper.SetHair(0);
+}
+
+
+RUNTIME PREFAB LOADING
+----------------------
+// Load prefabs from Resources
+GameObject[] hairVariants = Resources.LoadAll<GameObject>("Hair");
+swapper.hairPrefabs = hairVariants;
+
+
+EDITOR-TIME CUSTOMIZATION
+--------------------------
+The system works in Edit mode too! Use Context Menu:
+- Right-click CharacterPartSwapper component
+- Select "Hair: Next", "Body: Previous", etc.
+- Great for creating character prefab variations
+
+
+ANIMATIONS
+----------
+The system preserves Animator components:
+- All parts share the same skeleton
+- Animations work across all body variations
+- No need to rebind animations after swapping
+
+
+================================================================================
+7. PERFORMANCE TIPS
+================================================================================
+
+OPTIMIZATION STRATEGIES
+-----------------------
+
+1. POOL FACE PARTS (Advanced)
+   Instead of Destroy/Instantiate, consider object pooling:
+   - Keep disabled prefabs ready
+   - SetActive(true/false) instead of Instantiate/Destroy
+   - Faster for frequent swapping
+
+2. BATCH CUSTOMIZATION
+   When setting multiple parts:
+   swapper.SetBody(0);
+   swapper.SetHair(1);
+   swapper.SetEye(2);
+   // All parts update in same frame
+
+3. ASYNC LOADING
+   For large numbers of prefabs:
+   IEnumerator LoadPrefabsAsync()
+   {
+       // Load prefabs over multiple frames
+       yield return null;
+   }
+
+4. LOD SUPPORT
+   The system works with Unity LOD Groups:
+   - Each body prefab can have LOD0, LOD1, LOD2
+   - Bone rebinding applies to all LOD levels
+
+
+MEMORY USAGE
+------------
+- Prefab arrays hold references only (low memory)
+- Face parts: 1 active instance per part type
+- Body parts: No extra instances (mesh swap only)
+
+
+================================================================================
+8. COMMON ISSUES & SOLUTIONS
+================================================================================
+
+ISSUE: "Rendering stopped" error
+SOLUTION: Update to latest CharacterPartSwapper.cs script
+          The script now clears mesh before reassignment
+
+ISSUE: Parts appear in wrong position
+SOLUTION: - Check that head_dummy exists in hierarchy
+          - Ensure face part prefabs have (0,0,0) local position
+
+ISSUE: Bones don't match / weird deformations
+SOLUTION: - All FBX must have same bone structure
+          - Check bone names match exactly (case-sensitive)
+          - Use Char_Base.fbx as template
+
+ISSUE: Materials not applying
+SOLUTION: - Check FBX import settings
+          - Ensure materials are assigned in .meta file
+          - Materials are copied automatically from prefab
+
+ISSUE: Parts not showing in array
+SOLUTION: - Set array size first (e.g., Size: 5)
+          - Then drag prefabs into Element slots
+          - Arrays can be empty if part type not used
+
+ISSUE: Performance lag when swapping
+SOLUTION: - Use object pooling for face parts
+          - Preload all prefabs at start
+          - Consider LOD for distant characters
+
+ISSUE: Customization not saving
+SOLUTION: - Save currentXXXIndex values
+          - Restore using SetBody(index), SetHair(index), etc.
+          - See Example 3 in API Reference
+
+ISSUE: UI buttons not working
+SOLUTION: - Check CharacterCustomizeUI.partSwapper is assigned
+          - Verify buttons are assigned in Inspector
+          - Check Canvas has EventSystem
+
+
+DEBUGGING TIPS
+--------------
+1. Check Console for "본 재바인딩 완료: XX개 본" message
+2. Verify currentXXXIndex values in Inspector during play
+3. Use Debug.Log in button onClick events
+4. Check that prefab arrays are not empty
+
+
+COMPATIBILITY
+-------------
+- Unity 2019.4 or later
+- Works with URP, HDRP, Built-in RP
+- Compatible with Animator, Timeline, Cinemachine
+- Mobile-friendly (tested on Android/iOS)
+
+
+================================================================================
+
+For more help:
+- Check demo scene for working example
+- Email: tigerhandstudio@gmail.com
+- Asset Store reviews/questions
+
+Thank you for using Stylized Little Hero NPC!
+
+================================================================================
