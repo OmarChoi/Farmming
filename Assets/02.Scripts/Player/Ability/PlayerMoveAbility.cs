@@ -11,6 +11,7 @@ public class PlayerMoveAbility : PlayerAbility
 
     private float _yVelocity;
     private float _currentMoveParam;
+    private bool _wasGrounded = true;
 
     private void Start()
     {
@@ -62,17 +63,28 @@ public class PlayerMoveAbility : PlayerAbility
 
     private void UpdateGravity()
     {
-        if (_characterController.isGrounded)
+        bool isGrounded = _characterController.isGrounded;
+
+        if (isGrounded && !_wasGrounded)
+            _animation.SetGrounded(true);
+
+        if (isGrounded)
         {
             _yVelocity = -0.5f;
 
             if (Input.GetKeyDown(KeyCode.Space))
+            {
                 _yVelocity = _owner.Stat.JumpPower;
+                _animation.TriggerJump();
+                _animation.SetGrounded(false);
+            }
         }
         else
         {
             _yVelocity -= Gravity * Time.deltaTime;
         }
+
+        _wasGrounded = isGrounded;
     }
 
     private void UpdateAnimation(bool isMoving, bool isSprinting)
