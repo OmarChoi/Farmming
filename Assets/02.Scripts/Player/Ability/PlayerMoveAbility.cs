@@ -66,7 +66,9 @@ public class PlayerMoveAbility : PlayerAbility
         bool isGrounded = _characterController.isGrounded;
 
         if (isGrounded && !_wasGrounded)
+        {
             _animation.SetGrounded(true);
+        }
 
         if (isGrounded)
         {

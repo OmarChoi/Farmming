@@ -13,7 +13,10 @@ public class PlayerStat : ScriptableObject
     [SerializeField] private float _walkSpeed = 3f;
     [SerializeField] private float _runSpeed = 6f;
     [SerializeField] private float _jumpPower = 5f;
-    [SerializeField] private float _rotationSpeed = 200f;
+    [SerializeField] private float _rotationSpeed = 10f;
+
+    [Header("카메라")]
+    [SerializeField] private float _mouseSensitivity = 200f;
 
     public float MaxHealth => _maxHealth;
     public float MaxStamina => _maxStamina;
@@ -21,4 +24,5 @@ public class PlayerStat : ScriptableObject
     public float RunSpeed => _runSpeed;
     public float JumpPower => _jumpPower;
     public float RotationSpeed => _rotationSpeed;
+    public float MouseSensitivity => _mouseSensitivity;
 }

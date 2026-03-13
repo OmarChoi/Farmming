@@ -221,7 +221,6 @@ GameObject:
   m_Component:
   - component: {fileID: 348443865}
   - component: {fileID: 348443867}
-  - component: {fileID: 348443866}
   - component: {fileID: 348443868}
   - component: {fileID: 348443869}
   m_Layer: 0
@@ -246,19 +245,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1067587500}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &348443866
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 348443864}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3db18039a7dbdd945bbe35587e09f0e2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerRotateAbility
-  _cameraRoot: {fileID: 1569019086}
 --- !u!114 &348443867
 MonoBehaviour:
   m_ObjectHideFlags: 0
