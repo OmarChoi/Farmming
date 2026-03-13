@@ -2,7 +2,7 @@ using UnityEngine;
 
 public interface IFarmTileState
 {
-    //ground
-    //farm-dry
-    //farm-wet
+    EFarmTileStateType StateType { get;}
+    public void EnterState(FarmTile tile);
+    public void UpdateState(FarmTile tile);
 }
