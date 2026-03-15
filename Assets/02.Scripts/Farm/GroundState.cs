@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GroundState : MonoBehaviour
+public class GroundState : IFarmTileState
 {
     public EFarmTileStateType StateType => EFarmTileStateType.Ground;
 
@@ -10,9 +10,9 @@ public class GroundState : MonoBehaviour
         tile.ShowObject(EFarmTileStateType.Ground);
     }
 
-    public void UpdateState(FarmTile tile)
+    public void ExitState(FarmTile tile)
     {
-        Debug.Log("Update Ground");
+        Debug.Log("Exit Ground");
         tile.HideObject(EFarmTileStateType.Ground);
     }
 }

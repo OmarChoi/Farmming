@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Seed", menuName = "Scriptable Objects/Seed")]
-public class Seed : ScriptableObject
+[CreateAssetMenu(fileName = "SeedDatabase", menuName = "Scriptable Objects/Seed")]
+public class SeedDatabase : ScriptableObject
 {
     public List<SeedConfig> Seeds;
 

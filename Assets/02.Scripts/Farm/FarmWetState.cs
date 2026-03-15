@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FarmWetState : MonoBehaviour
+public class FarmWetState : IFarmTileState
 {
     public EFarmTileStateType StateType => EFarmTileStateType.FarmWet;
 
@@ -10,9 +10,9 @@ public class FarmWetState : MonoBehaviour
         tile.ShowObject(EFarmTileStateType.FarmWet);
     }
 
-    public void UpdateState(FarmTile tile)
+    public void ExitState(FarmTile tile)
     {
-        Debug.Log("Update FarmWet");
+        Debug.Log("Exit FarmWet");
         tile.HideObject(EFarmTileStateType.FarmWet);
     }
 }
