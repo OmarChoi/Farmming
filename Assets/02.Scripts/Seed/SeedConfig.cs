@@ -7,14 +7,15 @@ public class SeedConfig : ScriptableObject
     [Header("씨앗 기본 정보")]
     public string SeedId;   // 씨앗 고유 ID
     public string SeedName; // 씨앗 이름
-    public Sprite SeedIcon; // 인벤토리 아이콘
+    public Texture2D SeedIcon; // 인벤토리 아이콘
 
     [Header("성장 단계")]
     public List<SeedGrowthStageData> SeedGrowthStage;
 
-    [Header("판매 가격")]
+    [Header("수확 정보")]
+    public int BaseHarvestAmount;
     public int BaseSellingPrice; // 기본 판매 가격
 
-    [Header("성장 등급")]
+    [Header("씨앗 등급")]
     public ESeedGrade SeedGrade; // 씨앗 등급
 }
