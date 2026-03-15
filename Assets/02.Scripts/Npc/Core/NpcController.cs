@@ -78,7 +78,8 @@ public class NpcController : MonoBehaviour
     // 일정이 있다면 스케줄대로 행동을 실행한다.
     public void ExecuteSchedule(NpcScheduleEntry entry)
     {
-        Vector3 targetPosition = transform.position;  // todo.추후 건물에 연결
+        // todo. 추후 진짜 건설 관련에 연결
+        Vector3 targetPosition = TestBuildingManager.Instance.GetLocationPosition(_npcData.NpcId, entry.NpcLocationType);
 
         _movement.MoveTo(targetPosition);
 

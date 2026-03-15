@@ -12,22 +12,32 @@ public class NpcScheduleManager : MonoBehaviour
         Instance = this;
     }
 
+    private void Start()
+    {
+        if (TestTimeManager.Instance != null)
+        {
+            TestTimeManager.Instance.OnTimeChanged += HandleTimeChanged;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (TestTimeManager.Instance != null)
+        {
+            TestTimeManager.Instance.OnTimeChanged -= HandleTimeChanged;
+        }
+    }
+
     public void Register(NpcController npc)
     {
-        if (npc == null || _npcs.Contains(npc))
-        {
-            return;
-        }
+        if (npc == null || _npcs.Contains(npc)) return;
 
         _npcs.Add(npc);
     }
 
     public void Unregister(NpcController npc)
     {
-        if (npc == null)
-        {
-            return;
-        }
+        if (npc == null) return;
 
         _npcs.Remove(npc);
     }
