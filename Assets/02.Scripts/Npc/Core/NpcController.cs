@@ -16,6 +16,19 @@ public class NpcController : MonoBehaviour
         _movement = GetComponent<NpcMovement>();
     }
 
+    private void Start()
+    {
+        NpcScheduleManager.Instance.Register(this);
+    }
+
+    private void OnDestroy()
+    {
+        if (NpcScheduleManager.Instance != null)
+        {
+            NpcScheduleManager.Instance.Unregister(this);
+        }
+    }
+
     public bool TryGetScheduleEntry(int time, out NpcScheduleEntry entry)
     {
         entry = null;
