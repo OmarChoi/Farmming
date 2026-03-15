@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NPCSchedule", menuName = "Scriptable Objects/Npc/NpcSchedule")]
+[CreateAssetMenu(fileName = "NpcSchedule", menuName = "Scriptable Objects/Npc/NpcSchedule")]
 public class NpcSchedule : ScriptableObject
 {
     public List<NpcScheduleEntry> ScheduleEntries = new();
