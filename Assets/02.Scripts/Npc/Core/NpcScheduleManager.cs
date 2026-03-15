@@ -17,6 +17,7 @@ public class NpcScheduleManager : MonoBehaviour
         if (TestTimeManager.Instance != null)
         {
             TestTimeManager.Instance.OnTimeChanged += HandleTimeChanged;
+            TestTimeManager.Instance.OnDayChanged += HandleDayChanged;
         }
     }
 
@@ -25,6 +26,7 @@ public class NpcScheduleManager : MonoBehaviour
         if (TestTimeManager.Instance != null)
         {
             TestTimeManager.Instance.OnTimeChanged -= HandleTimeChanged;
+            TestTimeManager.Instance.OnDayChanged -= HandleDayChanged;
         }
     }
 
@@ -51,6 +53,15 @@ public class NpcScheduleManager : MonoBehaviour
             {
                 npc.ExecuteSchedule(entry);
             }
+        }
+    }
+
+    // 하루가 지나면 스케줄을 리셋한다.
+    private void HandleDayChanged()
+    {
+        foreach (var npc in _npcs)
+        {
+            npc.ResetSchedule();
         }
     }
 }

@@ -12,6 +12,7 @@ public class TestTimeManager : MonoBehaviour
     public int CurrentTime => _currentTime;
 
     public event Action<int> OnTimeChanged;
+    public event Action OnDayChanged;
 
     private void Awake()
     {
@@ -36,6 +37,8 @@ public class TestTimeManager : MonoBehaviour
         if (_currentTime >= 2400)
         {
             _currentTime = 0;
+            Debug.Log("Day Changed");
+            OnDayChanged?.Invoke();
         }
 
         Debug.Log($"Time : {_currentTime}");
