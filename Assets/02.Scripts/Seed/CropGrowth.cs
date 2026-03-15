@@ -131,6 +131,6 @@ public class CropGrowth : MonoBehaviour
         }
 
         GameObject prefab = _seedConfig.SeedGrowthStage[_currentStageIndex].SeedStageItem;
-        _currentCropObject = Instantiate(prefab, transform.position, Quaternion.identity, transform);
+        _currentCropObject = Instantiate(prefab, _tile.CropSpawnPoint.position, Quaternion.identity, _tile.transform);
     }
 }
