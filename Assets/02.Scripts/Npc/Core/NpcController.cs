@@ -83,13 +83,20 @@ public class NpcController : MonoBehaviour
 
         _movement.MoveTo(targetPosition);
 
-        Debug.Log($"{_npcData.NpcName} moves to {entry.NpcLocationType}");
+        Debug.Log($"{_npcData.NpcName}가 이동합니다: {entry.NpcLocationType}");
     }
 
     // 하루가 지나면 스케줄을 리셋한다.
-    public void ResetSchedule()
+    public void ResetScheduleForNewDay()
     {
         _currentScheduleIndex = 0;
         GenerateTimeOffset();
+
+        if (_npcSchedule == null || _npcSchedule.ScheduleEntries == null || _npcSchedule.ScheduleEntries.Count == 0) return;
+
+        NpcScheduleEntry firstEntry = _npcSchedule.ScheduleEntries[0];
+        Vector3 startPosition = TestBuildingManager.Instance.GetLocationPosition(_npcData.NpcId, firstEntry.NpcLocationType);
+
+        _movement.TeleportTo(startPosition);
     }
 }
