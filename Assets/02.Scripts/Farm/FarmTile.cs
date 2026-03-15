@@ -6,11 +6,13 @@ public class FarmTile : MonoBehaviour
     [SerializeField] private GameObject _groundObject;
     [SerializeField] private GameObject _farmDryObject;
     [SerializeField] private GameObject _farmWetObject;
-
+    [SerializeField] private Transform _cropSpawnPoint;
     public FarmTileStateMachine StateMachine { get; set; }
 
     public SeedConfig PlantedSeed { get; private set; }
     public bool HasSeed => PlantedSeed != null;
+
+    public Transform CropSpawnPoint => _cropSpawnPoint;
 
     private Dictionary<EFarmTileStateType, GameObject> _stateObjects;
 

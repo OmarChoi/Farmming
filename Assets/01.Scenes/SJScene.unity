@@ -663,6 +663,11 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &1734049258 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7797605821097171688, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
+  m_PrefabInstance: {fileID: 1584887260217856286}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1584887260217856286
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -671,13 +676,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 855532486709794241, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
+      propertyPath: _cropSpawnPoint
+      value: 
+      objectReference: {fileID: 1734049258}
     - target: {fileID: 1407440161283799644, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
       propertyPath: m_Name
       value: FarmTile
-      objectReference: {fileID: 0}
-    - target: {fileID: 3736014987238617986, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5141564950027002048, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
       propertyPath: m_LocalPosition.x
@@ -719,111 +724,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6997005381148030338, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7336089527335978067, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1407440161283799644, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1584887260217856291}
-    - targetCorrespondingSourceObject: {fileID: 1407440161283799644, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1584887260217856294}
-    - targetCorrespondingSourceObject: {fileID: 1407440161283799644, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1584887260217856293}
-    - targetCorrespondingSourceObject: {fileID: 1407440161283799644, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1584887260217856292}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
---- !u!1 &1584887260217856287 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1407440161283799644, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-  m_PrefabInstance: {fileID: 1584887260217856286}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1584887260217856288 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3736014987238617986, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-  m_PrefabInstance: {fileID: 1584887260217856286}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1584887260217856289 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7336089527335978067, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-  m_PrefabInstance: {fileID: 1584887260217856286}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1584887260217856290 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6997005381148030338, guid: 0a6cd0a34f7eeac4c895df56e741af64, type: 3}
-  m_PrefabInstance: {fileID: 1584887260217856286}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1584887260217856291
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1584887260217856287}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d47798d30bb6d34886c868667225a4a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FarmTile
-  _groundObject: {fileID: 1584887260217856290}
-  _farmDryObject: {fileID: 1584887260217856289}
-  _farmWetObject: {fileID: 1584887260217856288}
---- !u!65 &1584887260217856292
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1584887260217856287}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2, y: 2, z: 2}
-  m_Center: {x: 0, y: 1, z: 0}
---- !u!114 &1584887260217856293
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1584887260217856287}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac560868d27131c40a676516addc4c00, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CropGrowth
---- !u!114 &1584887260217856294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1584887260217856287}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49cb4a85a811fa44a8ab25d94c43ab4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FarmTileStateMachine
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
