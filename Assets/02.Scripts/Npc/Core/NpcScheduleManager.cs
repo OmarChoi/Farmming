@@ -61,7 +61,7 @@ public class NpcScheduleManager : MonoBehaviour
     {
         foreach (var npc in _npcs)
         {
-            npc.ResetSchedule();
+            npc.ResetScheduleForNewDay();
         }
     }
 }
