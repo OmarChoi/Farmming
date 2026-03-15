@@ -2,9 +2,12 @@ using UnityEngine;
 
 public class NpcController : MonoBehaviour
 {
-    [Header("Data")]
+    [Header("Npc 데이터 관련")]
     [SerializeField] private NpcData _npcData;
     [SerializeField] private NpcSchedule _npcSchedule;
+
+    private int _timeOffset;
+    private int _currentScheduleIndex = 0;
 
     private NpcMovement _movement;
 
@@ -14,6 +17,8 @@ public class NpcController : MonoBehaviour
     private void Awake()
     {
         _movement = GetComponent<NpcMovement>();
+
+        GenerateTimeOffset();
     }
 
     private void Start()
@@ -29,7 +34,21 @@ public class NpcController : MonoBehaviour
         }
     }
 
-    public bool TryGetScheduleEntry(int time, out NpcScheduleEntry entry)
+    // Npc가 스케줄대로 이동하는 시간에 랜덤 변수를 지정해준다. (스케줄이 겹치는 npc가 동시에 이동하는 것 방지한다.)
+    private void GenerateTimeOffset()
+    {
+        if (_npcData != null && _npcData.UseRandomTimeOffset)
+        {
+            _timeOffset = Random.Range(_npcData.MinTimeOffset, _npcData.MaxTimeOffset + 1);
+        }
+        else
+        {
+            _timeOffset = 0;
+        }
+    }
+
+    // 시간이 되면 Npc가 다음 일정대로 움직이는 것을 시도한다.
+    public bool TryGetNextScheduleEntry(int time, out NpcScheduleEntry entry)
     {
         entry = null;
 
@@ -38,15 +57,38 @@ public class NpcController : MonoBehaviour
             return false;
         }
 
-        for (int i = 0; i < _npcSchedule.ScheduleEntries.Count; i++)
+        if (_currentScheduleIndex >= _npcSchedule.ScheduleEntries.Count)
         {
-            if (_npcSchedule.ScheduleEntries[i].ScheduleTime == time)
-            {
-                entry = _npcSchedule.ScheduleEntries[i];
-                return true;
-            }
+            return false;
+        }
+
+        NpcScheduleEntry nextEntry = _npcSchedule.ScheduleEntries[_currentScheduleIndex];
+        int scheduleTime = nextEntry.ScheduleTime + _timeOffset;
+
+        if (time >= scheduleTime)
+        {
+            entry = nextEntry;
+            _currentScheduleIndex++;
+            return true;
         }
 
         return false;
+    }
+
+    // 일정이 있다면 스케줄대로 행동을 실행한다.
+    public void ExecuteSchedule(NpcScheduleEntry entry)
+    {
+        Vector3 targetPosition = transform.position;  // todo.추후 건물에 연결
+
+        _movement.MoveTo(targetPosition);
+
+        Debug.Log($"{_npcData.NpcName} moves to {entry.NpcLocationType}");
+    }
+
+    // 하루가 지나면 스케줄을 리셋한다.
+    public void ResetSchedule()
+    {
+        _currentScheduleIndex = 0;
+        GenerateTimeOffset();
     }
 }
