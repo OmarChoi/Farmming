@@ -31,4 +31,16 @@ public class NpcScheduleManager : MonoBehaviour
 
         _npcs.Remove(npc);
     }
+
+    // 시간에 따른 이동 구현용 메서드이다. (임시)
+    private void HandleTimeChanged(int currentTime)
+    {
+        foreach (var npc in _npcs)
+        {
+            if (npc.TryGetNextScheduleEntry(currentTime, out var entry))
+            {
+                npc.ExecuteSchedule(entry);
+            }
+        }
+    }
 }
