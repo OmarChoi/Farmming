@@ -16,15 +16,11 @@ public class FarmTileStateMachine : MonoBehaviour
 
         _states = new Dictionary<EFarmTileStateType, IFarmTileState>()
         {
-            { EFarmTileStateType.Ground, new GroundState()},
             { EFarmTileStateType.FarmDry, new FarmDryState()},
             { EFarmTileStateType.FarmWet, new FarmWetState()}
         };
-    }
 
-    private void Start()
-    {
-        _currentState = _states[EFarmTileStateType.Ground];
+        _currentState = _states[EFarmTileStateType.FarmDry];
         _currentState.EnterState(_tile);
     }
 
@@ -45,10 +41,8 @@ public class FarmTileStateMachine : MonoBehaviour
     {
         return(_currentState.StateType, next) switch
         {
-            (EFarmTileStateType.Ground, EFarmTileStateType.FarmDry) => true,
             (EFarmTileStateType.FarmDry, EFarmTileStateType.FarmWet) => true,
             (EFarmTileStateType.FarmWet, EFarmTileStateType.FarmDry) => true,
-            (EFarmTileStateType.FarmWet, EFarmTileStateType.Ground) => true,
             _ => false
         };
     }
