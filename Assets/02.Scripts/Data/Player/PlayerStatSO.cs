@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PlayerStat", menuName = "Data/PlayerStat")]
-public class PlayerStat : ScriptableObject
+public class PlayerStatSO : ScriptableObject
 {
     [Header("체력")]
     [SerializeField] private float _maxHealth = 100f;
