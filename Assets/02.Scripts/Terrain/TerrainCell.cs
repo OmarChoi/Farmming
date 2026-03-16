@@ -1,0 +1,80 @@
+using UnityEngine;
+
+public class TerrainCell : MonoBehaviour
+{
+    [SerializeField] private GameObject _dirtBlock;
+    [SerializeField] private Transform _objectPoint;
+
+    private TerrainCellData _data;
+    private FarmTile _farmTile;
+    private GameObject _currentObject;
+
+    public Vector3Int GridPosition { get; private set; }
+    public TerrainCellData Data => _data;
+
+    public void Init(Vector3Int gridPos, TerrainCellData data)
+    {
+        GridPosition = gridPos;
+        _data = data;
+        _farmTile = GetComponentInChildren<FarmTile>(true);
+        Refresh();
+    }
+
+    public void Refresh()
+    {
+        _dirtBlock.SetActive(_data.CellType == CellType.Dirt);
+
+        if (_farmTile != null)
+            _farmTile.gameObject.SetActive(_data.ObjectType == GridObjectType.FarmLand);
+    }
+
+    public bool TryDig(int toolLevel)
+    {
+        if (!_data.CanDig(toolLevel)) return false;
+
+        _data.Dig();
+        Refresh();
+        return true;
+    }
+
+    public bool TryPlaceBlock(int dirtLevel = 1)
+    {
+        if (_data.CellType != CellType.Empty) return false;
+
+        _data.PlaceBlock(dirtLevel);
+        Refresh();
+        return true;
+    }
+
+    public bool TryConvertToFarm()
+    {
+        if (_data.CellType != CellType.Dirt) return false;
+        if (_data.ObjectType != GridObjectType.None) return false;
+
+        _data.SetObject(GridObjectType.FarmLand);
+        Refresh();
+
+        if (_farmTile != null)
+            _farmTile.Init();
+
+        return true;
+    }
+
+    public void SpawnObject(GameObject prefab, GridObjectType type)
+    {
+        if (_currentObject != null)
+            Destroy(_currentObject);
+
+        _data.SetObject(type);
+        _currentObject = Instantiate(prefab, _objectPoint.position, Quaternion.identity, _objectPoint);
+    }
+
+    public void DestroyObject()
+    {
+        if (_currentObject != null)
+            Destroy(_currentObject);
+
+        _currentObject = null;
+        _data.RemoveObject();
+    }
+}
