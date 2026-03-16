@@ -26,6 +26,14 @@ public class PlayerMoveAbility : PlayerAbility
 
     private void Update()
     {
+        if (_owner.IsUIOpen)
+        {
+            UpdateAnimation(false, false);
+            UpdateGravity();
+            _characterController.Move(new Vector3(0f, _yVelocity, 0f) * Time.deltaTime);
+            return;
+        }
+
         Vector3 direction = GetMoveDirection();
         bool isMoving = direction.sqrMagnitude > MoveThresholdSqr;
         bool isSprinting = isMoving && Input.GetKey(KeyCode.LeftShift);

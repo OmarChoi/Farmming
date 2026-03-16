@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private PlayerStat _stat;
     public PlayerStat Stat => _stat;
+    public bool IsUIOpen { get; set; }
 
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
 
