@@ -23,9 +23,9 @@ public class TerrainCell : MonoBehaviour
 
     public void Refresh()
     {
-        bool isFarmLand = _data.ObjectType == GridObjectType.FarmLand;
+        bool isFarmLand = _data.ObjectType == EGridObjectType.FarmLand;
 
-        _dirtBlock.SetActive(_data.CellType == CellType.Dirt && !isFarmLand);
+        _dirtBlock.SetActive(_data.CellType == ECellType.Dirt && !isFarmLand);
 
         if (_farmTile != null)
             _farmTile.gameObject.SetActive(isFarmLand);
@@ -42,7 +42,7 @@ public class TerrainCell : MonoBehaviour
 
     public bool TryPlaceBlock(int dirtLevel = 1)
     {
-        if (_data.CellType != CellType.Empty) return false;
+        if (_data.CellType != ECellType.Empty) return false;
 
         _data.PlaceBlock(dirtLevel);
         Refresh();
@@ -51,10 +51,10 @@ public class TerrainCell : MonoBehaviour
 
     public bool TryConvertToFarm()
     {
-        if (_data.CellType != CellType.Dirt) return false;
-        if (_data.ObjectType != GridObjectType.None) return false;
+        if (_data.CellType != ECellType.Dirt) return false;
+        if (_data.ObjectType != EGridObjectType.None) return false;
 
-        _data.SetObject(GridObjectType.FarmLand);
+        _data.SetObject(EGridObjectType.FarmLand);
         Refresh();
 
         if (_farmTile != null)
@@ -63,7 +63,7 @@ public class TerrainCell : MonoBehaviour
         return true;
     }
 
-    public void SpawnObject(GameObject prefab, GridObjectType type)
+    public void SpawnObject(GameObject prefab, EGridObjectType type)
     {
         ClearCurrentObject();
         _data.SetObject(type);

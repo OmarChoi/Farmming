@@ -56,23 +56,23 @@ public class TerrainEditorWindow : EditorWindow
         {
             case BrushMode.Dirt:
                 _brush.IsEraser = false;
-                _brush.CellType = CellType.Dirt;
-                _brush.ObjectType = GridObjectType.None;
+                _brush.CellType = ECellType.Dirt;
+                _brush.ObjectType = EGridObjectType.None;
                 _brush.DirtLevel = EditorGUILayout.IntSlider("흙 레벨", _brush.DirtLevel, 1, 5);
                 break;
 
             case BrushMode.Tree:
                 _brush.IsEraser = false;
-                _brush.CellType = CellType.Dirt;
-                _brush.ObjectType = GridObjectType.Tree;
+                _brush.CellType = ECellType.Dirt;
+                _brush.ObjectType = EGridObjectType.Tree;
                 _brush.ObjectLevel = EditorGUILayout.IntSlider("나무 레벨", _brush.ObjectLevel, 1, 5);
                 _brush.DirtLevel = EditorGUILayout.IntSlider("흙 레벨", _brush.DirtLevel, 1, 5);
                 break;
 
             case BrushMode.Rock:
                 _brush.IsEraser = false;
-                _brush.CellType = CellType.Dirt;
-                _brush.ObjectType = GridObjectType.Rock;
+                _brush.CellType = ECellType.Dirt;
+                _brush.ObjectType = EGridObjectType.Rock;
                 _brush.ObjectLevel = EditorGUILayout.IntSlider("돌 레벨", _brush.ObjectLevel, 1, 5);
                 _brush.DirtLevel = EditorGUILayout.IntSlider("흙 레벨", _brush.DirtLevel, 1, 5);
                 break;

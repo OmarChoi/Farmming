@@ -5,9 +5,9 @@ using UnityEngine;
 /// </summary>
 public class TerrainBrush
 {
-    public CellType CellType = CellType.Dirt;
+    public ECellType CellType = ECellType.Dirt;
     public int DirtLevel = 1;
-    public GridObjectType ObjectType = GridObjectType.None;
+    public EGridObjectType ObjectType = EGridObjectType.None;
     public int ObjectLevel = 1;
     public bool IsEraser;
 
