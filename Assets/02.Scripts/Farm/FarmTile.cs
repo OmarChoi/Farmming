@@ -7,19 +7,21 @@ public class FarmTile : MonoBehaviour
     [SerializeField] private GameObject _farmDryObject;
     [SerializeField] private GameObject _farmWetObject;
     [SerializeField] private Transform _cropSpawnPoint;
+
     private Dictionary<EFarmTileStateType, GameObject> _stateObjects;
+    private CropGrowth _cropGrowth;
 
     public FarmTileStateMachine StateMachine { get; private set; }
 
     public SeedConfig PlantedSeed { get; private set; }
     public bool HasSeed => PlantedSeed != null;
     public bool IsWet => StateMachine.CurrentStateType == EFarmTileStateType.FarmWet;
-
     public Transform CropSpawnPoint => _cropSpawnPoint;
 
     public void Initialize()
     {
         StateMachine = GetComponent<FarmTileStateMachine>();
+        _cropGrowth = GetComponent<CropGrowth>();
 
         _stateObjects = new Dictionary<EFarmTileStateType, GameObject>
         {
@@ -52,8 +54,54 @@ public class FarmTile : MonoBehaviour
     {
         if (StateMachine.CurrentStateType == EFarmTileStateType.FarmWet)
         {
-            GetComponent<CropGrowth>().CheckMorningGrowth();
+            _cropGrowth.CheckMorningGrowth();
             StateMachine.FarmTransition(EFarmTileStateType.FarmDry);
+        }
+    }
+
+    public void Interact(SeedConfig seed = null)
+    {
+        EFarmTileStateType current = StateMachine.CurrentStateType;
+
+        if (current == EFarmTileStateType.Ground)
+        {
+            StateMachine.FarmTransition(EFarmTileStateType.FarmDry);
+        }
+        else if (current == EFarmTileStateType.FarmDry && !HasSeed)
+        {
+            if (seed != null)
+            {
+                PlantSeed(seed);
+            }
+            else
+            {
+                Debug.Log("씨앗 없음");
+            }
+        }
+        else if (current == EFarmTileStateType.FarmDry && HasSeed)
+        {
+            StateMachine.FarmTransition(EFarmTileStateType.FarmWet);
+
+            if (!_cropGrowth.HasStarted)
+            {
+                _cropGrowth.StartGrowth(PlantedSeed);
+            }
+            else
+            {
+                Debug.Log("물 줌(성장 계속)");
+            }
+        }
+        else if (current == EFarmTileStateType.FarmWet)
+        {
+            if (_cropGrowth.IsHarvestable)
+            {
+                _cropGrowth.Harvest();
+            }
+            else
+            {
+                Debug.Log("아직 수확할 수 없음");
+            }
+
         }
     }
 
