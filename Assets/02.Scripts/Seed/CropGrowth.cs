@@ -31,7 +31,10 @@ public class CropGrowth : MonoBehaviour
 
     private void OnDisable()
     {
-        DayNightCycle.Instance.OnNightStart -= OnNight;
+        if (DayNightCycle.Instance != null)
+        {
+            DayNightCycle.Instance.OnNightStart -= OnNight;
+        }
     }
 
     // 물을 줬을 때 외부에서 호출
@@ -77,7 +80,7 @@ public class CropGrowth : MonoBehaviour
 
     private void TryGrow()
     {
-        if(_tile.StateMachine.CurrentStateType != EFarmTileStateType.FarmWet)
+        if(!_tile.IsWet)
         {
             return;
         }
