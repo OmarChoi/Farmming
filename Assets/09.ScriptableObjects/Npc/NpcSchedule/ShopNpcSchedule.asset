@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1709fdcac17c18e4288fc16dade8a477, type: 3}
   m_Name: ShopNpcSchedule
   m_EditorClassIdentifier: Assembly-CSharp::NpcSchedule
-  ScheduleEntries:
+  <ScheduleEntries>k__BackingField:
   - ScheduleTime: 0
     NpcLocationType: 0
     LocationKey: Shopper_Home_Door
   - ScheduleTime: 1000
     NpcLocationType: 1
     LocationKey: Shopper_Shop_Counter
-  - ScheduleTime: 1800
+  - ScheduleTime: 1600
     NpcLocationType: 0
-    LocationKey: Shopper_Home_Door
-  - ScheduleTime: 2200
+    LocationKey: Shopper_Home
+  - ScheduleTime: 2000
     NpcLocationType: 1
-    LocationKey: Shopper_Shop_Counter
+    LocationKey: Shopper_Shop

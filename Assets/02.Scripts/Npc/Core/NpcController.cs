@@ -88,13 +88,17 @@ public class NpcController : MonoBehaviour
 
         if (!found)
         {
+#if UNITY_EDITOR
             Debug.LogWarning($"{_npcData.NpcName}의 목적지를 찾지 못했습니다.");
+#endif
             return;
         }
 
         _movement.MoveTo(targetPosition);
 
+#if UNITY_EDITOR
         Debug.Log($"{_npcData.NpcName}가 이동합니다: {entry.NpcLocationType} / {entry.LocationKey}");
+#endif
     }
 
     // 하루가 지나면 스케줄을 리셋합니다.
@@ -114,7 +118,9 @@ public class NpcController : MonoBehaviour
 
         if (!found)
         {
+#if UNITY_EDITOR
             Debug.LogWarning($"{_npcData.NpcName}의 하루 시작 위치를 찾지 못했습니다.");
+#endif
             return;
         }
 
