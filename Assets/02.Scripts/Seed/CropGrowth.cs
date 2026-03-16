@@ -116,8 +116,13 @@ public class CropGrowth : MonoBehaviour
 
         int harvestAmount = Random.Range(_seedConfig.HarvestAmountMin, _seedConfig.HarvestAmountMax + 1);
         Debug.Log($"{_seedConfig.SeedName}: {harvestAmount}수확");
-        
-        if(_inventoryAbility != null && _seedConfig.HarvestItem != null)
+
+        if (_seedConfig.SeedIcon != null)
+        {
+            HarvestNotificationManager.Instance.Show(_seedConfig.SeedIcon, _seedConfig.SeedName, harvestAmount);
+        }
+
+        if (_inventoryAbility != null && _seedConfig.HarvestItem != null)
         {
             _inventoryAbility.AddItem(_seedConfig.HarvestItem, harvestAmount);
             Debug.Log("인벤토리에 수확물 추가");
