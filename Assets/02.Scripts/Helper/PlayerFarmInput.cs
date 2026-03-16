@@ -2,25 +2,29 @@ using UnityEngine;
 
 public class PlayerFarmInput : MonoBehaviour
 {
-    public HelperPickup EquippedHelper;
-    public float DetectRange = 2f;
+    [SerializeField] private HelperPickup _equippedHelper;
+    [SerializeField] private float _detectRange = 2f;
 
     [Header("테스트용 씨앗")]
-    public SeedConfig TestSeed;
+    [SerializeField] private SeedConfig _testSeed;
 
     private void Update()
     {
         if(Input.GetKeyDown(KeyCode.F))
         {
-            if(EquippedHelper!=null && !EquippedHelper.IsEquipped)
+            if(_equippedHelper!=null && !_equippedHelper.IsEquipped)
             {
-                EquippedHelper.Equip();
+                _equippedHelper.Equip();
+            }
+            else if (_equippedHelper != null && _equippedHelper.IsEquipped)
+            {
+                _equippedHelper.UnEquip();
             }
         }
 
         if(Input.GetKeyDown(KeyCode.E))
         {
-            if(EquippedHelper == null || !EquippedHelper.IsEquipped)
+            if(_equippedHelper == null || !_equippedHelper.IsEquipped)
             {
                 Debug.Log("곡룡 들고 있지 않음");
                 return;
@@ -41,7 +45,7 @@ public class PlayerFarmInput : MonoBehaviour
             }
             else if (current == EFarmTileStateType.FarmDry && !tile.HasSeed)
             {
-                tile.PlantSeed(TestSeed);
+                tile.PlantSeed(_testSeed);
             }
             else if (current == EFarmTileStateType.FarmDry && tile.HasSeed)
             {
@@ -75,7 +79,7 @@ public class PlayerFarmInput : MonoBehaviour
     private FarmTile GetTargetTile()
     {
         Ray ray = new Ray(transform.position, transform.forward);
-        if(Physics.Raycast(ray, out RaycastHit hit, DetectRange))
+        if(Physics.Raycast(ray, out RaycastHit hit, _detectRange))
         {
             return hit.collider.GetComponent<FarmTile>();
         }
