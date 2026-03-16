@@ -15,9 +15,13 @@ MonoBehaviour:
   ScheduleEntries:
   - ScheduleTime: 0
     NpcLocationType: 0
+    LocationKey: Shopper_Home_Door
   - ScheduleTime: 1000
     NpcLocationType: 1
+    LocationKey: Shopper_Shop_Counter
   - ScheduleTime: 1800
     NpcLocationType: 0
+    LocationKey: Shopper_Home_Door
   - ScheduleTime: 2200
     NpcLocationType: 1
+    LocationKey: Shopper_Shop_Counter

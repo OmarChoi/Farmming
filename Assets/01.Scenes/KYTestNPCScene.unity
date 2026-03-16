@@ -128,6 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 45109189}
+  - component: {fileID: 45109190}
   m_Layer: 0
   m_Name: TestShopPoint
   m_TagString: Untagged
@@ -150,6 +151,66 @@ Transform:
   m_Children: []
   m_Father: {fileID: 706509207}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &45109190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 45109188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
+  _npcData: {fileID: 11400000, guid: 22568f0633fd3c24baff56b959f4ad6e, type: 2}
+  _locationType: 1
+  _locationKey: Shopper_Shop_Counter
+  _point: {fileID: 45109189}
+--- !u!1 &171449110
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 171449112}
+  - component: {fileID: 171449111}
+  m_Layer: 0
+  m_Name: NpcLocationManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &171449111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171449110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f09748ad6535da4f965066d97185cc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcLocationManager
+--- !u!4 &171449112
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171449110}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &624618385
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,7 +220,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 624618388}
-  - component: {fileID: 624618387}
   - component: {fileID: 624618386}
   m_Layer: 0
   m_Name: TestManager
@@ -180,23 +240,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30bc7aa48f2c56148bf7ec2664e639e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestTimeManager
-  _currentTime: 800
+  _currentTime: 810
   _timeInterval: 2
-  _timeStep: 50
---- !u!114 &624618387
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 624618385}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ee42e442c21b1144b1da55a5550e963, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestBuildingManager
-  _homePoint: {fileID: 1476945766}
-  _shopPoint: {fileID: 45109189}
+  _timeStep: 100
 --- !u!4 &624618388
 Transform:
   m_ObjectHideFlags: 0
@@ -1022,6 +1068,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1476945766}
+  - component: {fileID: 1476945767}
   m_Layer: 0
   m_Name: TestPoint
   m_TagString: Untagged
@@ -1041,9 +1088,26 @@ Transform:
   m_LocalPosition: {x: 7.54, y: -0, z: 2.93}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1032790027}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1476945767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476945765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
+  _npcData: {fileID: 11400000, guid: 22568f0633fd3c24baff56b959f4ad6e, type: 2}
+  _locationType: 0
+  _locationKey: Shopper_Home_Door
+  _point: {fileID: 1476945766}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1055,4 +1119,5 @@ SceneRoots:
   - {fileID: 706509207}
   - {fileID: 1476945766}
   - {fileID: 1354044375}
+  - {fileID: 171449112}
   - {fileID: 624618388}

@@ -79,11 +79,23 @@ public class NpcController : MonoBehaviour
     public void ExecuteSchedule(NpcScheduleEntry entry)
     {
         // todo. 추후 진짜 건설 관련에 연결
-        Vector3 targetPosition = TestBuildingManager.Instance.GetLocationPosition(_npcData.NpcId, entry.NpcLocationType);
+        if (_npcData == null) return;
+
+        bool found = NpcLocationManager.Instance.TryGetLocation(
+            _npcData.NpcId,
+            entry.NpcLocationType,
+            entry.LocationKey,
+            out Vector3 targetPosition);
+
+        if (!found)
+        {
+            Debug.LogWarning($"{_npcData.NpcName}의 목적지를 찾지 못했습니다.");
+            return;
+        }
 
         _movement.MoveTo(targetPosition);
 
-        Debug.Log($"{_npcData.NpcName}가 이동합니다: {entry.NpcLocationType}");
+        Debug.Log($"{_npcData.NpcName}가 이동합니다: {entry.NpcLocationType} / {entry.LocationKey}");
     }
 
     // 하루가 지나면 스케줄을 리셋합니다.
