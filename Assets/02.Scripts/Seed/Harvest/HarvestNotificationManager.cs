@@ -8,6 +8,7 @@ public class HarvestNotificationManager : MonoBehaviour
 
     [SerializeField] private HarvestNotification _notificationPrefab;
     [SerializeField] private Transform _notificationParent;
+    [SerializeField] private float _notificationDuration = 1.8f;   
 
     [Header("여러 개 동시 표시 시 세로 간격")]
     [SerializeField] private float _stackOffset = 60f;
@@ -33,11 +34,12 @@ public class HarvestNotificationManager : MonoBehaviour
         RectTransform rect = notification.GetComponent<RectTransform>();
         rect.anchoredPosition = new Vector2(0f, _stackOffset * _activeCount);
 
+        notification.gameObject.SetActive(true);
         notification.Setup(icon, seedName, amount);
         _activeCount++;
 
         // 알림이 사라지면 카운트 감소
-        StartCoroutine(DecreaseCountAfter(1.8f));
+        StartCoroutine(DecreaseCountAfter(_notificationDuration));
     }
 
     private System.Collections.IEnumerator DecreaseCountAfter(float delay)
