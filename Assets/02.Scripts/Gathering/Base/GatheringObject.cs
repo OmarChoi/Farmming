@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public abstract class GatheringObject : MonoBehaviour
+public abstract class GatheringObject : MonoBehaviour, IGatherable
 {
     [SerializeField] private GatheringObjectSO _gatheringData;
 
