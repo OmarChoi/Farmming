@@ -14,6 +14,17 @@ public class NpcScheduleManager : MonoBehaviour
 
     private void Start()
     {
+        // 테스트용으로 TestTimeManager의 이벤트에 구독합니다.
+        // 실제 게임에서는 TimeManager가 완성된 후 이 부분을 수정해야 할 수 있습니다.
+        if (TestTimeManager.Instance != null)
+        {
+            TestTimeManager.Instance.OnTimeChanged += HandleTimeChanged;
+            TestTimeManager.Instance.OnDayChanged += HandleDayChanged;
+        }
+    }
+
+    private void OnEnable()
+    {
         if (TestTimeManager.Instance != null)
         {
             TestTimeManager.Instance.OnTimeChanged += HandleTimeChanged;
@@ -44,7 +55,8 @@ public class NpcScheduleManager : MonoBehaviour
         _npcs.Remove(npc);
     }
 
-    // 시간에 따른 이동 구현용 메서드입니다. (임시)
+    // 시간에 따른 이동 구현 테스트용 메서드입니다.
+    // todo. TimeManager에서 시간이 변경될 때마다 이 메서드가 호출되도록 구현해야 합니다.
     private void HandleTimeChanged(int currentTime)
     {
         foreach (var npc in _npcs)

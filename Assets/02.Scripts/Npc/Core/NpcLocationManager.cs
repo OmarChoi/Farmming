@@ -14,6 +14,10 @@ public class NpcLocationManager : MonoBehaviour
 
     private string MakeKey(string npcId, ENpcLocationType type, string locationKey)
     {
+        if (string.IsNullOrEmpty(locationKey))
+        {
+            return MakeDefaultKey(npcId, type);
+        }
         return $"{npcId}_{type}_{locationKey}";
     }
 

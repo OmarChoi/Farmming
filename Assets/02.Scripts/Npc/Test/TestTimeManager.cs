@@ -37,11 +37,14 @@ public class TestTimeManager : MonoBehaviour
         if (_currentTime >= 2400)
         {
             _currentTime = 0;
+#if UNITY_EDITOR
             Debug.Log("Day Changed");
+#endif
             OnDayChanged?.Invoke();
         }
-
+#if UNITY_EDITOR
         Debug.Log($"Time : {_currentTime}");
+#endif
         OnTimeChanged?.Invoke(_currentTime);
     }
 }
