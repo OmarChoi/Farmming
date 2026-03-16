@@ -11,6 +11,7 @@ public class CropGrowth : MonoBehaviour
     private GameObject _currentCropObject;
 
     private FarmTile _tile;
+    private PlayerInventoryAbility _inventoryAbility;
 
     public bool HasStarted => _hasStarted;
     public bool IsHarvestable => !_isGrowing && _hasStarted;
@@ -18,6 +19,22 @@ public class CropGrowth : MonoBehaviour
     private void Awake()
     {
         _tile = GetComponent<FarmTile>();
+    }
+
+    private void Start()
+    {
+        PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
+    }
+
+    private void OnPlayerReady(PlayerInventoryAbility inventoryAbility)
+    {
+        _inventoryAbility = inventoryAbility;
+        Debug.Log("수확물 인벤토리 연동");
     }
 
     // 물을 줬을 때 외부에서 호출
@@ -97,9 +114,27 @@ public class CropGrowth : MonoBehaviour
             return;
         }
 
-        Debug.Log($"{_seedConfig.SeedName}수확");
+        int harvestAmount = Random.Range(_seedConfig.HarvestAmountMin, _seedConfig.HarvestAmountMax + 1);
+        Debug.Log($"{_seedConfig.SeedName}: {harvestAmount}수확");
+        
+        if(_inventoryAbility != null && _seedConfig.HarvestItem != null)
+        {
+            _inventoryAbility.AddItem(_seedConfig.HarvestItem, harvestAmount);
+            Debug.Log("인벤토리에 수확물 추가");
+        }
+        else
+        {
+            if(_inventoryAbility == null)
+            {
+                Debug.Log("인벤토리 없음");
+            }
+            if(_seedConfig.HarvestItem == null)
+            {
+                Debug.Log("수확물 설정 없음");
+            }
+        }
 
-        if(_currentCropObject != null)
+        if (_currentCropObject != null)
         {
             Destroy(_currentCropObject);
             _currentCropObject = null;
