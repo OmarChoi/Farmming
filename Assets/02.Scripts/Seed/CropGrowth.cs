@@ -20,23 +20,6 @@ public class CropGrowth : MonoBehaviour
         _tile = GetComponent<FarmTile>();
     }
 
-    private void Start()
-    {
-        if (DayNightCycle.Instance != null)
-        {
-            DayNightCycle.Instance.OnNightStart += OnNight;
-        }
-
-    }
-
-    private void OnDisable()
-    {
-        if (DayNightCycle.Instance != null)
-        {
-            DayNightCycle.Instance.OnNightStart -= OnNight;
-        }
-    }
-
     // 물을 줬을 때 외부에서 호출
     public void StartGrowth(SeedConfig seedConfig)
     {
@@ -63,7 +46,7 @@ public class CropGrowth : MonoBehaviour
         }
     }
 
-    private void OnNight()
+    public void CheckNightGrowth()
     {
         if (!_isGrowing)
         {
@@ -80,16 +63,6 @@ public class CropGrowth : MonoBehaviour
 
     private void TryGrow()
     {
-        if(!_tile.IsWet)
-        {
-            return;
-        }
-
-        if(!_tile.HasSeed)
-        {
-            return;
-        }
-
         _elapsedDays++;
 
         SeedGrowthStageData currentStage = _seedConfig.SeedGrowthStage[_currentStageIndex];
