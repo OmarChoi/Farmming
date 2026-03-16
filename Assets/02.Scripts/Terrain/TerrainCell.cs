@@ -11,6 +11,7 @@ public class TerrainCell : MonoBehaviour
 
     public Vector3Int GridPosition { get; private set; }
     public TerrainCellData Data => _data;
+    public FarmTile FarmTile => _farmTile;
 
     public void Init(Vector3Int gridPos, TerrainCellData data)
     {
@@ -64,19 +65,22 @@ public class TerrainCell : MonoBehaviour
 
     public void SpawnObject(GameObject prefab, GridObjectType type)
     {
-        if (_currentObject != null)
-            Destroy(_currentObject);
-
+        ClearCurrentObject();
         _data.SetObject(type);
         _currentObject = Instantiate(prefab, _objectPoint.position, Quaternion.identity, _objectPoint);
     }
 
     public void DestroyObject()
     {
+        ClearCurrentObject();
+        _data.RemoveObject();
+    }
+
+    private void ClearCurrentObject()
+    {
         if (_currentObject != null)
             Destroy(_currentObject);
 
         _currentObject = null;
-        _data.RemoveObject();
     }
 }

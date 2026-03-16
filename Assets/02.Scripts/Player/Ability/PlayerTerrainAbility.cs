@@ -12,17 +12,15 @@ public class PlayerTerrainAbility : PlayerAbility
     /// 플레이어 앞에 있는 셀을 반환. 없으면 null.
     public TerrainCell GetFrontCell()
     {
-        Vector3 footPos = _owner.transform.position + Vector3.up * _footOffset;
-        Vector3 frontPos = footPos + _owner.transform.forward * _detectDistance;
-        Vector3Int gridPos = _gridManager.WorldToGrid(frontPos);
-
-        _lastGridPos = gridPos;
-        _hasTarget = _gridManager.GetCell(gridPos) != null;
-
-        return _gridManager.GetCell(gridPos);
+        return _gridManager.GetCell(_lastGridPos);
     }
 
     private void Update()
+    {
+        UpdateFrontGridPos();
+    }
+
+    private void UpdateFrontGridPos()
     {
         Vector3 footPos = _owner.transform.position + Vector3.up * _footOffset;
         Vector3 frontPos = footPos + _owner.transform.forward * _detectDistance;

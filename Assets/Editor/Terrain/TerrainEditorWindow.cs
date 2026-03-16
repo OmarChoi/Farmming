@@ -9,7 +9,9 @@ public class TerrainEditorWindow : EditorWindow
     private TerrainBrush _brush = new();
     private BrushMode _brushMode = BrushMode.Dirt;
     private bool _isPainting;
-
+    
+    private const float MaxRaycastDistance = 500f;
+    
     [MenuItem("Tools/Terrain Editor")]
     public static void Open()
     {
@@ -149,7 +151,7 @@ public class TerrainEditorWindow : EditorWindow
         gridPos = Vector3Int.zero;
 
         // 1. 기존 블록에 hit하면 그 위에 쌓기
-        if (Physics.Raycast(ray, out RaycastHit hit, 500f))
+        if (Physics.Raycast(ray, out RaycastHit hit, MaxRaycastDistance))
         {
             TerrainCell cell = hit.collider.GetComponentInParent<TerrainCell>();
             if (cell != null)
