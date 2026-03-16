@@ -7,20 +7,23 @@ public class CropGrowth : MonoBehaviour
     private int _currentStageIndex = 0;
     private int _elapsedDays = 0;
     private bool _isGrowing = false;
+    private bool _hasStarted = false;
     private GameObject _currentCropObject;
 
     private FarmTile _tile;
+
+    public bool HasStarted => _hasStarted;
+    public bool IsHarvestable => !_isGrowing && _hasStarted;
 
     private void Awake()
     {
         _tile = GetComponent<FarmTile>();
     }
 
-    private void OnEnable()
+    private void Start()
     {
         if (DayNightCycle.Instance != null)
         {
-            DayNightCycle.Instance.OnMorningStart += OnMorning;
             DayNightCycle.Instance.OnNightStart += OnNight;
         }
 
@@ -28,7 +31,6 @@ public class CropGrowth : MonoBehaviour
 
     private void OnDisable()
     {
-        DayNightCycle.Instance.OnMorningStart -= OnMorning;
         DayNightCycle.Instance.OnNightStart -= OnNight;
     }
 
@@ -37,21 +39,22 @@ public class CropGrowth : MonoBehaviour
     {
         _seedConfig = seedConfig;
         _isGrowing = true;
+        _hasStarted = true;
         _currentStageIndex = 0;
         _elapsedDays = 0;
         ApplyStagePrefab();
     }
 
-    private void OnMorning()
+    public void CheckMorningGrowth()
     {
-        if(!_isGrowing)
+        if (!_isGrowing)
         {
             return;
         }
 
         SeedGrowthStageData currentStage = _seedConfig.SeedGrowthStage[_currentStageIndex];
 
-        if(currentStage.GrowthTiming == EGrowthTiming.Morning || currentStage.GrowthTiming == EGrowthTiming.Both)
+        if (currentStage.GrowthTiming == EGrowthTiming.Morning || currentStage.GrowthTiming == EGrowthTiming.Both)
         {
             TryGrow();
         }
@@ -112,6 +115,12 @@ public class CropGrowth : MonoBehaviour
             return;
         }
 
+        if(!_hasStarted)
+        {
+            Debug.Log("아직 성장 시작 안함");
+            return;
+        }
+
         Debug.Log($"{_seedConfig.SeedName}수확");
 
         if(_currentCropObject != null)
@@ -119,6 +128,10 @@ public class CropGrowth : MonoBehaviour
             Destroy(_currentCropObject);
             _currentCropObject = null;
         }
+
+        _hasStarted = false;
+        _currentStageIndex = 0;
+        _elapsedDays = 0;
 
         _tile.RemoveSeed();
     }

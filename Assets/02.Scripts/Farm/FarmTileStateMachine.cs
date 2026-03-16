@@ -46,6 +46,7 @@ public class FarmTileStateMachine : MonoBehaviour
             (EFarmTileStateType.Ground, EFarmTileStateType.FarmDry) => true,
             (EFarmTileStateType.FarmDry, EFarmTileStateType.FarmWet) => true,
             (EFarmTileStateType.FarmWet, EFarmTileStateType.FarmDry) => true,
+            (EFarmTileStateType.FarmWet, EFarmTileStateType.Ground) => true,
             _ => false
         };
     }

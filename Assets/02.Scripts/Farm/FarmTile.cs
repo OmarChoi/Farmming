@@ -31,6 +31,31 @@ public class FarmTile : MonoBehaviour
         ShowObject(EFarmTileStateType.Ground);
     }
 
+    private void Start()
+    {
+        if(DayNightCycle.Instance != null)
+        {
+            DayNightCycle.Instance.OnMorningStart += OnMorning;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if(DayNightCycle.Instance != null)
+        {
+            DayNightCycle.Instance.OnMorningStart -= OnMorning;
+        }
+    }
+
+    private void OnMorning()
+    {
+        if (StateMachine.CurrentStateType == EFarmTileStateType.FarmWet)
+        {
+            GetComponent<CropGrowth>().CheckMorningGrowth();
+            StateMachine.FarmTransition(EFarmTileStateType.FarmDry);
+        }
+    }
+
     public void PlantSeed(SeedConfig seed)
     {
         PlantedSeed = seed;
