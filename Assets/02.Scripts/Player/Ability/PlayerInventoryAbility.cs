@@ -40,7 +40,7 @@ public class PlayerInventoryAbility : PlayerAbility
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
+        if (Input.GetKeyDown(_inventoryKey))
             Toggle();
     }
 

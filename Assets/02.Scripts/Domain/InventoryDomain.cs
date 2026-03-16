@@ -74,7 +74,9 @@ public class InventoryDomain
 
             if (fromSlot.IsEmpty)
             {
+                int toIndex = from < to ? to - 1 : to;
                 _slots.RemoveAt(from);
+                OnSlotChanged?.Invoke(toIndex);
                 OnInventoryResized?.Invoke();
                 return;
             }
