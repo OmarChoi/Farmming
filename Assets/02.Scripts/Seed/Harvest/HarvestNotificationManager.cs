@@ -33,6 +33,7 @@ public class HarvestNotificationManager : MonoBehaviour
         RectTransform rect = notification.GetComponent<RectTransform>();
         rect.anchoredPosition = new Vector2(0f, _stackOffset * _activeCount);
 
+        notification.gameObject.SetActive(true);
         notification.Setup(icon, seedName, amount);
         _activeCount++;
 
