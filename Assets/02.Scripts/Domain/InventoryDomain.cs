@@ -50,6 +50,7 @@ public class InventoryDomain
             _slots.Add(newSlot);
             remaining -= toAdd;
             OnInventoryResized?.Invoke();
+            OnSlotChanged?.Invoke(_slots.Count - 1);
         }
     }
 
