@@ -30,27 +30,32 @@ public class PlayerFarmInput : MonoBehaviour
                 return;
             }
 
-            FarmTile tile = GetTargetTile();
-            if (tile == null)
+            TerrainCell cell = GetTargetCell();
+            if (cell == null) return;
+
+            // FarmTile이 이미 활성화되어 있으면 FarmTile과 상호작용
+            FarmTile farmTile = cell.GetComponentInChildren<FarmTile>();
+            if (farmTile != null && farmTile.gameObject.activeSelf)
             {
-                return;
+                farmTile.Interact(_testSeed);
             }
-
-            tile.Interact(_testSeed);
-
+            else
+            {
+                // 아직 경작지가 아니면 흙→경작지 전환
+                cell.TryConvertToFarm();
+            }
         }
     }
 
-    private FarmTile GetTargetTile()
+    private TerrainCell GetTargetCell()
     {
         Ray ray = new Ray(transform.position, transform.forward);
 
-        // 정면을 알기위해 빨간 선
         Debug.DrawRay(transform.position, transform.forward * _detectRange, Color.red, 1f);
 
         if (Physics.Raycast(ray, out RaycastHit hit, _detectRange))
         {
-            return hit.collider.GetComponent<FarmTile>();
+            return hit.collider.GetComponentInParent<TerrainCell>();
         }
         return null;
     }
