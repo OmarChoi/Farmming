@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class PlayerMoveAbility : PlayerAbility
 {
+    [SerializeField] private KeyCode _sprintKey = KeyCode.LeftShift;
+    [SerializeField] private KeyCode _jumpKey = KeyCode.Space;
     private const float Gravity = 9.8f;
     private const float AnimSmoothSpeed = 5f;
     private const float MoveThresholdSqr = 0.01f;
@@ -36,7 +38,7 @@ public class PlayerMoveAbility : PlayerAbility
 
         Vector3 direction = GetMoveDirection();
         bool isMoving = direction.sqrMagnitude > MoveThresholdSqr;
-        bool isSprinting = isMoving && Input.GetKey(KeyCode.LeftShift);
+        bool isSprinting = isMoving && Input.GetKey(_sprintKey);
 
         UpdateAnimation(isMoving, isSprinting);
         FaceMovementDirection(direction, isMoving);
@@ -57,7 +59,7 @@ public class PlayerMoveAbility : PlayerAbility
 
     private void Move(Vector3 direction, bool isSprinting)
     {
-        float speed = isSprinting ? _owner.Stat.RunSpeed : _owner.Stat.WalkSpeed;
+        float speed = isSprinting ? _owner.StatSo.RunSpeed : _owner.StatSo.WalkSpeed;
 
         Vector3 velocity = direction * speed;
         velocity.y = _yVelocity;
@@ -70,7 +72,7 @@ public class PlayerMoveAbility : PlayerAbility
         if (!isMoving) return;
 
         Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
-        _owner.transform.rotation = Quaternion.Slerp(_owner.transform.rotation, targetRotation, _owner.Stat.RotationSpeed * Time.deltaTime);
+        _owner.transform.rotation = Quaternion.Slerp(_owner.transform.rotation, targetRotation, _owner.StatSo.RotationSpeed * Time.deltaTime);
     }
 
     private void UpdateGravity()
@@ -86,9 +88,9 @@ public class PlayerMoveAbility : PlayerAbility
         {
             _yVelocity = GroundedYVelocity;
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(_jumpKey))
             {
-                _yVelocity = _owner.Stat.JumpPower;
+                _yVelocity = _owner.StatSo.JumpPower;
                 _animation.TriggerJump();
                 _animation.SetGrounded(false);
             }

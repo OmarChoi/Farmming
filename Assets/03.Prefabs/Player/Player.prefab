@@ -78,6 +78,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34bafe22b37aea4589781f640a7dcbe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMoveAbility
+  _sprintKey: 304
+  _jumpKey: 32
 --- !u!114 &7878009165133541125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115,7 +117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fda224f33ef8154dabd8f2f69ce9f0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventoryAbility
-  _initialSlots: 24
+  _inventoryKey: 105
 --- !u!1 &9063863777396371556
 GameObject:
   m_ObjectHideFlags: 0
@@ -189,7 +191,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c45a4e5ca513ea14eba10ac65fe802d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  _stat: {fileID: 11400000, guid: 789721f478833d645b77e7e96a36908a, type: 2}
+  _statSo: {fileID: 11400000, guid: 789721f478833d645b77e7e96a36908a, type: 2}
 --- !u!1001 &5139120670093869900
 PrefabInstance:
   m_ObjectHideFlags: 0

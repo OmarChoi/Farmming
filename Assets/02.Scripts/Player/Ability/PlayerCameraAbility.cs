@@ -32,8 +32,8 @@ public class PlayerCameraAbility : PlayerAbility
     {
         if (_owner.IsUIOpen) return;
 
-        _mx += Input.GetAxis("Mouse X") * _owner.Stat.MouseSensitivity * Time.deltaTime;
-        _my += Input.GetAxis("Mouse Y") * _owner.Stat.MouseSensitivity * Time.deltaTime;
+        _mx += Input.GetAxis("Mouse X") * _owner.StatSo.MouseSensitivity * Time.deltaTime;
+        _my += Input.GetAxis("Mouse Y") * _owner.StatSo.MouseSensitivity * Time.deltaTime;
 
         _my = Mathf.Clamp(_my, MinVerticalAngle, MaxVerticalAngle);
 

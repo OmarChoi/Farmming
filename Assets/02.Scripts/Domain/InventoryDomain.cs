@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class InventoryDomain
 {
@@ -23,9 +22,8 @@ public class InventoryDomain
     }
 
     /// 아이템 추가. 기존 스택 → 새 슬롯 순으로 채운다
-    public int AddItem(ItemData item, int amount = 1)
+    public void AddItem(ItemDataSO item, int amount = 1)
     {
-        Debug.Log("Adding item " + item.name);
         int remaining = amount;
 
         // 1) 같은 아이템이 있는 슬롯에 먼저 스택
@@ -53,8 +51,6 @@ public class InventoryDomain
             remaining -= toAdd;
             OnInventoryResized?.Invoke();
         }
-
-        return 0;
     }
 
     public void SwapSlots(int from, int to)
@@ -75,6 +71,13 @@ public class InventoryDomain
             int toMove = Math.Min(fromSlot.Count, canAdd);
             toSlot.TryAdd(toSlot.Item, toMove);
             fromSlot.Remove(toMove);
+
+            if (fromSlot.IsEmpty)
+            {
+                _slots.RemoveAt(from);
+                OnInventoryResized?.Invoke();
+                return;
+            }
         }
         else
         {
@@ -89,7 +92,16 @@ public class InventoryDomain
     {
         if (index < 0 || index >= _slots.Count) return;
         _slots[index].Remove(amount);
-        OnSlotChanged?.Invoke(index);
+
+        if (_slots[index].IsEmpty)
+        {
+            _slots.RemoveAt(index);
+            OnInventoryResized?.Invoke();
+        }
+        else
+        {
+            OnSlotChanged?.Invoke(index);
+        }
     }
 
 }

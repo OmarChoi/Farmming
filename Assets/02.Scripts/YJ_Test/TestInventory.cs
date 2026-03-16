@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class TestInventory : MonoBehaviour
 {
-    [SerializeField] private ItemData _woodItem;
-    [SerializeField] private ItemData _dirtItem;
+    [SerializeField] private ItemDataSO _woodItem;
+    [SerializeField] private ItemDataSO _dirtItem;
 
     [SerializeField] private PlayerInventoryAbility _inventoryAbility;
 
@@ -27,9 +27,9 @@ public class TestInventory : MonoBehaviour
         if (_inventoryAbility == null) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
-            _inventoryAbility.Inventory.AddItem(_woodItem);
+            _inventoryAbility.AddItem(_woodItem);
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            _inventoryAbility.Inventory.AddItem(_dirtItem);
+            _inventoryAbility.AddItem(_dirtItem);
     }
 }

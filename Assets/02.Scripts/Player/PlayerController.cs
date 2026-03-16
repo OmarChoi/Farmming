@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private PlayerStat _stat;
-    public PlayerStat Stat => _stat;
-    public bool IsUIOpen { get; set; }
+    [SerializeField] private PlayerStatSO _statSo;
+    public PlayerStatSO StatSo => _statSo;
+    public bool IsUIOpen { get; private set; }
 
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
 
@@ -22,5 +22,15 @@ public class PlayerController : MonoBehaviour
             _abilityCache[type] = ability;
 
         return ability;
+    }
+
+    public void EnterUIMode()
+    {
+        IsUIOpen = true;
+    }
+
+    public void ExitUIMode()
+    {
+        IsUIOpen = false;
     }
 }
