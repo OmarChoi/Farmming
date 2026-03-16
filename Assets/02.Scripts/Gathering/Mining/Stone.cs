@@ -27,6 +27,7 @@ public class Stone : GatheringObject
     // todo. DOTween 기반으로 변경
     private IEnumerator Shake_Coroutine()
     {
+        if (_shakeCount <= 0) yield break;
         float interval = _shakeDuration / _shakeCount;
 
         for (int i = 0; i < _shakeCount; i++)

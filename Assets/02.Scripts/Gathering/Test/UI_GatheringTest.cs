@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class UI_TestGathering : MonoBehaviour
+public class UI_GatheringTest : MonoBehaviour
 {
     [Header("테스트 대상")]
     [SerializeField] private GatheringObject _target;

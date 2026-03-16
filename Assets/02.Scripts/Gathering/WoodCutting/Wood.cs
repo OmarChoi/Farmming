@@ -4,11 +4,11 @@ using UnityEngine;
 public class Wood : GatheringObject
 {
     [Header("흔들림 연출")]
-    [SerializeField] private Vector3 _centralAxis;
     [SerializeField] private float _shakeAngle = 5f;
     [SerializeField] private float _shakeDuration = 0.4f;
     [SerializeField] private int _shakeCount = 3;
 
+    private Vector3 _centralAxis;
     private Coroutine _shakeCoroutine;
     private Quaternion _originalRotation;
 
@@ -27,8 +27,9 @@ public class Wood : GatheringObject
     // todo. DOTween 기반으로 수정
     private IEnumerator Shake_Coroutine()
     {
+        if (_shakeCount <= 0) yield break;
         float halfInterval = _shakeDuration / (_shakeCount * 2);
-        Vector3 axis = transform.TransformDirection(_centralAxis.normalized);
+        Vector3 axis = transform.TransformDirection(_centralAxis);
 
         for (int i = 0; i < _shakeCount; i++)
         {

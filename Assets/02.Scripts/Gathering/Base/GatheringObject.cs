@@ -25,7 +25,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
     {
         // todo. 곡룡 검증 로직 확인
         _currentHealth -= damage;
-        if (_currentHealth < 0) _currentHealth = 0;
+        if (_currentHealth < 0) return false;
         Hit();
 
         if (_currentHealth <= 0)
