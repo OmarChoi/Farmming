@@ -79,9 +79,7 @@ public class TerrainGridManager : MonoBehaviour
         return new Vector3(gridPos.x * _cellSize, gridPos.y * _cellSize, gridPos.z * _cellSize);
     }
 
-    /// <summary>
     /// 셀 추가/수정. 에디터와 런타임 모두 사용.
-    /// </summary>
     public void SetCell(Vector3Int gridPos, TerrainCellData data)
     {
         if (_gridData == null)
@@ -93,9 +91,7 @@ public class TerrainGridManager : MonoBehaviour
         SpawnCell(gridPos, data);
     }
 
-    /// <summary>
     /// 셀 삭제. 에디터와 런타임 모두 사용.
-    /// </summary>
     public void RemoveCell(Vector3Int gridPos)
     {
         if (_cells.TryGetValue(gridPos, out var existing))
@@ -114,9 +110,7 @@ public class TerrainGridManager : MonoBehaviour
         _gridData?.RemoveCell(gridPos);
     }
 
-    /// <summary>
     /// 전체 셀 삭제.
-    /// </summary>
     public void ClearAll()
     {
         foreach (var cell in _cells.Values)
@@ -133,9 +127,7 @@ public class TerrainGridManager : MonoBehaviour
         _gridData = new TerrainGridData();
     }
 
-    /// <summary>
     /// 특정 xz 위치에서 가장 높은 셀의 y값 반환. 없으면 -1.
-    /// </summary>
     public int GetTopY(int x, int z)
     {
         int topY = -1;
@@ -151,12 +143,8 @@ public class TerrainGridManager : MonoBehaviour
 
     public void LoadFromData(TerrainGridData data)
     {
-        foreach (var cell in _cells.Values)
-        {
-            if (cell != null)
-                Destroy(cell.gameObject);
-        }
-        _cells.Clear();
+        ClearAll();
+        if (data == null) return;
 
         _gridData = data;
 
