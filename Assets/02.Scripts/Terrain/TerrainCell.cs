@@ -76,6 +76,35 @@ public class TerrainCell : MonoBehaviour
         _data.RemoveObject();
     }
 
+    public void ExportTo(TerrainCellSaveData saveData)
+    {
+        if (_farmTile != null && _farmTile.gameObject.activeSelf)
+        {
+            _farmTile.ExportTo(saveData);
+
+            var cropGrowth = _farmTile.GetComponent<CropGrowth>();
+            if (cropGrowth != null)
+                cropGrowth.ExportTo(saveData);
+        }
+    }
+
+    public void ImportFarm(TerrainCellSaveData saveData, SeedDatabase seedDb)
+    {
+        if (_farmTile == null) return;
+        if (_data.ObjectType != EGridObjectType.FarmLand) return;
+
+        _farmTile.Init();
+        _farmTile.ImportFrom(saveData, seedDb);
+
+        var cropGrowth = _farmTile.GetComponent<CropGrowth>();
+        if (cropGrowth != null && !string.IsNullOrEmpty(saveData.SeedId))
+        {
+            SeedConfig seed = seedDb.GetById(saveData.SeedId);
+            if (seed != null)
+                cropGrowth.ImportFrom(saveData, seed);
+        }
+    }
+
     private void ClearCurrentObject()
     {
         if (_currentObject != null)

@@ -139,6 +139,25 @@ public class FarmTile : MonoBehaviour
         Debug.Log("수확완료");
     }
 
+    public void ExportTo(TerrainCellSaveData saveData)
+    {
+        saveData.FarmState = StateMachine.CurrentStateType;
+        saveData.SeedId = HasSeed ? PlantedSeed.SeedId : "";
+    }
+
+    public void ImportFrom(TerrainCellSaveData saveData, SeedDatabase seedDb)
+    {
+        if (saveData.FarmState == EFarmTileStateType.FarmWet)
+            StateMachine.FarmTransition(EFarmTileStateType.FarmWet);
+
+        if (!string.IsNullOrEmpty(saveData.SeedId))
+        {
+            SeedConfig seed = seedDb.GetById(saveData.SeedId);
+            if (seed != null)
+                PlantSeed(seed);
+        }
+    }
+
     public void ShowObject(EFarmTileStateType stateType)
     {
         if (_stateObjects.TryGetValue(stateType, out GameObject obj))
