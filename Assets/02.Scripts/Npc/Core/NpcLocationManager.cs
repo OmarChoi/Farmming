@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class NpcLocationManager : MonoBehaviour
 {
@@ -31,7 +32,6 @@ public class NpcLocationManager : MonoBehaviour
         if (anchor == null) return;
 
         string key = MakeKey(anchor.NpcId, anchor.LocationType, anchor.LocationKey);
-
         _anchorMap[key] = anchor;
     }
 

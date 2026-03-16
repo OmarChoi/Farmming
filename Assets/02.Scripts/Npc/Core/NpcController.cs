@@ -3,8 +3,9 @@ using UnityEngine;
 public class NpcController : MonoBehaviour
 {
     [Header("Npc 데이터 관련")]
-    [SerializeField] private NpcData _npcData;
     [SerializeField] private NpcSchedule _npcSchedule;
+
+    private NpcData _npcData;
 
     private int _timeOffset;
     private int _currentScheduleIndex = 0;
@@ -17,7 +18,11 @@ public class NpcController : MonoBehaviour
     private void Awake()
     {
         _movement = GetComponent<NpcMovement>();
+    }
 
+    public void Initialize(NpcData data)
+    {
+        _npcData = data;
         GenerateTimeOffset();
     }
 

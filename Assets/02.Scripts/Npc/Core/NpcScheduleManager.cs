@@ -5,7 +5,7 @@ public class NpcScheduleManager : MonoBehaviour
 {
     public static NpcScheduleManager Instance { get; private set; }
 
-    private readonly List<NpcController> _npcs = new();
+    private HashSet<NpcController> _npcs = new();
 
     private void Awake()
     {
