@@ -152,6 +152,28 @@ public class CropGrowth : MonoBehaviour
         _tile.RemoveSeed();
     }
 
+    public void ExportTo(TerrainCellSaveData saveData)
+    {
+        saveData.CropStageIndex = _currentStageIndex;
+        saveData.CropElapsedDays = _elapsedDays;
+        saveData.CropIsGrowing = _isGrowing;
+        saveData.CropHasStarted = _hasStarted;
+    }
+
+    public void ImportFrom(TerrainCellSaveData saveData, SeedConfig seed)
+    {
+        if (!saveData.CropHasStarted) return;
+
+        _seedConfig = seed;
+        _currentStageIndex = saveData.CropStageIndex;
+        _elapsedDays = saveData.CropElapsedDays;
+        _isGrowing = saveData.CropIsGrowing;
+        _hasStarted = saveData.CropHasStarted;
+
+        if (_currentStageIndex < _seedConfig.SeedGrowthStage.Count)
+            ApplyStagePrefab();
+    }
+
     private void ApplyStagePrefab()
     {
         if(_currentCropObject != null)
