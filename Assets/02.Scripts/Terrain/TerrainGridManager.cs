@@ -30,7 +30,7 @@ public class TerrainGridManager : MonoBehaviour
         foreach (var cell in GetComponentsInChildren<TerrainCell>())
         {
             Vector3Int gridPos = WorldToGrid(cell.transform.position);
-            var data = new TerrainCellData(CellType.Dirt);
+            var data = new TerrainCellData(ECellType.Dirt);
             cell.Init(gridPos, data);
 
             _cells[gridPos] = cell;
@@ -51,12 +51,12 @@ public class TerrainGridManager : MonoBehaviour
             cell.SpawnObject(objPrefab, data.ObjectType);
     }
 
-    public GameObject GetObjectPrefab(GridObjectType type)
+    public GameObject GetObjectPrefab(EGridObjectType type)
     {
         return type switch
         {
-            GridObjectType.Tree => _treePrefab,
-            GridObjectType.Rock => _rockPrefab,
+            EGridObjectType.Tree => _treePrefab,
+            EGridObjectType.Rock => _rockPrefab,
             _ => null
         };
     }

@@ -3,12 +3,12 @@ using System;
 [Serializable]
 public class TerrainCellData
 {
-    public CellType CellType;
-    public int DirtLevel;
-    public GridObjectType ObjectType;
-    public int ObjectLevel;
+    public ECellType CellType { get; private set; }
+    public int DirtLevel { get; private set; }
+    public EGridObjectType ObjectType { get; private set; }
+    public int ObjectLevel { get; private set; }
 
-    public TerrainCellData(CellType cellType = CellType.Dirt, int dirtLevel = 1, GridObjectType objectType = GridObjectType.None, int objectLevel = 0)
+    public TerrainCellData(ECellType cellType = ECellType.Dirt, int dirtLevel = 1, EGridObjectType objectType = EGridObjectType.None, int objectLevel = 0)
     {
         CellType = cellType;
         DirtLevel = dirtLevel;
@@ -18,28 +18,28 @@ public class TerrainCellData
 
     public bool CanDig(int toolLevel)
     {
-        return CellType == CellType.Dirt && toolLevel >= DirtLevel;
+        return CellType == ECellType.Dirt && toolLevel >= DirtLevel;
     }
 
     public void Dig()
     {
-        CellType = CellType.Empty;
-        ObjectType = GridObjectType.None;
+        CellType = ECellType.Empty;
+        ObjectType = EGridObjectType.None;
     }
 
     public void PlaceBlock(int dirtLevel = 1)
     {
-        CellType = CellType.Dirt;
+        CellType = ECellType.Dirt;
         DirtLevel = dirtLevel;
     }
 
     public bool CanBreak(int toolLevel)
     {
-        if (ObjectType == GridObjectType.None || ObjectType == GridObjectType.FarmLand) return false;
+        if (ObjectType == EGridObjectType.None || ObjectType == EGridObjectType.FarmLand) return false;
         return toolLevel >= ObjectLevel;
     }
 
-    public void SetObject(GridObjectType type, int level = 1)
+    public void SetObject(EGridObjectType type, int level = 1)
     {
         ObjectType = type;
         ObjectLevel = level;
@@ -47,7 +47,7 @@ public class TerrainCellData
 
     public void RemoveObject()
     {
-        ObjectType = GridObjectType.None;
+        ObjectType = EGridObjectType.None;
         ObjectLevel = 0;
     }
 }

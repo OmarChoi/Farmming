@@ -1,4 +1,4 @@
-public enum GridObjectType
+public enum EGridObjectType
 {
     None,
     Tree,
