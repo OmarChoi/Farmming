@@ -36,42 +36,7 @@ public class PlayerFarmInput : MonoBehaviour
                 return;
             }
 
-            EFarmTileStateType current = tile.StateMachine.CurrentStateType;
-            CropGrowth cropGrowth = tile.GetComponent<CropGrowth>();
-
-            if (current == EFarmTileStateType.Ground)
-            {
-                tile.StateMachine.FarmTransition(EFarmTileStateType.FarmDry);
-            }
-            else if (current == EFarmTileStateType.FarmDry && !tile.HasSeed)
-            {
-                tile.PlantSeed(_testSeed);
-            }
-            else if (current == EFarmTileStateType.FarmDry && tile.HasSeed)
-            {
-                tile.StateMachine.FarmTransition(EFarmTileStateType.FarmWet);
-
-                if (!cropGrowth.HasStarted)
-                {
-                    tile.GetComponent<CropGrowth>().StartGrowth(tile.PlantedSeed);
-                }
-                else
-                {
-                    Debug.Log("물 줌(성장 계속)");
-                }
-            }
-            else if(current == EFarmTileStateType.FarmWet)
-            {
-                if(cropGrowth.IsHarvestable)
-                {
-                    cropGrowth.Harvest();
-                }
-                else
-                {
-                    Debug.Log("아직 수확할 수 없음");
-                }
-                
-            }
+            tile.Interact(_testSeed);
 
         }
     }
@@ -79,7 +44,11 @@ public class PlayerFarmInput : MonoBehaviour
     private FarmTile GetTargetTile()
     {
         Ray ray = new Ray(transform.position, transform.forward);
-        if(Physics.Raycast(ray, out RaycastHit hit, _detectRange))
+
+        // 정면을 알기위해 빨간 선
+        Debug.DrawRay(transform.position, transform.forward * _detectRange, Color.red, 1f);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, _detectRange))
         {
             return hit.collider.GetComponent<FarmTile>();
         }
