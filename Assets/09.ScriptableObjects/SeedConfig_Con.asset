@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SeedConfig
   SeedId: seed_corn
   SeedName: Con
-  SeedIcon: {fileID: 0}
+  SeedIcon: {fileID: 21300000, guid: 9846cc10f28b0574dbab5fcc977c5880, type: 3}
   SeedGrowthStage:
   - SeedStageName: "\uC528\uC557"
     RequireDays: 1
@@ -30,4 +30,7 @@ MonoBehaviour:
     GrowthTiming: 0
   BaseHarvestAmount: 1
   BaseSellingPrice: 100
+  HarvestAmountMin: 1
+  HarvestAmountMax: 5
+  HarvestItem: {fileID: 11400000, guid: 2b2b3478def7edd4aae00ccd5b1dad58, type: 2}
   SeedGrade: 0
