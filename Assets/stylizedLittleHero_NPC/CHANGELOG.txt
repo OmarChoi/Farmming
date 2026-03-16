@@ -1,0 +1,113 @@
+================================================================================
+  STYLIZED LITTLE HERO NPC
+  CHANGE LOG
+================================================================================
+
+VERSION 1.1 - Character Customization System
+---------------------------------------------
+Release Date: January 2026
+
+NEW FEATURES:
+✓ CharacterPartSwapper script - Complete customization system
+  - Swap Body, Hair, Hat, Eye, Mouth, Eyebrow, Cheek parts
+  - Next/Previous methods for easy cycling
+  - Direct index setting (SetBody, SetHair, etc.)
+  - Random customization (RandomizeAll)
+
+✓ Automatic bone rebinding system
+  - No more "weight stuff" issues
+  - Handles all bone matching automatically
+  - Works with all body variations (NPC_body_M1, M2, F1, F2)
+
+✓ CharacterCustomizeUI script - UI integration helper
+  - Easy button connection system
+  - Index display support
+  - Auto-wiring of events
+
+✓ Demo scene included
+  - Shows all customization features
+  - UI example with buttons
+  - Multiple character variations
+
+FIXES:
+✓ Fixed mesh renderer switching issues
+  - Resolved "Rendering stopped" error
+  - Fixed vertex stride mismatch
+  - Proper SkinnedMeshRenderer handling
+
+✓ Fixed bone binding problems
+  - Automatic bone name matching
+  - Fallback search for missing bones
+  - Root bone auto-detection (Bip001)
+
+✓ Fixed Unity rendering bugs
+  - Mesh cleared before reassignment
+  - Bounds recalculated properly
+  - Force matrix recalculation enabled
+
+✓ Fixed pivot points for hair prefabs
+  - All hair parts now align correctly with head_dummy
+  - No position offset issues
+
+✓ Fixed pivot points for facial feature prefabs
+  - Eyes, mouth, eyebrow, cheek parts properly centered
+  - Consistent positioning across all variations
+
+IMPROVEMENTS:
+✓ Better error handling and logging
+✓ Auto-detection of baseBodyRenderer and headDummy
+✓ Context menu for editor testing
+✓ Clean, well-documented code
+✓ Performance optimizations
+
+DOCUMENTATION:
+✓ README.txt - Quick start guide
+✓ Documentation.txt - Complete API reference
+✓ Code comments in all scripts
+✓ Example code snippets
+
+KNOWN ISSUES:
+- None
+
+UPGRADE NOTES:
+- Backup your project before updating
+- Delete old version before importing new one
+- Reassign prefab references if needed
+
+
+================================================================================
+
+VERSION 1.0 - Initial Release
+------------------------------
+Release Date: 2024
+
+FEATURES:
+- Male character body variations (NPC_body_M1, M2)
+- Female character body variations (NPC_body_F1, F2)
+- Hair styles (hair_1 through 13)
+- Eyes (eye_1 through 11)
+- Mouths (mouth_1 through 11)
+- Eyebrows (eyebrow_1 through 7)
+- Cheeks (cheek_1)
+- Beard (beard_1)
+- Weapons (sword_1)
+- Blacksmith props (hammer, anvil, blacksmith)
+- Pre-made character prefabs
+- Stylized materials and textures
+- Optimized for mobile and PC
+
+KNOWN ISSUES:
+- Manual mesh swapping caused bone binding problems
+- "Weight stuff" issues when switching meshes
+- No scripting API for customization
+
+
+================================================================================
+
+COMMUNITY REQUESTS:
+□ [Add based on user feedback]
+
+If you have feature requests, please contact: tigerhandstudio@gmail.com
+
+
+================================================================================
