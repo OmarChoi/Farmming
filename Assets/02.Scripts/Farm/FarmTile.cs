@@ -18,10 +18,16 @@ public class FarmTile : MonoBehaviour
     public bool IsWet => StateMachine.CurrentStateType == EFarmTileStateType.FarmWet;
     public Transform CropSpawnPoint => _cropSpawnPoint;
 
-    public void Initialize()
+    public void Awake()
     {
         StateMachine = GetComponent<FarmTileStateMachine>();
         _cropGrowth = GetComponent<CropGrowth>();
+
+        Init();
+    }
+
+    public void Init()
+    {
 
         _stateObjects = new Dictionary<EFarmTileStateType, GameObject>
         {

@@ -14,18 +14,20 @@ public class FarmTileStateMachine : MonoBehaviour
     {
         _tile = GetComponent<FarmTile>();
 
-        _tile.Initialize();
-
         _states = new Dictionary<EFarmTileStateType, IFarmTileState>()
         {
             { EFarmTileStateType.Ground, new GroundState()},
             { EFarmTileStateType.FarmDry, new FarmDryState()},
             { EFarmTileStateType.FarmWet, new FarmWetState()}
         };
+    }
 
+    private void Start()
+    {
         _currentState = _states[EFarmTileStateType.Ground];
         _currentState.EnterState(_tile);
     }
+
     public void FarmTransition(EFarmTileStateType nextStateType)
     {
         if(!CanFarmTransition(nextStateType))
