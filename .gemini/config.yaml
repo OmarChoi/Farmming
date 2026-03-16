@@ -1,4 +1,4 @@
-# Gemini Code Assist Configuration for PlanetCrasher
+# Gemini Code Assist Configuration for Farmming
 # StyleGuide.md 기반 통합 설정
 
 # Code Analysis Settings
@@ -169,9 +169,9 @@ context:
     - "TextMeshPro"
 
   common_patterns:
-    - "Singleton pattern for managers (GameManager, CurrencyManager, UpgradeManager, SoundManager, AccountManager)"
+    - "Singleton pattern for managers"
     - "Repository pattern with Local/Firebase implementations"
-    - "Strategy pattern (IFeedback, IClickable)"
+    - "Strategy pattern"
     - "Observer pattern with static events"
     - "Object pooling with LeanPool"
     - "Value Object pattern (readonly struct)"
@@ -180,7 +180,7 @@ context:
 
   best_practices:
     - "Avoid heavy operations in Update()"
-    - "Use LeanPool for frequently instantiated objects (Bullet, Missile, etc.)"
+    - "Use LeanPool for frequently instantiated objects"
     - "Cache component references in Awake()"
     - "Use Coroutine for time-based operations, UniTask for I/O"
     - "Communicate between layers via static events, not direct references"
@@ -254,10 +254,8 @@ custom_instructions: |
 
   [프로젝트 전용]
   11. readonly struct 사용 여부 (Value Objects)
-  12. 새 UpgradeContent는 UpgradeContent 베이스 클래스 상속 확인
-  13. IFeedback 구현체가 Planet/Asteroid 자식에 부착되어 있는지 확인
 
   [보이스카우트 법칙 - StyleGuide §8]
-  14. 수정한 파일 주변 코드의 가독성, 중복, 불필요 코드, 안정성, 매직 넘버를 개선했는지 확인
+  12. 수정한 파일 주변 코드의 가독성, 중복, 불필요 코드, 안정성, 매직 넘버를 개선했는지 확인
 
   모든 리뷰와 요약은 반드시 한국어(Korean)로 작성합니다.
