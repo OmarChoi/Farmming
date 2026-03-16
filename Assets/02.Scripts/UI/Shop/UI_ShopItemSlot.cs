@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class UI_ShopItemSlot : MonoBehaviour
+public class UI_ShopItemSlot : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _itemNameText;
@@ -38,9 +38,9 @@ public class UI_ShopItemSlot : MonoBehaviour
 
         _icon.enabled = true;
         _icon.sprite = item.Icon;
-        _itemNameText.text = "";
-        _itemCostText.text = "";
-        _itemExplanationText.text = "";
+        _itemNameText.text = $"{item.name}";
+        _itemCostText.text = "Cost: 1000";
+        _itemExplanationText.text = "This is item.";
     }
 
     public void OnPointerClick(PointerEventData eventData)

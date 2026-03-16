@@ -1,3 +1,4 @@
+using TMPro;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +7,8 @@ public class UI_Shop : MonoBehaviour
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_ShopItemSlot _slotPrefab;
     [SerializeField] private GameObject _root;
-
+    [SerializeField] private TextMeshProUGUI _shopNameText;
+        
     private readonly List<UI_ShopItemSlot> _slots = new();
 
     private ShopData _currentShopData;
@@ -20,6 +22,7 @@ public class UI_Shop : MonoBehaviour
     public void Open(ShopData shopData)
     {
         _currentShopData = shopData;
+        _shopNameText.text = shopData.ShopName;
         _root.SetActive(true);
 
         CreateOrRefreshSlots();
