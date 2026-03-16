@@ -28,7 +28,7 @@ public class NpcLocationAnchor : MonoBehaviour
         }
     }
 
-    private void OnEnable()
+    private void Start()
     {
         if (NpcLocationManager.Instance != null)
         {
