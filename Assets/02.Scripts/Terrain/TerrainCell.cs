@@ -22,10 +22,12 @@ public class TerrainCell : MonoBehaviour
 
     public void Refresh()
     {
-        _dirtBlock.SetActive(_data.CellType == CellType.Dirt);
+        bool isFarmLand = _data.ObjectType == GridObjectType.FarmLand;
+
+        _dirtBlock.SetActive(_data.CellType == CellType.Dirt && !isFarmLand);
 
         if (_farmTile != null)
-            _farmTile.gameObject.SetActive(_data.ObjectType == GridObjectType.FarmLand);
+            _farmTile.gameObject.SetActive(isFarmLand);
     }
 
     public bool TryDig(int toolLevel)

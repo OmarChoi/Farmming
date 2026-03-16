@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class FarmTile : MonoBehaviour
 {
-    [SerializeField] private GameObject _groundObject;
     [SerializeField] private GameObject _farmDryObject;
     [SerializeField] private GameObject _farmWetObject;
     [SerializeField] private Transform _cropSpawnPoint;
@@ -31,13 +30,12 @@ public class FarmTile : MonoBehaviour
 
         _stateObjects = new Dictionary<EFarmTileStateType, GameObject>
         {
-            { EFarmTileStateType.Ground, _groundObject },
             { EFarmTileStateType.FarmDry, _farmDryObject },
             { EFarmTileStateType.FarmWet, _farmWetObject }
         };
 
         HideAllObject();
-        ShowObject(EFarmTileStateType.Ground);
+        ShowObject(EFarmTileStateType.FarmDry);
     }
 
     private void Start()
@@ -90,11 +88,7 @@ public class FarmTile : MonoBehaviour
     {
         EFarmTileStateType current = StateMachine.CurrentStateType;
 
-        if (current == EFarmTileStateType.Ground)
-        {
-            StateMachine.FarmTransition(EFarmTileStateType.FarmDry);
-        }
-        else if (current == EFarmTileStateType.FarmDry && !HasSeed)
+        if (current == EFarmTileStateType.FarmDry && !HasSeed)
         {
             if (seed != null)
             {
