@@ -4,7 +4,11 @@ public class PlayerMoveAbility : PlayerAbility
 {
     private const float Gravity = 9.8f;
     private const float AnimSmoothSpeed = 5f;
-
+    private const float MoveThresholdSqr = 0.01f;
+    private const float GroundedYVelocity = -0.5f;
+    private const float RunAimValue = 1f;
+    private const float WalkAnimValue = 0.5f;
+    private const float IdleAnimValue = 0f;
     private CharacterController _characterController;
     private PlayerAnimationAbility _animation;
     private Camera _mainCamera;
@@ -23,7 +27,7 @@ public class PlayerMoveAbility : PlayerAbility
     private void Update()
     {
         Vector3 direction = GetMoveDirection();
-        bool isMoving = direction.sqrMagnitude > 0.01f;
+        bool isMoving = direction.sqrMagnitude > MoveThresholdSqr;
         bool isSprinting = isMoving && Input.GetKey(KeyCode.LeftShift);
 
         UpdateAnimation(isMoving, isSprinting);
@@ -72,7 +76,7 @@ public class PlayerMoveAbility : PlayerAbility
 
         if (isGrounded)
         {
-            _yVelocity = -0.5f;
+            _yVelocity = GroundedYVelocity;
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
@@ -91,7 +95,7 @@ public class PlayerMoveAbility : PlayerAbility
 
     private void UpdateAnimation(bool isMoving, bool isSprinting)
     {
-        float targetParam = isSprinting ? 1f : isMoving ? 0.5f : 0f;
+        float targetParam = isSprinting ? RunAimValue : isMoving ? WalkAnimValue : IdleAnimValue;
         _currentMoveParam = Mathf.Lerp(_currentMoveParam, targetParam, AnimSmoothSpeed * Time.deltaTime);
         _animation.SetMove(_currentMoveParam);
     }

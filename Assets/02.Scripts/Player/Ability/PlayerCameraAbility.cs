@@ -4,6 +4,8 @@ using UnityEngine;
 public class PlayerCameraAbility : PlayerAbility
 {
     [SerializeField] private Transform _cameraRoot;
+    private const float MinVerticalAngle = -60f;
+    private const float MaxVerticalAngle = 60f;
 
     private float _mx;
     private float _my;
@@ -31,7 +33,7 @@ public class PlayerCameraAbility : PlayerAbility
         _mx += Input.GetAxis("Mouse X") * _owner.Stat.MouseSensitivity * Time.deltaTime;
         _my += Input.GetAxis("Mouse Y") * _owner.Stat.MouseSensitivity * Time.deltaTime;
 
-        _my = Mathf.Clamp(_my, -60f, 60f);
+        _my = Mathf.Clamp(_my, MinVerticalAngle, MaxVerticalAngle);
 
         _cameraRoot.rotation = Quaternion.Euler(-_my, _mx, 0f);
     }
