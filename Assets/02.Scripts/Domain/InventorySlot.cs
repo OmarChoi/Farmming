@@ -3,17 +3,17 @@ using System;
 [Serializable]
 public class InventorySlot
 {
-    public ItemData Item { get; private set; }
+    public ItemDataSO Item { get; private set; }
     public int Count { get; private set; }
     public bool IsEmpty => Item == null || Count <= 0;
 
-    public bool CanAccept(ItemData item, int amount = 1)
+    public bool CanAccept(ItemDataSO item, int amount = 1)
     {
         if (IsEmpty) return true;
         return Item == item && Count + amount <= Item.MaxStack;
     }
 
-    public bool TryAdd(ItemData item, int amount = 1)
+    public bool TryAdd(ItemDataSO item, int amount = 1)
     {
         if (IsEmpty)
         {

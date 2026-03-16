@@ -13,8 +13,6 @@ public class UI_Inventory : MonoBehaviour
     private UI_Slot[] _slotUIs;
     private UI_Slot _selectedSlot;
 
-    public InventoryDomain Inventory => _inventoryAbility.Inventory;
-
     private void Awake()
     {
         _panel.SetActive(false);
@@ -33,8 +31,8 @@ public class UI_Inventory : MonoBehaviour
 
         _inventoryAbility = ability;
         _inventoryAbility.OnToggle += OnToggle;
-        _inventoryAbility.Inventory.OnSlotChanged += RefreshSlot;
-        _inventoryAbility.Inventory.OnInventoryResized += RebuildSlots;
+        _inventoryAbility.OnSlotChanged += RefreshSlot;
+        _inventoryAbility.OnInventoryResized += RebuildSlots;
 
         CreateSlots();
         RefreshAll();
@@ -45,8 +43,8 @@ public class UI_Inventory : MonoBehaviour
         if (_inventoryAbility == null) return;
 
         _inventoryAbility.OnToggle -= OnToggle;
-        _inventoryAbility.Inventory.OnSlotChanged -= RefreshSlot;
-        _inventoryAbility.Inventory.OnInventoryResized -= RebuildSlots;
+        _inventoryAbility.OnSlotChanged -= RefreshSlot;
+        _inventoryAbility.OnInventoryResized -= RebuildSlots;
         _inventoryAbility = null;
     }
 
@@ -54,6 +52,9 @@ public class UI_Inventory : MonoBehaviour
     {
         _panel.SetActive(open);
         _selectedSlot = null;
+
+        Cursor.lockState = open ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = open;
 
         if (open)
             RefreshAll();
@@ -63,7 +64,7 @@ public class UI_Inventory : MonoBehaviour
 
     private void CreateSlots()
     {
-        _slotUIs = new UI_Slot[_inventoryAbility.Inventory.SlotCount];
+        _slotUIs = new UI_Slot[_inventoryAbility.SlotCount];
 
         for (int i = 0; i < _slotUIs.Length; i++)
         {
@@ -93,7 +94,7 @@ public class UI_Inventory : MonoBehaviour
     private void RefreshSlot(int index)
     {
         if (index < 0 || index >= _slotUIs.Length) return;
-        _slotUIs[index].Refresh(_inventoryAbility.Inventory.GetSlot(index));
+        _slotUIs[index].Refresh(_inventoryAbility.GetSlot(index));
     }
 
     // 클릭으로 교환
@@ -106,7 +107,7 @@ public class UI_Inventory : MonoBehaviour
             return;
         }
 
-        Inventory.SwapSlots(_selectedSlot.SlotIndex, clicked.SlotIndex);
+        _inventoryAbility.SwapSlots(_selectedSlot.SlotIndex, clicked.SlotIndex);
         _selectedSlot = null;
     }
 }
