@@ -14,6 +14,10 @@ public struct DropEntry
 
     public int GetRandomQuantity()
     {
+        if (_minQuantity > _maxQuantity)
+        {
+            (_minQuantity, _maxQuantity) = (_maxQuantity, _minQuantity);
+        }
         return UnityEngine.Random.Range(_minQuantity, _maxQuantity + 1);
     }
 }
