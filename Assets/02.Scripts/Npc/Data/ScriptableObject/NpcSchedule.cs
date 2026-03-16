@@ -4,5 +4,5 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NpcSchedule", menuName = "Scriptable Objects/Npc/NpcSchedule")]
 public class NpcSchedule : ScriptableObject
 {
-    public List<NpcScheduleEntry> ScheduleEntries = new();
+    [field: SerializeField] public List<NpcScheduleEntry> ScheduleEntries { get; private set; } = new();
 }
