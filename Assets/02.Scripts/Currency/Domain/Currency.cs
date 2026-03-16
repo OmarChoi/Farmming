@@ -6,11 +6,7 @@ public readonly struct Currency
 
     public Currency(double value)
     {
-        if (value < 0)
-        {
-            throw new Exception("[Currency.cs] Currency Value cannot be negative");
-        }
-        Value = value;
+        Value = Math.Max(0, value);
     }
 
     public override string ToString() => Value.ToString("N0");
