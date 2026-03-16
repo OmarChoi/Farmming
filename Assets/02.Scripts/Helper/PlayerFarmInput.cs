@@ -33,23 +33,40 @@ public class PlayerFarmInput : MonoBehaviour
             }
 
             EFarmTileStateType current = tile.StateMachine.CurrentStateType;
+            CropGrowth cropGrowth = tile.GetComponent<CropGrowth>();
 
-            if(current == EFarmTileStateType.Ground)
+            if (current == EFarmTileStateType.Ground)
             {
                 tile.StateMachine.FarmTransition(EFarmTileStateType.FarmDry);
             }
-            else if(current == EFarmTileStateType.FarmDry && !tile.HasSeed)
+            else if (current == EFarmTileStateType.FarmDry && !tile.HasSeed)
             {
                 tile.PlantSeed(TestSeed);
             }
-            else if(current == EFarmTileStateType.FarmDry && tile.HasSeed)
+            else if (current == EFarmTileStateType.FarmDry && tile.HasSeed)
             {
                 tile.StateMachine.FarmTransition(EFarmTileStateType.FarmWet);
-                tile.GetComponent<CropGrowth>().StartGrowth(tile.PlantedSeed);
+
+                if (!cropGrowth.HasStarted)
+                {
+                    tile.GetComponent<CropGrowth>().StartGrowth(tile.PlantedSeed);
+                }
+                else
+                {
+                    Debug.Log("물 줌(성장 계속)");
+                }
             }
             else if(current == EFarmTileStateType.FarmWet)
             {
-                tile.GetComponent<CropGrowth>().Harvest();
+                if(cropGrowth.IsHarvestable)
+                {
+                    cropGrowth.Harvest();
+                }
+                else
+                {
+                    Debug.Log("아직 수확할 수 없음");
+                }
+                
             }
 
         }
