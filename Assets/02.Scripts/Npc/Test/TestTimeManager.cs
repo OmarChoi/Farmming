@@ -5,9 +5,9 @@ public class TestTimeManager : MonoBehaviour
 {
     public static TestTimeManager Instance { get; private set; }
 
-    [SerializeField] private int _currentTime = 800;
+    [SerializeField] private int _currentTime = 810;
     [SerializeField] private float _timeInterval = 2f;
-    [SerializeField] private int _timeStep = 50;
+    [SerializeField] private int _timeStep = 100;
 
     public int CurrentTime => _currentTime;
 

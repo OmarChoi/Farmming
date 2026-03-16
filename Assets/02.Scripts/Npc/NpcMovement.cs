@@ -16,7 +16,7 @@ public class NpcMovement : MonoBehaviour
         _agent.SetDestination(destination);
     }
 
-    // 하루가 지났을 때 Npc의 위치를 처음 스케줄 장소로 이동시키기 위한 메서드이다.
+    // 하루가 지났을 때 Npc의 위치를 처음 스케줄 장소로 이동시키기 위한 메서드입니다.
     public void TeleportTo(Vector3 position)
     {
         if (!_agent.isOnNavMesh)
