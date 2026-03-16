@@ -34,7 +34,7 @@ public class NpcController : MonoBehaviour
         }
     }
 
-    // Npc가 스케줄대로 이동하는 시간에 랜덤 변수를 지정해준다. (스케줄이 겹치는 npc가 동시에 이동하는 것 방지한다.)
+    // Npc가 스케줄대로 이동하는 시간에 랜덤 변수를 지정해줍니다. (스케줄이 겹치는 npc가 동시에 이동하는 것 방지합니다.)
     private void GenerateTimeOffset()
     {
         if (_npcData != null && _npcData.UseRandomTimeOffset)
@@ -47,7 +47,7 @@ public class NpcController : MonoBehaviour
         }
     }
 
-    // 시간이 되면 Npc가 다음 일정대로 움직이는 것을 시도한다.
+    // 시간이 되면 Npc가 다음 일정대로 움직이는 것을 시도합니다.
     public bool TryGetNextScheduleEntry(int time, out NpcScheduleEntry entry)
     {
         entry = null;
@@ -75,7 +75,7 @@ public class NpcController : MonoBehaviour
         return false;
     }
 
-    // 일정이 있다면 스케줄대로 행동을 실행한다.
+    // 일정이 있다면 스케줄대로 행동을 실행합니다.
     public void ExecuteSchedule(NpcScheduleEntry entry)
     {
         // todo. 추후 진짜 건설 관련에 연결
@@ -86,7 +86,7 @@ public class NpcController : MonoBehaviour
         Debug.Log($"{_npcData.NpcName}가 이동합니다: {entry.NpcLocationType}");
     }
 
-    // 하루가 지나면 스케줄을 리셋한다.
+    // 하루가 지나면 스케줄을 리셋합니다.
     public void ResetScheduleForNewDay()
     {
         _currentScheduleIndex = 0;

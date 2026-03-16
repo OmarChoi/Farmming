@@ -44,7 +44,7 @@ public class NpcScheduleManager : MonoBehaviour
         _npcs.Remove(npc);
     }
 
-    // 시간에 따른 이동 구현용 메서드이다. (임시)
+    // 시간에 따른 이동 구현용 메서드입니다. (임시)
     private void HandleTimeChanged(int currentTime)
     {
         foreach (var npc in _npcs)
@@ -56,7 +56,7 @@ public class NpcScheduleManager : MonoBehaviour
         }
     }
 
-    // 하루가 지나면 스케줄을 리셋한다.
+    // 하루가 지나면 스케줄을 리셋합니다.
     private void HandleDayChanged()
     {
         foreach (var npc in _npcs)
