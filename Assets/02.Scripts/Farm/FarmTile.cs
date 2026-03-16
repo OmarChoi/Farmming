@@ -45,6 +45,7 @@ public class FarmTile : MonoBehaviour
         if(DayNightCycle.Instance != null)
         {
             DayNightCycle.Instance.OnMorningStart += OnMorning;
+            DayNightCycle.Instance.OnNightStart += OnNight;
         }
     }
 
@@ -53,15 +54,35 @@ public class FarmTile : MonoBehaviour
         if(DayNightCycle.Instance != null)
         {
             DayNightCycle.Instance.OnMorningStart -= OnMorning;
+            DayNightCycle.Instance.OnNightStart -= OnNight;
         }
     }
 
     private void OnMorning()
     {
-        if (StateMachine.CurrentStateType == EFarmTileStateType.FarmWet)
+        if (!IsWet)
+        {
+            return;
+        }
+
+        if(HasSeed)
         {
             _cropGrowth.CheckMorningGrowth();
-            StateMachine.FarmTransition(EFarmTileStateType.FarmDry);
+        }
+
+        StateMachine.FarmTransition(EFarmTileStateType.FarmDry);
+
+    }
+
+    private void OnNight()
+    {
+        if(!IsWet)
+        {
+            return;
+        }
+        if (HasSeed)
+        {
+            _cropGrowth.CheckNightGrowth();
         }
     }
 
