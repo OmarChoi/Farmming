@@ -16,17 +16,7 @@ public class NpcLocationAnchor : MonoBehaviour
 
     public string LocationKey => _locationKey;
 
-    public Vector3 Position
-    {
-        get
-        {
-            if (_point != null)
-            {
-                return _point.position;
-            }
-            return transform.position;
-        }
-    }
+    public Vector3 Position => _point != null ? _point.position : transform.position;
 
     private void Start()
     {

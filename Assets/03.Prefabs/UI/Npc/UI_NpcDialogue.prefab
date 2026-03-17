@@ -436,6 +436,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5582783803246075422}
   - component: {fileID: 8816421911731095696}
+  - component: {fileID: 6859164789231114969}
   m_Layer: 5
   m_Name: UI_NpcDialogue
   m_TagString: Untagged
@@ -490,6 +491,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &6859164789231114969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5282508639627113292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a65b4c1d3b4f31e4eb61d67793639767, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI_NpcDialogue
+  _interactionButtonRoot: {fileID: 8838275208074697692}
+  _interactionButtonPrefab: {fileID: 3544099923109417940}
 --- !u!1 &5720044989875460714
 GameObject:
   m_ObjectHideFlags: 0
@@ -503,7 +518,7 @@ GameObject:
   - component: {fileID: 9090746592727503934}
   - component: {fileID: 4673233702240712971}
   m_Layer: 5
-  m_Name: FeatureButtonContainer
+  m_Name: InteractionButtonContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -521,7 +536,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8571211517143762706}
+  - {fileID: 7549689506291292020}
   m_Father: {fileID: 6383353219037367588}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
@@ -766,7 +781,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!1001 &3444690674866979968
+--- !u!1001 &3601492145206711526
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -776,7 +791,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4707046919893198704, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_Name
-      value: UI_FeatureButton
+      value: UI_InteractionButton
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_Pivot.x
@@ -808,7 +823,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 90
+      value: 86
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_LocalPosition.x
@@ -863,8 +878,19 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
---- !u!224 &8571211517143762706 stripped
+--- !u!114 &3544099923109417940 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 59740985261475634, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
+  m_PrefabInstance: {fileID: 3601492145206711526}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b58c5f7329b94944b584b8d081ff1a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI_InteractionButton
+--- !u!224 &7549689506291292020 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
-  m_PrefabInstance: {fileID: 3444690674866979968}
+  m_PrefabInstance: {fileID: 3601492145206711526}
   m_PrefabAsset: {fileID: 0}
