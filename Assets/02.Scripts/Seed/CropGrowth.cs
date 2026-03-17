@@ -87,15 +87,15 @@ public class CropGrowth : MonoBehaviour
         if(_elapsedDays >= currentStage.RequireDays)
         {
             _elapsedDays = 0;
-            _currentStageIndex++;
 
-            if(_currentStageIndex >= _seedConfig.SeedGrowthStage.Count)
+            if(_currentStageIndex + 1 >= _seedConfig.SeedGrowthStage.Count)
             {
                 _isGrowing = false;
                 Debug.Log("수확가능");
                 return;
             }
 
+            _currentStageIndex++;
             ApplyStagePrefab();
         }
     }
@@ -165,12 +165,12 @@ public class CropGrowth : MonoBehaviour
         if (!saveData.CropHasStarted) return;
 
         _seedConfig = seed;
-        _currentStageIndex = saveData.CropStageIndex;
+        _currentStageIndex = Mathf.Min(saveData.CropStageIndex, _seedConfig.SeedGrowthStage.Count - 1);
         _elapsedDays = saveData.CropElapsedDays;
         _isGrowing = saveData.CropIsGrowing;
         _hasStarted = saveData.CropHasStarted;
 
-        if (_currentStageIndex < _seedConfig.SeedGrowthStage.Count)
+        if (_currentStageIndex >= 0 && _currentStageIndex < _seedConfig.SeedGrowthStage.Count)
             ApplyStagePrefab();
     }
 
