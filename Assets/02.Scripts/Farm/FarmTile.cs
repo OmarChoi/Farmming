@@ -102,15 +102,23 @@ public class FarmTile : MonoBehaviour
         }
         else if (current == EFarmTileStateType.FarmDry && HasSeed)
         {
-            StateMachine.FarmTransition(EFarmTileStateType.FarmWet);
-
-            if (!_cropGrowth.HasStarted)
+            // 수확 가능 상태면 먼저 수확 체크
+            if (_cropGrowth.IsHarvestable)
             {
-                _cropGrowth.StartGrowth(PlantedSeed);
+                _cropGrowth.Harvest();
             }
             else
             {
-                Debug.Log("물 줌(성장 계속)");
+                // 수확 불가면 물 주기
+                StateMachine.FarmTransition(EFarmTileStateType.FarmWet);
+                if (!_cropGrowth.HasStarted)
+                {
+                    _cropGrowth.StartGrowth(PlantedSeed);
+                }
+                else
+                {
+                    Debug.Log("물 줌 (성장 계속)");
+                 }
             }
         }
         else if (current == EFarmTileStateType.FarmWet)
