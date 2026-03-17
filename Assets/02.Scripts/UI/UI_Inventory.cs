@@ -13,6 +13,9 @@ public class UI_Inventory : MonoBehaviour
     private UI_Slot[] _slotUIs;
     private UI_Slot _selectedSlot;
 
+    private TradeService _tradeService;
+    private EInventoryClickMode _clickMode = EInventoryClickMode.Normal;
+
     private void Awake()
     {
         _panel.SetActive(false);
@@ -97,9 +100,31 @@ public class UI_Inventory : MonoBehaviour
         _slotUIs[index].Refresh(_inventoryAbility.GetSlot(index));
     }
 
-    // 클릭으로 교환
+    // 클릭 모드 선택
+
+    public void SetClickMode(EInventoryClickMode mode)
+    {
+        _clickMode = mode;
+        _selectedSlot = null;
+    }
 
     public void OnSlotClicked(UI_Slot clicked)
+    {
+        switch (_clickMode)
+        {
+            case EInventoryClickMode.Normal:
+                HandleNormalClick(clicked);
+                break;
+
+            case EInventoryClickMode.Trading:
+                HandleSellClick(clicked);
+                break;
+        }
+    }
+
+    // 클릭으로 교환
+
+    private void HandleNormalClick(UI_Slot clicked)
     {
         if (_selectedSlot == null)
         {
@@ -109,5 +134,30 @@ public class UI_Inventory : MonoBehaviour
 
         _inventoryAbility.SwapSlots(_selectedSlot.SlotIndex, clicked.SlotIndex);
         _selectedSlot = null;
+    }
+
+    // 클릭으로 판매
+
+    public void Init(TradeService tradeService)
+    {
+        _tradeService = tradeService;
+    }
+
+    private void HandleSellClick(UI_Slot clicked)
+    {
+        if (_tradeService == null) return;
+
+        bool success = _tradeService.Sell(clicked.SlotIndex, 1);
+
+#if UNITY_EDITOR
+        if (success)
+        {
+            Debug.Log($"판매 성공 - Slot: {clicked.SlotIndex}, Amount: 1");
+        }
+        else
+        {
+            Debug.LogWarning($"판매 실패 - Slot: {clicked.SlotIndex}");
+        }
+#endif
     }
 }
