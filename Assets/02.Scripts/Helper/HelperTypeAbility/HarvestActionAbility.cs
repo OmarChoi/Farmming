@@ -11,7 +11,7 @@ public class HarvestActionAbility : FarmBaseAbility
             return;
         }
 
-        if(farmTile.StateMachine.CurrentStateType != EFarmTileStateType.FarmWet)
+        if(!farmTile.HasSeed)
         {
             return;
         }

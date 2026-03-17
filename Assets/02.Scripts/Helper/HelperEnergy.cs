@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class HelperEnergy : MonoBehaviour
+public class HelperEnergy
 {
     private HelperDataSO _data;
 
