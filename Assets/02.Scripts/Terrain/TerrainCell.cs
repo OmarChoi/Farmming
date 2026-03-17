@@ -105,18 +105,8 @@ public class TerrainCell : MonoBehaviour
 
     public void ImportFarm(TerrainCellSaveData saveData, SeedDatabase seedDb)
     {
-        Debug.Log($"[Load] ImportFarm 진입 - _farmTile null?: {_farmTile == null}, ObjectType: {_data.ObjectType}");
-
-        if (_farmTile == null)
-        {
-            Debug.LogWarning("[Load] _farmTile이 null입니다! 프리팹에 FarmTile이 없습니다.");
-            return;
-        }
-        if (_data.ObjectType != EGridObjectType.FarmLand)
-        {
-            Debug.LogWarning($"[Load] ObjectType이 FarmLand가 아닙니다: {_data.ObjectType}");
-            return;
-        }
+        if (_farmTile == null) return;
+        if (_data.ObjectType != EGridObjectType.FarmLand) return;
 
         _farmTile.Init();
         _farmTile.ImportFrom(saveData, seedDb);
