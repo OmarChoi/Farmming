@@ -39,8 +39,8 @@ public class UI_ShopItemSlot : MonoBehaviour, IPointerClickHandler
         _icon.enabled = true;
         _icon.sprite = item.Icon;
         _itemNameText.text = $"{item.name}";
-        _itemCostText.text = "Cost: 1000";
-        _itemExplanationText.text = "This is item.";
+        _itemCostText.text = $"Cost: {item.Cost}";
+        _itemExplanationText.text = $"{item.DisplayExplanation}";
     }
 
     public void OnPointerClick(PointerEventData eventData)
