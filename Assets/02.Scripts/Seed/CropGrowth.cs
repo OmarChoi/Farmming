@@ -23,6 +23,12 @@ public class CropGrowth : MonoBehaviour
 
     private void Start()
     {
+        var seedinventory = FindObjectOfType<PlayerInventoryAbility>();
+        if (seedinventory != null)
+        {
+            _inventoryAbility = seedinventory;
+            Debug.Log("수확물 인벤토리 연동");
+        }
         PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
     }
 
