@@ -70,4 +70,14 @@ public class PlayerInventoryAbility : PlayerAbility
     public void AddItem(ItemDataSO item, int amount = 1) => _inventory.AddItem(item, amount);
     public void SwapSlots(int from, int to) => _inventory.SwapSlots(from, to);
     public void RemoveAt(int index, int amount = 1) => _inventory.RemoveAt(index, amount);
+
+    public void ExportTo(PlayerSaveData saveData)
+    {
+        saveData.Inventory = _inventory.ExportSlots();
+    }
+
+    public void ImportFrom(PlayerSaveData saveData, ItemDatabase itemDb)
+    {
+        _inventory.ImportSlots(saveData.Inventory, itemDb);
+    }
 }
