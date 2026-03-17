@@ -29,7 +29,7 @@ public class TradeService
         if (amount <= 0 || slot.Count < amount) return false;
 
         ItemDataSO item = slot.Item;
-        CurrencyManager.Instance.AddGold(item.SellCost);
+        CurrencyManager.Instance.AddGold(item.SellCost * amount);
         _playerInventory.RemoveAt(slotIndex, amount);
         return true;
     }
