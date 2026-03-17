@@ -437,6 +437,7 @@ GameObject:
   - component: {fileID: 5582783803246075422}
   - component: {fileID: 8816421911731095696}
   - component: {fileID: 6859164789231114969}
+  - component: {fileID: 1815893298679195429}
   m_Layer: 5
   m_Name: UI_NpcDialogue
   m_TagString: Untagged
@@ -507,6 +508,19 @@ MonoBehaviour:
   _interactionButtonPrefab: {fileID: 4707046919893198704, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
   _npcNameText: {fileID: 3115703660864716535}
   _npcDialogueText: {fileID: 3685133607933124924}
+--- !u!114 &1815893298679195429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5282508639627113292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14eb7f03e91fcc7428d7bc23298e9171, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractService
+  _uiDialogue: {fileID: 6859164789231114969}
 --- !u!1 &5720044989875460714
 GameObject:
   m_ObjectHideFlags: 0
