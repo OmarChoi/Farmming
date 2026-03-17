@@ -30,6 +30,7 @@ public class ShopController : MonoBehaviour
     // 테스트용 상점 데이터입니다. (실제 게임에서는 NPC와 상호작용할 때 해당 NPC의 ShopData를 사용합니다.)
     private void Update()
     {
+#if UNITY_EDITOR
         if (Input.GetKey(KeyCode.O))
         {
             OpenShop(_testShop);
@@ -39,6 +40,7 @@ public class ShopController : MonoBehaviour
         {
             CloseShop();
         }
+#endif
     }
 
     public void OpenShop(Shop shop)
