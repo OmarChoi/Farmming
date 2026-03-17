@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class HelperLevel
 {
-    private HelperDataSO _data;
+    private readonly HelperDataSO _data;
 
-    public int CurrentLevel { get; private set; }
+    public int CurrentLevel { get; private set; } = 1;
 
     public HelperLevel(HelperDataSO data)
     {

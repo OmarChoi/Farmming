@@ -13,6 +13,8 @@ public class HelperController : MonoBehaviour
     public HelperGrade Grade { get; private set; }
     public HelperEnergy Energy { get; private set; }
 
+    private IHelperAction _helperAction;
+
     private readonly Dictionary<Type, HelperAbility> _abilityCache = new();
 
     private void Awake()
@@ -21,8 +23,26 @@ public class HelperController : MonoBehaviour
         Grade = new HelperGrade(_data);
         Energy = new HelperEnergy(_data);
 
-        Energy.OnExhausted += () => Debug.Log("에너지 소진");
-        Energy.OnRecovered += () => Debug.Log("에너지 회복");
+        _helperAction = GetComponentInChildren<IHelperAction>();
+
+        Energy.OnExhausted += OnEnergyExhasuted;
+        Energy.OnRecovered += OnEnergyRecovered;
+    }
+
+    private void OnDestroy()
+    {
+        Energy.OnExhausted -= OnEnergyExhasuted;
+        Energy.OnRecovered -= OnEnergyRecovered;
+    }
+
+    private void OnEnergyExhasuted()
+    {
+        Debug.Log("에너지 소진");
+    }
+
+    private void OnEnergyRecovered()
+    {
+        Debug.Log("에너지 회복");
     }
 
     private void Update()
@@ -76,10 +96,9 @@ public class HelperController : MonoBehaviour
             return;
         }
 
-        var action = GetComponentInChildren<IHelperAction>();
-        if (action != null)
+        if (_helperAction != null)
         {
-            action.Interact(cell);
+            _helperAction.Interact(cell);
             Energy.TryConsume(Level.GetEnergyCost());
         }
     }

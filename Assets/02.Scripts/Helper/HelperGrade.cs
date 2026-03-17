@@ -8,7 +8,7 @@ public enum EHelperGrade
 }
 public class HelperGrade
 {
-    private HelperDataSO _data;
+    private readonly HelperDataSO _data;
 
     public EHelperGrade CurrentGrade { get; private set; }
 
@@ -20,7 +20,8 @@ public class HelperGrade
     public int GetRange()
     {
         return CurrentGrade switch
-        { EHelperGrade.Normal=> _data.NormalRange,
+        { 
+          EHelperGrade.Normal=> _data.NormalRange,
           EHelperGrade.Epic => _data.EpicRange,
           EHelperGrade.Legendary => _data.LegendaryRange,
           _ => 1
