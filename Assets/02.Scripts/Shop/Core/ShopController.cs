@@ -5,6 +5,7 @@ public class ShopController : MonoBehaviour
     [SerializeField] private Shop _testShop;
 
     [SerializeField] private PlayerInventoryAbility _playerInventory;
+    [SerializeField] private UI_Inventory _uiInventory;
     [SerializeField] private UI_Shop _uiShop;
 
     private TradeService _tradeService;
@@ -22,6 +23,7 @@ public class ShopController : MonoBehaviour
 
         _tradeService = new TradeService(_playerInventory);
         _uiShop.Init(_tradeService);
+        _uiInventory.Init(_tradeService);
         _uiShop.Close();
     }
 
@@ -50,10 +52,14 @@ public class ShopController : MonoBehaviour
         }
 
         _uiShop.Open(shop.ShopData);
+        _uiInventory.SetClickMode(EInventoryClickMode.Trading);
+        _playerInventory.Open();
     }
 
     public void CloseShop()
     {
         _uiShop.Close();
+        _uiInventory.SetClickMode(EInventoryClickMode.Normal);
+        _playerInventory.Close();
     }
 }
