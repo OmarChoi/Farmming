@@ -23,18 +23,27 @@ public class TerrainGridManager : MonoBehaviour
         CollectExistingCells();
     }
 
-    private void CollectExistingCells()
+    public void CollectExistingCells()
     {
+        _cells.Clear();
         _gridData = new TerrainGridData();
 
         foreach (var cell in GetComponentsInChildren<TerrainCell>())
         {
             Vector3Int gridPos = WorldToGrid(cell.transform.position);
-            var data = new TerrainCellData(ECellType.Dirt);
-            cell.Init(gridPos, data);
+
+            if (Application.isPlaying)
+            {
+                cell.InitFromSerializedData(gridPos);
+
+                GameObject objPrefab = GetObjectPrefab(cell.Data.ObjectType);
+                if (objPrefab != null)
+                    cell.SpawnObject(objPrefab, cell.Data.ObjectType);
+            }
 
             _cells[gridPos] = cell;
-            _gridData.SetCell(gridPos, data);
+            if (cell.Data != null)
+                _gridData.SetCell(gridPos, cell.Data);
         }
     }
 
@@ -44,6 +53,7 @@ public class TerrainGridManager : MonoBehaviour
         var cell = Instantiate(_cellPrefab, worldPos, Quaternion.identity, transform);
         cell.name = $"Cell({gridPos.x},{gridPos.y},{gridPos.z})";
         cell.Init(gridPos, data);
+        cell.SetInitialData(data.CellType, data.DirtLevel, data.ObjectType, data.ObjectLevel);
         _cells[gridPos] = cell;
 
         GameObject objPrefab = GetObjectPrefab(data.ObjectType);
@@ -140,6 +150,48 @@ public class TerrainGridManager : MonoBehaviour
     }
 
     public TerrainGridData GetGridData() => _gridData;
+
+    public TerrainSaveData ExportSaveData()
+    {
+        var saveData = new TerrainSaveData();
+
+        foreach (var kvp in _cells)
+        {
+            var cellSave = new TerrainCellSaveData
+            {
+                X = kvp.Key.x,
+                Y = kvp.Key.y,
+                Z = kvp.Key.z,
+                CellType = kvp.Value.Data.CellType,
+                DirtLevel = kvp.Value.Data.DirtLevel,
+                ObjectType = kvp.Value.Data.ObjectType,
+                ObjectLevel = kvp.Value.Data.ObjectLevel
+            };
+
+            kvp.Value.ExportTo(cellSave);
+            saveData.Cells.Add(cellSave);
+        }
+
+        return saveData;
+    }
+
+    public void ImportSaveData(TerrainSaveData saveData, SeedDatabase seedDb)
+    {
+        ClearAll();
+        if (saveData == null) return;
+
+        foreach (var cellData in saveData.Cells)
+        {
+            var gridPos = new Vector3Int(cellData.X, cellData.Y, cellData.Z);
+            var data = new TerrainCellData(cellData.CellType, cellData.DirtLevel, cellData.ObjectType, cellData.ObjectLevel);
+
+            _gridData.SetCell(gridPos, data);
+            SpawnCell(gridPos, data);
+
+            if (data.ObjectType == EGridObjectType.FarmLand)
+                _cells[gridPos].ImportFarm(cellData, seedDb);
+        }
+    }
 
     public void LoadFromData(TerrainGridData data)
     {

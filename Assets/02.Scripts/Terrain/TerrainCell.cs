@@ -5,6 +5,12 @@ public class TerrainCell : MonoBehaviour
     [SerializeField] private GameObject _dirtBlock;
     [SerializeField] private Transform _objectPoint;
 
+    [Header("에디터 초기값 (씬 저장용)")]
+    [SerializeField] private ECellType _initialCellType = ECellType.Dirt;
+    [SerializeField] private int _initialDirtLevel = 1;
+    [SerializeField] private EGridObjectType _initialObjectType = EGridObjectType.None;
+    [SerializeField] private int _initialObjectLevel = 0;
+
     private TerrainCellData _data;
     private FarmTile _farmTile;
     private GameObject _currentObject;
@@ -19,6 +25,21 @@ public class TerrainCell : MonoBehaviour
         _data = data;
         _farmTile = GetComponentInChildren<FarmTile>(true);
         Refresh();
+    }
+
+    /// 에디터 직렬화 값으로 초기화 (CollectExistingCells용)
+    public void InitFromSerializedData(Vector3Int gridPos)
+    {
+        Init(gridPos, new TerrainCellData(_initialCellType, _initialDirtLevel, _initialObjectType, _initialObjectLevel));
+    }
+
+    /// 에디터에서 배치 시 직렬화 값도 갱신
+    public void SetInitialData(ECellType cellType, int dirtLevel, EGridObjectType objectType, int objectLevel)
+    {
+        _initialCellType = cellType;
+        _initialDirtLevel = dirtLevel;
+        _initialObjectType = objectType;
+        _initialObjectLevel = objectLevel;
     }
 
     public void Refresh()
@@ -74,6 +95,21 @@ public class TerrainCell : MonoBehaviour
     {
         ClearCurrentObject();
         _data.RemoveObject();
+    }
+
+    public void ExportTo(TerrainCellSaveData saveData)
+    {
+        if (_farmTile != null && _farmTile.gameObject.activeSelf)
+            _farmTile.ExportTo(saveData);
+    }
+
+    public void ImportFarm(TerrainCellSaveData saveData, SeedDatabase seedDb)
+    {
+        if (_farmTile == null) return;
+        if (_data.ObjectType != EGridObjectType.FarmLand) return;
+
+        _farmTile.Init();
+        _farmTile.ImportFrom(saveData, seedDb);
     }
 
     private void ClearCurrentObject()
