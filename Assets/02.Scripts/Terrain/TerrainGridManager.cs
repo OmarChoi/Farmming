@@ -23,18 +23,27 @@ public class TerrainGridManager : MonoBehaviour
         CollectExistingCells();
     }
 
-    private void CollectExistingCells()
+    public void CollectExistingCells()
     {
+        _cells.Clear();
         _gridData = new TerrainGridData();
 
         foreach (var cell in GetComponentsInChildren<TerrainCell>())
         {
             Vector3Int gridPos = WorldToGrid(cell.transform.position);
-            var data = new TerrainCellData(ECellType.Dirt);
-            cell.Init(gridPos, data);
+
+            if (Application.isPlaying)
+            {
+                cell.InitFromSerializedData(gridPos);
+
+                GameObject objPrefab = GetObjectPrefab(cell.Data.ObjectType);
+                if (objPrefab != null)
+                    cell.SpawnObject(objPrefab, cell.Data.ObjectType);
+            }
 
             _cells[gridPos] = cell;
-            _gridData.SetCell(gridPos, data);
+            if (cell.Data != null)
+                _gridData.SetCell(gridPos, cell.Data);
         }
     }
 
@@ -44,6 +53,7 @@ public class TerrainGridManager : MonoBehaviour
         var cell = Instantiate(_cellPrefab, worldPos, Quaternion.identity, transform);
         cell.name = $"Cell({gridPos.x},{gridPos.y},{gridPos.z})";
         cell.Init(gridPos, data);
+        cell.SetInitialData(data.CellType, data.DirtLevel, data.ObjectType, data.ObjectLevel);
         _cells[gridPos] = cell;
 
         GameObject objPrefab = GetObjectPrefab(data.ObjectType);
