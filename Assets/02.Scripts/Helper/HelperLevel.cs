@@ -20,4 +20,9 @@ public class HelperLevel
 
         CurrentLevel++;
     }
+
+    public float GetEnergyCost()
+    {
+        return Mathf.Max(1f, _data.BaseEnergyCost - (_data.EnergyReducePerLevel * (CurrentLevel-1)));
+    }
 }

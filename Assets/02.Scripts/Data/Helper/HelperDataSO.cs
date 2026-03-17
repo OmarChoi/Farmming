@@ -11,6 +11,8 @@ public class HelperDataSO : ScriptableObject
     public float EnergyRecoveryPerSecond = 5f;
 
     public int MaxLevel = 10;
+    public float BaseEnergyCost = 10f;
+    public float EnergyReducePerLevel = 1f;
 
     public int NormalRange = 1;
     public int EpicRange = 2;
