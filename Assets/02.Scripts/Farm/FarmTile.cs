@@ -11,6 +11,7 @@ public class FarmTile : MonoBehaviour
     private CropGrowth _cropGrowth;
 
     public FarmTileStateMachine StateMachine { get; private set; }
+    public CropGrowth CropGrowth => _cropGrowth;
 
     public SeedConfig PlantedSeed { get; private set; }
     public bool HasSeed => PlantedSeed != null;

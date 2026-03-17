@@ -103,9 +103,8 @@ public class TerrainCell : MonoBehaviour
         {
             _farmTile.ExportTo(saveData);
 
-            var cropGrowth = _farmTile.GetComponent<CropGrowth>();
-            if (cropGrowth != null)
-                cropGrowth.ExportTo(saveData);
+            if (_farmTile.CropGrowth != null)
+                _farmTile.CropGrowth.ExportTo(saveData);
         }
     }
 
@@ -117,12 +116,11 @@ public class TerrainCell : MonoBehaviour
         _farmTile.Init();
         _farmTile.ImportFrom(saveData, seedDb);
 
-        var cropGrowth = _farmTile.GetComponent<CropGrowth>();
-        if (cropGrowth != null && !string.IsNullOrEmpty(saveData.SeedId))
+        if (_farmTile.CropGrowth != null && !string.IsNullOrEmpty(saveData.SeedId))
         {
             SeedConfig seed = seedDb.GetById(saveData.SeedId);
             if (seed != null)
-                cropGrowth.ImportFrom(saveData, seed);
+                _farmTile.CropGrowth.ImportFrom(saveData, seed);
         }
     }
 
