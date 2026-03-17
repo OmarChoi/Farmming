@@ -7,8 +7,6 @@ public class SaveManager : MonoBehaviour
     public static SaveManager Instance { get; private set; }
 
     [SerializeField] private TerrainGridManager _terrainGridManager;
-    [SerializeField] private SeedDatabase _seedDatabase;
-    [SerializeField] private ItemDatabase _itemDatabase;
 
     private readonly Dictionary<string, PlayerController> _players = new();
     private ISaveRepository _repository;
@@ -58,12 +56,12 @@ public class SaveManager : MonoBehaviour
             return;
         }
 
-        _terrainGridManager.ImportSaveData(data.Terrain, _seedDatabase);
+        _terrainGridManager.ImportSaveData(data.Terrain);
 
         foreach (var playerSave in data.Players)
         {
             if (_players.TryGetValue(playerSave.PlayerId, out var target))
-                target.ImportSaveData(playerSave, _itemDatabase);
+                target.ImportSaveData(playerSave);
         }
 
         Debug.Log($"로드 완료 (슬롯 {slot})");

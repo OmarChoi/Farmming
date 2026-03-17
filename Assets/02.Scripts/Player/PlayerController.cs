@@ -62,16 +62,23 @@ public class PlayerController : MonoBehaviour
             RotY = transform.eulerAngles.y
         };
 
-        GetAbility<PlayerInventoryAbility>()?.ExportTo(saveData);
+        foreach (var saveable in GetComponentsInChildren<ISaveableAbility>())
+            saveable.ExportTo(saveData);
 
         return saveData;
     }
 
-    public void ImportSaveData(PlayerSaveData saveData, ItemDatabase itemDb)
+    public void ImportSaveData(PlayerSaveData saveData)
     {
+        var cc = GetComponent<CharacterController>();
+        if (cc != null) cc.enabled = false;
+
         transform.position = new Vector3(saveData.PosX, saveData.PosY, saveData.PosZ);
         transform.rotation = Quaternion.Euler(0f, saveData.RotY, 0f);
 
-        GetAbility<PlayerInventoryAbility>()?.ImportFrom(saveData, itemDb);
+        if (cc != null) cc.enabled = true;
+
+        foreach (var saveable in GetComponentsInChildren<ISaveableAbility>())
+            saveable.ImportFrom(saveData);
     }
 }
