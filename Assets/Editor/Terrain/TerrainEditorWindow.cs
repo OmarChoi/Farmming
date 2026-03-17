@@ -106,6 +106,9 @@ public class TerrainEditorWindow : EditorWindow
     {
         if (_gridManager == null) return;
 
+        if (!Application.isPlaying)
+            _gridManager.CollectExistingCells();
+
         Event e = Event.current;
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
