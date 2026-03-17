@@ -12,8 +12,9 @@ GameObject:
   - component: {fileID: 4453892731908139065}
   - component: {fileID: 2810417272923343679}
   - component: {fileID: 5872966395305482296}
+  - component: {fileID: 59740985261475634}
   m_Layer: 5
-  m_Name: UI_FeatureButton
+  m_Name: UI_InteractionButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -121,6 +122,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &59740985261475634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4707046919893198704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b58c5f7329b94944b584b8d081ff1a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI_InteractionButton
+  _button: {fileID: 5872966395305482296}
+  _interactionText: {fileID: 2678415354380641885}
 --- !u!1 &4935341180235635970
 GameObject:
   m_ObjectHideFlags: 0
@@ -133,7 +148,7 @@ GameObject:
   - component: {fileID: 9088722897396782809}
   - component: {fileID: 2678415354380641885}
   m_Layer: 5
-  m_Name: TalkButtonText
+  m_Name: InteractionButtonText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -270,7 +285,7 @@ GameObject:
   - component: {fileID: 8255796108435435511}
   - component: {fileID: 9200998428373872356}
   m_Layer: 5
-  m_Name: FeatureButtonPlace
+  m_Name: InteractionButtonPlace
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -31,10 +31,6 @@ public class ShopController : MonoBehaviour
     private void Update()
     {
 #if UNITY_EDITOR
-        if (Input.GetKey(KeyCode.O))
-        {
-            OpenShop(_testShop);
-        }
 
         if (Input.GetKey(KeyCode.Escape))
         {
