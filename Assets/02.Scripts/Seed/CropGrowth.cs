@@ -152,26 +152,42 @@ public class CropGrowth : MonoBehaviour
         _tile.RemoveSeed();
     }
 
-    public void ExportTo(TerrainCellSaveData saveData)
+    public void ExportTo(FarmSaveData farmData)
     {
-        saveData.CropStageIndex = _currentStageIndex;
-        saveData.CropElapsedDays = _elapsedDays;
-        saveData.CropIsGrowing = _isGrowing;
-        saveData.CropHasStarted = _hasStarted;
+        farmData.CropStageIndex = _currentStageIndex;
+        farmData.CropElapsedDays = _elapsedDays;
+        farmData.CropIsGrowing = _isGrowing;
+        farmData.CropHasStarted = _hasStarted;
     }
 
-    public void ImportFrom(TerrainCellSaveData saveData, SeedConfig seed)
+    public void ImportFrom(FarmSaveData farmData, SeedConfig seed)
     {
-        if (!saveData.CropHasStarted) return;
+        Debug.Log($"[Load] CropGrowth.ImportFrom - CropHasStarted: {farmData.CropHasStarted}, StageIndex: {farmData.CropStageIndex}, IsGrowing: {farmData.CropIsGrowing}");
+
+        if (!farmData.CropHasStarted)
+        {
+            Debug.Log("[Load] CropHasStarted가 false - 스킵");
+            return;
+        }
 
         _seedConfig = seed;
-        _currentStageIndex = Mathf.Min(saveData.CropStageIndex, _seedConfig.SeedGrowthStage.Count - 1);
-        _elapsedDays = saveData.CropElapsedDays;
-        _isGrowing = saveData.CropIsGrowing;
-        _hasStarted = saveData.CropHasStarted;
+        _currentStageIndex = Mathf.Min(farmData.CropStageIndex, _seedConfig.SeedGrowthStage.Count - 1);
+        _elapsedDays = farmData.CropElapsedDays;
+        _isGrowing = farmData.CropIsGrowing;
+        _hasStarted = farmData.CropHasStarted;
+
+        Debug.Log($"[Load] 상태 복원 완료 - StageIndex: {_currentStageIndex}, StageCount: {_seedConfig.SeedGrowthStage.Count}, _tile null?: {_tile == null}");
 
         if (_currentStageIndex >= 0 && _currentStageIndex < _seedConfig.SeedGrowthStage.Count)
+        {
+            Debug.Log($"[Load] ApplyStagePrefab 호출 - CropSpawnPoint null?: {_tile?.CropSpawnPoint == null}");
             ApplyStagePrefab();
+            Debug.Log($"[Load] 프리팹 생성 완료 - _currentCropObject null?: {_currentCropObject == null}");
+        }
+        else
+        {
+            Debug.LogWarning($"[Load] StageIndex 범위 초과: {_currentStageIndex}");
+        }
     }
 
     private void ApplyStagePrefab()

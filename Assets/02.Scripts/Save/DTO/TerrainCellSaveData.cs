@@ -11,11 +11,5 @@ public class TerrainCellSaveData
     public EGridObjectType ObjectType;
     public int ObjectLevel;
 
-    // 농사 정보
-    public EFarmTileStateType FarmState;
-    public string SeedId;
-    public int CropStageIndex;
-    public int CropElapsedDays;
-    public bool CropIsGrowing;
-    public bool CropHasStarted;
+    public FarmSaveData Farm;
 }

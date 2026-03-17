@@ -180,6 +180,8 @@ public class TerrainGridManager : MonoBehaviour
         ClearAll();
         if (saveData == null) return;
 
+        Debug.Log($"[Load] 셀 개수: {saveData.Cells.Count}, SeedDB null?: {seedDb == null}");
+
         foreach (var cellData in saveData.Cells)
         {
             var gridPos = new Vector3Int(cellData.X, cellData.Y, cellData.Z);
@@ -189,7 +191,10 @@ public class TerrainGridManager : MonoBehaviour
             SpawnCell(gridPos, data);
 
             if (data.ObjectType == EGridObjectType.FarmLand)
+            {
+                Debug.Log($"[Load] FarmLand 셀 발견: {gridPos}, SeedId: {cellData.Farm?.SeedId}");
                 _cells[gridPos].ImportFarm(cellData, seedDb);
+            }
         }
     }
 
