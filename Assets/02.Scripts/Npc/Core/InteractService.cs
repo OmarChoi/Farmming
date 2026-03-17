@@ -2,6 +2,16 @@ using UnityEngine;
 
 public class InteractService : MonoBehaviour
 {
+    [SerializeField] private UI_NpcDialogue _uiDialogue;
+
+    private void Awake()
+    {
+        if (_uiDialogue == null)
+        {
+            _uiDialogue = Object.FindFirstObjectByType<UI_NpcDialogue>();
+        }
+    }
+
     public void Execute(ENpcInteractionType type, NpcInteractionContext context)
     {
         switch (type)
@@ -22,9 +32,9 @@ public class InteractService : MonoBehaviour
 
     private void ExecuteTalk(NpcInteractionContext context)
     {
-        Debug.Log($"{context.Npc.name}와 대화를 시작합니다.");
-        // 여기서 실제 대사 출력 시스템 연결
-        // ex) UI_DialogueText.Instance.Show(...)
+        string name = context.NpcName;
+        int dialogueNumber = Random.Range(0, context.Npc.Data.TalkDialogues.Length);
+        string dialogue = context.Npc.Data.TalkDialogues[dialogueNumber];
     }
 
     private void ExecuteTrade(NpcInteractionContext context)

@@ -504,7 +504,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_NpcDialogue
   _interactionButtonRoot: {fileID: 8838275208074697692}
-  _interactionButtonPrefab: {fileID: 3544099923109417940}
+  _interactionButtonPrefab: {fileID: 4707046919893198704, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
+  _npcNameText: {fileID: 3115703660864716535}
+  _npcDialogueText: {fileID: 3685133607933124924}
 --- !u!1 &5720044989875460714
 GameObject:
   m_ObjectHideFlags: 0
@@ -516,7 +518,7 @@ GameObject:
   - component: {fileID: 8838275208074697692}
   - component: {fileID: 4519449651101337332}
   - component: {fileID: 9090746592727503934}
-  - component: {fileID: 4673233702240712971}
+  - component: {fileID: 9116467057287954352}
   m_Layer: 5
   m_Name: InteractionButtonContainer
   m_TagString: Untagged
@@ -541,7 +543,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -100, y: 2}
+  m_AnchoredPosition: {x: -100, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &4519449651101337332
@@ -578,7 +580,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5720044989875460714}
   m_CullTransparentMesh: 1
---- !u!114 &4673233702240712971
+--- !u!114 &9116467057287954352
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -878,17 +880,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
---- !u!114 &3544099923109417940 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 59740985261475634, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
-  m_PrefabInstance: {fileID: 3601492145206711526}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b58c5f7329b94944b584b8d081ff1a4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UI_InteractionButton
 --- !u!224 &7549689506291292020 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
