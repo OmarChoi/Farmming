@@ -3,10 +3,12 @@ using UnityEngine;
 public class PlayerHelperAbility : PlayerAbility
 {
     [SerializeField] private KeyCode _equipKey = KeyCode.F;
-    [SerializeField] private KeyCode _interactKey = KeyCode.E;
-    [SerializeField] private HelperPickup _currentHelper;
+    [SerializeField] private Transform _equipSlot;
 
     private PlayerTerrainAbility _terrainAbility;
+    private HelperController _currentHelper;
+
+    public HelperController CurrentHelper => _currentHelper;
 
     protected override void Awake()
     {
@@ -21,39 +23,47 @@ public class PlayerHelperAbility : PlayerAbility
         if (Input.GetKeyDown(_equipKey))
             ToggleEquip();
 
-        if (Input.GetKeyDown(_interactKey))
+        if (_currentHelper != null
+            && _currentHelper.State == EHelperState.Equipped
+            && Input.GetMouseButtonDown(0))
+        {
             TryInteract();
+        }
+    }
+
+    public void Summon(HelperController helper)
+    {
+        if (_currentHelper != null)
+            Unsummon();
+
+        _currentHelper = helper;
+        _currentHelper.Summon(transform);
+        _currentHelper.transform.position = transform.position + transform.right * 1.5f;
+    }
+
+    public void Unsummon()
+    {
+        if (_currentHelper == null) return;
+
+        _currentHelper.gameObject.SetActive(false);
+        _currentHelper = null;
     }
 
     private void ToggleEquip()
     {
         if (_currentHelper == null) return;
 
-        if (_currentHelper.IsEquipped)
-            _currentHelper.UnEquip();
+        if (_currentHelper.State == EHelperState.Equipped)
+            _currentHelper.Unequip();
         else
-            _currentHelper.Equip();
+            _currentHelper.Equip(_equipSlot);
     }
 
     private void TryInteract()
     {
-        if (_currentHelper == null || !_currentHelper.IsEquipped)
-        {
-            Debug.Log("곡룡 들고 있지 않음");
-            return;
-        }
-
         TerrainCell cell = _terrainAbility.GetFrontCell();
-        if (cell == null)
-        {
-            Debug.Log("앞에 셀 없음");
-            return;
-        }
+        if (cell == null) return;
 
-        var action = _currentHelper.GetComponent<IHelperAction>();
-        if (action != null)
-            action.Interact(cell);
-        else
-            Debug.Log("이 곡룡은 행동이 없음");
+        _currentHelper.Interact(cell);
     }
 }
