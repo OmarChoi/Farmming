@@ -14,6 +14,8 @@ public class TradeService
 
         if (!shopData.SellItems.Contains(item)) return false;
 
+        if (!CurrencyManager.Instance.TrySpendGold(item.BuyCost * amount)) return false;
+
         _playerInventory.AddItem(item, amount);
         return true;
     }
@@ -26,6 +28,8 @@ public class TradeService
         if (slot == null || slot.IsEmpty) return false;
         if (amount <= 0 || slot.Count < amount) return false;
 
+        ItemDataSO item = slot.Item;
+        CurrencyManager.Instance.AddGold(item.SellCost);
         _playerInventory.RemoveAt(slotIndex, amount);
         return true;
     }
