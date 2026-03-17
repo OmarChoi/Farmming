@@ -8370,6 +8370,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SaveManager
   _terrainGridManager: {fileID: 1425289902}
   _seedDatabase: {fileID: 11400000, guid: 2b0eebad31ca72b459824d19fe83952f, type: 2}
+  _itemDatabase: {fileID: 11400000, guid: 66523119e2bac034c9f33610f00da3fb, type: 2}
 --- !u!4 &1086231483
 Transform:
   m_ObjectHideFlags: 0
@@ -15642,6 +15643,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HarvestNotificationManager
   _notificationPrefab: {fileID: 0}
   _notificationParent: {fileID: 0}
+  _notificationDuration: 1.8
   _stackOffset: 60
 --- !u!4 &1855595656
 Transform:
@@ -15755,8 +15757,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 609b52cd6dc9c9e4f9717a02a2ef044f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestInventory
-  _woodItem: {fileID: 11400000, guid: 60f38d1aabc620344be728c7292fd0d6, type: 2}
-  _dirtItem: {fileID: 11400000, guid: 496a91325591fb746b65ab955ba01fe0, type: 2}
+  _woodItem: {fileID: 11400000, guid: 2b2b3478def7edd4aae00ccd5b1dad58, type: 2}
+  _dirtItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
   _inventoryAbility: {fileID: 348443870}
 --- !u!4 &1865986112
 Transform:

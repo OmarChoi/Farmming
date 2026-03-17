@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class InventoryDomain
 {
-    private readonly List<InventorySlot> _slots;
+    private List<InventorySlot> _slots;
 
     public int SlotCount => _slots.Count;
 
@@ -107,4 +107,36 @@ public class InventoryDomain
         }
     }
 
+    public List<InventorySlotSaveData> ExportSlots()
+    {
+        var result = new List<InventorySlotSaveData>();
+        foreach (var slot in _slots)
+        {
+            if (slot.IsEmpty) continue;
+            result.Add(new InventorySlotSaveData
+            {
+                ItemId = slot.Item.Id,
+                Count = slot.Count
+            });
+        }
+        return result;
+    }
+
+    public void ImportSlots(List<InventorySlotSaveData> slotData, ItemDatabase itemDb)
+    {
+        _slots.Clear();
+        OnInventoryResized?.Invoke();
+
+        foreach (var data in slotData)
+        {
+            ItemDataSO item = itemDb.GetById(data.ItemId);
+            if (item == null) continue;
+
+            var slot = new InventorySlot();
+            slot.TryAdd(item, data.Count);
+            _slots.Add(slot);
+        }
+
+        OnInventoryResized?.Invoke();
+    }
 }
