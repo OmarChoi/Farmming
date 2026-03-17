@@ -87,4 +87,9 @@ public class UI_NpcDialogue : MonoBehaviour
         _npcNameText.text = $"{name}";
         _npcDialogueText.text = $"{dialogue}";
     }
+
+    public void UpdateDialogueText(string dialogue)
+    {
+        _npcDialogueText.text = $"{dialogue}";
+    }
 }

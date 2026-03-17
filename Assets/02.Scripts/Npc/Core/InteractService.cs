@@ -4,16 +4,13 @@ public class InteractService : MonoBehaviour
 {
     [SerializeField] private UI_NpcDialogue _uiDialogue;
 
-    private void Awake()
+    public void Execute(ENpcInteractionType type, NpcInteractionContext context)
     {
         if (_uiDialogue == null)
         {
-            _uiDialogue = Object.FindFirstObjectByType<UI_NpcDialogue>();
+            _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
         }
-    }
 
-    public void Execute(ENpcInteractionType type, NpcInteractionContext context)
-    {
         switch (type)
         {
             case ENpcInteractionType.Talk:
@@ -32,9 +29,9 @@ public class InteractService : MonoBehaviour
 
     private void ExecuteTalk(NpcInteractionContext context)
     {
-        string name = context.NpcName;
         int dialogueNumber = Random.Range(0, context.Npc.Data.TalkDialogues.Length);
         string dialogue = context.Npc.Data.TalkDialogues[dialogueNumber];
+        _uiDialogue.UpdateDialogueText(dialogue);
     }
 
     private void ExecuteTrade(NpcInteractionContext context)
