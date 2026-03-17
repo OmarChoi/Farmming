@@ -142,20 +142,50 @@ public class FarmTile : MonoBehaviour
 
     public void ExportTo(TerrainCellSaveData saveData)
     {
-        saveData.FarmState = StateMachine.CurrentStateType;
-        saveData.SeedId = HasSeed ? PlantedSeed.SeedId : "";
+        saveData.Farm = new FarmSaveData
+        {
+            FarmState = StateMachine.CurrentStateType,
+            SeedId = HasSeed ? PlantedSeed.SeedId : ""
+        };
+
+        if (_cropGrowth != null)
+            _cropGrowth.ExportTo(saveData.Farm);
     }
 
     public void ImportFrom(TerrainCellSaveData saveData, SeedDatabase seedDb)
     {
-        if (saveData.FarmState == EFarmTileStateType.FarmWet)
+        Debug.Log($"[Load] FarmTile.ImportFrom - Farm null?: {saveData.Farm == null}, SeedId: {saveData.Farm?.SeedId}, FarmState: {saveData.Farm?.FarmState}");
+
+        if (saveData.Farm == null)
+        {
+            Debug.LogWarning("[Load] Farm 데이터가 null입니다.");
+            return;
+        }
+
+        if (saveData.Farm.FarmState == EFarmTileStateType.FarmWet)
             StateMachine.FarmTransition(EFarmTileStateType.FarmWet);
 
-        if (!string.IsNullOrEmpty(saveData.SeedId))
+        if (!string.IsNullOrEmpty(saveData.Farm.SeedId))
         {
-            SeedConfig seed = seedDb.GetById(saveData.SeedId);
+            SeedConfig seed = seedDb.GetById(saveData.Farm.SeedId);
+            Debug.Log($"[Load] SeedDB 조회 결과 - SeedId: {saveData.Farm.SeedId}, seed null?: {seed == null}");
+
             if (seed != null)
+            {
                 PlantSeed(seed);
+
+                Debug.Log($"[Load] _cropGrowth null?: {_cropGrowth == null}, CropHasStarted: {saveData.Farm.CropHasStarted}, StageIndex: {saveData.Farm.CropStageIndex}");
+                if (_cropGrowth != null)
+                    _cropGrowth.ImportFrom(saveData.Farm, seed);
+            }
+            else
+            {
+                Debug.LogWarning($"[Load] SeedDB에서 '{saveData.Farm.SeedId}'를 찾을 수 없습니다!");
+            }
+        }
+        else
+        {
+            Debug.Log("[Load] SeedId가 비어있음 - 농작물 없는 밭");
         }
     }
 

@@ -18,8 +18,16 @@ public class LocalJsonSaveRepository : ISaveRepository
         string path = GetFilePath(slot);
         if (!File.Exists(path)) return null;
 
-        string json = await File.ReadAllTextAsync(path);
-        return JsonUtility.FromJson<SaveData>(json);
+        try
+        {
+            string json = await File.ReadAllTextAsync(path);
+            return JsonUtility.FromJson<SaveData>(json);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to parse save file at {path}. Reason: {e.Message}");
+            return null;
+        }
     }
 
     public UniTask<bool> HasSaveAsync(int slot)

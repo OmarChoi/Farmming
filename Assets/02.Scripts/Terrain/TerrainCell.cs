@@ -100,28 +100,26 @@ public class TerrainCell : MonoBehaviour
     public void ExportTo(TerrainCellSaveData saveData)
     {
         if (_farmTile != null && _farmTile.gameObject.activeSelf)
-        {
             _farmTile.ExportTo(saveData);
-
-            if (_farmTile.CropGrowth != null)
-                _farmTile.CropGrowth.ExportTo(saveData);
-        }
     }
 
     public void ImportFarm(TerrainCellSaveData saveData, SeedDatabase seedDb)
     {
-        if (_farmTile == null) return;
-        if (_data.ObjectType != EGridObjectType.FarmLand) return;
+        Debug.Log($"[Load] ImportFarm 진입 - _farmTile null?: {_farmTile == null}, ObjectType: {_data.ObjectType}");
+
+        if (_farmTile == null)
+        {
+            Debug.LogWarning("[Load] _farmTile이 null입니다! 프리팹에 FarmTile이 없습니다.");
+            return;
+        }
+        if (_data.ObjectType != EGridObjectType.FarmLand)
+        {
+            Debug.LogWarning($"[Load] ObjectType이 FarmLand가 아닙니다: {_data.ObjectType}");
+            return;
+        }
 
         _farmTile.Init();
         _farmTile.ImportFrom(saveData, seedDb);
-
-        if (_farmTile.CropGrowth != null && !string.IsNullOrEmpty(saveData.SeedId))
-        {
-            SeedConfig seed = seedDb.GetById(saveData.SeedId);
-            if (seed != null)
-                _farmTile.CropGrowth.ImportFrom(saveData, seed);
-        }
     }
 
     private void ClearCurrentObject()
