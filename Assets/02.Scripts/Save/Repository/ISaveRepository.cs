@@ -1,7 +1,9 @@
+using Cysharp.Threading.Tasks;
+
 public interface ISaveRepository
 {
-    void Save(SaveData data, int slot);
-    SaveData Load(int slot);
-    bool HasSave(int slot);
-    void Delete(int slot);
+    UniTask SaveAsync(SaveData data, int slot);
+    UniTask<SaveData> LoadAsync(int slot);
+    UniTask<bool> HasSaveAsync(int slot);
+    UniTask DeleteAsync(int slot);
 }

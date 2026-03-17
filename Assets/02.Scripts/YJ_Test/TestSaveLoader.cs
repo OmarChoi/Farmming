@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class TestSaveLoader : MonoBehaviour
@@ -7,9 +8,9 @@ public class TestSaveLoader : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha9))
-            _saveManager.Save();
+            _saveManager.SaveAsync().Forget();
 
         if (Input.GetKeyDown(KeyCode.Alpha0))
-            _saveManager.Load();
+            _saveManager.LoadAsync().Forget();
     }
 }
