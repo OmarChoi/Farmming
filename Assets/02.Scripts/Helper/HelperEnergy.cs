@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class HelperEnergy
 {
-    private HelperDataSO _data;
+    private readonly HelperDataSO _data;
 
     public float Current { get; private set; }
     public float Max => _data.MaxEnergy;
@@ -39,15 +39,16 @@ public class HelperEnergy
 
     public void Recover(float deltaTime)
     {
-        if(!IsExhausted)
+        if(Current >= Max)
         {
             return;
         }
 
+        float previousCurrent = Current;
         Current += _data.EnergyRecoveryPerSecond * deltaTime;
         Current = Mathf.Min(Current, Max);
 
-        if(Current >= Max)
+        if(previousCurrent < Max && Current >= Max)
         {
             OnRecovered?.Invoke();
         }

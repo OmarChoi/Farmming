@@ -5,7 +5,7 @@ public class HelperDataSO : ScriptableObject
 {
     public string HelperId;
     public string HelperName;
-    public Sprite HerlerIcon;
+    public Sprite HelperIcon;
 
     public float MaxEnergy = 100f;
     public float EnergyRecoveryPerSecond = 5f;
