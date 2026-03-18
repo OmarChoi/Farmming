@@ -78,13 +78,17 @@ public class HelperController : MonoBehaviour
         transform.SetParent(equipSlot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+        GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
     }
 
     public void Unequip()
     {
         State = EHelperState.Summoned;
         transform.SetParent(null);
-        transform.position = FollowTarget.position + FollowTarget.right * 1.5f;
+        transform.position = FollowTarget.position;
+
+        Vector3 backDir = -FollowTarget.forward;
+        GetAbility<HelperFollowAbility>()?.LaunchBack(backDir);
     }
 
     public void Interact(TerrainCell cell)

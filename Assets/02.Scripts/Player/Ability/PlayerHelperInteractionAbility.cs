@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerHelperAbility : PlayerAbility
+public class PlayerHelperInteractionAbility : PlayerAbility
 {
     [SerializeField] private KeyCode _equipKey = KeyCode.F;
     [SerializeField] private Transform _equipSlot;
@@ -44,6 +44,9 @@ public class PlayerHelperAbility : PlayerAbility
     public void Unsummon()
     {
         if (_currentHelper == null) return;
+
+        if (_currentHelper.State == EHelperState.Equipped)
+            _currentHelper.Unequip();
 
         _currentHelper.gameObject.SetActive(false);
         _currentHelper = null;
