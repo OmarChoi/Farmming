@@ -1,14 +1,18 @@
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UI_NpcDialogue : MonoBehaviour
 {
     public static UI_NpcDialogue Instance { get; private set; }
 
+    [Header("컴포넌트 참조")]
     [SerializeField] private Transform _interactionButtonRoot;
     [SerializeField] private GameObject _interactionButtonPrefab;
     [SerializeField] private TextMeshProUGUI _npcNameText;
     [SerializeField] private TextMeshProUGUI _npcDialogueText;
+    [SerializeField] private Button _dialoguePanelButton;
 
     private NpcController _currentNpc;
     private NpcInteractionComponent _currentInteractionComponent;
@@ -16,6 +20,11 @@ public class UI_NpcDialogue : MonoBehaviour
     private UI_InteractionButton _uiInteractionButton;
 
     private Transform _currentInteractor;
+
+    private NpcDialogueSO _currentDialogue;
+    private int _currentLineIndex;
+
+    private EDialogueUiState _dialogueState = EDialogueUiState.None;
 
     private void Awake()
     {
@@ -30,9 +39,13 @@ public class UI_NpcDialogue : MonoBehaviour
         _currentInteractor = interactor;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
 
-        SetDialogueText(npc);
-        RefreshButtons();
+        SetNpcNameText(npc);
         gameObject.SetActive(true);
+
+        HideButtons();
+        ClearDialogueText();
+
+        StartGreeting();
     }
 
     public void Close()
@@ -42,11 +55,112 @@ public class UI_NpcDialogue : MonoBehaviour
         _currentNpc = null;
         _currentInteractor = null;
         _currentInteractionComponent = null;
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.None;
+
+        ClearButtons();
+        ClearDialogueText();
     }
 
     public void SetActiveFalse()
     {
         gameObject.SetActive(false);
+    }
+
+    private void SetNpcNameText(NpcController npc)
+    {
+        string name = npc.Data.NpcName;
+        _npcNameText.text = $"{name}";
+    }
+
+    private void StartGreeting()
+    {
+        if (_currentNpc == null) return;
+        if (_interactionService == null) return;
+
+        _dialogueState = EDialogueUiState.Greeting;
+
+        NpcInteractionContext context = new NpcInteractionContext(
+            _currentNpc,
+            _currentInteractor,
+            _currentInteractionComponent);
+
+        _interactionService.ExecuteStartTalk(context);
+    }
+
+    public void StartDialogueUi(NpcDialogueSO dialogueSO)
+    {
+        if (dialogueSO == null || dialogueSO.Lines == null || dialogueSO.Lines.Length == 0)
+        {
+            EndDialogue();
+            return;
+        }
+
+        _currentDialogue = dialogueSO;
+        _currentLineIndex = 0;
+
+        HideButtons();
+        gameObject.SetActive(true);
+
+        ShowCurrentLine();
+    }
+
+    private void ShowCurrentLine()
+    {
+        if (_currentDialogue == null || _currentDialogue.Lines == null)
+        {
+            EndDialogue();
+            return;
+        }
+
+        if (_currentLineIndex >= _currentDialogue.Lines.Length)
+        {
+            EndDialogue();
+            return;
+        }
+
+        _npcDialogueText.text = _currentDialogue.Lines[_currentLineIndex].Text;
+    }
+
+    public void NextLine()
+    {
+        if (_currentDialogue == null) return;
+
+        _currentLineIndex++;
+        ShowCurrentLine();
+    }
+
+    private void EndDialogue()
+    {
+        if (_currentDialogue != null && _currentDialogue.Lines != null && _currentDialogue.Lines.Length > 0)
+        {
+            var lastLine = _currentDialogue.Lines[_currentDialogue.Lines.Length - 1];
+
+            if (lastLine.NextDialogue != null)
+            {
+                StartDialogueUi(lastLine.NextDialogue);
+                return;
+            }
+        }
+
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+
+        _dialogueState = EDialogueUiState.Choice;
+        ShowButtons();
+    }
+
+    private void ShowButtons()
+    {
+        _interactionButtonRoot.gameObject.SetActive(true);
+        RefreshButtons();
+    }
+
+    private void HideButtons()
+    {
+        ClearButtons();
+        _interactionButtonRoot.gameObject.SetActive(false);
     }
 
     private void RefreshButtons()
@@ -74,27 +188,40 @@ public class UI_NpcDialogue : MonoBehaviour
     private void OnClickOption(ENpcInteractionType type)
     {
         if (_currentNpc == null) return;
+        if (_interactionService == null) return;
 
         NpcInteractionContext context = new NpcInteractionContext(
             _currentNpc,
             _currentInteractor,
             _currentInteractionComponent);
 
-        _interactionService.Execute(type, context);
+        switch (type)
+        {
+            case ENpcInteractionType.Talk:
+                _dialogueState = EDialogueUiState.Talking;
+                _interactionService.ExecuteNormalTalk(context);
+                break;
+
+            case ENpcInteractionType.Trade:
+                _interactionService.Execute(type, context);
+                break;
+
+            case ENpcInteractionType.EndTalk:
+                _interactionService.Execute(type, context);
+                break;
+        }
     }
 
-    private void SetDialogueText(NpcController npc)
+    private void ClearDialogueText()
     {
-        string name = npc.Data.NpcName;
-        int dialogueNumber = Random.Range(0, npc.Data.StartDialogues.Length);
-        string dialogue = npc.Data.StartDialogues[dialogueNumber];
-
-        _npcNameText.text = $"{name}";
-        _npcDialogueText.text = $"{dialogue}";
+        _npcDialogueText.text = string.Empty;
     }
 
-    public void UpdateDialogueText(string dialogue)
+    // 클릭으로 다음 대화문으로 넘어가는 메서드입니다.
+    public void OnClickDialoguePanel()
     {
-        _npcDialogueText.text = $"{dialogue}";
+        if (_currentDialogue == null) return;
+
+        NextLine();
     }
 }

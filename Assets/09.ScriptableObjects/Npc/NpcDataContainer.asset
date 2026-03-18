@@ -16,18 +16,13 @@ MonoBehaviour:
   - NpcId: Shoper
     NpcName: "\uC0C1\uC778"
     StartDialogues:
-    - "\uC548\uB155\uD558\uC2E0\uAC00! \uD798\uC138\uACE0 \uAC15\uD55C \uC544\uCE68.
-      \uB9CC\uC77C \uB0B4\uAC8C \uBB3B\uB294\uB2E4\uBA74, \uB098\uB294 \uC0C1\uC778."
-    - "\uD31C\uBC0D\uC758 \uC138\uACC4\uC5D0 \uB3C4\uB2EC\uD55C \uAC83\uC744 \uD658\uC601\uD558\uC624,
-      \uB0AF\uC120 \uC774\uC5EC."
-    - "\uB9D0."
+    - {fileID: 11400000, guid: cb1918f94c0a5b84eaab7556a2f22d60, type: 2}
+    - {fileID: 11400000, guid: b09ae15c4b052a84eac5c32e0a6ce6d0, type: 2}
+    - {fileID: 11400000, guid: 2a69bef3011eef5448bdf47ffc7038bd, type: 2}
     TalkDialogues:
-    - "\uADF8\uAC70 \uC544\uB294\uAC00? \uB450\uCAC0\uCFE0\uB294 \uB450\uBC14\uC774\uC5D0\uC11C
-      Korea Chewy Cookie\uB77C\uACE0 \uBD88\uB9AC\uACE0 \uC788\uB2E4\uB124."
-    - "\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F\u314F"
-    - "\uC544\uC27D\uAC8C\uB3C4 \uC774\uACF3\uC5D0\uB294 \uBB34\uD2B8\uCF54\uC778\uC740
-      \uC5C6\uB2E4\uB124."
-    - "\uAC10\uB098\uBE57!"
+    - {fileID: 11400000, guid: bddaa6d460175fc45a3ccd6de560b28f, type: 2}
+    - {fileID: 11400000, guid: 3ff1c310eb1e35c47940826590775409, type: 2}
+    - {fileID: 11400000, guid: e87f74dc434f0a64d8199f048924e6f2, type: 2}
     UseRandomTimeOffset: 1
     MinTimeOffset: -10
     MaxTimeOffset: 10
