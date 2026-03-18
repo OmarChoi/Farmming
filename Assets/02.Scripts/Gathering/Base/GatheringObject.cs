@@ -38,7 +38,6 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
     }
 
     protected abstract void Hit();
-
     protected virtual void OnDepleted()
     {
         Destroy(gameObject);
