@@ -12,26 +12,22 @@ public class ResourceManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-
-        _loadSystem = new ResourcesLoadSystem();
+        _loadSystem = new AddressablesLoadSystem();
     }
 
     public async UniTask<T> LoadAsync<T>(string key) where T : Object
     {
-        if (_cache.TryGetValue(key, out var cached)) return cached as T;
+        if (_cache.TryGetValue(key, out Object cached)) return cached as T;
 
-        var asset = await _loadSystem.LoadAsync<T>(key);
+        T asset = await _loadSystem.LoadAsync<T>(key);
         if (asset != null) _cache[key] = asset;
 
         return asset;
     }
 
-    public T Get<T>(string key) where T : Object
+    public async UniTask<IList<T>> LoadAllAsync<T>(string label) where T : Object
     {
-        if (_cache.TryGetValue(key, out var cached)) return cached as T;
-
-        Debug.LogWarning($"[ResourceManager] Asset not loaded: {key}");
-        return null;
+        return await _loadSystem.LoadAllAsync<T>(label);
     }
 
     public void Release(string key)
@@ -41,20 +37,7 @@ public class ResourceManager : MonoBehaviour
 
     public void ReleaseAll()
     {
-        foreach (var key in _cache.Keys)
-        {
-            _loadSystem.Release(key);
-        }
+        foreach (string key in _cache.Keys) _loadSystem.Release(key);
         _cache.Clear();
-    }
-
-    public bool IsLoaded(string key)
-    {
-        return _cache.ContainsKey(key);
-    }
-
-    public void SetLoadSystem(ILoadSystem loadSystem)
-    {
-        _loadSystem = loadSystem;
     }
 }
