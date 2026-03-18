@@ -44,6 +44,11 @@ public class UI_NpcDialogue : MonoBehaviour
         _currentInteractionComponent = null;
     }
 
+    public void SetActiveFalse()
+    {
+        gameObject.SetActive(false);
+    }
+
     private void RefreshButtons()
     {
         ClearButtons();
