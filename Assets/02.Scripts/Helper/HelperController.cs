@@ -69,6 +69,7 @@ public class HelperController : MonoBehaviour
         FollowTarget = followTarget;
         State = EHelperState.Summoned;
         transform.SetParent(null);
+        transform.position = followTarget.position + followTarget.right * 1.5f;
         gameObject.SetActive(true);
     }
 
