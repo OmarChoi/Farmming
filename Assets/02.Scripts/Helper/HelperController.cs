@@ -18,6 +18,8 @@ public class HelperController : MonoBehaviour
 
     private readonly Dictionary<Type, HelperAbility> _abilityCache = new();
 
+    private const float SummonOffset = 1.5f;
+
     private void Awake()
     {
         Level = new HelperLevel(_data);
@@ -70,6 +72,7 @@ public class HelperController : MonoBehaviour
         FollowTarget = followTarget;
         State = EHelperState.Summoned;
         transform.SetParent(null);
+        transform.position = followTarget.position + followTarget.right * SummonOffset;
         gameObject.SetActive(true);
     }
 
@@ -79,13 +82,17 @@ public class HelperController : MonoBehaviour
         transform.SetParent(equipSlot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+        GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
     }
 
     public void Unequip()
     {
         State = EHelperState.Summoned;
         transform.SetParent(null);
-        transform.position = FollowTarget.position + FollowTarget.right * 1.5f;
+        transform.position = FollowTarget.position;
+
+        Vector3 backDir = -FollowTarget.forward;
+        GetAbility<HelperFollowAbility>()?.LaunchBack(backDir);
     }
 
     public void Interact(TerrainCell cell)

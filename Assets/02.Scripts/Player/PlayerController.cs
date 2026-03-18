@@ -9,6 +9,11 @@ public class PlayerController : MonoBehaviour
     public PlayerStatSO StatSo => _statSo;
     public string PlayerId { get; private set; }
     public bool IsUIOpen { get; private set; }
+    public bool CanMove => !IsUIOpen && !IsActionLocked;
+    public bool IsActionLocked { get; private set; }
+
+    public void LockAction() => IsActionLocked = true;
+    public void UnlockAction() => IsActionLocked = false;
 
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
 

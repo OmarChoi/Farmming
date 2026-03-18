@@ -4,15 +4,16 @@ public class PlayerMoveAbility : PlayerAbility
 {
     [SerializeField] private KeyCode _sprintKey = KeyCode.LeftShift;
     [SerializeField] private KeyCode _jumpKey = KeyCode.Space;
-    private const float Gravity = 9.8f;
+    private const float Gravity = 15f;
+    private const float GroundedYVelocity = -2f;
     private const float AnimSmoothSpeed = 5f;
     private const float MoveThresholdSqr = 0.01f;
-    private const float GroundedYVelocity = -0.5f;
     private const float RunAimValue = 1f;
     private const float WalkAnimValue = 0.5f;
     private const float IdleAnimValue = 0f;
     private CharacterController _characterController;
     private PlayerAnimationAbility _animation;
+    private PlayerHelperInteractionAbility _helperInteraction;
     private Camera _mainCamera;
 
     private float _yVelocity;
@@ -23,7 +24,9 @@ public class PlayerMoveAbility : PlayerAbility
     {
         _characterController = _owner.GetComponent<CharacterController>();
         _animation = _owner.GetAbility<PlayerAnimationAbility>();
+        _helperInteraction = _owner.GetAbility<PlayerHelperInteractionAbility>();
         _mainCamera = Camera.main;
+
     }
 
     private void Update()
@@ -38,7 +41,9 @@ public class PlayerMoveAbility : PlayerAbility
 
         Vector3 direction = GetMoveDirection();
         bool isMoving = direction.sqrMagnitude > MoveThresholdSqr;
-        bool isSprinting = isMoving && Input.GetKey(_sprintKey);
+        bool isHelperEquipped = _helperInteraction.CurrentHelper != null
+            && _helperInteraction.CurrentHelper.State == EHelperState.Equipped;
+        bool isSprinting = isMoving && Input.GetKey(_sprintKey) && !isHelperEquipped;
 
         UpdateAnimation(isMoving, isSprinting);
         FaceMovementDirection(direction, isMoving);
@@ -48,8 +53,8 @@ public class PlayerMoveAbility : PlayerAbility
 
     private Vector3 GetMoveDirection()
     {
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
 
         Vector3 direction = _mainCamera.transform.TransformDirection(new Vector3(h, 0f, v));
         direction.y = 0f;
@@ -86,17 +91,21 @@ public class PlayerMoveAbility : PlayerAbility
 
         if (isGrounded)
         {
-            _yVelocity = GroundedYVelocity;
-
             if (Input.GetKeyDown(_jumpKey))
             {
                 _yVelocity = _owner.StatSo.JumpPower;
-                _animation.TriggerJump();
                 _animation.SetGrounded(false);
+            }
+            else if (_yVelocity < 0)
+            {
+                _yVelocity = GroundedYVelocity;
             }
         }
         else
         {
+            if (_wasGrounded)
+                _animation.SetGrounded(false);
+
             _yVelocity -= Gravity * Time.deltaTime;
         }
 

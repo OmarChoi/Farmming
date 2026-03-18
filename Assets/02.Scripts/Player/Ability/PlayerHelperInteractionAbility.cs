@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerHelperAbility : PlayerAbility
+public class PlayerHelperInteractionAbility : PlayerAbility
 {
     [SerializeField] private KeyCode _equipKey = KeyCode.F;
     [SerializeField] private Transform _equipSlot;
@@ -18,7 +18,7 @@ public class PlayerHelperAbility : PlayerAbility
 
     private void Update()
     {
-        if (_owner.IsUIOpen) return;
+        if (!_owner.CanMove) return;
 
         if (Input.GetKeyDown(_equipKey))
             ToggleEquip();
@@ -38,12 +38,14 @@ public class PlayerHelperAbility : PlayerAbility
 
         _currentHelper = helper;
         _currentHelper.Summon(transform);
-        _currentHelper.transform.position = transform.position + transform.right * 1.5f;
     }
 
     public void Unsummon()
     {
         if (_currentHelper == null) return;
+
+        if (_currentHelper.State == EHelperState.Equipped)
+            _currentHelper.Unequip();
 
         _currentHelper.gameObject.SetActive(false);
         _currentHelper = null;
