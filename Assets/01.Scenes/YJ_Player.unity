@@ -2468,23 +2468,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 367229731}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &230320451 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5445057371516517917, guid: c0d6566270cbfec458c706583dec844a, type: 3}
-  m_PrefabInstance: {fileID: 571675645075675860}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &230320455
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 230320451}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1163eb8767edea341a1048cc1d444e68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEventRelay
 --- !u!1 &232235554
 GameObject:
   m_ObjectHideFlags: 0
@@ -26073,9 +26056,6 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5445057371516517917, guid: c0d6566270cbfec458c706583dec844a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 230320455}
     - targetCorrespondingSourceObject: {fileID: 1597716759267161692, guid: c0d6566270cbfec458c706583dec844a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1888866438}
