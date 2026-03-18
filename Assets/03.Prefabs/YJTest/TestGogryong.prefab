@@ -53,6 +53,16 @@ MonoBehaviour:
   _teleportHeightDiff: 1.8
   _smoothTime: 0.2
   _teleportDelay: 1
+  _runSpeedThreshold: 0.5
+  _unequipJumpForce: 5
+  _unequipBackForce: 3
+  _launchRotationSpeed: 10
+  _autoJumpForce: 8
+  _autoJumpCheckDist: 0.5
+  _autoJumpMaxHeight: 2.2
+  _jumpCheckMask:
+    serializedVersion: 2
+    m_Bits: 183
 --- !u!114 &2024439621498013701
 MonoBehaviour:
   m_ObjectHideFlags: 0

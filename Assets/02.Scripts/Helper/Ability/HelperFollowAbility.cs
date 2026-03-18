@@ -11,6 +11,13 @@ public class HelperFollowAbility : HelperAbility
     [SerializeField] private float _smoothTime = 0.2f;
     [SerializeField] private float _teleportDelay = 1f;
     [SerializeField] private float _runSpeedThreshold = 0.5f;
+    [SerializeField] private float _unequipJumpForce = 5f;
+    [SerializeField] private float _unequipBackForce = 3f;
+    [SerializeField] private float _launchRotationSpeed = 10f;
+    [SerializeField] private float _autoJumpForce = 8f;
+    [SerializeField] private float _autoJumpCheckDist = 0.5f;
+    [SerializeField] private float _autoJumpMaxHeight = 2.2f;
+    [SerializeField] private LayerMask _jumpCheckMask = ~0;
 
     private const float Gravity = 9.8f;
     private const float GroundedYVelocity = -0.5f;
@@ -21,6 +28,8 @@ public class HelperFollowAbility : HelperAbility
     private float _currentSpeed;
     private float _speedSmoothVelocity;
     private float _teleportTimer;
+    private Vector3 _launchVelocity;
+    private Quaternion _launchTargetRotation;
 
     private void Start()
     {
@@ -38,6 +47,26 @@ public class HelperFollowAbility : HelperAbility
         if (TryTeleport(diff)) return;
 
         ApplyGravity();
+
+        if (_launchVelocity.sqrMagnitude > 0.01f)
+        {
+            _owner.transform.rotation = Quaternion.Slerp(
+                _owner.transform.rotation, _launchTargetRotation,
+                _launchRotationSpeed * Time.deltaTime);
+
+            Vector3 velocity = _launchVelocity;
+            velocity.y = _yVelocity;
+            _cc.Move(velocity * Time.deltaTime);
+
+            if (_cc.isGrounded)
+            {
+                _launchVelocity = Vector3.zero;
+                _animAbility.Play(EHelperAnim.Idle);
+            }
+
+            return;
+        }
+
         Move(diff);
     }
 
@@ -84,19 +113,29 @@ public class HelperFollowAbility : HelperAbility
         if (_currentSpeed > 0.01f)
         {
             Vector3 horizontalDir = horizontalDiff.normalized;
+
+            if (_cc.isGrounded)
+                TryAutoJump(horizontalDir);
+
             Vector3 velocity = horizontalDir * _currentSpeed;
             velocity.y = _yVelocity;
 
             _cc.Move(velocity * Time.deltaTime);
             RotateToward(horizontalDir);
-            float speedRatio = _currentSpeed / _moveSpeed;
-            _animAbility.Play(speedRatio >= _runSpeedThreshold ? EHelperAnim.Run : EHelperAnim.Walk);
+
+            if (_cc.isGrounded)
+            {
+                float speedRatio = _currentSpeed / _moveSpeed;
+                _animAbility.Play(speedRatio >= _runSpeedThreshold ? EHelperAnim.Run : EHelperAnim.Walk);
+            }
         }
         else
         {
             _currentSpeed = 0f;
             _cc.Move(new Vector3(0f, _yVelocity, 0f) * Time.deltaTime);
-            _animAbility.Play(EHelperAnim.Idle);
+
+            if (_cc.isGrounded)
+                _animAbility.Play(EHelperAnim.Idle);
         }
     }
 
@@ -111,7 +150,35 @@ public class HelperFollowAbility : HelperAbility
     private void RotateToward(Vector3 direction)
     {
         if (direction.sqrMagnitude > 0.01f)
-            _owner.transform.rotation = Quaternion.LookRotation(direction);
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            _owner.transform.rotation = Quaternion.Slerp(
+                _owner.transform.rotation, targetRotation,
+                _launchRotationSpeed * Time.deltaTime);
+        }
+    }
+
+    private void TryAutoJump(Vector3 moveDir)
+    {
+        Vector3 origin = _owner.transform.position + Vector3.up * 0.2f;
+
+        // 앞에 벽이 있는지
+        if (!Physics.Raycast(origin, moveDir, _autoJumpCheckDist, _jumpCheckMask)) return;
+
+        // 벽 위가 비어있는지
+        Vector3 highOrigin = origin + Vector3.up * _autoJumpMaxHeight;
+        if (Physics.Raycast(highOrigin, moveDir, _autoJumpCheckDist, _jumpCheckMask)) return;
+
+        _yVelocity = _autoJumpForce;
+        _animAbility.Play(EHelperAnim.Jump);
+    }
+
+    public void LaunchBack(Vector3 backDirection)
+    {
+        _yVelocity = _unequipJumpForce;
+        _launchVelocity = backDirection.normalized * _unequipBackForce;
+        _launchTargetRotation = Quaternion.LookRotation(backDirection);
+        _animAbility.Play(EHelperAnim.Jump);
     }
 
     private void Teleport(Vector3 targetPos)
