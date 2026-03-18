@@ -18,6 +18,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility
     public int Count => _helperDataList.Count;
     public int SummonedIndex => _summonedIndex;
 
+    public static event Action<PlayerHelperInventoryAbility> OnLocalPlayerReady;
+
     public event Action OnSelectionChanged;
     public event Action<int> OnSummonChanged;
 
@@ -41,6 +43,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility
     private void Start()
     {
         InitHelperInstances();
+        OnLocalPlayerReady?.Invoke(this);
     }
 
     private void InitHelperInstances()

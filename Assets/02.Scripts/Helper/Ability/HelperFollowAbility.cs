@@ -21,7 +21,9 @@ public class HelperFollowAbility : HelperAbility
 
     private const float Gravity = 9.8f;
     private const float GroundedYVelocity = -0.5f;
-
+    private const float AutoJumpRayOriginYOffset = 0.2f;
+    private const float TeleportSideOffset = 1.5f;
+    
     private CharacterController _cc;
     private HelperAnimationAbility _animAbility;
     private float _yVelocity;
@@ -160,7 +162,7 @@ public class HelperFollowAbility : HelperAbility
 
     private void TryAutoJump(Vector3 moveDir)
     {
-        Vector3 origin = _owner.transform.position + Vector3.up * 0.2f;
+        Vector3 origin = _owner.transform.position + Vector3.up * AutoJumpRayOriginYOffset;
 
         // 앞에 벽이 있는지
         if (!Physics.Raycast(origin, moveDir, _autoJumpCheckDist, _jumpCheckMask)) return;
@@ -184,7 +186,7 @@ public class HelperFollowAbility : HelperAbility
     private void Teleport(Vector3 targetPos)
     {
         _cc.enabled = false;
-        _owner.transform.position = targetPos + _owner.FollowTarget.right * 1.5f;
+        _owner.transform.position = targetPos + _owner.FollowTarget.right * TeleportSideOffset;
         _cc.enabled = true;
         _yVelocity = GroundedYVelocity;
     }
