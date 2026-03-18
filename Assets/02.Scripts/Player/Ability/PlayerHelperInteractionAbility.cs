@@ -18,7 +18,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void Update()
     {
-        if (_owner.IsUIOpen) return;
+        if (!_owner.CanMove) return;
 
         if (Input.GetKeyDown(_equipKey))
             ToggleEquip();
@@ -38,7 +38,6 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
         _currentHelper = helper;
         _currentHelper.Summon(transform);
-        _currentHelper.transform.position = transform.position + transform.right * 1.5f;
     }
 
     public void Unsummon()
