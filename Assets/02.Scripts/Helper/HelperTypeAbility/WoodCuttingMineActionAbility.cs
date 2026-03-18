@@ -5,35 +5,28 @@ using UnityEngine;
 public enum EGatherType
 {
     Wood,
-    Rock,
+    Stone,
 }
 
 public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] protected GameObject _effectWoodPrefab;
+    [SerializeField] protected GameObject _effectStonePrefab;
     [SerializeField] protected Transform _effectSpawnPoint;
 
-    public void Interact(TerrainCell cell)
+    public void InteractL(TerrainCell cell)
     {
         // 이펙트 소환
-        GameObject _effect = Instantiate(
-    _effectWoodPrefab,
-    _effectSpawnPoint.position,
-    _effectSpawnPoint.rotation
-);
-        WoodCuttingVfx cuttingVfx = _effect.GetComponent<WoodCuttingVfx>();
+        GameObject _effect = Instantiate(_effectWoodPrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
+        WoodCuttingVFX cuttingVfx = _effect.GetComponent<WoodCuttingVFX>();
         cuttingVfx.Initiate(_owner.DataSO.GatherDamage, EGatherType.Wood);
     }
 
     public void InteractR(TerrainCell cell)
     {
         // 이펙트 소환
-        GameObject _effect = Instantiate(
-    _effectWoodPrefab,
-    _effectSpawnPoint.position,
-    _effectSpawnPoint.rotation
-);
-        WoodCuttingVfx cuttingVfx = _effect.GetComponent<WoodCuttingVfx>();
-        cuttingVfx.Initiate(_owner.DataSO.GatherDamage, EGatherType.Wood);
+        GameObject _effect = Instantiate(_effectStonePrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
+        WoodCuttingVFX cuttingVfx = _effect.GetComponent<WoodCuttingVFX>();
+        cuttingVfx.Initiate(_owner.DataSO.GatherDamage, EGatherType.Stone);
     }
 }

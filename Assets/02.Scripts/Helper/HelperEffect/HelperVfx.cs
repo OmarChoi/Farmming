@@ -8,8 +8,6 @@ public abstract class HelperVFXAbility : HelperAbility
     [SerializeField] protected Transform _effectSpawnPoint;
     [SerializeField] protected float _effectSeeTime = 2f;
 
-    private Vector3 _lastTargetPosition;
-
     public event Action OnWoodCuttingHitEvent;
 
     private void Start()

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class WoodCuttingVfx : MonoBehaviour
+public class WoodCuttingVFX : MonoBehaviour
 {
     [SerializeField] private float _maxDistance = 5f;
     [SerializeField] private float _speed = 5f;
@@ -33,28 +33,23 @@ public class WoodCuttingVfx : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log(other);
         IGatherable gatherable = other.GetComponent<IGatherable>();
 
         if (gatherable == null)
         {
-            Debug.Log("NULL");
             return;
         }
 
         switch (_type)
         {
             case EGatherType.Wood:
-                Debug.Log("wood");
                 if (gatherable is Wood)
                 {
-                    Debug.Log("wood333");
                     gatherable.TryGather(_damage);
                 }
                 break;
 
-            case EGatherType.Rock:
-                Debug.Log("rock");
+            case EGatherType.Stone:
                 if (gatherable is Stone)
                 {
                     gatherable.TryGather(_damage);
