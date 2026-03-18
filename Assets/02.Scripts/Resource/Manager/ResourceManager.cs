@@ -35,7 +35,14 @@ public class ResourceManager : MonoBehaviour
 
     public void Release(string key)
     {
-        if (_cache.Remove(key) || _labelKeys.Remove(key)) _loadSystem.Release(key);
+        if (_cache.Remove(key))
+        {
+            _loadSystem.Release(key);
+        }
+        else if (_labelKeys.Remove(key))
+        {
+            _loadSystem.Release(key);
+        }
     }
 
     public void ReleaseAll()
