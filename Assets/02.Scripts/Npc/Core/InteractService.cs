@@ -3,19 +3,19 @@ using UnityEngine.Rendering.VirtualTexturing;
 
 public class InteractService : MonoBehaviour
 {
-    [SerializeField] private UI_NpcDialogue _uiDialogue;
+    [SerializeField] private NpcDialogueController _dialogueController;
     private DialogueHandlerSelector _handlerSelector;
 
     private void Awake()
     {
-        if (_uiDialogue == null)
+        if (_dialogueController == null)
         {
-            _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
+            _dialogueController = FindFirstObjectByType<NpcDialogueController>();
         }
         // var aiController = FindFirstObjectByType<AIChatController>();
 
-        var scripted = new ScriptedDialogueHandler(_uiDialogue);
-        var ai = new ScriptedDialogueHandler(_uiDialogue);
+        var scripted = new ScriptedDialogueHandler(_dialogueController);
+        var ai = new ScriptedDialogueHandler(_dialogueController);
         // var ai = new AIDialogueHandler(aiController); ai는 추후 이런 식으로 변경할 예정입니다.
 
         _handlerSelector = new DialogueHandlerSelector(ai, scripted);
@@ -23,11 +23,6 @@ public class InteractService : MonoBehaviour
 
     public void Execute(ENpcInteractionType type, NpcInteractionContext context)
     {
-        if (_uiDialogue == null)
-        {
-            _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
-        }
-
         switch (type)
         {
             case ENpcInteractionType.Talk:
@@ -75,7 +70,7 @@ public class InteractService : MonoBehaviour
             return;
         }
         shopController.OpenShop(context.Npc.Shop, context);
-        _uiDialogue.SetActiveFalse();
+        _dialogueController.Close();
     }
 
     private void ExecuteEndTalk(NpcInteractionContext context)

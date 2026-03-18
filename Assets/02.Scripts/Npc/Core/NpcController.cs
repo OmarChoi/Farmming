@@ -85,14 +85,18 @@ public class NpcController : MonoBehaviour
         {
             _movement.FaceTarget(interactor.position);
         }
-        Cursor.lockState = CursorLockMode.None;
     }
 
     public void EndInteraction()
     {
-        Cursor.lockState = CursorLockMode.Locked;
         _isInteracting = false;
         _currentInteractor = null;
+
+        // todo. 추후 TimeManager로 바꾸기
+        if (TestTimeManager.Instance != null)
+        {
+            ResumeScheduleByCurrentTime(TestTimeManager.Instance.CurrentTime);
+        }
     }
 
     // 시간이 되면 Npc가 다음 일정대로 움직이는 것을 시도합니다.
@@ -168,5 +172,36 @@ public class NpcController : MonoBehaviour
         }
 
         _movement.TeleportTo(startPosition);
+    }
+
+    // 대화 등으로 스케줄이 끊기면 재개합니다.
+    public void ResumeScheduleByCurrentTime(int currentTime)
+    {
+        if (_npcSchedule == null || _npcSchedule.ScheduleEntries == null || _npcSchedule.ScheduleEntries.Count == 0) return;
+
+        NpcScheduleEntry latestValidEntry = null;
+        int latestIndex = _currentScheduleIndex;
+
+        for (int i = 0; i < _npcSchedule.ScheduleEntries.Count; i++)
+        {
+            var entry = _npcSchedule.ScheduleEntries[i];
+            int scheduleTime = entry.ScheduleTime + _timeOffset;
+
+            if (currentTime >= scheduleTime)
+            {
+                latestValidEntry = entry;
+                latestIndex = i + 1;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (latestValidEntry != null)
+        {
+            _currentScheduleIndex = latestIndex;
+            ExecuteSchedule(latestValidEntry);
+        }
     }
 }

@@ -42,18 +42,6 @@ public class ShopController : MonoBehaviour
         _uiShop.OnCloseRequested -= CloseShop;
     }
 
-    // 테스트용 상점 데이터입니다. (실제 게임에서는 NPC와 상호작용할 때 해당 NPC의 ShopData를 사용합니다.)
-    private void Update()
-    {
-#if UNITY_EDITOR
-
-        if (Input.GetKey(KeyCode.Escape))
-        {
-            CloseShop();
-        }
-#endif
-    }
-
     public void OpenShop(Shop shop, NpcInteractionContext context)
     {
         if (shop == null || shop.ShopData == null)
@@ -67,15 +55,17 @@ public class ShopController : MonoBehaviour
         _uiShop.Open(shop.ShopData);
         _uiInventory.SetClickMode(EInventoryClickMode.Trading);
         _playerInventory.Open();
+
         Cursor.lockState = CursorLockMode.None;
     }
 
     public void CloseShop()
     {
-        Cursor.lockState = CursorLockMode.Locked;
         _uiShop.Close();
         _uiInventory.SetClickMode(EInventoryClickMode.Normal);
         _playerInventory.Close();
+
+        Cursor.lockState = CursorLockMode.Locked;
 
         _currentContext?.InteractionComponent?.EndInteraction();
         _currentContext = null;
