@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class UI_ResourceTest : MonoBehaviour
 {
-    [SerializeField] private Button _button;
     [SerializeField] private Transform _canvas;
+    private Button _button;
     private GameObject _inventoryUI;
     private bool _isOpened;
 
@@ -26,10 +26,7 @@ public class UI_ResourceTest : MonoBehaviour
         if (!_isOpened)
         {
             var inventoryPrefab = await ResourceManager.Instance.LoadAsync<GameObject>(AssetKey.UI.Inventory);
-            Debug.Log($"Prefab activeSelf: {inventoryPrefab.activeSelf}");
             _inventoryUI = Instantiate(inventoryPrefab, _canvas);
-            Debug.Log($"Instance activeSelf: {_inventoryUI.activeSelf}");
-            // _inventoryUI.gameObject.SetActive(true);
         }
         else
         {
