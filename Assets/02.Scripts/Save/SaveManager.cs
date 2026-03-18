@@ -1,16 +1,36 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class SaveManager : MonoBehaviour
 {
-    [SerializeField] private TerrainGridManager _terrainGridManager;
-    [SerializeField] private SeedDatabase _seedDatabase;
+    public static SaveManager Instance { get; private set; }
 
+    [SerializeField] private TerrainGridManager _terrainGridManager;
+
+    private readonly Dictionary<string, PlayerController> _players = new();
     private ISaveRepository _repository;
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         _repository = new LocalJsonSaveRepository();
+    }
+
+    public void RegisterPlayer(string playerId, PlayerController player)
+    {
+        _players[playerId] = player;
+    }
+
+    public void UnregisterPlayer(string playerId)
+    {
+        _players.Remove(playerId);
     }
 
     public async UniTask SaveAsync(int slot = 0)
@@ -19,6 +39,9 @@ public class SaveManager : MonoBehaviour
         {
             Terrain = _terrainGridManager.ExportSaveData()
         };
+
+        foreach (var kvp in _players)
+            data.Players.Add(kvp.Value.ExportSaveData(kvp.Key));
 
         await _repository.SaveAsync(data, slot);
         Debug.Log($"저장 완료 (슬롯 {slot})");
@@ -33,7 +56,14 @@ public class SaveManager : MonoBehaviour
             return;
         }
 
-        _terrainGridManager.ImportSaveData(data.Terrain, _seedDatabase);
+        _terrainGridManager.ImportSaveData(data.Terrain);
+
+        foreach (var playerSave in data.Players)
+        {
+            if (_players.TryGetValue(playerSave.PlayerId, out var target))
+                target.ImportSaveData(playerSave);
+        }
+
         Debug.Log($"로드 완료 (슬롯 {slot})");
     }
 
