@@ -1,6 +1,7 @@
+using System;
 using UnityEngine;
 
-public class NpcInteractionContext: MonoBehaviour
+public class NpcInteractionContext
 {
     public NpcController Npc { get; }
     public Transform Interactor { get; }

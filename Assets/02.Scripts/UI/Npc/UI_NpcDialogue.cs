@@ -13,10 +13,10 @@ public class UI_NpcDialogue : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _npcNameText;
     [SerializeField] private TextMeshProUGUI _npcDialogueText;
     [SerializeField] private Button _dialoguePanelButton;
+    [SerializeField] private InteractService _interactionService;
 
     private NpcController _currentNpc;
     private NpcInteractionComponent _currentInteractionComponent;
-    private InteractService _interactionService;
     private UI_InteractionButton _uiInteractionButton;
 
     private Transform _currentInteractor;
@@ -29,7 +29,10 @@ public class UI_NpcDialogue : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        _interactionService = new InteractService();
+        if (_interactionService == null)
+        {
+            _interactionService = FindFirstObjectByType<InteractService>();
+        }
         gameObject.SetActive(false);
     }
 
@@ -147,8 +150,35 @@ public class UI_NpcDialogue : MonoBehaviour
         _currentDialogue = null;
         _currentLineIndex = 0;
 
-        _dialogueState = EDialogueUiState.Choice;
-        ShowButtons();
+        switch (_dialogueState)
+        {
+            case EDialogueUiState.Greeting:
+                _dialogueState = EDialogueUiState.Choice;
+                ShowButtons();
+                break;
+
+            case EDialogueUiState.Talking:
+                _dialogueState = EDialogueUiState.None;
+                EndCurrentInteraction();
+                break;
+
+            default:
+                _dialogueState = EDialogueUiState.None;
+                break;
+        }
+    }
+
+    private void EndCurrentInteraction()
+    {
+        if (_currentNpc == null) return;
+        if (_interactionService == null) return;
+
+        NpcInteractionContext context = new NpcInteractionContext(
+            _currentNpc,
+            _currentInteractor,
+            _currentInteractionComponent);
+
+        _interactionService.Execute(ENpcInteractionType.EndTalk, context);
     }
 
     private void ShowButtons()

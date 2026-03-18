@@ -85,10 +85,12 @@ public class NpcController : MonoBehaviour
         {
             _movement.FaceTarget(interactor.position);
         }
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void EndInteraction()
     {
+        Cursor.lockState = CursorLockMode.Locked;
         _isInteracting = false;
         _currentInteractor = null;
     }

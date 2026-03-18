@@ -67,10 +67,12 @@ public class ShopController : MonoBehaviour
         _uiShop.Open(shop.ShopData);
         _uiInventory.SetClickMode(EInventoryClickMode.Trading);
         _playerInventory.Open();
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void CloseShop()
     {
+        Cursor.lockState = CursorLockMode.Locked;
         _uiShop.Close();
         _uiInventory.SetClickMode(EInventoryClickMode.Normal);
         _playerInventory.Close();
