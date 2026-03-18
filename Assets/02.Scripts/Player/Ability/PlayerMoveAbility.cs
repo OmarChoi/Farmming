@@ -19,7 +19,6 @@ public class PlayerMoveAbility : PlayerAbility
     private float _yVelocity;
     private float _currentMoveParam;
     private bool _wasGrounded = true;
-    private bool _sprintLocked;
 
     private void Start()
     {
@@ -28,24 +27,11 @@ public class PlayerMoveAbility : PlayerAbility
         _helperInteraction = _owner.GetAbility<PlayerHelperInteractionAbility>();
         _mainCamera = Camera.main;
 
-        _animation.OnJumpApex += ApplyJumpForce;
-    }
-
-    private void OnDestroy()
-    {
-        if (_animation != null)
-            _animation.OnJumpApex -= ApplyJumpForce;
-    }
-
-    private void ApplyJumpForce()
-    {
-        _owner.UnlockAction();
-        _yVelocity = _owner.StatSo.JumpPower;
     }
 
     private void Update()
     {
-        if (!_owner.CanMove)
+        if (_owner.IsUIOpen)
         {
             UpdateAnimation(false, false);
             UpdateGravity();
@@ -57,7 +43,7 @@ public class PlayerMoveAbility : PlayerAbility
         bool isMoving = direction.sqrMagnitude > MoveThresholdSqr;
         bool isHelperEquipped = _helperInteraction.CurrentHelper != null
             && _helperInteraction.CurrentHelper.State == EHelperState.Equipped;
-        bool isSprinting = isMoving && Input.GetKey(_sprintKey) && !isHelperEquipped && !_sprintLocked;
+        bool isSprinting = isMoving && Input.GetKey(_sprintKey) && !isHelperEquipped;
 
         UpdateAnimation(isMoving, isSprinting);
         FaceMovementDirection(direction, isMoving);
@@ -100,17 +86,14 @@ public class PlayerMoveAbility : PlayerAbility
 
         if (isGrounded && !_wasGrounded)
         {
-            _sprintLocked = false;
             _animation.SetGrounded(true);
         }
 
         if (isGrounded)
         {
-            if (Input.GetKeyDown(_jumpKey) && _owner.CanMove)
+            if (Input.GetKeyDown(_jumpKey))
             {
-                _sprintLocked = true;
-                _owner.LockAction();
-                _animation.TriggerJump();
+                _yVelocity = _owner.StatSo.JumpPower;
                 _animation.SetGrounded(false);
             }
             else if (_yVelocity < 0)
