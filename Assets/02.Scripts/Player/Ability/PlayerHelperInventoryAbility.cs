@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,9 @@ public class PlayerHelperInventoryAbility : PlayerAbility
     public int CurrentIndex => _currentIndex;
     public int Count => _helperDataList.Count;
     public int SummonedIndex => _summonedIndex;
+
+    public event Action OnSelectionChanged;
+    public event Action<int> OnSummonChanged;
 
     public HelperDataSO GetData(int index)
     {
@@ -68,6 +72,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility
     {
         int count = _helperDataList.Count;
         _currentIndex = ((_currentIndex + direction) % count + count) % count;
+        OnSelectionChanged?.Invoke();
     }
 
     private void ToggleSummon()
@@ -82,6 +87,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility
             _helperInteractionAbility.Summon(_helperInstances[_currentIndex]);
             _summonedIndex = _currentIndex;
         }
+        OnSummonChanged?.Invoke(_summonedIndex);
     }
 
     public void AddHelper(HelperDataSO data)
