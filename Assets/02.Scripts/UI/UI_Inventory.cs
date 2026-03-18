@@ -15,7 +15,7 @@ public class UI_Inventory : MonoBehaviour
 
     private void Awake()
     {
-        // _panel.SetActive(false);
+        _panel.SetActive(false);
         PlayerInventoryAbility.OnLocalPlayerReady += Bind;
     }
 

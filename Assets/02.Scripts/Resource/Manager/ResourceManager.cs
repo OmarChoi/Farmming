@@ -8,6 +8,7 @@ public class ResourceManager : MonoBehaviour
 
     private ILoadSystem _loadSystem;
     private readonly Dictionary<string, Object> _cache = new();
+    private readonly HashSet<string> _labelKeys = new();
 
     private void Awake()
     {
@@ -27,17 +28,21 @@ public class ResourceManager : MonoBehaviour
 
     public async UniTask<IList<T>> LoadAllAsync<T>(string label) where T : Object
     {
-        return await _loadSystem.LoadAllAsync<T>(label);
+        IList<T> assets = await _loadSystem.LoadAllAsync<T>(label);
+        if (assets != null) _labelKeys.Add(label);
+        return assets;
     }
 
     public void Release(string key)
     {
-        if (_cache.Remove(key)) _loadSystem.Release(key);
+        if (_cache.Remove(key) || _labelKeys.Remove(key)) _loadSystem.Release(key);
     }
 
     public void ReleaseAll()
     {
         foreach (string key in _cache.Keys) _loadSystem.Release(key);
+        foreach (string label in _labelKeys) _loadSystem.Release(label);
         _cache.Clear();
+        _labelKeys.Clear();
     }
 }
