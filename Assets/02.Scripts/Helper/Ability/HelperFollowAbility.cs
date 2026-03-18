@@ -15,7 +15,7 @@ public class HelperFollowAbility : HelperAbility
     [SerializeField] private float _unequipBackForce = 3f;
     [SerializeField] private float _launchRotationSpeed = 10f;
     [SerializeField] private float _autoJumpForce = 8f;
-    [SerializeField] private float _autoJumpCheckDist = 0.5f;
+    [SerializeField] private float _autoJumpCheckDist = 2f;
     [SerializeField] private float _autoJumpMaxHeight = 2.2f;
     [SerializeField] private LayerMask _jumpCheckMask = ~0;
 
