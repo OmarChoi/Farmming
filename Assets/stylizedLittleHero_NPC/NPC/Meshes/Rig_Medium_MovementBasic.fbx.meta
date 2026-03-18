@@ -1,26 +1,9 @@
 fileFormatVersion: 2
-guid: 3eecabbe01143694b8602161a902615f
-AssetOrigin:
-  serializedVersion: 1
-  productId: 289306
-  packageName: Stylized Little Hero - NPC(basic)
-  packageVersion: 1.1
-  assetPath: Assets/stylizedLittleHero_NPC/NPC/Meshes/Char_Base.fbx
-  uploadId: 842430
+guid: 43cb59a54149f6f4db173996bf3087a8
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: char_body
-    second: {fileID: 2100000, guid: 0f3a9cbb0300da34bbbcdc6d2c5c2eab, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: char_head
-    second: {fileID: 2100000, guid: 2531e85dce9a7604c893d7a743e361da, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -39,7 +22,7 @@ ModelImporter:
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
-    animationCompression: 3
+    animationCompression: 1
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
@@ -186,6 +169,16 @@ ModelImporter:
       position: {x: -0.060243607, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
+    - name: hair_dummy
+      parentName: Bip001 Head
+      position: {x: -0.6636343, y: 0.000024230956, z: 0.00000047683716}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: face_dummy
+      parentName: Bip001 Head
+      position: {x: -0.60260296, y: 0.65702415, z: 0.0000014305114}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
     - name: Bip001 Ponytail1
       parentName: Bip001 Head
       position: {x: 0.14846611, y: -0.2528115, z: -0.000001094282}
@@ -193,22 +186,17 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001 Ponytail11
       parentName: Bip001 Ponytail1
-      position: {x: -0.32884407, y: -0.0002272129, z: -6.3027983e-10}
+      position: {x: -0.32884407, y: -0.0002272129, z: -6.3016614e-10}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001 Ponytail12
       parentName: Bip001 Ponytail11
-      position: {x: -0.28562784, y: -0.00026655197, z: -7.394192e-10}
+      position: {x: -0.28562784, y: -0.00026661158, z: -7.394192e-10}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001 Ponytail13
       parentName: Bip001 Ponytail12
-      position: {x: -0.335088, y: -0.00033783913, z: -9.368932e-10}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-    - name: head_dummy
-      parentName: Bip001 Head
-      position: {x: -0.62534094, y: 0.000024272704, z: 0.00000047683716}
+      position: {x: -0.33508807, y: -0.0003376603, z: -9.365522e-10}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001 L Clavicle
@@ -233,7 +221,7 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1.0000001}
     - name: weapon_L
       parentName: Bip001 L Hand
-      position: {x: -0.25917697, y: 0.13644111, z: 0.0031073093}
+      position: {x: -0.25917697, y: 0.13644099, z: 0.0031073075}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1.000001, z: 1}
     - name: Bip001 L Finger1
@@ -278,7 +266,7 @@ ModelImporter:
       scale: {x: 0.9999998, y: 0.99999994, z: 0.9999996}
     - name: weapon_R
       parentName: Bip001 R Hand
-      position: {x: -0.25888366, y: 0.13643706, z: -0.0031068325}
+      position: {x: -0.25888354, y: 0.13643706, z: -0.0031068325}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1.000001, z: 1}
     - name: Bip001 R Finger1
