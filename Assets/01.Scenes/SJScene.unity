@@ -169,6 +169,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 501871505}
   _objectPoint: {fileID: 286805929}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &598514
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -927,6 +931,7 @@ MonoBehaviour:
   _cellPrefab: {fileID: 1511213129674674345, guid: fd48cbae7844bb245a6e1d4aea73a105, type: 3}
   _treePrefab: {fileID: 5130300574329225930, guid: 9997c66b54f47944b86438422151638b, type: 3}
   _rockPrefab: {fileID: 5182465649738605643, guid: d475ade41136cf843992876390db7ea6, type: 3}
+  _seedDatabase: {fileID: 0}
 --- !u!4 &108541933
 Transform:
   m_ObjectHideFlags: 0
@@ -1524,17 +1529,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8256253621806027226, guid: d53750df0cdfdf348bcdaaf2a55f91c1, type: 3}
   m_PrefabInstance: {fileID: 199192459}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &199192461 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4624878179308104920, guid: d53750df0cdfdf348bcdaaf2a55f91c1, type: 3}
-  m_PrefabInstance: {fileID: 199192459}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199192460}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 17c74fd4db736ae4aaec9b36eded2501, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperPickup
 --- !u!114 &199192462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1693,6 +1687,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1077577513}
   _objectPoint: {fileID: 99740307}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &255884723
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2506,6 +2504,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 402171456}
   _objectPoint: {fileID: 315501616}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &336680125
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2667,6 +2669,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 388692911}
   _objectPoint: {fileID: 1157589761}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &347217154
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2828,6 +2834,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 887844334}
   _objectPoint: {fileID: 1875238070}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &400140562
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3290,6 +3300,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 335365899}
   _objectPoint: {fileID: 1129651591}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &497350885
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3791,6 +3805,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 101030395}
   _objectPoint: {fileID: 2108323901}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &570322231
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4457,6 +4475,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1753173577}
   _objectPoint: {fileID: 932850254}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &694662316
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5921,6 +5943,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 2528319}
   _objectPoint: {fileID: 1877098713}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &891653033
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6113,6 +6139,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1121649646}
   _objectPoint: {fileID: 519448651}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &958760664
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6215,6 +6245,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 878750827}
   _objectPoint: {fileID: 47175286}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1005136693
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6376,6 +6410,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1815846363}
   _objectPoint: {fileID: 1846915276}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1024760284
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6537,6 +6575,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1257071708}
   _objectPoint: {fileID: 1433907500}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1064274836
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6608,6 +6650,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1688382902}
   _objectPoint: {fileID: 1797082475}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1064791852
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7488,6 +7534,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1310290089}
   _objectPoint: {fileID: 1176655159}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1161669900
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8088,8 +8138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHelperAbility
   _equipKey: 102
-  _interactKey: 101
-  _currentHelper: {fileID: 199192461}
+  _equipSlot: {fileID: 4056601}
 --- !u!114 &1234563347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8891,6 +8940,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 211754585}
   _objectPoint: {fileID: 1093036578}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1345137770
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9060,6 +9113,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1081071932}
   _objectPoint: {fileID: 1117499140}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1388489931
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9463,6 +9520,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 409310941}
   _objectPoint: {fileID: 426971753}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1399610388
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10832,6 +10893,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1264326738}
   _objectPoint: {fileID: 1771703323}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1642411407
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11169,6 +11234,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 78820343}
   _objectPoint: {fileID: 151625823}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1704887709
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -12203,6 +12272,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1794396964}
   _objectPoint: {fileID: 264835755}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1802437432
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -12606,6 +12679,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1390500738}
   _objectPoint: {fileID: 1214699398}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1864073055
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13046,6 +13123,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 503891334}
   _objectPoint: {fileID: 1989917492}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1909588589
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13117,6 +13198,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 488340346}
   _objectPoint: {fileID: 161109031}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &1957016872
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13849,6 +13934,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 1819920651}
   _objectPoint: {fileID: 667837964}
+  _initialCellType: 1
+  _initialDirtLevel: 1
+  _initialObjectType: 0
+  _initialObjectLevel: 0
 --- !u!65 &2083642569
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -60,13 +60,13 @@ public class UI_HelperInventory : MonoBehaviour
 
     private void SetSlot(Image icon, HelperDataSO data)
     {
-        if (data == null || data.Icon == null)
+        if (data == null || data.HelperIcon == null)
         {
             icon.enabled = false;
             return;
         }
 
         icon.enabled = true;
-        icon.sprite = data.Icon;
+        icon.sprite = data.HelperIcon;
     }
 }

@@ -1,13 +1,21 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "HelperData", menuName = "Data/HelperData")]
+[CreateAssetMenu(fileName = "HelperDataSO", menuName = "Scriptable Objects/HelperDataSO")]
 public class HelperDataSO : ScriptableObject
 {
-    [SerializeField] private string _helperName;
-    [SerializeField] private Sprite _icon;
-    [SerializeField] private HelperController _prefab;
+    public string HelperId;
+    public string HelperName;
+    public Sprite HelperIcon;
+    public HelperController Prefab;
 
-    public string HelperName => _helperName;
-    public Sprite Icon => _icon;
-    public HelperController Prefab => _prefab;
+    public float MaxEnergy = 100f;
+    public float EnergyRecoveryPerSecond = 5f;
+
+    public int MaxLevel = 10;
+    public float BaseEnergyCost = 10f;
+    public float EnergyReducePerLevel = 1f;
+
+    public int NormalRange = 1;
+    public int EpicRange = 2;
+    public int LegendaryRange = 3;
 }
