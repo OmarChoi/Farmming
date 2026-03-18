@@ -1,7 +1,7 @@
 using System.Collections;
+using System.Text;
 using TMPro;
 using UnityEngine;
-using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class TypewriterWithWrap : MonoBehaviour
 {
@@ -51,7 +51,7 @@ public class TypewriterWithWrap : MonoBehaviour
         float maxWidth = _tmp.rectTransform.rect.width - _tmp.margin.x - _tmp.margin.z;
 
         string[] words = input.Split(' ');
-        string result = "";
+        StringBuilder result = new StringBuilder();
         string currentLine = "";
 
         foreach (string word in words)
@@ -60,12 +60,11 @@ public class TypewriterWithWrap : MonoBehaviour
                 ? word
                 : currentLine + " " + word;
 
-            _tmp.text = testLine;
-            _tmp.ForceMeshUpdate();
+            Vector2 size = _tmp.GetPreferredValues(testLine);
 
-            if (_tmp.preferredWidth > maxWidth)
+            if (size.x > maxWidth)
             {
-                result += currentLine + "\n";
+                result.AppendLine(currentLine);
                 currentLine = word;
             }
             else
@@ -73,9 +72,8 @@ public class TypewriterWithWrap : MonoBehaviour
                 currentLine = testLine;
             }
         }
-
-        result += currentLine;
-        return result;
+        result.Append(currentLine);
+        return result.ToString();
     }
 
     // 클릭이 들어오면 텍스트를 바로 완성합니다.
