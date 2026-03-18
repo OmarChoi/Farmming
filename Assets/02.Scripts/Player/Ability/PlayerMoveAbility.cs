@@ -87,13 +87,22 @@ public class PlayerMoveAbility : PlayerAbility
             _animation.SetGrounded(true);
         }
 
-        _yVelocity -= Gravity * Time.deltaTime;
-
-        if (isGrounded && Input.GetKeyDown(_jumpKey))
+        if (isGrounded)
         {
-            _yVelocity = _owner.StatSo.JumpPower;
-            _animation.TriggerJump();
-            _animation.SetGrounded(false);
+            if (Input.GetKeyDown(_jumpKey))
+            {
+                _yVelocity = _owner.StatSo.JumpPower;
+                _animation.TriggerJump();
+                _animation.SetGrounded(false);
+            }
+            else if (_yVelocity < 0)
+            {
+                _yVelocity = -2f;
+            }
+        }
+        else
+        {
+            _yVelocity -= Gravity * Time.deltaTime;
         }
 
         _wasGrounded = isGrounded;

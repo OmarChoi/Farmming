@@ -13,24 +13,34 @@ public class UI_HelperInventory : MonoBehaviour
 
     private PlayerHelperInventoryAbility _ability;
 
-    private void Start()
+    private void Awake()
     {
-        var player = FindObjectOfType<PlayerController>();
-        if (player == null) return;
+        PlayerHelperInventoryAbility.OnLocalPlayerReady += Bind;
+    }
 
-        _ability = player.GetAbility<PlayerHelperInventoryAbility>();
-        if (_ability == null) return;
+    private void OnDestroy()
+    {
+        PlayerHelperInventoryAbility.OnLocalPlayerReady -= Bind;
+        Unbind();
+    }
 
+    private void Bind(PlayerHelperInventoryAbility ability)
+    {
+        Unbind();
+
+        _ability = ability;
         _ability.OnSelectionChanged += Refresh;
         _ability.OnSummonChanged += OnSummonChanged;
         Refresh();
     }
 
-    private void OnDestroy()
+    private void Unbind()
     {
         if (_ability == null) return;
+
         _ability.OnSelectionChanged -= Refresh;
         _ability.OnSummonChanged -= OnSummonChanged;
+        _ability = null;
     }
 
     private void OnSummonChanged(int summonedIndex)
