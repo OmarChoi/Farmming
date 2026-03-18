@@ -93,8 +93,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI_Shop
   _slotParent: {fileID: 1290793207831436919}
   _slotPrefab: {fileID: 1259842627733187359, guid: 6420f4d43395e5a4ba703591d3ad5564, type: 3}
-  _root: {fileID: 238974922611429690}
+  _uiShopRoot: {fileID: 238974922611429690}
   _shopNameText: {fileID: 7932658481753285429}
+  _exitButton: {fileID: 7092274452955017886}
 --- !u!114 &5449971202197238983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -455,7 +456,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1215398732096202682}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6164896824864714847}
+        m_TargetAssemblyTypeName: UI_Shop, Assembly-CSharp
+        m_MethodName: OnClickCloseButton
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &3801645594716803783
 GameObject:
   m_ObjectHideFlags: 0

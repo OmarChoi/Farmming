@@ -1,18 +1,26 @@
 using TMPro;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using System;
+using System.Collections.Generic;
 
 public class UI_Shop : MonoBehaviour
 {
+    [Header("컴포넌트 옵션")]
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_ShopItemSlot _slotPrefab;
-    [SerializeField] private GameObject _root;
+    [SerializeField] private GameObject _uiShopRoot;
     [SerializeField] private TextMeshProUGUI _shopNameText;
-        
+
+    [Header("닫기 버튼")]
+    [SerializeField] private Button _exitButton;
+
     private readonly List<UI_ShopItemSlot> _slots = new();
 
     private ShopData _currentShopData;
     private TradeService _tradeService;
+
+    public Action OnCloseRequested;
 
     public void Init(TradeService tradeService)
     {
@@ -23,14 +31,14 @@ public class UI_Shop : MonoBehaviour
     {
         _currentShopData = shopData;
         _shopNameText.text = shopData.ShopName;
-        _root.SetActive(true);
+        _uiShopRoot.SetActive(true);
 
         CreateOrRefreshSlots();
     }
 
     public void Close()
     {
-        _root.SetActive(false);
+        _uiShopRoot.SetActive(false);
         _currentShopData = null;
     }
 
@@ -75,5 +83,10 @@ public class UI_Shop : MonoBehaviour
             Debug.LogWarning($"구매 실패 - Item: {(slot.ItemData != null ? slot.ItemData.name : "null")}");
         }
 #endif
+    }
+
+    public void OnClickCloseButton()
+    {
+        OnCloseRequested?.Invoke();
     }
 }

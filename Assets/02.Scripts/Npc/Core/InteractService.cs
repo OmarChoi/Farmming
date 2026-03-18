@@ -52,8 +52,8 @@ public class InteractService : MonoBehaviour
 #endif
             return;
         }
-
-        shopController.OpenShop(context.Npc.Shop);
+        shopController.OpenShop(context.Npc.Shop, context);
+        _uiDialogue.SetActiveFalse();
     }
 
     private void ExecuteEndTalk(NpcInteractionContext context)
