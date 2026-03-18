@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class InventoryDomain
 {
-    private readonly List<InventorySlot> _slots;
+    private List<InventorySlot> _slots;
 
     public int SlotCount => _slots.Count;
 
@@ -107,4 +107,10 @@ public class InventoryDomain
         }
     }
 
+    public void ReplaceAll(IEnumerable<InventorySlot> newSlots)
+    {
+        _slots.Clear();
+        _slots.AddRange(newSlots);
+        OnInventoryResized?.Invoke();
+    }
 }

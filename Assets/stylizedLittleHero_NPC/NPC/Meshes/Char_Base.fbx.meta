@@ -1,7 +1,14 @@
 fileFormatVersion: 2
 guid: 3eecabbe01143694b8602161a902615f
+AssetOrigin:
+  serializedVersion: 1
+  productId: 289306
+  packageName: Stylized Little Hero - NPC(basic)
+  packageVersion: 1.1
+  assetPath: Assets/stylizedLittleHero_NPC/NPC/Meshes/Char_Base.fbx
+  uploadId: 842430
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
@@ -26,8 +33,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -68,6 +73,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -178,16 +186,6 @@ ModelImporter:
       position: {x: -0.060243607, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
-    - name: hair_dummy
-      parentName: Bip001 Head
-      position: {x: -0.6636343, y: 0.000024230956, z: 0.00000047683716}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-    - name: face_dummy
-      parentName: Bip001 Head
-      position: {x: -0.60260296, y: 0.65702415, z: 0.0000014305114}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
     - name: Bip001 Ponytail1
       parentName: Bip001 Head
       position: {x: 0.14846611, y: -0.2528115, z: -0.000001094282}
@@ -195,17 +193,22 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001 Ponytail11
       parentName: Bip001 Ponytail1
-      position: {x: -0.32884407, y: -0.0002272129, z: -6.3016614e-10}
+      position: {x: -0.32884407, y: -0.0002272129, z: -6.3027983e-10}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001 Ponytail12
       parentName: Bip001 Ponytail11
-      position: {x: -0.28562784, y: -0.00026661158, z: -7.394192e-10}
+      position: {x: -0.28562784, y: -0.00026655197, z: -7.394192e-10}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001 Ponytail13
       parentName: Bip001 Ponytail12
-      position: {x: -0.33508807, y: -0.0003376603, z: -9.365522e-10}
+      position: {x: -0.335088, y: -0.00033783913, z: -9.368932e-10}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: head_dummy
+      parentName: Bip001 Head
+      position: {x: -0.62534094, y: 0.000024272704, z: 0.00000047683716}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Bip001 L Clavicle
@@ -230,7 +233,7 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1.0000001}
     - name: weapon_L
       parentName: Bip001 L Hand
-      position: {x: -0.25917697, y: 0.13644099, z: 0.0031073075}
+      position: {x: -0.25917697, y: 0.13644111, z: 0.0031073093}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1.000001, z: 1}
     - name: Bip001 L Finger1
@@ -275,7 +278,7 @@ ModelImporter:
       scale: {x: 0.9999998, y: 0.99999994, z: 0.9999996}
     - name: weapon_R
       parentName: Bip001 R Hand
-      position: {x: -0.25888354, y: 0.13643706, z: -0.0031068325}
+      position: {x: -0.25888366, y: 0.13643706, z: -0.0031068325}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1.000001, z: 1}
     - name: Bip001 R Finger1
@@ -312,7 +315,7 @@ ModelImporter:
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
-  animationType: 2
+  animationType: 3
   humanoidOversampling: 1
   avatarSetup: 1
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
@@ -322,10 +325,3 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 289306
-  packageName: Stylized Little Hero - NPC(basic)
-  packageVersion: 1.1
-  assetPath: Assets/stylizedLittleHero_NPC/NPC/Meshes/Char_Base.fbx
-  uploadId: 842430

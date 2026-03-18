@@ -13,6 +13,9 @@ public class TerrainGridManager : MonoBehaviour
     [SerializeField] private GameObject _treePrefab;
     [SerializeField] private GameObject _rockPrefab;
 
+    [Header("데이터베이스")]
+    [SerializeField] private SeedDatabase _seedDatabase;
+
     private TerrainGridData _gridData;
     private readonly Dictionary<Vector3Int, TerrainCell> _cells = new();
 
@@ -175,7 +178,7 @@ public class TerrainGridManager : MonoBehaviour
         return saveData;
     }
 
-    public void ImportSaveData(TerrainSaveData saveData, SeedDatabase seedDb)
+    public void ImportSaveData(TerrainSaveData saveData)
     {
         ClearAll();
         if (saveData == null) return;
@@ -189,7 +192,7 @@ public class TerrainGridManager : MonoBehaviour
             SpawnCell(gridPos, data);
 
             if (data.ObjectType == EGridObjectType.FarmLand)
-                _cells[gridPos].ImportFarm(cellData, seedDb);
+                _cells[gridPos].ImportFarm(cellData, _seedDatabase);
         }
     }
 

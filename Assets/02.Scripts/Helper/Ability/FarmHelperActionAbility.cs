@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FarmHelperAction : MonoBehaviour, IHelperAction
+public class FarmHelperActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private SeedConfig _currentSeed;
 
