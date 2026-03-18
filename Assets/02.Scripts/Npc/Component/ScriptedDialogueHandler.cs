@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class ScriptedDialogueHandler : IDialogueHandler
 {
-    private readonly UI_NpcDialogue _uiDialogue;
+    private readonly NpcDialogueController _dialogueController;
 
-    public ScriptedDialogueHandler(UI_NpcDialogue uiDialogue)
+    public ScriptedDialogueHandler(NpcDialogueController npcDialogueController)
     {
-        _uiDialogue = uiDialogue;
+        _dialogueController = npcDialogueController;
     }
 
     public void StartDialogue(NpcInteractionContext context, bool isStart)
@@ -34,6 +34,6 @@ public class ScriptedDialogueHandler : IDialogueHandler
             return;
         }
 
-        _uiDialogue.StartDialogueUi(selectedDialogue);
+        _dialogueController.StartDialogue(selectedDialogue);
     }
 }
