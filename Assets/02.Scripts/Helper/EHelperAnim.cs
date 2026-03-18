@@ -6,4 +6,5 @@ public enum EHelperAnim
     Equipped = 27,
     Jump = 10,
     WoodCutting = 6,
+    Stun = 4,
 }
