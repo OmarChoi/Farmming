@@ -5,6 +5,7 @@ public class PlayerMoveAbility : PlayerAbility
     [SerializeField] private KeyCode _sprintKey = KeyCode.LeftShift;
     [SerializeField] private KeyCode _jumpKey = KeyCode.Space;
     private const float Gravity = 20f;
+    private const float GroundedYVelocity = -2f;
     private const float AnimSmoothSpeed = 5f;
     private const float MoveThresholdSqr = 0.01f;
     private const float RunAimValue = 1f;
@@ -97,7 +98,7 @@ public class PlayerMoveAbility : PlayerAbility
             }
             else if (_yVelocity < 0)
             {
-                _yVelocity = -2f;
+                _yVelocity = GroundedYVelocity;
             }
         }
         else
