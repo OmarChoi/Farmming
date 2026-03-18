@@ -17,6 +17,8 @@ public class HelperController : MonoBehaviour
 
     private readonly Dictionary<Type, HelperAbility> _abilityCache = new();
 
+    private const float SummonOffset = 1.5f;
+
     private void Awake()
     {
         Level = new HelperLevel(_data);
@@ -69,6 +71,7 @@ public class HelperController : MonoBehaviour
         FollowTarget = followTarget;
         State = EHelperState.Summoned;
         transform.SetParent(null);
+        transform.position = followTarget.position + followTarget.right * SummonOffset;
         gameObject.SetActive(true);
     }
 

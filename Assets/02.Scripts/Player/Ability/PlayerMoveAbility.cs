@@ -4,7 +4,7 @@ public class PlayerMoveAbility : PlayerAbility
 {
     [SerializeField] private KeyCode _sprintKey = KeyCode.LeftShift;
     [SerializeField] private KeyCode _jumpKey = KeyCode.Space;
-    private const float Gravity = 20f;
+    private const float Gravity = 15f;
     private const float GroundedYVelocity = -2f;
     private const float AnimSmoothSpeed = 5f;
     private const float MoveThresholdSqr = 0.01f;
@@ -26,6 +26,7 @@ public class PlayerMoveAbility : PlayerAbility
         _animation = _owner.GetAbility<PlayerAnimationAbility>();
         _helperInteraction = _owner.GetAbility<PlayerHelperInteractionAbility>();
         _mainCamera = Camera.main;
+
     }
 
     private void Update()
@@ -93,7 +94,6 @@ public class PlayerMoveAbility : PlayerAbility
             if (Input.GetKeyDown(_jumpKey))
             {
                 _yVelocity = _owner.StatSo.JumpPower;
-                _animation.TriggerJump();
                 _animation.SetGrounded(false);
             }
             else if (_yVelocity < 0)
@@ -103,6 +103,9 @@ public class PlayerMoveAbility : PlayerAbility
         }
         else
         {
+            if (_wasGrounded)
+                _animation.SetGrounded(false);
+
             _yVelocity -= Gravity * Time.deltaTime;
         }
 
