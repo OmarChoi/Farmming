@@ -4,7 +4,7 @@ public class PlayerMoveAbility : PlayerAbility
 {
     [SerializeField] private KeyCode _sprintKey = KeyCode.LeftShift;
     [SerializeField] private KeyCode _jumpKey = KeyCode.Space;
-    private const float Gravity = 20f;
+    private const float Gravity = 15f;
     private const float GroundedYVelocity = -2f;
     private const float AnimSmoothSpeed = 5f;
     private const float MoveThresholdSqr = 0.01f;
@@ -19,6 +19,7 @@ public class PlayerMoveAbility : PlayerAbility
     private float _yVelocity;
     private float _currentMoveParam;
     private bool _wasGrounded = true;
+    private bool _sprintLocked;
 
     private void Start()
     {
@@ -26,11 +27,25 @@ public class PlayerMoveAbility : PlayerAbility
         _animation = _owner.GetAbility<PlayerAnimationAbility>();
         _helperInteraction = _owner.GetAbility<PlayerHelperInteractionAbility>();
         _mainCamera = Camera.main;
+
+        _animation.OnJumpApex += ApplyJumpForce;
+    }
+
+    private void OnDestroy()
+    {
+        if (_animation != null)
+            _animation.OnJumpApex -= ApplyJumpForce;
+    }
+
+    private void ApplyJumpForce()
+    {
+        _owner.UnlockAction();
+        _yVelocity = _owner.StatSo.JumpPower;
     }
 
     private void Update()
     {
-        if (_owner.IsUIOpen)
+        if (!_owner.CanMove)
         {
             UpdateAnimation(false, false);
             UpdateGravity();
@@ -42,7 +57,7 @@ public class PlayerMoveAbility : PlayerAbility
         bool isMoving = direction.sqrMagnitude > MoveThresholdSqr;
         bool isHelperEquipped = _helperInteraction.CurrentHelper != null
             && _helperInteraction.CurrentHelper.State == EHelperState.Equipped;
-        bool isSprinting = isMoving && Input.GetKey(_sprintKey) && !isHelperEquipped;
+        bool isSprinting = isMoving && Input.GetKey(_sprintKey) && !isHelperEquipped && !_sprintLocked;
 
         UpdateAnimation(isMoving, isSprinting);
         FaceMovementDirection(direction, isMoving);
@@ -85,14 +100,16 @@ public class PlayerMoveAbility : PlayerAbility
 
         if (isGrounded && !_wasGrounded)
         {
+            _sprintLocked = false;
             _animation.SetGrounded(true);
         }
 
         if (isGrounded)
         {
-            if (Input.GetKeyDown(_jumpKey))
+            if (Input.GetKeyDown(_jumpKey) && _owner.CanMove)
             {
-                _yVelocity = _owner.StatSo.JumpPower;
+                _sprintLocked = true;
+                _owner.LockAction();
                 _animation.TriggerJump();
                 _animation.SetGrounded(false);
             }
@@ -103,6 +120,9 @@ public class PlayerMoveAbility : PlayerAbility
         }
         else
         {
+            if (_wasGrounded)
+                _animation.SetGrounded(false);
+
             _yVelocity -= Gravity * Time.deltaTime;
         }
 

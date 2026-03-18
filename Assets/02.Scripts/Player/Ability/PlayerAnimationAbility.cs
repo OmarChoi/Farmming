@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerAnimationAbility : PlayerAbility
@@ -7,6 +8,8 @@ public class PlayerAnimationAbility : PlayerAbility
     private static readonly int JumpHash = Animator.StringToHash("Jump");
 
     private Animator _animator;
+
+    public event Action OnJumpApex;
 
     private void Start()
     {
@@ -26,5 +29,11 @@ public class PlayerAnimationAbility : PlayerAbility
     public void TriggerJump()
     {
         _animator.SetTrigger(JumpHash);
+    }
+
+    // Animation Event에서 호출
+    public void OnJumpApexEvent()
+    {
+        OnJumpApex?.Invoke();
     }
 }
