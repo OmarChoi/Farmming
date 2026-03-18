@@ -1,117 +1,39 @@
+using TMPro;
 using UnityEngine;
 
 // 벌목 채굴: 좌클릭(벌목) / 우클릭(채굴)
-
-public enum EChopMine
+public enum EGatherType
 {
-    Chop, // 벌목
-    Mine // 채굴
+    Wood,
+    Rock,
 }
-public class WoodCuttingMineActionAbility : FarmBaseAbility
+
+public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 {
-    [SerializeField] private EChopMine _mode;
+    [SerializeField] protected GameObject _effectWoodPrefab;
+    [SerializeField] protected Transform _effectSpawnPoint;
 
-    private IGatherable _currentTarget;
-    private HelperVfx _vfx;
-
-    protected override void Awake()
+    public void Interact(TerrainCell cell)
     {
-        base.Awake();
-        _vfx = GetComponent<HelperVfx>();
-
-        if(_vfx != null )
-        {
-            _vfx.OnWoodCuttingHitEvent += OnChopHit;
-        }
+        // 이펙트 소환
+        GameObject _effect = Instantiate(
+    _effectWoodPrefab,
+    _effectSpawnPoint.position,
+    _effectSpawnPoint.rotation
+);
+        WoodCuttingVfx cuttingVfx = _effect.GetComponent<WoodCuttingVfx>();
+        cuttingVfx.Initiate(_owner.DataSO.GatherDamage, EGatherType.Wood);
     }
 
-    private void OnDestroy()
+    public void InteractR(TerrainCell cell)
     {
-        if(_vfx != null )
-        { 
-            _vfx.OnWoodCuttingHitEvent -= OnChopHit;
-        }
-    }
-
-    public void SetMode(EChopMine mode)
-    {
-        _mode = mode;
-    }
-
-    public override void Interact(TerrainCell cell)
-    {
-        if(cell == null)
-        {
-            return;
-        }
-
-        switch(_mode)
-        {
-            case EChopMine.Chop:
-                TryWoodCutting(cell);
-                break;
-
-            case EChopMine.Mine:
-                TryMine(cell);
-                break;
-        }
-    }
-
-    private void TryWoodCutting(TerrainCell cell)
-    {
-        if(cell.CurrentObject == null)
-        {
-            Debug.Log("벌목할 나무 없음");
-            return;
-        }
-
-        if(!cell.CurrentObject.TryGetComponent<IGatherable>(out IGatherable gatherable))
-        {
-            Debug.Log("벌목 가능한 나무 아님");
-            return;
-        }
-
-        _currentTarget = gatherable;
-
-        Vector3 targetPosition = cell.CurrentObject.transform.position;
-
-        if(_vfx != null)
-        {
-            _vfx.PlayChop(targetPosition);
-        }
-        else
-        {
-            OnChopHit();
-        }
-
-    }
-
-    public void OnChopHit()
-    {
-        if(_currentTarget == null)
-        {
-            return;
-        }
-        _currentTarget.TryGather(_owner.Data.GatherDamage);
-        _currentTarget = null;
-        Debug.Log("벌목시도");
-    }
-
-    private void TryMine(TerrainCell cell)
-    {
-        if(cell.CurrentObject == null)
-        {
-            Debug.Log("채굴할 돌 없음");
-            return;
-        }
-
-        if(!cell.CurrentObject.TryGetComponent(out IGatherable gatherable))
-        {
-            Debug.Log("채굴 가능한 돌 아님");
-            return;
-        }
-
-        gatherable.TryGather(_owner.Data.GatherDamage);
-        Debug.Log("채굴시도");
+        // 이펙트 소환
+        GameObject _effect = Instantiate(
+    _effectWoodPrefab,
+    _effectSpawnPoint.position,
+    _effectSpawnPoint.rotation
+);
+        WoodCuttingVfx cuttingVfx = _effect.GetComponent<WoodCuttingVfx>();
+        cuttingVfx.Initiate(_owner.DataSO.GatherDamage, EGatherType.Wood);
     }
 }
