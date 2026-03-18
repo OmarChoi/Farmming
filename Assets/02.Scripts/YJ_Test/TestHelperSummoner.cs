@@ -3,7 +3,7 @@ using UnityEngine;
 public class TestHelperSummoner : MonoBehaviour
 {
     [SerializeField] private HelperController _helperPrefab;
-    [SerializeField] private PlayerHelperAbility _playerHelper;
+    [SerializeField] private PlayerHelperInteractionAbility _playerHelperInteraction;
 
     private HelperController _instance;
 
@@ -14,7 +14,7 @@ public class TestHelperSummoner : MonoBehaviour
             if (_instance == null)
                 _instance = Instantiate(_helperPrefab);
 
-            _playerHelper.Summon(_instance);
+            _playerHelperInteraction.Summon(_instance);
         }
     }
 }
