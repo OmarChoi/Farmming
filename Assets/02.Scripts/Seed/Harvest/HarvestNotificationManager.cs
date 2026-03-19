@@ -26,6 +26,16 @@ public class HarvestNotificationManager : MonoBehaviour
 
     }
 
+    private void OnEnable()
+    {
+        HarvestActionAbility.OnHarvested += Show;
+    }
+
+    private void OnDisable()
+    {
+        HarvestActionAbility.OnHarvested -= Show;
+    }
+
     public void Show(Sprite icon, string seedName, int amount)
     {
         HarvestNotification notification = Instantiate(_notificationPrefab, _notificationParent);
