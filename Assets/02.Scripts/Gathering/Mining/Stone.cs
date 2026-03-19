@@ -49,11 +49,11 @@ public class Stone : GatheringObject
         _shakeCoroutine = null;
     }
 
-    protected override void OnDepleted()
+    protected override void OnDepleted(GatheringInfo info)
     {
         if (_shakeCoroutine != null) StopCoroutine(_shakeCoroutine);
 
         // TODO: 부서지는 연출 (파티클, 사운드 등)
-        base.OnDepleted();
+        base.OnDepleted(info);
     }
 }
