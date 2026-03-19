@@ -22,12 +22,6 @@ public class UI_GatheringTest : MonoBehaviour
         GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
     }
 
-    public void TestGather()
-    {
-        if (_target == null) return;
-        _target.TryGather(_testDamage);
-    }
-
     private void HandleGatheringCompleted(GatheringObject obj)
     {
         if (obj != _target) return;

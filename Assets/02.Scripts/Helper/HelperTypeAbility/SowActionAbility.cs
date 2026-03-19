@@ -10,7 +10,7 @@ public class SowActionAbility : FarmBaseAbility
         _currentSeed = seed;
     }
 
-    public override void Interact(TerrainCell cell)
+    public override void InteractPrimary(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);
         if(farmTile == null)
@@ -36,5 +36,10 @@ public class SowActionAbility : FarmBaseAbility
         }
 
         farmTile.Interact(_currentSeed);
+    }
+    
+    public override void InteractSecondary(TerrainCell cell)
+    {
+        // TODO: 우클릭 동작 구현
     }
 }

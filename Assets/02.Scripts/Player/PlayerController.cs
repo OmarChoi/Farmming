@@ -21,9 +21,16 @@ public class PlayerController : MonoBehaviour
     {
         // TODO: PUN2 도입 후 PhotonView.Owner.ActorNumber.ToString()으로 변경
         PlayerId = "local";
+        SetCursorLock(true);
 
         if (SaveManager.Instance != null)
             SaveManager.Instance.RegisterPlayer(PlayerId, this);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            SetCursorLock(Cursor.lockState != CursorLockMode.Locked);
     }
 
     private void OnDestroy()
@@ -49,11 +56,19 @@ public class PlayerController : MonoBehaviour
     public void EnterUIMode()
     {
         IsUIOpen = true;
+        SetCursorLock(false);
     }
 
     public void ExitUIMode()
     {
         IsUIOpen = false;
+        SetCursorLock(true);
+    }
+
+    public void SetCursorLock(bool locked)
+    {
+        Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !locked;
     }
 
     public PlayerSaveData ExportSaveData(string playerId)

@@ -1,4 +1,4 @@
-using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 
 public class Stone : GatheringObject
@@ -8,7 +8,7 @@ public class Stone : GatheringObject
     [SerializeField] private float _shakeDuration = 0.2f;
     [SerializeField] private int _shakeCount = 6;
 
-    private Coroutine _shakeCoroutine;
+    private Tween _shakeTween;
     private Vector3 _originalPosition;
 
     protected override void Init()
@@ -18,42 +18,17 @@ public class Stone : GatheringObject
 
     protected override void Hit()
     {
-        // todo. 채광 연출 (파티클, 사운드)
-        if (_shakeCoroutine != null) StopCoroutine(_shakeCoroutine);
-
-        _shakeCoroutine = StartCoroutine(Shake_Coroutine());
-    }
-    
-    // todo. DOTween 기반으로 변경
-    private IEnumerator Shake_Coroutine()
-    {
-        if (_shakeCount <= 0) yield break;
-        float interval = _shakeDuration / _shakeCount;
-
-        for (int i = 0; i < _shakeCount; i++)
-        {
-            float damping = 1f - (float)i / _shakeCount;
-            Vector3 offset = Random.insideUnitSphere * (_shakeIntensity * damping);
-            offset.y *= 0.3f;
-            transform.localPosition = _originalPosition + offset;
-
-            float t = 0f;
-            while (t < interval)
-            {
-                t += Time.deltaTime;
-                yield return null;
-            }
-        }
-
+        _shakeTween?.Kill();
         transform.localPosition = _originalPosition;
-        _shakeCoroutine = null;
+        _shakeTween = transform.DOShakePosition(_shakeDuration, _shakeIntensity, _shakeCount, 90f, false, true, ShakeRandomnessMode.Harmonic)
+                               .OnKill(() => transform.localPosition = _originalPosition);
     }
 
-    protected override void OnDepleted()
+    protected override void OnDepleted(GatheringInfo info)
     {
-        if (_shakeCoroutine != null) StopCoroutine(_shakeCoroutine);
+        _shakeTween?.Kill();
 
         // TODO: 부서지는 연출 (파티클, 사운드 등)
-        base.OnDepleted();
+        base.OnDepleted(info);
     }
 }

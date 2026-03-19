@@ -18,28 +18,30 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
     protected virtual void Init() { }
 
-    // todo: 곡룡 시스템 구현 후 검증 로직 추가
-    // public bool ValidateGokryong(IGokryong gokryong)
-
-    public bool TryGather(int damage)
+    public bool TryGather(GatheringInfo info)
     {
-        // todo. 곡룡 검증 로직 확인
-        _currentHealth -= damage;
+        if (info.HelperGrade.CurrentGrade < _gatheringData.RequiredLevel) return false;
         if (_currentHealth < 0) return false;
+        _currentHealth -= info.Damage;
         Hit();
 
         if (_currentHealth <= 0)
         {
             OnGatheringCompleted?.Invoke(this);
-            OnDepleted();
+            OnDepleted(info);
         }
 
         return true;
     }
 
     protected abstract void Hit();
-    protected virtual void OnDepleted()
+    protected virtual void OnDepleted(GatheringInfo info)
     {
+        var inventory = info.Player.GetAbility<PlayerInventoryAbility>();
+        foreach (DropEntry entry in _gatheringData.Drops)
+        {
+            inventory.AddItem(entry.Item, entry.GetRandomQuantity());
+        }
         Destroy(gameObject);
     }
 }
