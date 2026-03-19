@@ -580,7 +580,6 @@ MonoBehaviour:
   _npcNameText: {fileID: 3115703660864716535}
   _npcDialogueText: {fileID: 3685133607933124924}
   _dialoguePanelButton: {fileID: 8988822048505437031}
-  _interactionService: {fileID: 0}
   _typewriter: {fileID: 5487203162635113631}
 --- !u!114 &1815893298679195429
 MonoBehaviour:
@@ -594,7 +593,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14eb7f03e91fcc7428d7bc23298e9171, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractService
-  _uiDialogue: {fileID: 6859164789231114969}
+  _dialogueController: {fileID: 0}
 --- !u!1 &5720044989875460714
 GameObject:
   m_ObjectHideFlags: 0
