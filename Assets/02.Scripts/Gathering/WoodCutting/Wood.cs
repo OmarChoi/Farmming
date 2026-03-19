@@ -1,4 +1,4 @@
-using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 
 public class Wood : GatheringObject
@@ -8,8 +8,7 @@ public class Wood : GatheringObject
     [SerializeField] private float _shakeDuration = 0.4f;
     [SerializeField] private int _shakeCount = 3;
 
-    private Vector3 _centralAxis;
-    private Coroutine _shakeCoroutine;
+    private Tween _shakeTween;
     private Quaternion _originalRotation;
 
     protected override void Init()
@@ -19,52 +18,19 @@ public class Wood : GatheringObject
 
     protected override void Hit()
     {
-        if (_shakeCoroutine != null) StopCoroutine(_shakeCoroutine);
-        _centralAxis = UnityEngine.Random.onUnitSphere;
-        _shakeCoroutine = StartCoroutine(Shake_Coroutine());
-    }
-
-    // todo. DOTween 기반으로 수정
-    private IEnumerator Shake_Coroutine()
-    {
-        if (_shakeCount <= 0) yield break;
-        float halfInterval = _shakeDuration / (_shakeCount * 2);
-        Vector3 axis = transform.TransformDirection(_centralAxis);
-
-        for (int i = 0; i < _shakeCount; i++)
-        {
-            float damping = 1f - (float)i / _shakeCount;
-            float currentAngle = _shakeAngle * damping;
-
-            // 한쪽으로
-            float t = 0f;
-            while (t < halfInterval)
-            {
-                float angle = Mathf.Sin(t / halfInterval * Mathf.PI * 0.5f) * currentAngle;
-                transform.rotation = _originalRotation * Quaternion.AngleAxis(angle, axis);
-                t += Time.deltaTime;
-                yield return null;
-            }
-
-            // 반대쪽으로
-            t = 0f;
-            while (t < halfInterval)
-            {
-                float angle = Mathf.Lerp(currentAngle, -currentAngle, t / halfInterval);
-                transform.rotation = _originalRotation * Quaternion.AngleAxis(angle, axis);
-                t += Time.deltaTime;
-                yield return null;
-            }
-        }
+        _shakeTween?.Kill();
+        Vector3 axis = transform.TransformDirection(Random.onUnitSphere);
+        Vector3 shakeStrength = axis * _shakeAngle;
 
         transform.rotation = _originalRotation;
-        _shakeCoroutine = null;
+        _shakeTween = transform.DOShakeRotation(_shakeDuration, shakeStrength, _shakeCount, 90f, true, ShakeRandomnessMode.Harmonic)
+                               .OnKill(() => transform.rotation = _originalRotation);
     }
 
-    protected override void OnDepleted()
+    protected override void OnDepleted(GatheringInfo info)
     {
-        if (_shakeCoroutine != null) StopCoroutine(_shakeCoroutine);
+        _shakeTween?.Kill();
         // TODO: 나무 벌목 연출 (파티클, 사운드 등)
-        base.OnDepleted();
+        base.OnDepleted(info);
     }
 }

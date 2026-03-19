@@ -2,6 +2,8 @@ using UnityEngine;
 
 public abstract class FarmBaseAbility : HelperAbility, IHelperAction
 {
+    [SerializeField] protected HelperDataSO _data;
+    
     protected FarmTile GetFarmTile(TerrainCell cell)
     {
         if(cell == null)
@@ -17,5 +19,6 @@ public abstract class FarmBaseAbility : HelperAbility, IHelperAction
         return null;
     }
 
-    public abstract void Interact(TerrainCell cell);
+    public abstract void InteractPrimary(TerrainCell cell);
+    public abstract void InteractSecondary(TerrainCell cell);
 }

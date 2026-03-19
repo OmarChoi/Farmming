@@ -23,11 +23,12 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (Input.GetKeyDown(_equipKey))
             ToggleEquip();
 
-        if (_currentHelper != null
-            && _currentHelper.State == EHelperState.Equipped
-            && Input.GetMouseButtonDown(0))
+        if (_currentHelper != null && _currentHelper.State == EHelperState.Equipped)
         {
-            TryInteract();
+            if (Input.GetMouseButtonDown(0))
+                TryInteractPrimary();
+            else if (Input.GetMouseButtonDown(1))
+                TryInteractSecondary();
         }
     }
 
@@ -37,7 +38,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             Unsummon();
 
         _currentHelper = helper;
-        _currentHelper.Summon(transform);
+        _currentHelper.Summon(_owner);
     }
 
     public void Unsummon()
@@ -61,11 +62,19 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             _currentHelper.Equip(_equipSlot);
     }
 
-    private void TryInteract()
+    private void TryInteractPrimary()
     {
         TerrainCell cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
-        _currentHelper.Interact(cell);
+        _currentHelper.InteractPrimary(cell);
+    }
+
+    private void TryInteractSecondary()
+    {
+        TerrainCell cell = _terrainAbility.GetFrontCell();
+        if (cell == null) return;
+
+        _currentHelper.InteractSecondary(cell);
     }
 }

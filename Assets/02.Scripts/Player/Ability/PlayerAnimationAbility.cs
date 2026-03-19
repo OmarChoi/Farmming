@@ -4,6 +4,7 @@ public class PlayerAnimationAbility : PlayerAbility
 {
     private static readonly int MoveHash = Animator.StringToHash("Move");
     private static readonly int GroundedHash = Animator.StringToHash("Grounded");
+    private static readonly int GreetHash = Animator.StringToHash("Greet");
 
     private Animator _animator;
 
@@ -20,5 +21,10 @@ public class PlayerAnimationAbility : PlayerAbility
     public void SetGrounded(bool grounded)
     {
         _animator.SetBool(GroundedHash, grounded);
+    }
+
+    public void PlayGreet()
+    {
+        _animator.SetTrigger(GreetHash);
     }
 }
