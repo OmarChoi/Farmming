@@ -7,7 +7,7 @@ public class NpcAnimatorController : MonoBehaviour
     [SerializeField] private Animator _animator;
 
     [Header("애니메이터 매개변수 명칭 (최대한 통일)")]
-    [SerializeField] private string _moveBoolName = "Move";
+    [SerializeField] private string _moveFloatName = "Move";
     [SerializeField] private string _greetTriggerName = "Greet";
     [SerializeField] private string _talkTriggerName = "Talk";
 
@@ -27,7 +27,7 @@ public class NpcAnimatorController : MonoBehaviour
             _animator = GetComponent<Animator>();
         }
 
-        _moveHash = Animator.StringToHash(_moveBoolName);
+        _moveHash = Animator.StringToHash(_moveFloatName);
         _greetHash = Animator.StringToHash(_greetTriggerName);
         _talkHash = Animator.StringToHash(_talkTriggerName);
 

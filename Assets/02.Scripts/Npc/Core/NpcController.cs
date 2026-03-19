@@ -33,9 +33,9 @@ public class NpcController : MonoBehaviour
 
     private void Awake()
     {
-        _animator = GetComponent<Animator>();
-        _movement = GetComponent<NpcMovement>();
-        _anim = GetComponent<NpcAnimatorController>();
+        if (_animator == null) _animator = GetComponent<Animator>();
+        if (_movement == null) _movement = GetComponent<NpcMovement>();
+        if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
 
         _movement.Initialize(_anim);
     }
@@ -84,7 +84,7 @@ public class NpcController : MonoBehaviour
         return true;
     }
 
-    public void StartInteraction(Transform interactor)
+    public async void StartInteraction(Transform interactor)
     {
         _isInteracting = true;
         _currentInteractor = interactor;
@@ -93,8 +93,9 @@ public class NpcController : MonoBehaviour
 
         if (interactor != null)
         {
-            _movement.FaceTarget(interactor.position);
+            await _movement.FaceTargetAsync(interactor.position);
         }
+        _anim?.PlayGreet();
     }
 
     public void EndInteraction()
