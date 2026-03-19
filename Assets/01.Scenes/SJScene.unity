@@ -3836,6 +3836,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 128.89194
       objectReference: {fileID: 0}
+    - target: {fileID: 4836033121362095532, guid: c0d6566270cbfec458c706583dec844a, type: 3}
+      propertyPath: FollowPosition
+      value: 
+      objectReference: {fileID: 302995072}
     - target: {fileID: 5241552822394386398, guid: c0d6566270cbfec458c706583dec844a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: -60.220474
@@ -16677,7 +16681,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
