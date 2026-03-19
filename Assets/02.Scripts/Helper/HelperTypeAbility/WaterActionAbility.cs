@@ -3,7 +3,7 @@ using UnityEngine;
 // 관수 곡룡: FarmDry => FarmWet
 public class WaterActionAbility : FarmBaseAbility
 {
-    public override void Interact(TerrainCell cell)
+    public override void InteractPrimary(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);
         if(farmTile == null)
@@ -24,5 +24,10 @@ public class WaterActionAbility : FarmBaseAbility
         }
 
         farmTile.Interact();
+    }
+    
+    public override void InteractSecondary(TerrainCell cell)
+    {
+        // TODO: 우클릭 동작 구현
     }
 }

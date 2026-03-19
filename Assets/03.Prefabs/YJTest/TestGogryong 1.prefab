@@ -85,6 +85,7 @@ GameObject:
   - component: {fileID: 1400545486345211286}
   - component: {fileID: 3136309841834874830}
   - component: {fileID: 4775430641017034686}
+  - component: {fileID: 3212463730062119642}
   m_Layer: 7
   m_Name: Ability
   m_TagString: Untagged
@@ -161,6 +162,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40ed055f08a53d645a375abf45fdb88b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HelperAnimationAbility
+--- !u!114 &3212463730062119642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8733368418294624376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
 --- !u!1001 &8318614912405390811
 PrefabInstance:
   m_ObjectHideFlags: 0
