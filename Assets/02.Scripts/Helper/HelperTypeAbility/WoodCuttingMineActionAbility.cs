@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 
 // 벌목 채굴: 좌클릭(벌목) / 우클릭(채굴)

@@ -13,7 +13,7 @@ public class TerrainCell : MonoBehaviour
 
     private TerrainCellData _data;
     private FarmTile _farmTile;
-    public GameObject CurrentObject;
+    public GameObject CurrentObject; { get; private set; }
 
     public Vector3Int GridPosition { get; private set; }
     public TerrainCellData Data => _data;
