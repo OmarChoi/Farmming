@@ -126,6 +126,7 @@ GameObject:
   - component: {fileID: 20139192979547410}
   - component: {fileID: 3299872868283211985}
   - component: {fileID: 6476242747128799532}
+  - component: {fileID: 2164250243309182394}
   m_Layer: 0
   m_Name: NormalTree
   m_TagString: Untagged
@@ -241,7 +242,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wood
   _gatheringData: {fileID: 11400000, guid: 3d8aa87432d2c1c4a964c59898efc348, type: 2}
-  _centralAxis: {x: 1, y: 0, z: 0}
   _shakeAngle: 5
   _shakeDuration: 0.4
   _shakeCount: 3
+--- !u!65 &2164250243309182394
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5130300574329225930}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.3193092, y: 4.925148, z: 0.48847216}
+  m_Center: {x: -0.064759254, y: 2.4628859, z: -0.0090715885}
