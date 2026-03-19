@@ -6,19 +6,27 @@ public class PlayerCameraAbility : PlayerAbility
     [SerializeField] private Transform _cameraRoot;
     private const float MinVerticalAngle = -60f;
     private const float MaxVerticalAngle = 60f;
+    private const float DefaultReturnSpeed = 10f;
 
     private float _mx;
     private float _my;
 
-    private CameraPreset _currentPreset;
-    private Transform _presetTarget;
-    private float _presetSide;
+    private PresetState _preset;
     private Vector3 _defaultLocalPos;
     private Vector3 _currentOffset;
 
+    private struct PresetState
+    {
+        public CameraPreset data;
+        public Transform target;
+        public float side; // +1 = 오른쪽, -1 = 왼쪽
+
+        public bool IsActive => data != null;
+        public bool HasTarget => target != null;
+    }
+
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
         _defaultLocalPos = _cameraRoot.localPosition;
         _currentOffset = _defaultLocalPos;
 
@@ -26,36 +34,24 @@ public class PlayerCameraAbility : PlayerAbility
         vcam.Follow = _cameraRoot;
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
-                ? CursorLockMode.None
-                : CursorLockMode.Locked;
-        }
-    }
-
     public void SetPreset(CameraPreset preset, Transform target = null)
     {
-        _currentPreset = preset;
-        _presetTarget = target;
+        _preset.data = preset;
+        _preset.target = target;
 
         if (target != null)
         {
-            // NPC가 카메라 기준 왼쪽인지 오른쪽인지 판별
             Vector3 toTarget = target.position - _owner.transform.position;
             toTarget.y = 0f;
             Vector3 camForward = Quaternion.Euler(0f, _mx, 0f) * Vector3.forward;
             float cross = camForward.x * toTarget.z - camForward.z * toTarget.x;
-            _presetSide = cross < 0f ? 1f : -1f; // +1 = 오른쪽, -1 = 왼쪽
+            _preset.side = cross < 0f ? 1f : -1f;
         }
     }
 
     public void ClearPreset()
     {
-        _currentPreset = null;
-        _presetTarget = null;
+        _preset = default;
     }
 
     private void LateUpdate()
@@ -67,60 +63,68 @@ public class PlayerCameraAbility : PlayerAbility
             _my = Mathf.Clamp(_my, MinVerticalAngle, MaxVerticalAngle);
         }
 
-        if (_currentPreset != null)
+        if (_preset.IsActive)
         {
-            ApplyPreset();
+            if (_preset.HasTarget)
+                ApplyTargetPreset();
+            else
+                ApplyLocalPreset();
         }
         else
         {
-            _currentOffset = Vector3.Lerp(_currentOffset, _defaultLocalPos, 10f * Time.deltaTime);
+            _currentOffset = Vector3.Lerp(_currentOffset, _defaultLocalPos, DefaultReturnSpeed * Time.deltaTime);
             _cameraRoot.localPosition = _currentOffset;
             _cameraRoot.rotation = Quaternion.Euler(-_my, _mx, 0f);
         }
     }
 
-    private void ApplyPreset()
+    // NPC 대화 등 — 타겟 방향으로 회전 + 측면 이동 + 줌
+    private void ApplyTargetPreset()
     {
-        float speed = _currentPreset.TransitionSpeed;
+        float speed = _preset.data.TransitionSpeed;
 
-        if (_presetTarget != null)
-        {
-            // 타겟 기준 (NPC 대화 등)
-            Vector3 toTarget = _presetTarget.position - _owner.transform.position;
-            toTarget.y = 0f;
-            float rawTargetMx = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+        Vector3 toTarget = _preset.target.position - _owner.transform.position;
+        toTarget.y = 0f;
+        float rawTargetMx = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
 
-            // Yaw: NPC 방향 + 반대쪽으로 살짝 회전 (둘 다 보이게)
-            float yawOffset = _presetSide * _currentPreset.RotationOffset.y;
-            float targetMx = _mx + Mathf.DeltaAngle(_mx, rawTargetMx - yawOffset);
-            // Pitch: 고정 각도 (음수 = 위에서 아래)
-            float targetMy = _currentPreset.RotationOffset.x;
+        // Yaw: NPC 방향 + 반대쪽으로 살짝 회전 (둘 다 보이게)
+        float yawOffset = _preset.side * _preset.data.RotationOffset.y;
+        float targetMx = _mx + Mathf.DeltaAngle(_mx, rawTargetMx - yawOffset);
+        // Pitch: 고정 각도 (음수 = 위에서 아래)
+        float targetMy = _preset.data.RotationOffset.x;
 
-            _mx = Mathf.Lerp(_mx, targetMx, speed * Time.deltaTime);
-            _my = Mathf.Lerp(_my, targetMy, speed * Time.deltaTime);
+        _mx = Mathf.Lerp(_mx, targetMx, speed * Time.deltaTime);
+        _my = Mathf.Lerp(_my, targetMy, speed * Time.deltaTime);
 
-            // 위치: NPC 쪽으로 측면 이동 + 줌
-            Vector3 offset = new Vector3(_presetSide * _currentPreset.PositionOffset.x, _currentPreset.PositionOffset.y, _currentPreset.PositionOffset.z);
-            Vector3 worldOffset = Quaternion.Euler(0f, _mx, 0f) * offset;
-            Vector3 localOffset = _owner.transform.InverseTransformDirection(worldOffset);
-            Vector3 targetLocalPos = _defaultLocalPos + localOffset;
+        Vector3 offset = new Vector3(
+            _preset.side * _preset.data.PositionOffset.x,
+            _preset.data.PositionOffset.y,
+            _preset.data.PositionOffset.z);
+        ApplyPositionOffset(offset, speed, _mx);
+        _cameraRoot.rotation = Quaternion.Euler(-_my, _mx, 0f);
+    }
 
-            _currentOffset = Vector3.Lerp(_currentOffset, targetLocalPos, speed * Time.deltaTime);
-            _cameraRoot.localPosition = _currentOffset;
-            _cameraRoot.rotation = Quaternion.Euler(-_my, _mx, 0f);
-        }
-        else
-        {
-            // 플레이어 기준 (인벤토리 등) — 카메라 yaw 기준 월드 오프셋 → 플레이어 로컬로 변환
-            Vector3 worldOffset = Quaternion.Euler(0f, _mx, 0f) * _currentPreset.PositionOffset;
-            Vector3 localOffset = _owner.transform.InverseTransformDirection(worldOffset);
-            Vector3 targetLocalPos = _defaultLocalPos + localOffset;
-            _currentOffset = Vector3.Lerp(_currentOffset, targetLocalPos, speed * Time.deltaTime);
-            _cameraRoot.localPosition = _currentOffset;
+    // 인벤토리 등 — 위치 오프셋 + 회전 오프셋
+    private void ApplyLocalPreset()
+    {
+        float speed = _preset.data.TransitionSpeed;
 
-            Quaternion targetRot = Quaternion.Euler(-_my + _currentPreset.RotationOffset.x,
-                _mx + _currentPreset.RotationOffset.y, _currentPreset.RotationOffset.z);
-            _cameraRoot.rotation = Quaternion.Slerp(_cameraRoot.rotation, targetRot, speed * Time.deltaTime);
-        }
+        ApplyPositionOffset(_preset.data.PositionOffset, speed, _mx);
+
+        Quaternion targetRot = Quaternion.Euler(
+            -_my + _preset.data.RotationOffset.x,
+            _mx + _preset.data.RotationOffset.y,
+            _preset.data.RotationOffset.z);
+        _cameraRoot.rotation = Quaternion.Slerp(_cameraRoot.rotation, targetRot, speed * Time.deltaTime);
+    }
+
+    // 지정된 yaw 기준 오프셋을 플레이어 로컬 공간으로 변환하여 적용
+    private void ApplyPositionOffset(Vector3 offset, float speed, float yaw)
+    {
+        Vector3 worldOffset = Quaternion.Euler(0f, yaw, 0f) * offset;
+        Vector3 localOffset = _owner.transform.InverseTransformDirection(worldOffset);
+        Vector3 targetLocalPos = _defaultLocalPos + localOffset;
+        _currentOffset = Vector3.Lerp(_currentOffset, targetLocalPos, speed * Time.deltaTime);
+        _cameraRoot.localPosition = _currentOffset;
     }
 }

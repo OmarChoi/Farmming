@@ -4,6 +4,7 @@ public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
 {
     [SerializeField] private NpcDialogueController _dialogueController;
     private NpcController _npcController;
+    private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
 
     private void Awake()
@@ -22,10 +23,10 @@ public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
             return;
         }
 
+        _playerController = interactor.GetComponentInParent<PlayerController>();
         _playerInteraction = interactor.GetComponentInChildren<PlayerNPCInteractionAbility>();
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        _playerController?.SetCursorLock(false);
         _npcController.StartInteraction(interactor);
 
         _dialogueController.Open(_npcController, interactor);
@@ -33,12 +34,12 @@ public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
 
     public void EndInteraction()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        _playerController?.SetCursorLock(true);
 
         _dialogueController.Close();
         _npcController.EndInteraction();
         _playerInteraction?.EndInteraction();
         _playerInteraction = null;
+        _playerController = null;
     }
 }
