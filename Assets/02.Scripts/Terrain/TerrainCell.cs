@@ -13,7 +13,7 @@ public class TerrainCell : MonoBehaviour
 
     private TerrainCellData _data;
     private FarmTile _farmTile;
-    private GameObject _currentObject;
+    public GameObject CurrentObject { get; private set; }
 
     public Vector3Int GridPosition { get; private set; }
     public TerrainCellData Data => _data;
@@ -88,7 +88,7 @@ public class TerrainCell : MonoBehaviour
     {
         ClearCurrentObject();
         _data.SetObject(type);
-        _currentObject = Instantiate(prefab, _objectPoint.position, Quaternion.identity, _objectPoint);
+        CurrentObject = Instantiate(prefab, _objectPoint.position, Quaternion.identity, _objectPoint);
     }
 
     public void DestroyObject()
@@ -114,9 +114,9 @@ public class TerrainCell : MonoBehaviour
 
     private void ClearCurrentObject()
     {
-        if (_currentObject != null)
-            Destroy(_currentObject);
+        if (CurrentObject != null)
+            Destroy(CurrentObject);
 
-        _currentObject = null;
+        CurrentObject = null;
     }
 }
