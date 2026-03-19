@@ -8,12 +8,18 @@ public class NpcMovement : MonoBehaviour
     private NavMeshAgent _agent;
     private NpcAnimatorController _anim;
 
-    public float MoveSpeed => Mathf.Clamp01(_agent.velocity.sqrMagnitude);
+    public float MoveSpeed => Mathf.Clamp01(_agent.desiredVelocity.magnitude / _originalSpeed);
+
+    private float _originalSpeed;
+    private float _halfSpeed = 0.5f;
 
     private Coroutine _rotateCoroutine;
 
+    [Header("이동 옵션")]
+    [SerializeField] private float _walkDistance = 18f;
+
     [Header("회전 옵션")]
-    [SerializeField] private float _rotationSpeed = 270f;  // 초당 돌 각도입니다. (360f = 초당 360도)
+    [SerializeField] private float _rotationSpeed = 240f;  // 초당 돌 각도입니다. (360f = 초당 360도)
     [SerializeField] private float _turnMoveSpeed = 0.5f;
 
     private float _minTurnAngle = 0.5f;
@@ -22,11 +28,8 @@ public class NpcMovement : MonoBehaviour
     {
         _agent = GetComponent<NavMeshAgent>();
         _anim = GetComponent<NpcAnimatorController>();
-    }
 
-    public void Initialize(NpcAnimatorController anim)
-    {
-        _anim = anim;
+        _originalSpeed = _agent.speed;
     }
 
     private void Update()
@@ -34,8 +37,24 @@ public class NpcMovement : MonoBehaviour
         _anim?.SetMove(MoveSpeed);
     }
 
+    public void Initialize(NpcAnimatorController anim)
+    {
+        _anim = anim;
+    }
+
     public void MoveTo(Vector3 destination)
     {
+        float distance = Vector3.Distance(transform.position, destination);
+
+        if (distance <= _walkDistance)
+        {
+            _agent.speed = _originalSpeed * _halfSpeed;
+        }
+        else
+        {
+            _agent.speed = _originalSpeed;
+        }
+
         _agent.SetDestination(destination);
     }
 
@@ -104,6 +123,7 @@ public class NpcMovement : MonoBehaviour
 
         _agent.ResetPath();
         _agent.Warp(position);
+        _agent.velocity = Vector3.zero;
     }
 
     public bool HasArrived()

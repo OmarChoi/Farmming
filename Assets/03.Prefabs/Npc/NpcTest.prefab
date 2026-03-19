@@ -155,7 +155,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0570646b414234a4ba423eda24c6556f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcMovement
-  _rotationSpeed: 270
+  _walkDistance: 18
+  _rotationSpeed: 240
   _turnMoveSpeed: 0.6
 --- !u!114 &919438771620180480
 MonoBehaviour:
