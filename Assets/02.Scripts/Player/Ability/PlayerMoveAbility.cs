@@ -31,7 +31,7 @@ public class PlayerMoveAbility : PlayerAbility
 
     private void Update()
     {
-        if (_owner.IsUIOpen)
+        if (!_owner.CanMove)
         {
             UpdateAnimation(false, false);
             UpdateGravity();

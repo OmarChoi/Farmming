@@ -55,8 +55,6 @@ public class ShopController : MonoBehaviour
         _uiShop.Open(shop.ShopData);
         _uiInventory.SetClickMode(EInventoryClickMode.Trading);
         _playerInventory.Open();
-
-        Cursor.lockState = CursorLockMode.None;
     }
 
     public void CloseShop()
@@ -64,8 +62,6 @@ public class ShopController : MonoBehaviour
         _uiShop.Close();
         _uiInventory.SetClickMode(EInventoryClickMode.Normal);
         _playerInventory.Close();
-
-        Cursor.lockState = CursorLockMode.Locked;
 
         _currentContext?.InteractionComponent?.EndInteraction();
         _currentContext = null;

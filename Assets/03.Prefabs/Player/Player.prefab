@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 4498252563356469849}
   - component: {fileID: 3239668604596787163}
   - component: {fileID: 2716549386606580851}
+  - component: {fileID: 1445132337226200713}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -122,6 +123,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventoryAbility
   _inventoryKey: 105
   _itemDatabase: {fileID: 11400000, guid: 66523119e2bac034c9f33610f00da3fb, type: 2}
+  _cameraPreset: {fileID: 11400000, guid: cd35b175f866d154681e9bdf810421a3, type: 2}
 --- !u!114 &4498252563356469849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -166,9 +168,29 @@ MonoBehaviour:
   _summonKey: 101
   _rotateLeftKey: 49
   _rotateRightKey: 51
+  _helperDatabase: {fileID: 11400000, guid: 64bd1b9ee87227b49b735cf4909af4cf, type: 2}
   _helperDataList:
   - {fileID: 11400000, guid: 023e39a7f2636fd42962f77067916c4d, type: 2}
   - {fileID: 11400000, guid: cb93418333635044b9bfc99354629579, type: 2}
+--- !u!114 &1445132337226200713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80246df92dcd39141b7cef5cb3daf55d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TestInteracter
+  _radius: 5
+  _interactionLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  _interactKey: 112
+  _rotationSpeed: 10
+  _cameraPreset: {fileID: 11400000, guid: bc51984899890d94c806c70001068ef1, type: 2}
 --- !u!1 &4055360776355550448
 GameObject:
   m_ObjectHideFlags: 0
