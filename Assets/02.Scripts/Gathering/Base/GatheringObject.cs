@@ -20,7 +20,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
     public bool TryGather(GatheringInfo info)
     {
-        // todo. 곡룡 검증 로직 확인
+        if (info.HelperGrade.CurrentGrade > _gatheringData.RequiredLevel) return false;
         if (_currentHealth < 0) return false;
         _currentHealth -= info.Damage;
         Hit();
