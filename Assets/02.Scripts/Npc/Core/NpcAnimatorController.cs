@@ -41,6 +41,7 @@ public class NpcAnimatorController : MonoBehaviour
 
         _resetFloatHashes.Add(_moveHash);
         _resetTriggerHashes.Add(_greetHash);
+        _resetTriggerHashes.Add(_talkHash);
     }
 
     // ---- 외부 호출용 ----

@@ -76,7 +76,6 @@ public class NpcDialogueController : MonoBehaviour
             EndDialogue();
             return;
         }
-        _anim.PlayTalk();
 
         _currentDialogue = dialogueSO;
         _currentLineIndex = 0;
@@ -160,6 +159,7 @@ public class NpcDialogueController : MonoBehaviour
         switch (type)
         {
             case ENpcInteractionType.Talk:
+                _anim.PlayTalk();
                 _dialogueState = EDialogueUiState.Talking;
                 _interactionService.ExecuteNormalTalk(CreateContext());
                 break;
