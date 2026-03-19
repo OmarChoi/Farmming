@@ -125,7 +125,8 @@ GameObject:
   - component: {fileID: 8017924024679781129}
   - component: {fileID: 7609944182922762100}
   - component: {fileID: 3400183621274649238}
-  - component: {fileID: 607728294877170062}
+  - component: {fileID: 1912861716771095794}
+  - component: {fileID: 6053756098560208431}
   m_Layer: 7
   m_Name: Ability
   m_TagString: Untagged
@@ -204,7 +205,8 @@ MonoBehaviour:
   _effectWoodPrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
---- !u!114 &607728294877170062
+  _idleTransition: 0.5
+--- !u!114 &1912861716771095794
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -216,6 +218,71 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
+--- !u!114 &6053756098560208431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7649335919829065423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029c6d3a7809ac74eb59252ac5d10493, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StoneMineAbility
+  _effectStonePrefab: {fileID: 6268602327854917636, guid: d4622163da72bb44abd45d989c2b814b, type: 3}
+  _effectSpawnPoint: {fileID: 5593292928980374344}
+  _jumpHeight: 2
+  _jumpDuration: 0.5
+  _returnDuration: 0.5
+  _endEffect: 0.2
+  _stunDuration: 0.5
+  _rejumpHeight: 0.5
+  _rotatinDuration: 0.2
+  _headOffset: 0.5
+  _jumpCount: 1
+  _rayOriginHeight: 3
+  _rayDistance: 5
+--- !u!1 &8563632745614245556
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5593292928980374344}
+  - component: {fileID: 8930431923011018131}
+  m_Layer: 7
+  m_Name: StoneEffectSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5593292928980374344
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8563632745614245556}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.1, z: 0}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 3321478947951795686}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &8930431923011018131
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8563632745614245556}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1001 &2861563108909078664
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -426,6 +493,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 697516973218170222, guid: 12241b1e12d210f41b2d428e812c8674, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5572470803985998500}
+    - targetCorrespondingSourceObject: {fileID: 697516973218170222, guid: 12241b1e12d210f41b2d428e812c8674, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5593292928980374344}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 12241b1e12d210f41b2d428e812c8674, type: 3}
 --- !u!4 &3321478947951795686 stripped
