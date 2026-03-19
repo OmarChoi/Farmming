@@ -2,15 +2,19 @@ using UnityEngine;
 
 public class NpcController : MonoBehaviour
 {
-    [Header("Npc 데이터 관련")]
+    [Header("Npc 컴포넌트")]
+    [SerializeField] private Animator _animator;
+    [SerializeField] private NpcMovement _movement;
+    [SerializeField] private NpcAnimatorController _anim;
+
+    [Header("Npc 데이터")]
     [SerializeField] private NpcSchedule _npcSchedule;
     [SerializeField] private NpcInteractionOption[] _interactionOptions;
 
-    [Header("상점 관련 옵션")]
+    [Header("상점 옵션")]
     [SerializeField] private Shop _shop;
 
     private NpcData _npcData;
-    private NpcMovement _movement;
     private Transform _currentInteractor;
 
     private int _timeOffset;
@@ -18,6 +22,8 @@ public class NpcController : MonoBehaviour
 
     private bool _isInteracting;
 
+    public Animator Animator => _animator;
+    public NpcAnimatorController Anim => _anim;
     public NpcData Data => _npcData;
     public NpcSchedule Schedule => _npcSchedule;
     public Shop Shop => _shop;
@@ -27,7 +33,11 @@ public class NpcController : MonoBehaviour
 
     private void Awake()
     {
-        _movement = GetComponent<NpcMovement>();
+        if (_animator == null) _animator = GetComponent<Animator>();
+        if (_movement == null) _movement = GetComponent<NpcMovement>();
+        if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
+
+        _movement.Initialize(_anim);
     }
 
     public void Initialize(NpcData data)
@@ -74,7 +84,7 @@ public class NpcController : MonoBehaviour
         return true;
     }
 
-    public void StartInteraction(Transform interactor)
+    public async void StartInteraction(Transform interactor)
     {
         _isInteracting = true;
         _currentInteractor = interactor;
@@ -83,8 +93,9 @@ public class NpcController : MonoBehaviour
 
         if (interactor != null)
         {
-            _movement.FaceTarget(interactor.position);
+            await _movement.FaceTargetAsync(interactor.position);
         }
+        _anim?.PlayGreet();
     }
 
     public void EndInteraction()
