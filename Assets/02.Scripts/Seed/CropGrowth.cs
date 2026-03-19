@@ -100,7 +100,6 @@ public class CropGrowth : MonoBehaviour
         }
     }
 
-    // 수확 호출 (외부에서 E키 수확 시 호출)
     public void Harvest()
     {
         if (_isGrowing)
@@ -112,31 +111,6 @@ public class CropGrowth : MonoBehaviour
         {
             Debug.Log("아직 성장 시작 안함");
             return;
-        }
-
-        int harvestAmount = Random.Range(_seedConfig.HarvestAmountMin, _seedConfig.HarvestAmountMax + 1);
-        Debug.Log($"{_seedConfig.SeedName}: {harvestAmount}수확");
-
-        if (_seedConfig.SeedIcon != null)
-        {
-            HarvestNotificationManager.Instance.Show(_seedConfig.SeedIcon, _seedConfig.SeedName, harvestAmount);
-        }
-
-        if (_inventoryAbility != null && _seedConfig.HarvestItem != null)
-        {
-            _inventoryAbility.AddItem(_seedConfig.HarvestItem, harvestAmount);
-            Debug.Log("인벤토리에 수확물 추가");
-        }
-        else
-        {
-            if(_inventoryAbility == null)
-            {
-                Debug.Log("인벤토리 없음");
-            }
-            if(_seedConfig.HarvestItem == null)
-            {
-                Debug.Log("수확물 설정 없음");
-            }
         }
 
         if (_currentCropObject != null)
