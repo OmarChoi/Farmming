@@ -13,6 +13,19 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     [SerializeField] protected GameObject _effectStonePrefab;
     [SerializeField] protected Transform _effectSpawnPoint;
 
+    private StoneMineAbility _stoneMineAbility;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        _stoneMineAbility = _owner.GetAbility<StoneMineAbility>();
+    }
+
+    public void Interact(TerrainCell cell)
+    {
+        InteractPrimary(cell);
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         // 이펙트 소환
@@ -24,8 +37,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     public void InteractSecondary(TerrainCell cell)
     {
         // 이펙트 소환
-        GameObject _effect = Instantiate(_effectStonePrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
-        WoodCuttingVFX cuttingVfx = _effect.GetComponent<WoodCuttingVFX>();
-        cuttingVfx.Initiate(_owner.Data.GatherDamage, EGatherType.Stone);
+        _stoneMineAbility?.JumpAndSmash(cell);
     }
 }
