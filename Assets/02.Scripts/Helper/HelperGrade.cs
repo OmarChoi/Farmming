@@ -10,7 +10,7 @@ public class HelperGrade
 {
     private readonly HelperDataSO _data;
 
-    public EHelperGrade CurrentGrade { get; private set; }
+    public EHelperGrade CurrentGrade { get; internal set; }
 
     public HelperGrade(HelperDataSO data)
     {
