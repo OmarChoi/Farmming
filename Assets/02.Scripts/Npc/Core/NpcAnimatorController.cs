@@ -15,8 +15,8 @@ public class NpcAnimatorController : MonoBehaviour
     private int _greetHash;
 
     // 애니메이터 리셋 리스트입니다.
+    private readonly List<int> _resetFloatHashes = new();
     private readonly List<int> _resetTriggerHashes = new();
-    private readonly List<int> _resetBoolHashes = new();
 
     private void Awake()
     {
@@ -34,18 +34,18 @@ public class NpcAnimatorController : MonoBehaviour
     private void BuildResetLists()
     {
         _resetTriggerHashes.Clear();
-        _resetBoolHashes.Clear();
+        _resetFloatHashes.Clear();
 
-        _resetBoolHashes.Add(_moveHash);
+        _resetFloatHashes.Add(_moveHash);
         _resetTriggerHashes.Add(_greetHash);
     }
 
     // ---- 외부 호출용 ----
     // 스폰/리스폰/풀에서 꺼낼 때 호출을 추천합니다.
-    public void SetMove(bool isMoving)
+    public void SetMove(float moveSpeed)
     {
         if (_animator == null) return;
-        _animator.SetBool(_moveHash, isMoving);
+        _animator.SetFloat(_moveHash, moveSpeed);
     }
 
     public void PlayGreet()
@@ -61,10 +61,10 @@ public class NpcAnimatorController : MonoBehaviour
     {
         if (_animator == null) return;
 
-        // Bool을 리셋합니다.
-        for (int i = 0; i < _resetBoolHashes.Count; i++)
+        // Float를 리셋합니다.
+        for (int i = 0; i < _resetFloatHashes.Count; i++)
         {
-            _animator.SetBool(_resetBoolHashes[i], false);
+            _animator.SetFloat(_resetFloatHashes[i], 0);
         }
 
         // Trigger를 리셋합니다.

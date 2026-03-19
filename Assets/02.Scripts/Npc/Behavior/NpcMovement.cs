@@ -6,14 +6,32 @@ using System.Collections;
 public class NpcMovement : MonoBehaviour
 {
     private NavMeshAgent _agent;
+    private NpcAnimatorController _anim;
+
+    public float MoveSpeed => Mathf.Clamp01(_agent.velocity.sqrMagnitude);
+
     private Coroutine _rotateCoroutine;
 
-    [Header("회전 시간")]
-    [SerializeField] private float _rotationDuration = 0.7f;
+    [Header("회전 옵션")]
+    [SerializeField] private float _rotationSpeed = 270f;  // 초당 돌 각도입니다. (360f = 초당 360도)
+    [SerializeField] private float _turnMoveSpeed = 0.5f;
+
+    private float _minTurnAngle = 0.5f;
 
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
+        _anim = GetComponent<NpcAnimatorController>();
+    }
+
+    public void Initialize(NpcAnimatorController anim)
+    {
+        _anim = anim;
+    }
+
+    private void Update()
+    {
+        _anim?.SetMove(MoveSpeed);
     }
 
     public void MoveTo(Vector3 destination)
@@ -43,32 +61,36 @@ public class NpcMovement : MonoBehaviour
         {
             StopCoroutine(_rotateCoroutine);
         }
-        _rotateCoroutine = StartCoroutine(RotateCoroutine(targetPosition, _rotationDuration));
+        _rotateCoroutine = StartCoroutine(RotateCoroutine(targetPosition));
     }
 
-    private IEnumerator RotateCoroutine(Vector3 targetPosition, float duration)
+    private IEnumerator RotateCoroutine(Vector3 targetPosition)
     {
         Vector3 direction = targetPosition - transform.position;
         direction.y = 0f;
 
-        if (direction.sqrMagnitude < 0.001f)
-            yield break;
+        if (direction.sqrMagnitude < 0.001f) yield break;
 
-        Quaternion startRotation = transform.rotation;
         Quaternion targetRotation = Quaternion.LookRotation(direction);
 
-        float time = 0f;
-
-        while (time < duration)
+        while (true)
         {
-            time += Time.deltaTime;
-            float t = time / duration;
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRotation,
+                _rotationSpeed * Time.deltaTime
+            );
 
-            transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            _anim?.SetMove(_turnMoveSpeed);
+
+            // 거의 다 돌았으면 종료합니다.
+            if (Quaternion.Angle(transform.rotation, targetRotation) < _minTurnAngle) break;
+
             yield return null;
         }
-
         transform.rotation = targetRotation;
+
+        _anim?.PlayGreet();
     }
 
     // 하루가 지났을 때 Npc의 위치를 처음 스케줄 장소로 이동시키기 위한 메서드입니다.
@@ -91,7 +113,7 @@ public class NpcMovement : MonoBehaviour
             return false;
         }
 
-        return _agent.remainingDistance <=
-               _agent.stoppingDistance && (!_agent.hasPath || _agent.velocity.sqrMagnitude == 0f);
+        return _agent.remainingDistance <= _agent.stoppingDistance
+               && (!_agent.hasPath || _agent.velocity.sqrMagnitude == 0f);
     }
 }

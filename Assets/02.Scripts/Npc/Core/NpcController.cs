@@ -2,15 +2,19 @@ using UnityEngine;
 
 public class NpcController : MonoBehaviour
 {
-    [Header("Npc 데이터 관련")]
+    [Header("Npc 컴포넌트")]
+    private Animator _animator;
+    private NpcMovement _movement;
+    private NpcAnimatorController _anim;
+
+    [Header("Npc 데이터")]
     [SerializeField] private NpcSchedule _npcSchedule;
     [SerializeField] private NpcInteractionOption[] _interactionOptions;
 
-    [Header("상점 관련 옵션")]
+    [Header("상점 옵션")]
     [SerializeField] private Shop _shop;
 
     private NpcData _npcData;
-    private NpcMovement _movement;
     private Transform _currentInteractor;
 
     private int _timeOffset;
@@ -18,6 +22,8 @@ public class NpcController : MonoBehaviour
 
     private bool _isInteracting;
 
+    public Animator Animator => _animator;
+    public NpcAnimatorController Anim => _anim;
     public NpcData Data => _npcData;
     public NpcSchedule Schedule => _npcSchedule;
     public Shop Shop => _shop;
@@ -27,7 +33,11 @@ public class NpcController : MonoBehaviour
 
     private void Awake()
     {
+        _animator = GetComponent<Animator>();
         _movement = GetComponent<NpcMovement>();
+        _anim = GetComponent<NpcAnimatorController>();
+
+        _movement.Initialize(_anim);
     }
 
     public void Initialize(NpcData data)
