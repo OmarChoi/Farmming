@@ -1,14 +1,19 @@
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ShopController : MonoBehaviour
 {
+    [Header("상점 건물")]
     [SerializeField] private Shop _testShop;
 
+    [Header("요구 컴포넌트")]
     [SerializeField] private PlayerInventoryAbility _playerInventory;
     [SerializeField] private UI_Inventory _uiInventory;
     [SerializeField] private UI_Shop _uiShop;
 
     private TradeService _tradeService;
+    private NpcInteractionContext _currentContext;
 
     private void Start()
     {
@@ -27,23 +32,17 @@ public class ShopController : MonoBehaviour
         _uiShop.Close();
     }
 
-    // 테스트용 상점 데이터입니다. (실제 게임에서는 NPC와 상호작용할 때 해당 NPC의 ShopData를 사용합니다.)
-    private void Update()
+    private void OnEnable()
     {
-#if UNITY_EDITOR
-        if (Input.GetKey(KeyCode.O))
-        {
-            OpenShop(_testShop);
-        }
-
-        if (Input.GetKey(KeyCode.Escape))
-        {
-            CloseShop();
-        }
-#endif
+        _uiShop.OnCloseRequested += CloseShop;
     }
 
-    public void OpenShop(Shop shop)
+    private void OnDisable()
+    {
+        _uiShop.OnCloseRequested -= CloseShop;
+    }
+
+    public void OpenShop(Shop shop, NpcInteractionContext context)
     {
         if (shop == null || shop.ShopData == null)
         {
@@ -52,10 +51,12 @@ public class ShopController : MonoBehaviour
 #endif
             return;
         }
-
+        _currentContext = context;
         _uiShop.Open(shop.ShopData);
         _uiInventory.SetClickMode(EInventoryClickMode.Trading);
         _playerInventory.Open();
+
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void CloseShop()
@@ -63,5 +64,10 @@ public class ShopController : MonoBehaviour
         _uiShop.Close();
         _uiInventory.SetClickMode(EInventoryClickMode.Normal);
         _playerInventory.Close();
+
+        Cursor.lockState = CursorLockMode.Locked;
+
+        _currentContext?.InteractionComponent?.EndInteraction();
+        _currentContext = null;
     }
 }
