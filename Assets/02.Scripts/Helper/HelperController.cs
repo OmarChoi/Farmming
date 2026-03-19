@@ -5,7 +5,7 @@ using UnityEngine;
 public class HelperController : MonoBehaviour
 {
     [SerializeField] private HelperDataSO _data;
-    public HelperDataSO DataSO => _data;
+    public HelperDataSO Data => _data;
     public EHelperState State { get; private set; } = EHelperState.Summoned;
     public Transform FollowTarget { get; private set; }
 

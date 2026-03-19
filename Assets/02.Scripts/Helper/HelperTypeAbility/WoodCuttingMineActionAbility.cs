@@ -18,7 +18,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         // 이펙트 소환
         GameObject _effect = Instantiate(_effectWoodPrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
         WoodCuttingVFX cuttingVfx = _effect.GetComponent<WoodCuttingVFX>();
-        cuttingVfx.Initiate(_owner.DataSO.GatherDamage, EGatherType.Wood);
+        cuttingVfx.Initiate(_owner.Data.GatherDamage, EGatherType.Wood);
     }
 
     public void InteractL(TerrainCell cell)
@@ -26,6 +26,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         // 이펙트 소환
         GameObject _effect = Instantiate(_effectStonePrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
         WoodCuttingVFX cuttingVfx = _effect.GetComponent<WoodCuttingVFX>();
-        cuttingVfx.Initiate(_owner.DataSO.GatherDamage, EGatherType.Stone);
+        cuttingVfx.Initiate(_owner.Data.GatherDamage, EGatherType.Stone);
     }
 }
