@@ -12,7 +12,7 @@ public class StoneMineAbility : HelperAbility
     [SerializeField] private float _endEffect = 0.2f;
     [SerializeField] private float _stunDuration = 0.5f;
     [SerializeField] private float _rejumpHeight = 0.5f;
-    [SerializeField] private float _rotatinDuration = 0.2f;
+    [SerializeField] private float _rotationDuration = 0.2f;
     [SerializeField] private float _headOffset = 0.5f;
     [SerializeField] private int _jumpCount = 1;
 
@@ -104,8 +104,6 @@ public class StoneMineAbility : HelperAbility
 
     private YieldInstruction Move(Transform target, Vector3 to, float height, float duration)
     {
-        Vector3 dir = (to - target.position).normalized;
-
         return target.DOJump(to, height, _jumpCount, duration)
                      .SetEase(Ease.Linear)
                      .WaitForCompletion();

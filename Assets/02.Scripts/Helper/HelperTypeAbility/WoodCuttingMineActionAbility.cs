@@ -22,10 +22,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     {
         base.Awake();
         _stoneMineAbility = _owner.GetAbility<StoneMineAbility>();
-    }
-
-    private void Start()
-    {
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
@@ -39,14 +35,14 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         _animAbility?.Play(EHelperAnim.WoodCutting);
 
         // 이펙트 소환
-        GameObject _effect = Instantiate(_effectWoodPrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
-        WoodCuttingVFX cuttingVfx = _effect.GetComponent<WoodCuttingVFX>();
+        GameObject effect = Instantiate(_effectWoodPrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
+        WoodCuttingVFX cuttingVfx = effect.GetComponent<WoodCuttingVFX>();
         cuttingVfx.Initiate(_owner.Data.GatherDamage, EGatherType.Wood);
 
         StartCoroutine(AnimPlayCoroutine());
     }
 
-    public IEnumerator AnimPlayCoroutine()
+    private IEnumerator AnimPlayCoroutine()
     {
         yield return new WaitForSeconds(_idleTransition);
         _animAbility?.Play(EHelperAnim.Idle);
