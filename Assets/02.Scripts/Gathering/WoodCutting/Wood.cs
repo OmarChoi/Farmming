@@ -61,10 +61,10 @@ public class Wood : GatheringObject
         _shakeCoroutine = null;
     }
 
-    protected override void OnDepleted()
+    protected override void OnDepleted(GatheringInfo info)
     {
         if (_shakeCoroutine != null) StopCoroutine(_shakeCoroutine);
         // TODO: 나무 벌목 연출 (파티클, 사운드 등)
-        base.OnDepleted();
+        base.OnDepleted(info);
     }
 }

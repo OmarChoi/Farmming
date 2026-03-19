@@ -4,7 +4,7 @@ public class WoodCuttingVFX : MonoBehaviour
 {
     [SerializeField] private float _maxDistance = 5f;
     [SerializeField] private float _speed = 5f;
-    private int _damage;
+    private GatheringInfo _gatheringInfo;
     private EGatherType _type;
 
     private Vector3 _startPosition;
@@ -14,9 +14,9 @@ public class WoodCuttingVFX : MonoBehaviour
         _startPosition = transform.position;
     }
 
-    public void Initiate(int damage, EGatherType type)
+    public void Initiate(GatheringInfo info, EGatherType type)
     {
-        _damage = damage;
+        _gatheringInfo = info;
         _type = type;
     }
 
@@ -45,14 +45,14 @@ public class WoodCuttingVFX : MonoBehaviour
             case EGatherType.Wood:
                 if (gatherable is Wood)
                 {
-                    gatherable.TryGather(_damage);
+                    gatherable.TryGather(_gatheringInfo);
                 }
                 break;
 
             case EGatherType.Stone:
                 if (gatherable is Stone)
                 {
-                    gatherable.TryGather(_damage);
+                    gatherable.TryGather(_gatheringInfo);
                 }
                 break;
         }
