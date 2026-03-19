@@ -94,12 +94,13 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         OnSummonChanged?.Invoke(_summonedIndex);
     }
 
-    public void AddHelper(HelperDataSO data)
+    public HelperController AddHelper(HelperDataSO data)
     {
         _helperDataList.Add(data);
         var instance = Instantiate(data.Prefab);
         instance.gameObject.SetActive(false);
         _helperInstances.Add(instance);
+        return instance;
     }
 
     public void ExportTo(PlayerSaveData saveData)
@@ -133,8 +134,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             }
 
             // 없으면 새로 추가 후 스탯 복원
-            AddHelper(so);
-            _helperInstances[_helperInstances.Count - 1].LoadState(data);
+            var newHelper = AddHelper(so);
+            newHelper.LoadState(data);
         }
 
         OnSelectionChanged?.Invoke();
