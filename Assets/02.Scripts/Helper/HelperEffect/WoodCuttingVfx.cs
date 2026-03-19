@@ -22,7 +22,7 @@ public class WoodCuttingVFX : MonoBehaviour
 
     private void Update()
     {
-        transform.position += transform.forward *_speed * Time.deltaTime;
+        transform.position += transform.forward *(_speed * Time.deltaTime);
 
         float distance = Vector3.Distance(_startPosition, transform.position);
         if( distance > _maxDistance)
