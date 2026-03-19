@@ -9,6 +9,8 @@ public class NpcDialogueController : MonoBehaviour
     private Transform _currentInteractor;
     private NpcInteractionComponent _currentInteractionComponent;
 
+    private NpcAnimatorController _anim;
+
     private NpcDialogueSO _currentDialogue;
     private int _currentLineIndex;
 
@@ -37,6 +39,7 @@ public class NpcDialogueController : MonoBehaviour
         _currentNpc = npc;
         _currentInteractor = interactor;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
+        _anim = npc.Anim;
 
         _uiDialogue.Open();
         _uiDialogue.SetNpcNameText(npc.Data.NpcName);
@@ -156,6 +159,7 @@ public class NpcDialogueController : MonoBehaviour
         switch (type)
         {
             case ENpcInteractionType.Talk:
+                _anim.PlayTalk();
                 _dialogueState = EDialogueUiState.Talking;
                 _interactionService.ExecuteNormalTalk(CreateContext());
                 break;
