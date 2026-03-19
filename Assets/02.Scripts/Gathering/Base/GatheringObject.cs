@@ -20,7 +20,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
     public bool TryGather(GatheringInfo info)
     {
-        if (info.HelperGrade.CurrentGrade > _gatheringData.RequiredLevel) return false;
+        if (info.HelperGrade.CurrentGrade < _gatheringData.RequiredLevel) return false;
         if (_currentHealth < 0) return false;
         _currentHealth -= info.Damage;
         Hit();
