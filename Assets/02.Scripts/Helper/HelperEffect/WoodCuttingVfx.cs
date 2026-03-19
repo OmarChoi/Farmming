@@ -5,7 +5,7 @@ public class WoodCuttingVFX : MonoBehaviour
     [SerializeField] private float _maxDistance = 5f;
     [SerializeField] private float _speed = 5f;
     private int _damage;
-    EGatherType _type;
+    private EGatherType _type;
 
     private Vector3 _startPosition;
 

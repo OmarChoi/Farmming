@@ -24,16 +24,30 @@ public class StoneMineAbility : HelperAbility
 
     public void JumpAndSmash(TerrainCell cell)
     {
-        if(_isJumping)
+        if(_isJumping || cell == null)
         {
             return;
         }
 
-        cell.CurrentObject.TryGetComponent<IGatherable>(out IGatherable gatherable);
-        StartCoroutine(JumpCoroutine(cell.CurrentObject.transform.position, gatherable));
+        if(cell.CurrentObject != null)
+        { 
+            if(cell.Data.ObjectType == EGridObjectType.Tree)
+            {
+                return;
+            }
+
+            if(cell.CurrentObject.TryGetComponent<IGatherable>(out IGatherable gatherable))
+            {
+                StartCoroutine(JumpCoroutine(cell.CurrentObject.transform.position, gatherable));
+            }           
+        }
+        else
+        {
+            StartCoroutine(JumpCoroutine(cell.transform.position));
+        }
     }
 
-    private IEnumerator JumpCoroutine(Vector3 targetPosition, IGatherable gatherable)
+    private IEnumerator JumpCoroutine(Vector3 targetPosition, IGatherable gatherable = null)
     {
         _isJumping=true;
 
@@ -45,7 +59,7 @@ public class StoneMineAbility : HelperAbility
 
         _animAbility.Play(EHelperAnim.Stun);
         SpawnStoneEffect();
-        gatherable.TryGather(_owner.DataSO.GatherDamage);
+        gatherable?.TryGather(_owner.DataSO.GatherDamage);
 
         yield return new WaitForSeconds(_stunDuration);
 
