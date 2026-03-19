@@ -39,7 +39,7 @@ public class NpcDialogueController : MonoBehaviour
         _currentNpc = npc;
         _currentInteractor = interactor;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
-        _anim = npc.GetComponent<NpcAnimatorController>();
+        _anim = npc.Anim;
 
         _uiDialogue.Open();
         _uiDialogue.SetNpcNameText(npc.Data.NpcName);
