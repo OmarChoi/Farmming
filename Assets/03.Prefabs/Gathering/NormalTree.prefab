@@ -127,6 +127,7 @@ GameObject:
   - component: {fileID: 3299872868283211985}
   - component: {fileID: 6476242747128799532}
   - component: {fileID: 2164250243309182394}
+  - component: {fileID: 7451207869800401861}
   m_Layer: 0
   m_Name: NormalTree
   m_TagString: Untagged
@@ -264,5 +265,32 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.3193092, y: 4.925148, z: 0.48847216}
-  m_Center: {x: -0.064759254, y: 2.4628859, z: -0.0090715885}
+  m_Size: {x: 1.5802152, y: 3.5841684, z: 1.4202595}
+  m_Center: {x: 0.093720555, y: 1.8141303, z: 0.044071198}
+--- !u!54 &7451207869800401861
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5130300574329225930}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
