@@ -9,10 +9,15 @@ public class StoneMineAbility : HelperAbility
     [SerializeField] private float _jumpHeight = 2f;
     [SerializeField] private float _jumpDuration = 0.5f;
     [SerializeField] private float _returnDuration = 0.5f;
-    [SerializeField] private float _endOffset = 0.3f;
     [SerializeField] private float _endEffect = 0.2f;
     [SerializeField] private float _stunDuration = 0.5f;
     [SerializeField] private float _rejumpHeight = 0.5f;
+    [SerializeField] private float _rotatinDuration = 0.2f;
+    [SerializeField] private float _headOffset = 0.5f;
+    [SerializeField] private int _jumpCount = 1;
+
+    [SerializeField] private float _rayOriginHeight = 3f;
+    [SerializeField] private float _rayDistance = 5f;
 
     private HelperAnimationAbility _animAbility;
     private bool _isJumping = false;
@@ -38,13 +43,38 @@ public class StoneMineAbility : HelperAbility
 
             if(cell.CurrentObject.TryGetComponent<IGatherable>(out IGatherable gatherable))
             {
-                StartCoroutine(JumpCoroutine(cell.CurrentObject.transform.position, gatherable));
+                Vector3 targetPos = GetLandPosition(cell.CurrentObject);
+                StartCoroutine(JumpCoroutine(targetPos, gatherable));
             }           
         }
         else
         {
-            StartCoroutine(JumpCoroutine(cell.transform.position));
+            Vector3 targetPos = GetTerrainLandPosition(cell);
+            StartCoroutine(JumpCoroutine(targetPos));
         }
+    }
+
+    private Vector3 GetLandPosition(GameObject target)
+    {
+        if (target.TryGetComponent<Collider>(out Collider col))
+        {
+            return new Vector3(target.transform.position.x, col.bounds.max.y, target.transform.position.z);
+        }
+
+        return target.transform.position;
+    }
+
+    private Vector3 GetTerrainLandPosition(TerrainCell cell)
+    {
+        Vector3 rayOrigin = cell.transform.position + Vector3.up * _rayOriginHeight;
+        Ray ray = new Ray(rayOrigin, Vector3.down);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, _rayDistance))
+        {
+            return hit.point;
+        }
+
+        return cell.transform.position;
     }
 
     private IEnumerator JumpCoroutine(Vector3 targetPosition, IGatherable gatherable = null)
@@ -52,7 +82,7 @@ public class StoneMineAbility : HelperAbility
         _isJumping=true;
 
         Vector3 startPosition = transform.position;
-        Vector3 endPosition = targetPosition + Vector3.up * _endOffset;
+        Vector3 endPosition = targetPosition;
 
         _animAbility.Play(EHelperAnim.Jump);
         yield return Move(_owner.transform, endPosition, _jumpHeight, _jumpDuration);
@@ -66,6 +96,8 @@ public class StoneMineAbility : HelperAbility
         _animAbility.Play(EHelperAnim.Jump);
         yield return Move(_owner.transform, startPosition, _jumpHeight * _rejumpHeight, _returnDuration);
 
+        transform.rotation = _owner.PlayerOwner.transform.rotation;
+
         _animAbility.Play(EHelperAnim.Idle);
         _isJumping = false;
     }
@@ -73,10 +105,8 @@ public class StoneMineAbility : HelperAbility
     private YieldInstruction Move(Transform target, Vector3 to, float height, float duration)
     {
         Vector3 dir = (to - target.position).normalized;
-        if (dir != Vector3.zero)
-            target.DORotateQuaternion(Quaternion.LookRotation(dir), 0.2f);
 
-        return target.DOJump(to, height, 1, duration)
+        return target.DOJump(to, height, _jumpCount, duration)
                      .SetEase(Ease.Linear)
                      .WaitForCompletion();
     }

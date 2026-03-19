@@ -205,6 +205,7 @@ MonoBehaviour:
   _effectWoodPrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
+  _idleTransition: 0.5
 --- !u!114 &1912861716771095794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -229,15 +230,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 029c6d3a7809ac74eb59252ac5d10493, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StoneMineAbility
-  _effectStonePrefab: {fileID: 0}
+  _effectStonePrefab: {fileID: 6268602327854917636, guid: d4622163da72bb44abd45d989c2b814b, type: 3}
   _effectSpawnPoint: {fileID: 5593292928980374344}
   _jumpHeight: 2
   _jumpDuration: 0.5
   _returnDuration: 0.5
-  _endOffset: 0.3
   _endEffect: 0.2
   _stunDuration: 0.5
   _rejumpHeight: 0.5
+  _rotatinDuration: 0.2
+  _headOffset: 0.5
+  _jumpCount: 1
+  _rayOriginHeight: 3
+  _rayDistance: 5
 --- !u!1 &8563632745614245556
 GameObject:
   m_ObjectHideFlags: 0
@@ -249,7 +254,7 @@ GameObject:
   - component: {fileID: 5593292928980374344}
   - component: {fileID: 8930431923011018131}
   m_Layer: 7
-  m_Name: StoneEffectSpawnPoint (1)
+  m_Name: StoneEffectSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

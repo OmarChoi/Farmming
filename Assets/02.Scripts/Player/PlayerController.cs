@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PlayerStatSO _statSo;
 
     public PlayerStatSO StatSo => _statSo;
+
     public string PlayerId { get; private set; }
     public bool IsUIOpen { get; private set; }
     public bool CanMove => !IsUIOpen && !IsActionLocked;
