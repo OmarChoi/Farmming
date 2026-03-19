@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 919438771620180480}
   - component: {fileID: 7734502852426753408}
   - component: {fileID: 8631433124512019319}
+  - component: {fileID: 8405313968760444172}
   m_Layer: 7
   m_Name: NpcTest
   m_TagString: Untagged
@@ -33,7 +34,7 @@ Transform:
   m_GameObject: {fileID: 7840605641264675590}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -154,7 +155,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0570646b414234a4ba423eda24c6556f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcMovement
-  _rotationDuration: 0.7
+  _rotationSpeed: 270
+  _turnMoveSpeed: 0.6
 --- !u!114 &919438771620180480
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,6 +204,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcInteractionComponent
   _dialogueController: {fileID: 0}
+--- !u!114 &8405313968760444172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7840605641264675590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4995beb57a49e44088a8cb941c942a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcAnimatorController
+  _animator: {fileID: 999627029893137780}
+  _moveBoolName: Move
+  _greetTriggerName: Greet
 --- !u!1001 &5867974389350366875
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -282,6 +299,30 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 3230229996239321948, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0.0003104921
+      objectReference: {fileID: 0}
+    - target: {fileID: 3230229996239321948, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -0.000047736205
+      objectReference: {fileID: 0}
+    - target: {fileID: 3230229996239321948, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 162.51923
+      objectReference: {fileID: 0}
+    - target: {fileID: 3511721569041613445, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0.00000014353279
+      objectReference: {fileID: 0}
+    - target: {fileID: 3511721569041613445, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0.000006751846
+      objectReference: {fileID: 0}
+    - target: {fileID: 3511721569041613445, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -2.4350598
+      objectReference: {fileID: 0}
     - target: {fileID: 3513967827846618737, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
       propertyPath: m_Name
       value: Npc_C1
@@ -358,6 +399,18 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 5952898068015436574, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0.00000014350532
+      objectReference: {fileID: 0}
+    - target: {fileID: 5952898068015436574, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0.0000067518704
+      objectReference: {fileID: 0}
+    - target: {fileID: 5952898068015436574, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -2.435067
+      objectReference: {fileID: 0}
     - target: {fileID: 5976177421292002237, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -384,14 +437,7 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: a70b3633361bd244287115d468057e83, type: 2}
     - target: {fileID: 6678935978515217391, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
       propertyPath: m_WarningMessage
-      value: "\nBinding warning: Some generic clip(s) animate transforms that are
-        already bound by a Humanoid avatar. These transforms can only be changed
-        by Humanoid clips.\n\tTransform 'Bip001 R Clavicle'\n\tTransform 'Bip001
-        R UpperArm'\n\tTransform 'Bip001 Head'\n\tTransform 'Bip001 Spine1'\n\tTransform
-        'Bip001 R Finger11'\n\tTransform 'Bip001 L UpperArm'\n\tTransform 'Bip001
-        R Foot'\n\tTransform 'Bip001 L Clavicle'\n\tTransform 'Bip001 L Finger11'\n\tTransform
-        'Bip001 R Calf'\n\tand more ...\n\tFrom animation clip 'npc_idle_ani'\n\tFrom
-        animation clip 'Walk_ani'\n\tFrom animation clip 'Run_ani'"
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6713920382113362967, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
       propertyPath: m_Layer
@@ -404,6 +450,18 @@ PrefabInstance:
     - target: {fileID: 6957291646905199525, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7169261357635869677, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0.00000014349685
+      objectReference: {fileID: 0}
+    - target: {fileID: 7169261357635869677, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0.0000067518677
+      objectReference: {fileID: 0}
+    - target: {fileID: 7169261357635869677, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -2.4350653
       objectReference: {fileID: 0}
     - target: {fileID: 7336706232962644972, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
       propertyPath: m_Layer
@@ -450,6 +508,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+--- !u!95 &999627029893137780 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 6678935978515217391, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+  m_PrefabInstance: {fileID: 5867974389350366875}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7701423840069679696 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4291877340704834763, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
