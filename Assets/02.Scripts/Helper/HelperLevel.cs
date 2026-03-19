@@ -4,7 +4,7 @@ public class HelperLevel
 {
     private readonly HelperDataSO _data;
 
-    public int CurrentLevel { get; private set; } = 1;
+    public int CurrentLevel { get; internal set; } = 1;
 
     public HelperLevel(HelperDataSO data)
     {

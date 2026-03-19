@@ -1,0 +1,203 @@
+using UnityEngine;
+
+public class NpcDialogueController : MonoBehaviour
+{
+    [SerializeField] private UI_NpcDialogue _uiDialogue;
+    [SerializeField] private InteractService _interactionService;
+
+    private NpcController _currentNpc;
+    private Transform _currentInteractor;
+    private NpcInteractionComponent _currentInteractionComponent;
+
+    private NpcDialogueSO _currentDialogue;
+    private int _currentLineIndex;
+
+    private EDialogueUiState _dialogueState = EDialogueUiState.None;
+
+    private void Awake()
+    {
+        if (_uiDialogue == null)
+        {
+            _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
+        }
+
+        if (_interactionService == null)
+        {
+            _interactionService = FindFirstObjectByType<InteractService>();
+        }
+    }
+
+    private void Start()
+    {
+        _uiDialogue.BindDialoguePanel(OnClickDialoguePanel);
+    }
+
+    public void Open(NpcController npc, Transform interactor)
+    {
+        _currentNpc = npc;
+        _currentInteractor = interactor;
+        _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
+
+        _uiDialogue.Open();
+        _uiDialogue.SetNpcNameText(npc.Data.NpcName);
+        _uiDialogue.HideButtons();
+        _uiDialogue.ClearDialogueText();
+
+        StartGreeting();
+    }
+
+    public void Close()
+    {
+        _currentNpc = null;
+        _currentInteractor = null;
+        _currentInteractionComponent = null;
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.None;
+
+        _uiDialogue.Close();
+    }
+
+    private void StartGreeting()
+    {
+        if (_currentNpc == null || _interactionService == null) return;
+
+        _dialogueState = EDialogueUiState.Greeting;
+        _interactionService.ExecuteStartTalk(CreateContext());
+    }
+
+    public void StartDialogue(NpcDialogueSO dialogueSO)
+    {
+        if (dialogueSO == null || dialogueSO.Lines == null || dialogueSO.Lines.Length == 0)
+        {
+            EndDialogue();
+            return;
+        }
+
+        _currentDialogue = dialogueSO;
+        _currentLineIndex = 0;
+
+        _uiDialogue.Open();
+        _uiDialogue.HideButtons();
+
+        ShowCurrentLine();
+    }
+
+    private void ShowCurrentLine()
+    {
+        if (_currentDialogue == null || _currentDialogue.Lines == null)
+        {
+            EndDialogue();
+            return;
+        }
+
+        if (_currentLineIndex >= _currentDialogue.Lines.Length)
+        {
+            EndDialogue();
+            return;
+        }
+
+        string line = _currentDialogue.Lines[_currentLineIndex].Text;
+        _uiDialogue.ShowLine(line);
+    }
+
+    private void NextLine()
+    {
+        if (_currentDialogue == null) return;
+
+        _currentLineIndex++;
+        ShowCurrentLine();
+    }
+
+    private void EndDialogue()
+    {
+        if (_currentDialogue != null && _currentDialogue.Lines != null && _currentDialogue.Lines.Length > 0)
+        {
+            var lastLine = _currentDialogue.Lines[_currentDialogue.Lines.Length - 1];
+            if (lastLine.NextDialogue != null)
+            {
+                StartDialogue(lastLine.NextDialogue);
+                return;
+            }
+        }
+
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+
+        switch (_dialogueState)
+        {
+            case EDialogueUiState.Greeting:
+                _dialogueState = EDialogueUiState.Choice;
+                ShowChoiceButtons();
+                break;
+
+            case EDialogueUiState.Talking:
+                _dialogueState = EDialogueUiState.None;
+                EndCurrentInteraction();
+                break;
+
+            default:
+                _dialogueState = EDialogueUiState.None;
+                break;
+        }
+    }
+
+    private void ShowChoiceButtons()
+    {
+        if (_currentNpc == null) return;
+
+        _uiDialogue.ShowButtons(_currentNpc.InteractionOptions, OnClickOption);
+    }
+
+    private void OnClickOption(ENpcInteractionType type)
+    {
+        if (_currentNpc == null || _interactionService == null) return;
+
+        switch (type)
+        {
+            case ENpcInteractionType.Talk:
+                _dialogueState = EDialogueUiState.Talking;
+                _interactionService.ExecuteNormalTalk(CreateContext());
+                break;
+
+            case ENpcInteractionType.Trade:
+                _interactionService.Execute(type, CreateContext());
+                break;
+
+            case ENpcInteractionType.EndTalk:
+                _interactionService.Execute(type, CreateContext());
+                break;
+        }
+    }
+
+    // 클릭으로 다음 대화문으로 넘어가는 메서드입니다.
+    public void OnClickDialoguePanel()
+    {
+        if (_currentDialogue == null) return;
+
+        if (_uiDialogue.IsTyping())
+        {
+            // 타이핑 도중이면 글씨 표시를 즉시 완료한다.
+            _uiDialogue.CompleteTyping();
+        }
+        else
+        {
+            // 다 끝났으면 다음 줄로 넘어간다.
+            NextLine();
+        }
+    }
+
+    private void EndCurrentInteraction()
+    {
+        if (_interactionService == null) return;
+        _interactionService.Execute(ENpcInteractionType.EndTalk, CreateContext());
+    }
+
+    private NpcInteractionContext CreateContext()
+    {
+        return new NpcInteractionContext(
+            _currentNpc,
+            _currentInteractor,
+            _currentInteractionComponent);
+    }
+}

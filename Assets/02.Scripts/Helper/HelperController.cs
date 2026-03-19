@@ -5,7 +5,9 @@ using UnityEngine;
 public class HelperController : MonoBehaviour
 {
     [SerializeField] private HelperDataSO _data;
+
     public HelperDataSO Data => _data;
+    public string HelperId => _data.HelperId;
     public EHelperState State { get; private set; } = EHelperState.Summoned;
     public Transform FollowTarget { get; private set; }
 
@@ -92,6 +94,12 @@ public class HelperController : MonoBehaviour
 
         Vector3 backDir = -FollowTarget.forward;
         GetAbility<HelperFollowAbility>()?.LaunchBack(backDir);
+    }
+
+    public void LoadState(HelperSaveData data)
+    {
+        Level.CurrentLevel = data.Level;
+        Grade.CurrentGrade = (EHelperGrade)data.Grade;
     }
 
     public void Interact(TerrainCell cell)
