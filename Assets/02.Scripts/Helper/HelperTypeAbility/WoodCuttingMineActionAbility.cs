@@ -37,7 +37,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         // 이펙트 소환
         GameObject effect = Instantiate(_effectWoodPrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
         WoodCuttingVFX cuttingVfx = effect.GetComponent<WoodCuttingVFX>();
-        cuttingVfx.Initiate(_owner.Data.GatherDamage, EGatherType.Wood);
+        GatheringInfo info = new GatheringInfo(_owner);
+        cuttingVfx.Initiate(info, EGatherType.Wood);
 
         StartCoroutine(AnimPlayCoroutine());
     }

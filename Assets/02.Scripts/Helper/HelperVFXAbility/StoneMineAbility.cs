@@ -89,7 +89,7 @@ public class StoneMineAbility : HelperAbility
 
         _animAbility.Play(EHelperAnim.Stun);
         SpawnStoneEffect();
-        gatherable?.TryGather(_owner.Data.GatherDamage);
+        gatherable?.TryGather(new GatheringInfo(_owner));
 
         yield return new WaitForSeconds(_stunDuration);
 

@@ -4,6 +4,8 @@ public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
 {
     [SerializeField] private NpcDialogueController _dialogueController;
     private NpcController _npcController;
+    private PlayerController _playerController;
+    private PlayerNPCInteractionAbility _playerInteraction;
 
     private void Awake()
     {
@@ -14,15 +16,17 @@ public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
         }
     }
 
-    // todo. 플레이어가 NPC와 상호작용할 때 이 메서드를 호출하면 됩니다.
     public void RequestInteract(Transform interactor)
     {
         if (!_npcController.CanStartInteraction(interactor))
         {
             return;
         }
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+
+        _playerController = interactor.GetComponentInParent<PlayerController>();
+        _playerInteraction = interactor.GetComponentInChildren<PlayerNPCInteractionAbility>();
+
+        _playerController?.SetCursorLock(false);
         _npcController.StartInteraction(interactor);
 
         _dialogueController.Open(_npcController, interactor);
@@ -30,10 +34,12 @@ public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
 
     public void EndInteraction()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        _playerController?.SetCursorLock(true);
 
         _dialogueController.Close();
         _npcController.EndInteraction();
+        _playerInteraction?.EndInteraction();
+        _playerInteraction = null;
+        _playerController = null;
     }
 }
