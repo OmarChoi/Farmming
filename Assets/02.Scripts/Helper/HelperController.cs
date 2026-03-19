@@ -8,14 +8,13 @@ public class HelperController : MonoBehaviour
 
     public HelperDataSO Data => _data;
     public string HelperId => _data.HelperId;
-    public EHelperState State { get; private set; } = EHelperState.Summoned;
+    public PlayerController PlayerOwner { get; private set; }
+    public EHelperState State { get; private set; } = EHelperState.Inventory;
     public Transform FollowTarget { get; private set; }
 
     public HelperLevel Level { get; private set; }
     public HelperGrade Grade { get; private set; }
     public HelperEnergy Energy { get; private set; }
-
-    private IHelperAction _helperAction;
 
     private readonly Dictionary<Type, HelperAbility> _abilityCache = new();
 
@@ -26,8 +25,6 @@ public class HelperController : MonoBehaviour
         Level = new HelperLevel(_data);
         Grade = new HelperGrade(_data);
         Energy = new HelperEnergy(_data);
-
-        _helperAction = GetComponentInChildren<IHelperAction>();
 
         Energy.OnExhausted += OnEnergyExhasuted;
         Energy.OnRecovered += OnEnergyRecovered;
@@ -68,12 +65,13 @@ public class HelperController : MonoBehaviour
         return ability;
     }
 
-    public void Summon(Transform followTarget)
+    public void Summon(PlayerController playerOwner)
     {
-        FollowTarget = followTarget;
+        PlayerOwner = playerOwner;
+        FollowTarget = playerOwner.transform;
         State = EHelperState.Summoned;
         transform.SetParent(null);
-        transform.position = followTarget.position + followTarget.right * SummonOffset;
+        transform.position = FollowTarget.position + FollowTarget.right * SummonOffset;
         gameObject.SetActive(true);
     }
 
@@ -102,19 +100,13 @@ public class HelperController : MonoBehaviour
         Grade.CurrentGrade = (EHelperGrade)data.Grade;
     }
 
-    public void Interact(TerrainCell cell)
+    public void InteractPrimary(TerrainCell cell)
     {
+        GetAbility<HelperInteractionAbility>()?.InteractPrimary(cell);
+    }
 
-        if(Energy.IsExhausted)
-        {
-            Debug.Log("에너지 소진상태");
-            return;
-        }
-
-        if (_helperAction != null)
-        {
-            _helperAction.Interact(cell);
-            Energy.TryConsume(Level.GetEnergyCost());
-        }
+    public void InteractSecondary(TerrainCell cell)
+    {
+        GetAbility<HelperInteractionAbility>()?.InteractSecondary(cell);
     }
 }

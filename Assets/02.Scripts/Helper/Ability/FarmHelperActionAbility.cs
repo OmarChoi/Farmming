@@ -6,7 +6,7 @@ public class FarmHelperActionAbility : HelperAbility, IHelperAction
 
     public void SetSeed(SeedConfig seed) => _currentSeed = seed;
 
-    public void Interact(TerrainCell cell)
+    public void InteractPrimary(TerrainCell cell)
     {
         FarmTile farmTile = cell.FarmTile;
 
@@ -14,5 +14,10 @@ public class FarmHelperActionAbility : HelperAbility, IHelperAction
             farmTile.Interact(_currentSeed);
         else
             cell.TryConvertToFarm();
+    }
+
+    public void InteractSecondary(TerrainCell cell)
+    {
+        // TODO: 우클릭 동작 구현
     }
 }
