@@ -4,7 +4,7 @@ using UnityEngine;
 public class TerrainGridManager : MonoBehaviour
 {
     [Header("그리드 설정")]
-    [SerializeField] private float _cellSize = 1f;
+    [SerializeField] private float _cellSize = 2f;
 
     [Header("프리팹")]
     [SerializeField] private TerrainCell _cellPrefab;

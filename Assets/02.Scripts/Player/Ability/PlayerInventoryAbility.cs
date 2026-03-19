@@ -6,6 +6,8 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 {
     [SerializeField] private KeyCode _inventoryKey = KeyCode.I;
     [SerializeField] private ItemDatabase _itemDatabase;
+    [SerializeField] private CameraPreset _cameraPreset;
+    private PlayerCameraAbility _cameraAbility;
     private InventoryDomain _inventory;
     private bool _isOpen;
 
@@ -30,6 +32,7 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
     {
         base.Awake();
         _inventory = new InventoryDomain();
+        _cameraAbility = _owner.GetAbility<PlayerCameraAbility>();
     }
 
     private void Start()
@@ -46,8 +49,16 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 
     public void Toggle()
     {
-        if (_isOpen) Close();
-        else Open();
+        if (_isOpen)
+        {
+            Close();
+            _cameraAbility?.ClearPreset();
+        }
+        else
+        {
+            Open();
+            _cameraAbility?.SetPreset(_cameraPreset);
+        }
     }
 
     public void Open()
