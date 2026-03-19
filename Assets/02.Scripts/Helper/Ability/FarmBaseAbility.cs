@@ -17,5 +17,6 @@ public abstract class FarmBaseAbility : HelperAbility, IHelperAction
         return null;
     }
 
-    public abstract void Interact(TerrainCell cell);
+    public abstract void InteractPrimary(TerrainCell cell);
+    public abstract void InteractSecondary(TerrainCell cell);
 }

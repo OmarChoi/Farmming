@@ -16,7 +16,7 @@ public class ChopMineActionAbility : FarmBaseAbility
         _mode = mode;
     }
 
-    public override void Interact(TerrainCell cell)
+    public override void InteractPrimary(TerrainCell cell)
     {
         if(cell == null)
         {
@@ -33,6 +33,11 @@ public class ChopMineActionAbility : FarmBaseAbility
                 TryMine(cell);
                 break;
         }
+    }
+    
+    public override void InteractSecondary(TerrainCell cell)
+    {
+        // TODO: 우클릭 동작 구현
     }
 
     private void TryChop(TerrainCell cell)
