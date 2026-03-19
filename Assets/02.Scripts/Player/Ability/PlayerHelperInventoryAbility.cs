@@ -49,17 +49,14 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void InitHelperInstances()
     {
-        Debug.Log($"[Init] helperDataList count: {_helperDataList.Count}");
         foreach (var data in _helperDataList)
         {
-            Debug.Log($"[Init] data null?: {data == null}, prefab null?: {data?.Prefab == null}");
             if (data == null || data.Prefab == null) continue;
 
             var instance = Instantiate(data.Prefab);
             instance.gameObject.SetActive(false);
             _helperInstances.Add(instance);
         }
-        Debug.Log($"[Init] helperInstances count: {_helperInstances.Count}");
     }
 
     private void Update()
@@ -113,7 +110,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             var helper = _helperInstances[i];
             saveData.Helpers.Add(new HelperSaveData
             {
-                HelperId = helper.Data.HelperId,
+                HelperId = helper.HelperId,
                 Level = helper.Level.CurrentLevel,
                 Grade = (int)helper.Grade.CurrentGrade
             });
@@ -131,16 +128,13 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             var existing = _helperInstances.Find(h => h.Data.HelperId == data.HelperId);
             if (existing != null)
             {
-                existing.Level.CurrentLevel = data.Level;
-                existing.Grade.CurrentGrade = (EHelperGrade)data.Grade;
+                existing.LoadState(data);
                 continue;
             }
 
             // 없으면 새로 추가 후 스탯 복원
             AddHelper(so);
-            var added = _helperInstances[_helperInstances.Count - 1];
-            added.Level.CurrentLevel = data.Level;
-            added.Grade.CurrentGrade = (EHelperGrade)data.Grade;
+            _helperInstances[_helperInstances.Count - 1].LoadState(data);
         }
 
         OnSelectionChanged?.Invoke();
