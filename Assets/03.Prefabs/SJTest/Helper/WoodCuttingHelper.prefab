@@ -200,7 +200,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4e056744dda82645b0b0c749521f921, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WoodCuttingMineActionAbility
-  _effectPrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
+  _effectWoodPrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
+  _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
 --- !u!1001 &2861563108909078664
 PrefabInstance:
