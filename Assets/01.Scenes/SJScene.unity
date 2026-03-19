@@ -2356,7 +2356,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 1
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &179453031
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2870,7 +2869,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 1
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &243086639
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3036,7 +3034,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &253388909
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3695,6 +3692,14 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 2716549386606580851, guid: c0d6566270cbfec458c706583dec844a, type: 3}
+      propertyPath: _helperDatabase
+      value: 
+      objectReference: {fileID: 11400000, guid: 64bd1b9ee87227b49b735cf4909af4cf, type: 2}
+    - target: {fileID: 2716549386606580851, guid: c0d6566270cbfec458c706583dec844a, type: 3}
+      propertyPath: '_helperDataList.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 2c22928b9528db74faea2e263f10b0b2, type: 2}
     - target: {fileID: 2771973059629864059, guid: c0d6566270cbfec458c706583dec844a, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -4064,6 +4069,7 @@ MonoBehaviour:
   _summonKey: 101
   _rotateLeftKey: 49
   _rotateRightKey: 51
+  _helperDatabase: {fileID: 11400000, guid: 64bd1b9ee87227b49b735cf4909af4cf, type: 2}
   _helperDataList:
   - {fileID: 11400000, guid: 2c22928b9528db74faea2e263f10b0b2, type: 2}
 --- !u!1 &303272491
@@ -4167,7 +4173,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 2
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &303539631
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4243,7 +4248,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &312323094
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5372,7 +5376,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &431820794
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5780,7 +5783,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &479856933
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6704,7 +6706,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &586233760
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7547,7 +7548,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &653266930
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7803,7 +7803,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &664848308
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8059,7 +8058,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &681839146
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8166,7 +8164,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &717555574
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8273,7 +8270,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &742251902
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9068,7 +9064,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &790716694
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9234,7 +9229,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &793108668
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10191,7 +10185,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &831325648
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10267,7 +10260,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &848055551
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13310,7 +13302,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1052795331
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13476,7 +13467,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1060857042
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13772,7 +13762,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1072407919
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -14277,7 +14266,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1113673967
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -14353,7 +14341,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 2
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1117464301
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -14843,7 +14830,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1145516072
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -15225,7 +15211,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 2
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1203503557
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -15618,7 +15603,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1240010130
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16367,7 +16351,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1293488076
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16443,7 +16426,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1295059266
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16519,7 +16501,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1302485774
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16595,7 +16576,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1305793237
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16657,6 +16637,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1313207021}
+  - component: {fileID: 1313207023}
+  - component: {fileID: 1313207022}
   m_Layer: 0
   m_Name: ObjectPoint
   m_TagString: Untagged
@@ -16680,6 +16662,54 @@ Transform:
   - {fileID: 1249663215}
   m_Father: {fileID: 1203503555}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1313207022
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1313207020}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.4355459, y: 1.9090421, z: 1.144433}
+  m_Center: {x: -0.038992405, y: 0.45452106, z: -0.25100565}
+--- !u!54 &1313207023
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1313207020}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1315961241
 GameObject:
   m_ObjectHideFlags: 0
@@ -17105,7 +17135,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1341927651
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17181,7 +17210,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1370825533
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17257,7 +17285,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1383750451
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17857,7 +17884,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1432592199
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18602,7 +18628,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1493876547
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18977,7 +19002,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1534125846
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19151,7 +19175,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1540249065
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19575,7 +19598,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1570710638
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19960,7 +19982,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1598809283
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -20036,7 +20057,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1603679538
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -22054,7 +22074,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 1
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1740960168
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -23224,7 +23243,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1867097787
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -23756,7 +23774,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1905757911
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -24442,7 +24459,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &1997209776
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -24608,7 +24624,6 @@ MonoBehaviour:
   _initialDirtLevel: 1
   _initialObjectType: 0
   _initialObjectLevel: 1
-  CurrentObject: {fileID: 0}
 --- !u!65 &2013714221
 BoxCollider:
   m_ObjectHideFlags: 0
