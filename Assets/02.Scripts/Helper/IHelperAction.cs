@@ -1,4 +1,5 @@
 public interface IHelperAction
 {
-    void Interact(TerrainCell cell);
+    void InteractPrimary(TerrainCell cell);
+    void InteractSecondary(TerrainCell cell);
 }
