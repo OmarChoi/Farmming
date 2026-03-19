@@ -56,9 +56,6 @@ public class UI_Inventory : MonoBehaviour
         _panel.SetActive(open);
         _selectedSlot = null;
 
-        Cursor.lockState = open ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = open;
-
         if (open)
             RefreshAll();
     }
