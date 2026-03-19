@@ -201,6 +201,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21028960d4ff4ee4fb3a623e1c40af4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcInteractionComponent
+  _dialogueController: {fileID: 0}
 --- !u!1001 &5867974389350366875
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -376,6 +377,21 @@ PrefabInstance:
     - target: {fileID: 6407423268414276181, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6678935978515217391, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: a70b3633361bd244287115d468057e83, type: 2}
+    - target: {fileID: 6678935978515217391, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
+      propertyPath: m_WarningMessage
+      value: "\nBinding warning: Some generic clip(s) animate transforms that are
+        already bound by a Humanoid avatar. These transforms can only be changed
+        by Humanoid clips.\n\tTransform 'Bip001 R Clavicle'\n\tTransform 'Bip001
+        R UpperArm'\n\tTransform 'Bip001 Head'\n\tTransform 'Bip001 Spine1'\n\tTransform
+        'Bip001 R Finger11'\n\tTransform 'Bip001 L UpperArm'\n\tTransform 'Bip001
+        R Foot'\n\tTransform 'Bip001 L Clavicle'\n\tTransform 'Bip001 L Finger11'\n\tTransform
+        'Bip001 R Calf'\n\tand more ...\n\tFrom animation clip 'npc_idle_ani'\n\tFrom
+        animation clip 'Walk_ani'\n\tFrom animation clip 'Run_ani'"
       objectReference: {fileID: 0}
     - target: {fileID: 6713920382113362967, guid: 654fe90166fe23b4c9fac01341cd723c, type: 3}
       propertyPath: m_Layer
