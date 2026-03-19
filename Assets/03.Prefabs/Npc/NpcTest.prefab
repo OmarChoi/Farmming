@@ -170,6 +170,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3f49665a75b68c4a841e27f836dee64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcController
+  _animator: {fileID: 999627029893137780}
+  _movement: {fileID: 5316030158967195761}
+  _anim: {fileID: 8405313968760444172}
   _npcSchedule: {fileID: 11400000, guid: daa31087eb231f046a2e96e5e9962561, type: 2}
   _interactionOptions:
   - _type: 0
@@ -220,6 +223,7 @@ MonoBehaviour:
   _animator: {fileID: 999627029893137780}
   _moveBoolName: Move
   _greetTriggerName: Greet
+  _talkTriggerName: Talk
 --- !u!1001 &5867974389350366875
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -3,9 +3,9 @@ using UnityEngine;
 public class NpcController : MonoBehaviour
 {
     [Header("Npc 컴포넌트")]
-    private Animator _animator;
-    private NpcMovement _movement;
-    private NpcAnimatorController _anim;
+    [SerializeField] private Animator _animator;
+    [SerializeField] private NpcMovement _movement;
+    [SerializeField] private NpcAnimatorController _anim;
 
     [Header("Npc 데이터")]
     [SerializeField] private NpcSchedule _npcSchedule;

@@ -9,10 +9,12 @@ public class NpcAnimatorController : MonoBehaviour
     [Header("애니메이터 매개변수 명칭 (최대한 통일)")]
     [SerializeField] private string _moveBoolName = "Move";
     [SerializeField] private string _greetTriggerName = "Greet";
+    [SerializeField] private string _talkTriggerName = "Talk";
 
     // 애니메이터 해시입니다.
     private int _moveHash;
     private int _greetHash;
+    private int _talkHash;
 
     // 애니메이터 리셋 리스트입니다.
     private readonly List<int> _resetFloatHashes = new();
@@ -27,6 +29,7 @@ public class NpcAnimatorController : MonoBehaviour
 
         _moveHash = Animator.StringToHash(_moveBoolName);
         _greetHash = Animator.StringToHash(_greetTriggerName);
+        _talkHash = Animator.StringToHash(_talkTriggerName);
 
         BuildResetLists();
     }
@@ -54,6 +57,14 @@ public class NpcAnimatorController : MonoBehaviour
 
         ResetAll();
         _animator.SetTrigger(_greetHash);
+    }
+
+    public void PlayTalk()
+    {
+        if (_animator == null) return;
+
+        ResetAll();
+        _animator.SetTrigger(_talkHash);
     }
 
     // ---- 내부 호출용 ----
