@@ -3695,11 +3695,15 @@ PrefabInstance:
     - target: {fileID: 2716549386606580851, guid: c0d6566270cbfec458c706583dec844a, type: 3}
       propertyPath: _helperDatabase
       value: 
-      objectReference: {fileID: 11400000, guid: 64bd1b9ee87227b49b735cf4909af4cf, type: 2}
+      objectReference: {fileID: 11400000, guid: a9257d471138f0d4fa94bc1d600bfdf0, type: 2}
     - target: {fileID: 2716549386606580851, guid: c0d6566270cbfec458c706583dec844a, type: 3}
       propertyPath: '_helperDataList.Array.data[0]'
       value: 
       objectReference: {fileID: 11400000, guid: 2c22928b9528db74faea2e263f10b0b2, type: 2}
+    - target: {fileID: 2716549386606580851, guid: c0d6566270cbfec458c706583dec844a, type: 3}
+      propertyPath: '_helperDataList.Array.data[1]'
+      value: 
+      objectReference: {fileID: 11400000, guid: e86140031d337c54b869bad6142d873b, type: 2}
     - target: {fileID: 2771973059629864059, guid: c0d6566270cbfec458c706583dec844a, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -4043,39 +4047,24 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1597716759267161692, guid: c0d6566270cbfec458c706583dec844a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 302995073}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c0d6566270cbfec458c706583dec844a, type: 3}
---- !u!1 &302995071 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1597716759267161692, guid: c0d6566270cbfec458c706583dec844a, type: 3}
-  m_PrefabInstance: {fileID: 302995070}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &302995072 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5631609105930910836, guid: c0d6566270cbfec458c706583dec844a, type: 3}
   m_PrefabInstance: {fileID: 302995070}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &302995073
+--- !u!114 &302995079 stripped
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 5024075575847629803, guid: c0d6566270cbfec458c706583dec844a, type: 3}
+  m_PrefabInstance: {fileID: 302995070}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 302995071}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 015600c1509dff74aa9e8a17a7a7d877, type: 3}
+  m_Script: {fileID: 11500000, guid: 3fda224f33ef8154dabd8f2f69ce9f0c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerHelperInventoryAbility
-  _summonKey: 101
-  _rotateLeftKey: 49
-  _rotateRightKey: 51
-  _helperDatabase: {fileID: 11400000, guid: 64bd1b9ee87227b49b735cf4909af4cf, type: 2}
-  _helperDataList:
-  - {fileID: 11400000, guid: 2c22928b9528db74faea2e263f10b0b2, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInventoryAbility
 --- !u!1 &303272491
 GameObject:
   m_ObjectHideFlags: 0
@@ -4122,7 +4111,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TestInventory
   _woodItem: {fileID: 11400000, guid: 2b2b3478def7edd4aae00ccd5b1dad58, type: 2}
   _dirtItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
-  _inventoryAbility: {fileID: 0}
+  _inventoryAbility: {fileID: 302995079}
 --- !u!1 &303539628
 GameObject:
   m_ObjectHideFlags: 0
