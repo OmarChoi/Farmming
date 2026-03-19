@@ -1,8 +1,11 @@
+using System;
 using UnityEngine;
 
 // 수확 공룡: IsHarvestable -> 수확
 public class HarvestActionAbility : HelperAbility, IHelperAction
 {
+    public static event Action<Sprite, string, int> OnHarvested;
+
     private PlayerInventoryAbility GetInventory()
     {
         return _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
@@ -10,8 +13,9 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private HelperAnimationAbility _animAbility;
 
-    private void Start()
+    private void Awake()
     {
+        base.Awake();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
     public void InteractPrimary(TerrainCell cell)
@@ -27,7 +31,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        CropGrowth cropGrowth = farmTile.GetComponent<CropGrowth>();
+        CropGrowth cropGrowth = farmTile.CropGrowth;
         if (cropGrowth == null)
         {
             return;
@@ -41,7 +45,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
         SeedConfig seed = farmTile.PlantedSeed;
 
-        int harvestAmount = Random.Range(seed.HarvestAmountMin, seed.HarvestAmountMax+1);
+        int harvestAmount = UnityEngine.Random.Range(seed.HarvestAmountMin, seed.HarvestAmountMax+1);
 
         PlayerInventoryAbility inventory = GetInventory();
         if(inventory != null && seed.HarvestItem !=null)
@@ -51,7 +55,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
         if(seed.SeedIcon != null)
         {
-            HarvestNotificationManager.Instance?.Show(seed.SeedIcon,seed.SeedName,harvestAmount);
+            OnHarvested?.Invoke(seed.SeedIcon, seed.SeedName, harvestAmount);
         }
 
         farmTile.Interact();
