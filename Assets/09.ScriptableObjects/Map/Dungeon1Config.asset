@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1824961e65738ca4499f7865d6856ab5, type: 3}
+  m_Name: Dungeon1Config
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonMapConfig
+  Width: 75
+  Height: 75
+  BaseHeight: 3
+  MaxHeight: 8
+  NoiseScale: 0.085
+  DefaultTileType: 1
+  Resources:
+  - Type: 1
+    Level: 2
+    SpawnChance: 0.05
+  - Type: 2
+    Level: 2
+    SpawnChance: 0.05
+  TimeLimitSeconds: 180
+  EntryCost: 100
+  TileWeights: []
+  IsCave: 0
+  CaveFillPercent: 0.45
+  CaveSmoothIterations: 5
+  WallTileType: 3
