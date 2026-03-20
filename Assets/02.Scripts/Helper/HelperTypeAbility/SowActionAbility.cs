@@ -62,15 +62,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        if(farmTile.StateMachine.CurrentStateType != EFarmTileStateType.FarmDry)
+        if (!farmTile.IsReadyToSow)
         {
-            Debug.Log("갈린 땅이 아님");
-            return;
-        }
-
-        if(farmTile.HasSeed)
-        {
-            Debug.Log("이미 씨앗 있음");
+            Debug.Log("씨앗 심을 수 없는 상태");
             return;
         }
 
