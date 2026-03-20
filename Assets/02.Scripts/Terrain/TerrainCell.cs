@@ -3,10 +3,12 @@ using UnityEngine;
 public class TerrainCell : MonoBehaviour
 {
     [SerializeField] private GameObject _dirtBlock;
+    [SerializeField] private GameObject _grassBlock;
     [SerializeField] private Transform _objectPoint;
 
     [Header("에디터 초기값 (씬 저장용)")]
     [SerializeField] private ECellType _initialCellType = ECellType.Dirt;
+    [SerializeField] private ETileType _initialTileType = ETileType.VillageDirt;
     [SerializeField] private int _initialDirtLevel = 1;
     [SerializeField] private EGridObjectType _initialObjectType = EGridObjectType.None;
     [SerializeField] private int _initialObjectLevel = 0;
@@ -30,13 +32,14 @@ public class TerrainCell : MonoBehaviour
     /// 에디터 직렬화 값으로 초기화 (CollectExistingCells용)
     public void InitFromSerializedData(Vector3Int gridPos)
     {
-        Init(gridPos, new TerrainCellData(_initialCellType, _initialDirtLevel, _initialObjectType, _initialObjectLevel));
+        Init(gridPos, new TerrainCellData(_initialCellType, _initialTileType, _initialDirtLevel, _initialObjectType, _initialObjectLevel));
     }
 
     /// 에디터에서 배치 시 직렬화 값도 갱신
-    public void SetInitialData(ECellType cellType, int dirtLevel, EGridObjectType objectType, int objectLevel)
+    public void SetInitialData(ECellType cellType, ETileType tileType, int dirtLevel, EGridObjectType objectType, int objectLevel)
     {
         _initialCellType = cellType;
+        _initialTileType = tileType;
         _initialDirtLevel = dirtLevel;
         _initialObjectType = objectType;
         _initialObjectLevel = objectLevel;
@@ -45,8 +48,11 @@ public class TerrainCell : MonoBehaviour
     public void Refresh()
     {
         bool isFarmLand = _data.ObjectType == EGridObjectType.FarmLand;
+        bool isDirt = _data.CellType == ECellType.Dirt && !isFarmLand;
 
-        _dirtBlock.SetActive(_data.CellType == ECellType.Dirt && !isFarmLand);
+        _dirtBlock.SetActive(isDirt && !_data.IsTop);
+        if (_grassBlock != null)
+            _grassBlock.SetActive(isDirt && _data.IsTop);
 
         if (_farmTile != null)
             _farmTile.gameObject.SetActive(isFarmLand);
@@ -58,6 +64,16 @@ public class TerrainCell : MonoBehaviour
 
         _data.Dig();
         Refresh();
+
+        // 아래 셀을 풀블록으로 전환
+        var belowPos = GridPosition + Vector3Int.down;
+        var belowCell = TerrainGridManager.Instance.GetCell(belowPos);
+        if (belowCell != null && belowCell.Data.CellType == ECellType.Dirt)
+        {
+            belowCell.Data.SetTop(true);
+            belowCell.Refresh();
+        }
+
         return true;
     }
 
@@ -66,20 +82,29 @@ public class TerrainCell : MonoBehaviour
         if (_data.CellType != ECellType.Empty) return false;
 
         _data.PlaceBlock(dirtLevel);
+        _data.SetTop(true);
         Refresh();
+
+        var belowPos = GridPosition + Vector3Int.down;
+        var belowCell = TerrainGridManager.Instance.GetCell(belowPos);
+        if (belowCell != null && belowCell.Data.IsTop)
+        {
+            belowCell.Data.SetTop(false);
+            belowCell.Refresh();
+        }
+
         return true;
     }
 
     public bool TryConvertToFarm()
     {
+        if (_farmTile == null) return false;
         if (_data.CellType != ECellType.Dirt) return false;
         if (_data.ObjectType != EGridObjectType.None) return false;
 
         _data.SetObject(EGridObjectType.FarmLand);
         Refresh();
-
-        if (_farmTile != null)
-            _farmTile.Init();
+        _farmTile.Init();
 
         return true;
     }

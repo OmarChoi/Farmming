@@ -52,6 +52,10 @@ public class TerrainEditorWindow : EditorWindow
 
         EditorGUILayout.Space();
 
+        // Tile Type
+        _brush.TileType = (ETileType)EditorGUILayout.EnumPopup("타일 타입", _brush.TileType);
+        EditorGUILayout.Space();
+
         switch (_brushMode)
         {
             case BrushMode.Dirt:
