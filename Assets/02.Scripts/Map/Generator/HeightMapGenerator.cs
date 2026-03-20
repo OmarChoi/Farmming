@@ -6,15 +6,28 @@ public class HeightMapGenerator : IMapGenerator
     {
         var gridData = new TerrainGridData();
         var rng = new System.Random(seed);
-        float offsetX = (float)rng.NextDouble() * 10000f;
-        float offsetZ = (float)rng.NextDouble() * 10000f;
 
+        int[,] heightMap = GenerateHeightMap(config, rng);
+        ETileType[,] tileMap = GenerateTileMap(config, rng);
+
+        FillTerrain(gridData, config, heightMap, tileMap, rng);
+
+        return new MapGenerationResult
+        {
+            GridData = gridData,
+            SpawnPoint = FindSpawnPoint(gridData, config)
+        };
+    }
+
+    private int[,] GenerateHeightMap(MapConfig config, System.Random rng)
+    {
         int w = config.Width;
         int h = config.Height;
         int extraMax = config.MaxHeight - config.BaseHeight;
+        float offsetX = (float)rng.NextDouble() * 10000f;
+        float offsetZ = (float)rng.NextDouble() * 10000f;
 
-        ETileType[] tileMap = BuildTileMap(config, rng);
-
+        var map = new int[w, h];
         for (int x = 0; x < w; x++)
         {
             for (int z = 0; z < h; z++)
@@ -22,47 +35,19 @@ public class HeightMapGenerator : IMapGenerator
                 float noise = Mathf.PerlinNoise(
                     (x + offsetX) * config.NoiseScale,
                     (z + offsetZ) * config.NoiseScale);
-                int extraHeight = Mathf.RoundToInt(noise * extraMax);
-                int totalHeight = config.BaseHeight + extraHeight;
-
-                ETileType tile = tileMap != null
-                    ? tileMap[x * h + z]
-                    : config.DefaultTileType;
-
-                for (int y = 0; y < totalHeight; y++)
-                {
-                    bool isBottom = (y == 0);
-                    bool isTop = (y == totalHeight - 1);
-                    gridData.SetCell(new Vector3Int(x, y, z), new TerrainCellData(
-                        ECellType.Dirt,
-                        tile,
-                        dirtLevel: 1,
-                        isIndestructible: isBottom,
-                        isTop: isTop
-                    ));
-                }
-
-                int topY = totalHeight - 1;
-                ResourcePlacer.TryPlace(gridData, new Vector3Int(x, topY, z), config.Resources, rng);
+                map[x, z] = config.BaseHeight + Mathf.RoundToInt(noise * extraMax);
             }
         }
-
-        return new MapGenerationResult
-        {
-            GridData = gridData,
-            SpawnPoint = FindSpawnPoint(gridData, w, h)
-        };
+        return map;
     }
 
-    private ETileType[] BuildTileMap(MapConfig config, System.Random rng)
+    private ETileType[,] GenerateTileMap(MapConfig config, System.Random rng)
     {
         if (config is not DungeonMapConfig dc) return null;
         if (dc.TileWeights == null || dc.TileWeights.Length <= 1) return null;
 
         int w = config.Width;
         int h = config.Height;
-        var map = new ETileType[w * h];
-
         float offsetX = (float)rng.NextDouble() * 10000f;
         float offsetZ = (float)rng.NextDouble() * 10000f;
 
@@ -70,18 +55,46 @@ public class HeightMapGenerator : IMapGenerator
         foreach (var tw in dc.TileWeights)
             totalWeight += tw.Weight;
 
+        var map = new ETileType[w, h];
         for (int x = 0; x < w; x++)
         {
             for (int z = 0; z < h; z++)
             {
                 float noise = Mathf.PerlinNoise(
-                    (x + offsetX) * 0.08f,
-                    (z + offsetZ) * 0.08f);
-                map[x * h + z] = PickTileByWeight(dc.TileWeights, noise, totalWeight);
+                    (x + offsetX) * config.TileNoiseScale,
+                    (z + offsetZ) * config.TileNoiseScale);
+                map[x, z] = PickTileByWeight(dc.TileWeights, noise, totalWeight);
             }
         }
-
         return map;
+    }
+
+    private void FillTerrain(TerrainGridData gridData, MapConfig config, int[,] heightMap, ETileType[,] tileMap, System.Random rng)
+    {
+        int w = config.Width;
+        int h = config.Height;
+
+        for (int x = 0; x < w; x++)
+        {
+            for (int z = 0; z < h; z++)
+            {
+                int totalHeight = heightMap[x, z];
+                ETileType tile = tileMap != null ? tileMap[x, z] : config.DefaultTileType;
+
+                for (int y = 0; y < totalHeight; y++)
+                {
+                    gridData.SetCell(new Vector3Int(x, y, z), new TerrainCellData(
+                        ECellType.Dirt,
+                        tile,
+                        dirtLevel: 1,
+                        isIndestructible: y == 0,
+                        isTop: y == totalHeight - 1
+                    ));
+                }
+
+                ResourcePlacer.TryPlace(gridData, new Vector3Int(x, totalHeight - 1, z), config.Resources, rng);
+            }
+        }
     }
 
     private static ETileType PickTileByWeight(TileWeightEntry[] weights, float noise, float totalWeight)
@@ -94,21 +107,20 @@ public class HeightMapGenerator : IMapGenerator
             if (scaled <= cumulative)
                 return tw.TileType;
         }
-        return weights[weights.Length - 1].TileType;
+        return weights[^1].TileType;
     }
 
-    private static Vector3Int FindSpawnPoint(TerrainGridData gridData, int width, int height)
+    private static Vector3Int FindSpawnPoint(TerrainGridData gridData, MapConfig config)
     {
-        int cx = width / 2;
-        int cz = height / 2;
+        int cx = config.Width / 2;
+        int cz = config.Height / 2;
 
-        for (int y = 7; y >= 0; y--)
+        for (int y = config.MaxHeight - 1; y >= 0; y--)
         {
-            var pos = new Vector3Int(cx, y, cz);
-            if (gridData.HasCell(pos))
+            if (gridData.HasCell(new Vector3Int(cx, y, cz)))
                 return new Vector3Int(cx, y + 1, cz);
         }
 
-        return new Vector3Int(cx, 4, cz);
+        return new Vector3Int(cx, config.BaseHeight, cz);
     }
 }

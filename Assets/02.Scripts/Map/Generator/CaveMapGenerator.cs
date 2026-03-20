@@ -3,112 +3,69 @@ using UnityEngine;
 
 public class CaveMapGenerator : IMapGenerator
 {
+    private const int WallNeighborThreshold = 4;
+    private const int RegionSampleLimit = 50;
+
+    private static readonly int[] DirX = { 1, -1, 0, 0 };
+    private static readonly int[] DirZ = { 0, 0, 1, -1 };
+
     public MapGenerationResult Generate(MapConfig config, int seed)
     {
-        var dc = (DungeonMapConfig)config;
+        if (config is not DungeonMapConfig dc)
+        {
+            Debug.LogError("CaveMapGenerator requires a DungeonMapConfig.");
+            return new MapGenerationResult
+            {
+                GridData = new TerrainGridData(),
+                SpawnPoint = Vector3Int.zero
+            };
+        }
+
         var gridData = new TerrainGridData();
         var rng = new System.Random(seed);
 
         int w = config.Width;
         int h = config.Height;
-        int maxY = config.MaxHeight;
 
-        // 1. Cellular Automata -> pillar/wall map
-        bool[,] wallMap = GenerateWalls(w, h, dc.CaveFillPercent, dc.CaveSmoothIterations, seed);
+        bool[,] wallMap = BuildWallMap(w, h, dc.CaveFillPercent, dc.CaveSmoothIterations, rng);
+        ETileType[,] tileMap = BuildTileMap(dc, rng);
+        int[,] floorHeightMap = BuildFloorHeightMap(config, rng);
 
-        // 2. Seal edges
-        SealEdges(wallMap, w, h);
+        FillTerrain(gridData, dc, wallMap, tileMap, floorHeightMap, rng);
 
-        // 3. Ensure connectivity (entrance reachable)
-        EnsureConnectivity(wallMap, w, h, rng);
-
-        // 4. Build tile map for floor variety
-        ETileType[] tileMap = BuildCaveTileMap(dc, w, h, rng);
-
-        // 5. Perlin Noise offsets for floor height variation
-        float noiseOx = (float)rng.NextDouble() * 10000f;
-        float noiseOz = (float)rng.NextDouble() * 10000f;
-
-        for (int x = 0; x < w; x++)
-        {
-            for (int z = 0; z < h; z++)
-            {
-                if (wallMap[x, z])
-                {
-                    // Wall/pillar: fill floor to ceiling, all indestructible
-                    for (int y = 0; y < maxY; y++)
-                    {
-                        gridData.SetCell(new Vector3Int(x, y, z), new TerrainCellData(
-                            ECellType.Dirt, dc.WallTileType, 1,
-                            isIndestructible: true));
-                    }
-                }
-                else
-                {
-                    ETileType floorTile = tileMap[x * h + z];
-
-                    // Floor height: base + Perlin variation (leave room for ceiling)
-                    float noise = Mathf.PerlinNoise(
-                        (x + noiseOx) * config.NoiseScale,
-                        (z + noiseOz) * config.NoiseScale);
-                    int extraMax = maxY - config.BaseHeight - 1; // -1 for ceiling
-                    int extraHeight = Mathf.RoundToInt(noise * extraMax);
-                    int floorHeight = config.BaseHeight + extraHeight;
-
-                    // Floor blocks
-                    for (int y = 0; y < floorHeight; y++)
-                    {
-                        gridData.SetCell(new Vector3Int(x, y, z), new TerrainCellData(
-                            ECellType.Dirt, floorTile, 1,
-                            isIndestructible: (y == 0)));
-                    }
-
-                    // Ceiling block (top layer, indestructible)
-                    gridData.SetCell(new Vector3Int(x, maxY - 1, z), new TerrainCellData(
-                        ECellType.Dirt, dc.WallTileType, 1,
-                        isIndestructible: true));
-
-                    // Resource on top of floor
-                    int topY = floorHeight - 1;
-                    ResourcePlacer.TryPlace(gridData, new Vector3Int(x, topY, z), config.Resources, rng);
-                }
-            }
-        }
-
-        Vector3Int spawn = FindOpenSpawn(wallMap, gridData, w, h);
         return new MapGenerationResult
         {
             GridData = gridData,
-            SpawnPoint = spawn
+            SpawnPoint = FindOpenSpawn(wallMap, gridData, dc)
         };
     }
 
-    private bool[,] GenerateWalls(int w, int h, float fillPercent, int smoothIterations, int seed)
+    #region Wall Generation (Cellular Automata)
+
+    private bool[,] BuildWallMap(int w, int h, float fillPercent, int smoothIterations, System.Random rng)
     {
-        var rng = new System.Random(seed);
         var map = new bool[w, h];
 
-        // Random fill
         for (int x = 0; x < w; x++)
             for (int z = 0; z < h; z++)
                 map[x, z] = rng.NextDouble() < fillPercent;
 
-        // Smooth
         for (int i = 0; i < smoothIterations; i++)
-        {
-            var next = new bool[w, h];
-            for (int x = 0; x < w; x++)
-            {
-                for (int z = 0; z < h; z++)
-                {
-                    int wallCount = CountWallNeighbors(map, x, z, w, h);
-                    next[x, z] = wallCount > 4;
-                }
-            }
-            map = next;
-        }
+            map = SmoothWalls(map, w, h);
+
+        SealEdges(map, w, h);
+        EnsureConnectivity(map, w, h);
 
         return map;
+    }
+
+    private bool[,] SmoothWalls(bool[,] map, int w, int h)
+    {
+        var next = new bool[w, h];
+        for (int x = 0; x < w; x++)
+            for (int z = 0; z < h; z++)
+                next[x, z] = CountWallNeighbors(map, x, z, w, h) > WallNeighborThreshold;
+        return next;
     }
 
     private int CountWallNeighbors(bool[,] map, int x, int z, int w, int h)
@@ -144,9 +101,28 @@ public class CaveMapGenerator : IMapGenerator
         }
     }
 
-    private void EnsureConnectivity(bool[,] wallMap, int w, int h, System.Random rng)
+    #endregion
+
+    #region Connectivity (Flood Fill + Tunnel)
+
+    private void EnsureConnectivity(bool[,] wallMap, int w, int h)
     {
-        // Find all open regions via Flood Fill
+        var regions = FindRegions(wallMap, w, h);
+        if (regions.Count <= 1) return;
+
+        regions.Sort((a, b) => b.Count.CompareTo(a.Count));
+        var mainRegion = regions[0];
+
+        for (int i = 1; i < regions.Count; i++)
+        {
+            var (bestA, bestB) = FindClosestPair(mainRegion, regions[i]);
+            CarveTunnel(wallMap, bestA, bestB, w, h);
+            mainRegion.AddRange(regions[i]);
+        }
+    }
+
+    private List<List<Vector2Int>> FindRegions(bool[,] wallMap, int w, int h)
+    {
         var visited = new bool[w, h];
         var regions = new List<List<Vector2Int>>();
 
@@ -155,73 +131,60 @@ public class CaveMapGenerator : IMapGenerator
             for (int z = 1; z < h - 1; z++)
             {
                 if (wallMap[x, z] || visited[x, z]) continue;
-
-                var region = new List<Vector2Int>();
-                var queue = new Queue<Vector2Int>();
-                queue.Enqueue(new Vector2Int(x, z));
-                visited[x, z] = true;
-
-                while (queue.Count > 0)
-                {
-                    var pos = queue.Dequeue();
-                    region.Add(pos);
-
-                    int[] dx = { 1, -1, 0, 0 };
-                    int[] dz = { 0, 0, 1, -1 };
-                    for (int d = 0; d < 4; d++)
-                    {
-                        int nx = pos.x + dx[d];
-                        int nz = pos.y + dz[d];
-                        if (nx < 1 || nx >= w - 1 || nz < 1 || nz >= h - 1) continue;
-                        if (visited[nx, nz] || wallMap[nx, nz]) continue;
-                        visited[nx, nz] = true;
-                        queue.Enqueue(new Vector2Int(nx, nz));
-                    }
-                }
-
-                regions.Add(region);
+                regions.Add(FloodFill(wallMap, visited, x, z, w, h));
             }
         }
+        return regions;
+    }
 
-        if (regions.Count <= 1) return;
+    private List<Vector2Int> FloodFill(bool[,] wallMap, bool[,] visited, int startX, int startZ, int w, int h)
+    {
+        var region = new List<Vector2Int>();
+        var queue = new Queue<Vector2Int>();
+        queue.Enqueue(new Vector2Int(startX, startZ));
+        visited[startX, startZ] = true;
 
-        // Sort by size descending, keep largest as main
-        regions.Sort((a, b) => b.Count.CompareTo(a.Count));
-        var mainRegion = regions[0];
-
-        // Connect smaller regions to main by carving tunnels
-        for (int i = 1; i < regions.Count; i++)
+        while (queue.Count > 0)
         {
-            var smallRegion = regions[i];
-            // Find closest pair of cells between regions
-            Vector2Int bestA = mainRegion[0];
-            Vector2Int bestB = smallRegion[0];
-            float bestDist = float.MaxValue;
+            var pos = queue.Dequeue();
+            region.Add(pos);
 
-            // Sample to avoid O(n^2) for large regions
-            int stepA = Mathf.Max(1, mainRegion.Count / 50);
-            int stepB = Mathf.Max(1, smallRegion.Count / 50);
-
-            for (int a = 0; a < mainRegion.Count; a += stepA)
+            for (int d = 0; d < 4; d++)
             {
-                for (int b = 0; b < smallRegion.Count; b += stepB)
+                int nx = pos.x + DirX[d];
+                int nz = pos.y + DirZ[d];
+                if (nx < 1 || nx >= w - 1 || nz < 1 || nz >= h - 1) continue;
+                if (visited[nx, nz] || wallMap[nx, nz]) continue;
+                visited[nx, nz] = true;
+                queue.Enqueue(new Vector2Int(nx, nz));
+            }
+        }
+        return region;
+    }
+
+    private (Vector2Int, Vector2Int) FindClosestPair(List<Vector2Int> regionA, List<Vector2Int> regionB)
+    {
+        Vector2Int bestA = regionA[0];
+        Vector2Int bestB = regionB[0];
+        float bestDist = float.MaxValue;
+
+        int stepA = Mathf.Max(1, regionA.Count / RegionSampleLimit);
+        int stepB = Mathf.Max(1, regionB.Count / RegionSampleLimit);
+
+        for (int a = 0; a < regionA.Count; a += stepA)
+        {
+            for (int b = 0; b < regionB.Count; b += stepB)
+            {
+                float dist = (regionA[a] - regionB[b]).sqrMagnitude;
+                if (dist < bestDist)
                 {
-                    float dist = (mainRegion[a] - smallRegion[b]).sqrMagnitude;
-                    if (dist < bestDist)
-                    {
-                        bestDist = dist;
-                        bestA = mainRegion[a];
-                        bestB = smallRegion[b];
-                    }
+                    bestDist = dist;
+                    bestA = regionA[a];
+                    bestB = regionB[b];
                 }
             }
-
-            // Carve tunnel between bestA and bestB
-            CarveTunnel(wallMap, bestA, bestB, w, h);
-
-            // Merge into main region
-            mainRegion.AddRange(smallRegion);
         }
+        return (bestA, bestB);
     }
 
     private void CarveTunnel(bool[,] wallMap, Vector2Int from, Vector2Int to, int w, int h)
@@ -231,7 +194,6 @@ public class CaveMapGenerator : IMapGenerator
 
         while (x != to.x || z != to.y)
         {
-            // Carve 1-wide path
             if (x >= 1 && x < w - 1 && z >= 1 && z < h - 1)
                 wallMap[x, z] = false;
 
@@ -242,14 +204,21 @@ public class CaveMapGenerator : IMapGenerator
         }
     }
 
-    private ETileType[] BuildCaveTileMap(DungeonMapConfig dc, int w, int h, System.Random rng)
+    #endregion
+
+    #region Tile & Height Maps
+
+    private ETileType[,] BuildTileMap(DungeonMapConfig dc, System.Random rng)
     {
-        var map = new ETileType[w * h];
+        int w = dc.Width;
+        int h = dc.Height;
+        var map = new ETileType[w, h];
 
         if (dc.TileWeights == null || dc.TileWeights.Length == 0)
         {
-            for (int i = 0; i < map.Length; i++)
-                map[i] = dc.DefaultTileType;
+            for (int x = 0; x < w; x++)
+                for (int z = 0; z < h; z++)
+                    map[x, z] = dc.DefaultTileType;
             return map;
         }
 
@@ -265,30 +234,102 @@ public class CaveMapGenerator : IMapGenerator
             for (int z = 0; z < h; z++)
             {
                 float noise = Mathf.PerlinNoise(
-                    (x + offsetX) * 0.08f,
-                    (z + offsetZ) * 0.08f);
-                float scaled = noise * totalWeight;
-                float cumulative = 0f;
-                ETileType picked = dc.TileWeights[0].TileType;
-                foreach (var tw in dc.TileWeights)
-                {
-                    cumulative += tw.Weight;
-                    if (scaled <= cumulative)
-                    {
-                        picked = tw.TileType;
-                        break;
-                    }
-                }
-                map[x * h + z] = picked;
+                    (x + offsetX) * dc.TileNoiseScale,
+                    (z + offsetZ) * dc.TileNoiseScale);
+                map[x, z] = PickTileByWeight(dc.TileWeights, noise, totalWeight);
             }
         }
-
         return map;
     }
 
-    private Vector3Int FindOpenSpawn(bool[,] wallMap, TerrainGridData gridData, int w, int h)
+    private int[,] BuildFloorHeightMap(MapConfig config, System.Random rng)
     {
-        // Find an open cell near center
+        int w = config.Width;
+        int h = config.Height;
+        int extraMax = config.MaxHeight - config.BaseHeight - 1;
+        float offsetX = (float)rng.NextDouble() * 10000f;
+        float offsetZ = (float)rng.NextDouble() * 10000f;
+
+        var map = new int[w, h];
+        for (int x = 0; x < w; x++)
+        {
+            for (int z = 0; z < h; z++)
+            {
+                float noise = Mathf.PerlinNoise(
+                    (x + offsetX) * config.NoiseScale,
+                    (z + offsetZ) * config.NoiseScale);
+                map[x, z] = config.BaseHeight + Mathf.RoundToInt(noise * extraMax);
+            }
+        }
+        return map;
+    }
+
+    private static ETileType PickTileByWeight(TileWeightEntry[] weights, float noise, float totalWeight)
+    {
+        float scaled = noise * totalWeight;
+        float cumulative = 0f;
+        foreach (var tw in weights)
+        {
+            cumulative += tw.Weight;
+            if (scaled <= cumulative)
+                return tw.TileType;
+        }
+        return weights[^1].TileType;
+    }
+
+    #endregion
+
+    #region Terrain Fill
+
+    private void FillTerrain(TerrainGridData gridData, DungeonMapConfig dc, bool[,] wallMap, ETileType[,] tileMap, int[,] floorHeightMap, System.Random rng)
+    {
+        int w = dc.Width;
+        int h = dc.Height;
+        int maxY = dc.MaxHeight;
+
+        for (int x = 0; x < w; x++)
+        {
+            for (int z = 0; z < h; z++)
+            {
+                if (wallMap[x, z])
+                    FillWallColumn(gridData, x, z, maxY, dc.WallTileType);
+                else
+                    FillOpenColumn(gridData, x, z, floorHeightMap[x, z], maxY, tileMap[x, z], dc.WallTileType, dc, rng);
+            }
+        }
+    }
+
+    private void FillWallColumn(TerrainGridData gridData, int x, int z, int maxY, ETileType wallTile)
+    {
+        for (int y = 0; y < maxY; y++)
+        {
+            gridData.SetCell(new Vector3Int(x, y, z), new TerrainCellData(
+                ECellType.Dirt, wallTile, 1, isIndestructible: true));
+        }
+    }
+
+    private void FillOpenColumn(TerrainGridData gridData, int x, int z, int floorHeight, int maxY, ETileType floorTile, ETileType ceilingTile, MapConfig config, System.Random rng)
+    {
+        for (int y = 0; y < floorHeight; y++)
+        {
+            gridData.SetCell(new Vector3Int(x, y, z), new TerrainCellData(
+                ECellType.Dirt, floorTile, 1, isIndestructible: y == 0));
+        }
+
+        gridData.SetCell(new Vector3Int(x, maxY - 1, z), new TerrainCellData(
+            ECellType.Dirt, ceilingTile, 1, isIndestructible: true));
+
+        ResourcePlacer.TryPlace(gridData, new Vector3Int(x, floorHeight - 1, z), config.Resources, rng);
+    }
+
+    #endregion
+
+    #region Spawn Point
+
+    private static Vector3Int FindOpenSpawn(bool[,] wallMap, TerrainGridData gridData, MapConfig config)
+    {
+        int w = config.Width;
+        int h = config.Height;
         int cx = w / 2;
         int cz = h / 2;
 
@@ -304,21 +345,19 @@ public class CaveMapGenerator : IMapGenerator
                     if (x < 1 || x >= w - 1 || z < 1 || z >= h - 1) continue;
                     if (wallMap[x, z]) continue;
 
-                    // Find top floor cell
-                    for (int y = 6; y >= 0; y--)
+                    for (int y = config.MaxHeight - 2; y >= 0; y--)
                     {
-                        var pos = new Vector3Int(x, y, z);
-                        if (gridData.HasCell(pos))
-                        {
-                            var above = new Vector3Int(x, y + 1, z);
-                            if (!gridData.HasCell(above))
-                                return above;
-                        }
+                        if (!gridData.HasCell(new Vector3Int(x, y, z))) continue;
+                        var above = new Vector3Int(x, y + 1, z);
+                        if (!gridData.HasCell(above))
+                            return above;
                     }
                 }
             }
         }
 
-        return new Vector3Int(cx, 4, cz);
+        return new Vector3Int(cx, config.BaseHeight, cz);
     }
+
+    #endregion
 }

@@ -17,6 +17,9 @@ public class DungeonMapConfig : MapConfig
     public float CaveFillPercent = 0.45f;
     public int CaveSmoothIterations = 5;
     public ETileType WallTileType = ETileType.Dungeon2Stone;
+
+    public override IMapGenerator CreateGenerator() =>
+        IsCave ? new CaveMapGenerator() : new HeightMapGenerator();
 }
 
 [Serializable]
