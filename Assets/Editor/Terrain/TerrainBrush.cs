@@ -6,6 +6,7 @@ using UnityEngine;
 public class TerrainBrush
 {
     public ECellType CellType = ECellType.Dirt;
+    public ETileType TileType = ETileType.VillageDirt;
     public int DirtLevel = 1;
     public EGridObjectType ObjectType = EGridObjectType.None;
     public int ObjectLevel = 1;
@@ -16,6 +17,6 @@ public class TerrainBrush
     /// </summary>
     public TerrainCellData CreateCellData()
     {
-        return new TerrainCellData(CellType, DirtLevel, ObjectType, ObjectLevel);
+        return new TerrainCellData(CellType, TileType, DirtLevel, ObjectType, ObjectLevel);
     }
 }
