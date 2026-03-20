@@ -43,19 +43,25 @@ public class HeightMapGenerator : IMapGenerator
 
     private ETileType[,] GenerateTileMap(MapConfig config, System.Random rng)
     {
-        if (config is not DungeonMapConfig dc) return null;
-        if (dc.TileWeights == null || dc.TileWeights.Length <= 1) return null;
-
         int w = config.Width;
         int h = config.Height;
-        float offsetX = (float)rng.NextDouble() * 10000f;
-        float offsetZ = (float)rng.NextDouble() * 10000f;
+        var map = new ETileType[w, h];
+
+        if (config is not DungeonMapConfig dc || dc.TileWeights == null || dc.TileWeights.Length <= 1)
+        {
+            for (int x = 0; x < w; x++)
+                for (int z = 0; z < h; z++)
+                    map[x, z] = config.DefaultTileType;
+            return map;
+        }
 
         float totalWeight = 0f;
         foreach (var tw in dc.TileWeights)
             totalWeight += tw.Weight;
 
-        var map = new ETileType[w, h];
+        float offsetX = (float)rng.NextDouble() * 10000f;
+        float offsetZ = (float)rng.NextDouble() * 10000f;
+
         for (int x = 0; x < w; x++)
         {
             for (int z = 0; z < h; z++)
@@ -79,7 +85,7 @@ public class HeightMapGenerator : IMapGenerator
             for (int z = 0; z < h; z++)
             {
                 int totalHeight = heightMap[x, z];
-                ETileType tile = tileMap != null ? tileMap[x, z] : config.DefaultTileType;
+                ETileType tile = tileMap[x, z];
 
                 for (int y = 0; y < totalHeight; y++)
                 {
