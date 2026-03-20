@@ -364,7 +364,7 @@ Shader "Custom/SoftToon/Environment"
             // 라이트 방향(depth bias)과 표면 노말 방향(normal bias)으로 밀어낸다.
             float3 ApplyCustomShadowBias(float3 posWS, float3 normalWS, float3 lightDir, float depthBias, float normalBias)
             {
-                posWS += lightDir * depthBias * 0.01;                      // 라이트 방향으로 밀기
+                posWS -= lightDir * depthBias * 0.01;                      // 라이트 반대 방향으로 밀기
                 float invNdotL = 1.0 - saturate(dot(normalWS, lightDir));  // 빗각 계수
                 posWS += normalWS * normalBias * invNdotL * 0.01;          // 노말 방향으로 밀기
                 return posWS;
