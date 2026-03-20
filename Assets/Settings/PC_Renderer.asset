@@ -1,25 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8151194891350547888
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef0d6feaa9fc9bd48b8273d2f4954823, type: 3}
-  m_Name: EdgeDetectionFeature
-  m_EditorClassIdentifier: Assembly-CSharp::EdgeDetectionFeature
-  m_Active: 1
-  settings:
-    renderPassEvent: 500
-    edgeMaterial: {fileID: 2100000, guid: e4db72c46b2971b4391d9a3b424658fa, type: 2}
-    edgeColor: {r: 0.1, g: 0.08, b: 0.08, a: 1}
-    depthThreshold: 0.01
-    normalThreshold: 0.2
-    edgeThickness: 1.5
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -46,8 +26,7 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 7200000, guid: b9a23f869c4fd45f19c5ada54dd82176, type: 3}
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
-  - {fileID: -8151194891350547888}
-  m_RendererFeatureMap: ad6b866f10d7b46c506212e66e23e18e
+  m_RendererFeatureMap: ad6b866f10d7b46c
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
