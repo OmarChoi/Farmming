@@ -45,7 +45,7 @@ public class NpcMovement : MonoBehaviour
 
         if (_agent.isOnOffMeshLink && !_isJumping)
         {
-            // 컴포넌트 파괴 시 비동기 작업이 안전하게 취소되도록 CancellationToken을 사용합니다.
+            // Npc가 삭제될 때 점프 도중이여도 안전하게 작업을 마무리하기 위해 CancellationToken을 사용했습니다.
             HandleOffMeshLink(this.GetCancellationTokenOnDestroy()).Forget();
         }
     }
@@ -63,9 +63,11 @@ public class NpcMovement : MonoBehaviour
         float time = 0f;
 
         _agent.isStopped = true;
+        _agent.updatePosition = false;
 
         while (time < _jumpDuration)
         {
+            // 이미 행동이 취소되었다면 예외 처리를 합니다.
             cancellationToken.ThrowIfCancellationRequested();
 
             float t = time / _jumpDuration;
@@ -87,6 +89,7 @@ public class NpcMovement : MonoBehaviour
 
         _agent.CompleteOffMeshLink();
         _agent.isStopped = false;
+        _agent.updatePosition = true;
         _isJumping = false;
     }
 
