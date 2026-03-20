@@ -1,67 +1,186 @@
 fileFormatVersion: 2
 guid: d5129c49dd704304c92580ffd9c48819
+AssetOrigin:
+  serializedVersion: 1
+  productId: 139016
+  packageName: Dino
+  packageVersion: 3.1
+  assetPath: Assets/Suriyun/Dino/Animations/Dino_CuteA.fbx
+  uploadId: 834902
 ModelImporter:
-  serializedVersion: 23
-  fileIDToRecycleName:
-    100000: ArmL1
-    100002: ArmL2
-    100004: ArmL3
-    100006: ArmR1
-    100008: ArmR2
-    100010: ArmR3
-    100012: Dino_Center
-    100014: //RootNode
-    100016: Head
-    100018: Head_End
-    100020: LegL1
-    100022: LegL2
-    100024: LegL3
-    100026: LegR1
-    100028: LegR2
-    100030: LegR3
-    100032: Mouth_Top1
-    100034: Mouth_Top2
-    100036: Mouth_Under1
-    100038: Mouth_Under2
-    100040: Spine1
-    100042: Spine2
-    100044: Tail1
-    100046: Tail2
-    100048: Tail3
-    100050: Tail4
-    100052: Tail5
-    400000: ArmL1
-    400002: ArmL2
-    400004: ArmL3
-    400006: ArmR1
-    400008: ArmR2
-    400010: ArmR3
-    400012: Dino_Center
-    400014: //RootNode
-    400016: Head
-    400018: Head_End
-    400020: LegL1
-    400022: LegL2
-    400024: LegL3
-    400026: LegR1
-    400028: LegR2
-    400030: LegR3
-    400032: Mouth_Top1
-    400034: Mouth_Top2
-    400036: Mouth_Under1
-    400038: Mouth_Under2
-    400040: Spine1
-    400042: Spine2
-    400044: Tail1
-    400046: Tail2
-    400048: Tail3
-    400050: Tail4
-    400052: Tail5
-    7400000: Dino_CuteA
-    9500000: //RootNode
+  serializedVersion: 24200
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: ArmL1
+  - first:
+      1: 100002
+    second: ArmL2
+  - first:
+      1: 100004
+    second: ArmL3
+  - first:
+      1: 100006
+    second: ArmR1
+  - first:
+      1: 100008
+    second: ArmR2
+  - first:
+      1: 100010
+    second: ArmR3
+  - first:
+      1: 100012
+    second: Dino_Center
+  - first:
+      1: 100014
+    second: //RootNode
+  - first:
+      1: 100016
+    second: Head
+  - first:
+      1: 100018
+    second: Head_End
+  - first:
+      1: 100020
+    second: LegL1
+  - first:
+      1: 100022
+    second: LegL2
+  - first:
+      1: 100024
+    second: LegL3
+  - first:
+      1: 100026
+    second: LegR1
+  - first:
+      1: 100028
+    second: LegR2
+  - first:
+      1: 100030
+    second: LegR3
+  - first:
+      1: 100032
+    second: Mouth_Top1
+  - first:
+      1: 100034
+    second: Mouth_Top2
+  - first:
+      1: 100036
+    second: Mouth_Under1
+  - first:
+      1: 100038
+    second: Mouth_Under2
+  - first:
+      1: 100040
+    second: Spine1
+  - first:
+      1: 100042
+    second: Spine2
+  - first:
+      1: 100044
+    second: Tail1
+  - first:
+      1: 100046
+    second: Tail2
+  - first:
+      1: 100048
+    second: Tail3
+  - first:
+      1: 100050
+    second: Tail4
+  - first:
+      1: 100052
+    second: Tail5
+  - first:
+      4: 400000
+    second: ArmL1
+  - first:
+      4: 400002
+    second: ArmL2
+  - first:
+      4: 400004
+    second: ArmL3
+  - first:
+      4: 400006
+    second: ArmR1
+  - first:
+      4: 400008
+    second: ArmR2
+  - first:
+      4: 400010
+    second: ArmR3
+  - first:
+      4: 400012
+    second: Dino_Center
+  - first:
+      4: 400014
+    second: //RootNode
+  - first:
+      4: 400016
+    second: Head
+  - first:
+      4: 400018
+    second: Head_End
+  - first:
+      4: 400020
+    second: LegL1
+  - first:
+      4: 400022
+    second: LegL2
+  - first:
+      4: 400024
+    second: LegL3
+  - first:
+      4: 400026
+    second: LegR1
+  - first:
+      4: 400028
+    second: LegR2
+  - first:
+      4: 400030
+    second: LegR3
+  - first:
+      4: 400032
+    second: Mouth_Top1
+  - first:
+      4: 400034
+    second: Mouth_Top2
+  - first:
+      4: 400036
+    second: Mouth_Under1
+  - first:
+      4: 400038
+    second: Mouth_Under2
+  - first:
+      4: 400040
+    second: Spine1
+  - first:
+      4: 400042
+    second: Spine2
+  - first:
+      4: 400044
+    second: Tail1
+  - first:
+      4: 400046
+    second: Tail2
+  - first:
+      4: 400048
+    second: Tail3
+  - first:
+      4: 400050
+    second: Tail4
+  - first:
+      4: 400052
+    second: Tail5
+  - first:
+      74: 7400000
+    second: Dino_CuteA
+  - first:
+      95: 9500000
+    second: //RootNode
   externalObjects: {}
   materials:
-    importMaterials: 1
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -70,9 +189,8 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -90,6 +208,7 @@ ModelImporter:
     - serializedVersion: 16
       name: Dino_CuteA
       takeName: Dino_CuteA
+      internalID: 0
       firstFrame: 861
       lastFrame: 880
       wrapMode: 0
@@ -118,37 +237,55 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.5
+    globalScale: 1
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
     importLights: 1
+    nodeNameCollisionStrategy: 0
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
     preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
-    previousCalculatedGlobalScale: 0.01
-    hasPreviousCalculatedGlobalScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 1
-  copyAvatar: 0
   humanDescription:
-    serializedVersion: 2
+    serializedVersion: 3
     human: []
     skeleton: []
     armTwist: 0.5
@@ -158,22 +295,20 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
+    globalScale: 0.01
     rootMotionBoneName: 
-    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
+  avatarSetup: 1
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 139016
-  packageName: Dino
-  packageVersion: 3.1
-  assetPath: Assets/Suriyun/Dino/Animations/Dino_CuteA.fbx
-  uploadId: 834902
