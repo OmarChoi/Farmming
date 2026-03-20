@@ -12,6 +12,7 @@ public class TerrainCellSaveData
     public EGridObjectType ObjectType;
     public int ObjectLevel;
     public bool IsIndestructible;
+    public bool IsTop;
 
     public FarmSaveData Farm;
 }

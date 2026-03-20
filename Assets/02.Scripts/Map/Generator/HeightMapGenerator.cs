@@ -32,11 +32,13 @@ public class HeightMapGenerator : IMapGenerator
                 for (int y = 0; y < totalHeight; y++)
                 {
                     bool isBottom = (y == 0);
+                    bool isTop = (y == totalHeight - 1);
                     gridData.SetCell(new Vector3Int(x, y, z), new TerrainCellData(
                         ECellType.Dirt,
                         tile,
                         dirtLevel: 1,
-                        isIndestructible: isBottom
+                        isIndestructible: isBottom,
+                        isTop: isTop
                     ));
                 }
 
