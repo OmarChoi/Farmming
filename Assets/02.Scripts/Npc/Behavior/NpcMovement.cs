@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System.Collections;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -12,8 +13,8 @@ public class NpcMovement : MonoBehaviour
     public float MoveSpeed => Mathf.Clamp01(_agent.desiredVelocity.magnitude / _originalSpeed);
 
     private float _originalSpeed;
-    private const float _halfSpeedMultiplier = 0.5f;
-    private const float _minAngle = 0.5f;
+    private const float HalfSpeedMultiplier = 0.5f;
+    private const float MinAngle = 0.5f;
 
     private Coroutine _rotateCoroutine;
 
@@ -27,7 +28,7 @@ public class NpcMovement : MonoBehaviour
     [Header("점프 옵션")]
     [SerializeField] private float _jumpDuration = 1.2f;
     [SerializeField] private float _jumpHeight = 1.6f;
-    private const float _jumpCurveScale = 4f;  // t * (1-t)의 최대값(0.25)을 1로 정규화하기 위한 값입니다.
+    private const float JumpCurveScale = 4f;  // t * (1-t)의 최대값(0.25)을 1로 정규화하기 위한 값입니다.
     private bool _isJumping;
 
     private void Awake()
@@ -44,12 +45,13 @@ public class NpcMovement : MonoBehaviour
 
         if (_agent.isOnOffMeshLink && !_isJumping)
         {
-            HandleOffMeshLink().Forget();
+            // 컴포넌트 파괴 시 비동기 작업이 안전하게 취소되도록 CancellationToken을 사용합니다.
+            HandleOffMeshLink(this.GetCancellationTokenOnDestroy()).Forget();
         }
     }
 
     // NavMeshLink를 만나면 포물선 모양으로 점프합니다.
-    private async UniTask HandleOffMeshLink()
+    private async UniTask HandleOffMeshLink(CancellationToken cancellationToken)
     {
         _isJumping = true;
 
@@ -64,18 +66,22 @@ public class NpcMovement : MonoBehaviour
 
         while (time < _jumpDuration)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             float t = time / _jumpDuration;
 
             // 부드러운 움직임을 위해 기본 위치를 보간합니다.
             Vector3 position = Vector3.Lerp(startPosition, endPosition, t);
 
             // 포물선의 높이를 추가합니다.
-            position.y += _jumpHeight * _jumpCurveScale * (t * (1f - t));
+            position.y += _jumpHeight * JumpCurveScale * (t * (1f - t));
 
             transform.position = position;
 
             time += Time.deltaTime;
-            await UniTask.Yield();
+
+            // 토큰을 전달하여 취소 시 반응하도록 합니다.
+            await UniTask.Yield(cancellationToken);
         }
         transform.position = endPosition;
 
@@ -95,7 +101,7 @@ public class NpcMovement : MonoBehaviour
 
         if (distance <= _walkDistance)
         {
-            _agent.speed = _originalSpeed * _halfSpeedMultiplier;
+            _agent.speed = _originalSpeed * HalfSpeedMultiplier;
         }
         else
         {
@@ -157,7 +163,7 @@ public class NpcMovement : MonoBehaviour
             _anim?.SetMove(_turnMoveSpeed);
 
             // 거의 다 돌았으면 종료합니다.
-            if (Quaternion.Angle(transform.rotation, targetRotation) < _minAngle) break;
+            if (Quaternion.Angle(transform.rotation, targetRotation) < MinAngle) break;
 
             yield return null;
         }
