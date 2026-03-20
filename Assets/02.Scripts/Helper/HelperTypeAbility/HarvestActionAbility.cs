@@ -13,7 +13,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private HelperAnimationAbility _animAbility;
 
-    private void Awake()
+    protected override void Awake()
     {
         base.Awake();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();

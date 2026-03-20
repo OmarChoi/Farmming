@@ -16,6 +16,7 @@ public class FarmTile : MonoBehaviour
     public SeedConfig PlantedSeed { get; private set; }
     public bool HasSeed => PlantedSeed != null;
     public bool IsWet => StateMachine.CurrentStateType == EFarmTileStateType.FarmWet;
+    public bool IsReadyToSow => StateMachine.CurrentStateType == EFarmTileStateType.FarmDry && !HasSeed;
     public Transform CropSpawnPoint => _cropSpawnPoint;
 
     public void Awake()

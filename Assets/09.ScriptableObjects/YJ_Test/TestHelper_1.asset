@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HelperDataSO
   HelperId: 111
   HelperName: "\uAC1C\uAC04 \uACE1\uB8E1"
-  HelperIcon: {fileID: 21300000, guid: c57cfbd3a2fdc7246aa4677da463caac, type: 3}
+  HelperIcon: {fileID: 21300000, guid: 4ddd8bab887b0074c8a95d97d1fe0b9a, type: 3}
   Prefab: {fileID: 4859026082703586436, guid: c6a6960f78a17624092513023c7c5a32, type: 3}
   MaxEnergy: 100
   EnergyRecoveryPerSecond: 5
+  GatherDamage: 10
   MaxLevel: 10
   BaseEnergyCost: 10
   EnergyReducePerLevel: 1
