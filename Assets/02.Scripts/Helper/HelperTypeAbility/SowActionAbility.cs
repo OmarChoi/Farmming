@@ -9,6 +9,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _sowEffectDelay = 0.3f;
     [SerializeField] private float _sowDelay = 0.5f;
 
+    private CultivateAbility _cultivateAbility;
     private SeedSelectAbility _seedSelector;
     private HelperAnimationAbility _animAbility;
 
@@ -19,6 +20,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void Start()
     {
+        _cultivateAbility = _owner.GetAbility<CultivateAbility>();
         _seedSelector = _owner.GetAbility<SeedSelectAbility>();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
@@ -32,7 +34,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         if(cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
-            cell.TryConvertToFarm();
+            _cultivateAbility.JumpAndCultivate(cell, () =>
+            {
+                cell.TryConvertToFarm();
+            });
             return;
         }
 
@@ -42,7 +47,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        farmTile.Interact();
+        _cultivateAbility.JumpAndCultivate(cell, () =>
+        {
+            farmTile.Interact();
+        });
     }
     
     public void InteractSecondary(TerrainCell cell)
