@@ -7,6 +7,7 @@ public class TerrainCell : MonoBehaviour
 
     [Header("에디터 초기값 (씬 저장용)")]
     [SerializeField] private ECellType _initialCellType = ECellType.Dirt;
+    [SerializeField] private ETileType _initialTileType = ETileType.VillageDirt;
     [SerializeField] private int _initialDirtLevel = 1;
     [SerializeField] private EGridObjectType _initialObjectType = EGridObjectType.None;
     [SerializeField] private int _initialObjectLevel = 0;
@@ -30,13 +31,14 @@ public class TerrainCell : MonoBehaviour
     /// 에디터 직렬화 값으로 초기화 (CollectExistingCells용)
     public void InitFromSerializedData(Vector3Int gridPos)
     {
-        Init(gridPos, new TerrainCellData(_initialCellType, _initialDirtLevel, _initialObjectType, _initialObjectLevel));
+        Init(gridPos, new TerrainCellData(_initialCellType, _initialTileType, _initialDirtLevel, _initialObjectType, _initialObjectLevel));
     }
 
     /// 에디터에서 배치 시 직렬화 값도 갱신
-    public void SetInitialData(ECellType cellType, int dirtLevel, EGridObjectType objectType, int objectLevel)
+    public void SetInitialData(ECellType cellType, ETileType tileType, int dirtLevel, EGridObjectType objectType, int objectLevel)
     {
         _initialCellType = cellType;
+        _initialTileType = tileType;
         _initialDirtLevel = dirtLevel;
         _initialObjectType = objectType;
         _initialObjectLevel = objectLevel;
@@ -72,14 +74,13 @@ public class TerrainCell : MonoBehaviour
 
     public bool TryConvertToFarm()
     {
+        if (_farmTile == null) return false;
         if (_data.CellType != ECellType.Dirt) return false;
         if (_data.ObjectType != EGridObjectType.None) return false;
 
         _data.SetObject(EGridObjectType.FarmLand);
         Refresh();
-
-        if (_farmTile != null)
-            _farmTile.Init();
+        _farmTile.Init();
 
         return true;
     }

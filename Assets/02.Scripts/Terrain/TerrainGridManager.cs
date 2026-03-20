@@ -6,8 +6,9 @@ public class TerrainGridManager : MonoBehaviour
     [Header("그리드 설정")]
     [SerializeField] private float _cellSize = 2f;
 
-    [Header("프리팹")]
-    [SerializeField] private TerrainCell _cellPrefab;
+    [Header("타일 프리팹")]
+    [SerializeField] private TilePrefabDatabase _tileDatabase;
+    [SerializeField] private TerrainCell _defaultCellPrefab;
 
     [Header("오브젝트 프리팹 (레벨별)")]
     [SerializeField] private GameObject _treePrefab;
@@ -52,11 +53,18 @@ public class TerrainGridManager : MonoBehaviour
 
     private void SpawnCell(Vector3Int gridPos, TerrainCellData data)
     {
+        GameObject prefab = _tileDatabase != null
+            ? _tileDatabase.GetPrefab(data.TileType)
+            : null;
+        if (prefab == null && _defaultCellPrefab != null)
+            prefab = _defaultCellPrefab.gameObject;
+
         Vector3 worldPos = GridToWorld(gridPos);
-        var cell = Instantiate(_cellPrefab, worldPos, Quaternion.identity, transform);
+        var cellObj = Instantiate(prefab, worldPos, Quaternion.identity, transform);
+        var cell = cellObj.GetComponent<TerrainCell>();
         cell.name = $"Cell({gridPos.x},{gridPos.y},{gridPos.z})";
         cell.Init(gridPos, data);
-        cell.SetInitialData(data.CellType, data.DirtLevel, data.ObjectType, data.ObjectLevel);
+        cell.SetInitialData(data.CellType, data.TileType, data.DirtLevel, data.ObjectType, data.ObjectLevel);
         _cells[gridPos] = cell;
 
         GameObject objPrefab = GetObjectPrefab(data.ObjectType);
@@ -166,9 +174,11 @@ public class TerrainGridManager : MonoBehaviour
                 Y = kvp.Key.y,
                 Z = kvp.Key.z,
                 CellType = kvp.Value.Data.CellType,
+                TileType = kvp.Value.Data.TileType,
                 DirtLevel = kvp.Value.Data.DirtLevel,
                 ObjectType = kvp.Value.Data.ObjectType,
-                ObjectLevel = kvp.Value.Data.ObjectLevel
+                ObjectLevel = kvp.Value.Data.ObjectLevel,
+                IsIndestructible = kvp.Value.Data.IsIndestructible
             };
 
             kvp.Value.ExportTo(cellSave);
@@ -186,7 +196,7 @@ public class TerrainGridManager : MonoBehaviour
         foreach (var cellData in saveData.Cells)
         {
             var gridPos = new Vector3Int(cellData.X, cellData.Y, cellData.Z);
-            var data = new TerrainCellData(cellData.CellType, cellData.DirtLevel, cellData.ObjectType, cellData.ObjectLevel);
+            var data = new TerrainCellData(cellData.CellType, cellData.TileType, cellData.DirtLevel, cellData.ObjectType, cellData.ObjectLevel, cellData.IsIndestructible);
 
             _gridData.SetCell(gridPos, data);
             SpawnCell(gridPos, data);
