@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class TerrainGridManager : MonoBehaviour
 {
+    public static TerrainGridManager Instance { get; private set; }
+
     [Header("그리드 설정")]
     [SerializeField] private float _cellSize = 2f;
 
@@ -24,6 +26,13 @@ public class TerrainGridManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         CollectExistingCells();
     }
 
@@ -178,7 +187,8 @@ public class TerrainGridManager : MonoBehaviour
                 DirtLevel = kvp.Value.Data.DirtLevel,
                 ObjectType = kvp.Value.Data.ObjectType,
                 ObjectLevel = kvp.Value.Data.ObjectLevel,
-                IsIndestructible = kvp.Value.Data.IsIndestructible
+                IsIndestructible = kvp.Value.Data.IsIndestructible,
+                IsTop = kvp.Value.Data.IsTop
             };
 
             kvp.Value.ExportTo(cellSave);
@@ -196,7 +206,7 @@ public class TerrainGridManager : MonoBehaviour
         foreach (var cellData in saveData.Cells)
         {
             var gridPos = new Vector3Int(cellData.X, cellData.Y, cellData.Z);
-            var data = new TerrainCellData(cellData.CellType, cellData.TileType, cellData.DirtLevel, cellData.ObjectType, cellData.ObjectLevel, cellData.IsIndestructible);
+            var data = new TerrainCellData(cellData.CellType, cellData.TileType, cellData.DirtLevel, cellData.ObjectType, cellData.ObjectLevel, cellData.IsIndestructible, cellData.IsTop);
 
             _gridData.SetCell(gridPos, data);
             SpawnCell(gridPos, data);

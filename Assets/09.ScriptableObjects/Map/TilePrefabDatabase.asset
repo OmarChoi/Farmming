@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62f84a32859ae6d4f97699dc1a3591e1, type: 3}
   m_Name: TilePrefabDatabase
   m_EditorClassIdentifier: Assembly-CSharp::TilePrefabDatabase
-  _entries: []
+  _entries:
+  - TileType: 0
+    CellPrefab: {fileID: 4506576936560901414, guid: fd48cbae7844bb245a6e1d4aea73a105, type: 3}

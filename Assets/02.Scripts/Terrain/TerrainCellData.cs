@@ -9,6 +9,7 @@ public class TerrainCellData
     public EGridObjectType ObjectType { get; private set; }
     public int ObjectLevel { get; private set; }
     public bool IsIndestructible { get; private set; }
+    public bool IsTop { get; private set; }
 
     public TerrainCellData(
         ECellType cellType = ECellType.Dirt,
@@ -16,7 +17,8 @@ public class TerrainCellData
         int dirtLevel = 1,
         EGridObjectType objectType = EGridObjectType.None,
         int objectLevel = 0,
-        bool isIndestructible = false)
+        bool isIndestructible = false,
+        bool isTop = false)
     {
         CellType = cellType;
         TileType = tileType;
@@ -24,7 +26,10 @@ public class TerrainCellData
         ObjectType = objectType;
         ObjectLevel = objectLevel;
         IsIndestructible = isIndestructible;
+        IsTop = isTop;
     }
+
+    public void SetTop(bool value) => IsTop = value;
 
     public bool CanDig(int toolLevel)
     {
