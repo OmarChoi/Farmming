@@ -7,6 +7,7 @@ public class SaveManager : MonoBehaviour
     public static SaveManager Instance { get; private set; }
 
     [SerializeField] private TerrainGridManager _terrainGridManager;
+    [SerializeField] private MapManager _mapManager;
 
     private readonly Dictionary<string, PlayerController> _players = new();
     private ISaveRepository _repository;
@@ -35,10 +36,10 @@ public class SaveManager : MonoBehaviour
 
     public async UniTask SaveAsync(int slot = 0)
     {
-        var data = new SaveData
-        {
-            Terrain = _terrainGridManager.ExportSaveData()
-        };
+        var data = new SaveData();
+
+        if (_mapManager == null || _mapManager.IsVillage)
+            data.Terrain = _terrainGridManager.ExportSaveData();
 
         foreach (var kvp in _players)
             data.Players.Add(kvp.Value.ExportSaveData(kvp.Key));
