@@ -8,20 +8,16 @@ public class SeedSelectAbility : HelperAbility
 
     private List<SeedConfig> _availableSeeds = new();
     private int _selectedIndex = -1;
+    private PlayerInventoryAbility _inventory;
 
     public SeedConfig SelectedSeed => _selectedIndex >= 0 && _selectedIndex < _availableSeeds.Count ? _availableSeeds[_selectedIndex] : null;
 
-    private PlayerInventoryAbility GetInventory()
-    {
-        return _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
-    }
-
     private void Start()
     {
-        PlayerInventoryAbility inventory = GetInventory();
-        if (inventory != null)
+        _inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (_inventory != null)
         {
-            inventory.OnSlotChanged += OnInventoryChanged;
+            _inventory.OnSlotChanged += OnInventoryChanged;
         }
 
         RefreshSeeds();
@@ -29,10 +25,9 @@ public class SeedSelectAbility : HelperAbility
 
     private void OnDestroy()
     {
-        PlayerInventoryAbility inventory = GetInventory();
-        if (inventory != null)
+        if (_inventory != null)
         {
-            inventory.OnSlotChanged -= OnInventoryChanged;
+            _inventory.OnSlotChanged -= OnInventoryChanged;
         }
     }
 
@@ -81,17 +76,16 @@ public class SeedSelectAbility : HelperAbility
 
     private void RefreshSeeds()
     {
-        PlayerInventoryAbility inventory = GetInventory();
-        if (inventory == null)
+        if (_inventory == null)
         {
             return;
         }
 
         _availableSeeds.Clear();
 
-        for (int i = 0; i < inventory.SlotCount; i++)
+        for (int i = 0; i < _inventory.SlotCount; i++)
         {
-            InventorySlot slot = inventory.GetSlot(i);
+            InventorySlot slot = _inventory.GetSlot(i);
             if (slot.IsEmpty)
             {
                 continue;

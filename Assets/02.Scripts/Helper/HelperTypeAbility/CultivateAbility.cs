@@ -13,8 +13,6 @@ public class CultivateAbility : HelperAbility
     [SerializeField] private float _endEffect = 0.2f;
     [SerializeField] private float _cultivateDuration = 0.5f;
     [SerializeField] private float _rejumpHeight = 0.5f;
-    [SerializeField] private float _rotationDuration = 0.2f;
-    [SerializeField] private float _headOffset = 0.5f;
     [SerializeField] private int _jumpCount = 1;
 
     [SerializeField] private float _rayOriginHeight = 3f;
@@ -30,8 +28,13 @@ public class CultivateAbility : HelperAbility
 
     public void JumpAndCultivate(TerrainCell cell, System.Action onCultivate = null)
     {
-            Vector3 targetPos = GetTerrainLandPosition(cell);
-            StartCoroutine(JumpCoroutine(targetPos, onCultivate));
+        if(_isJumping)
+        {
+            return;
+        }
+
+        Vector3 targetPos = GetTerrainLandPosition(cell);
+        StartCoroutine(JumpCoroutine(targetPos, onCultivate));
         
     }
 
@@ -66,8 +69,6 @@ public class CultivateAbility : HelperAbility
 
         _animAbility.Play(EHelperAnim.Jump);
         yield return Move(_owner.transform, startPosition, _jumpHeight * _rejumpHeight, _returnDuration);
-
-        transform.rotation = _owner.PlayerOwner.transform.rotation;
 
         _animAbility.Play(EHelperAnim.Idle);
         _isJumping = false;
