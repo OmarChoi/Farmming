@@ -25,11 +25,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
-    public void Interact(TerrainCell cell)
-    {
-        InteractPrimary(cell);
-    }
-
     public void InteractPrimary(TerrainCell cell)
     {
         _animAbility?.Play(EHelperAnim.WoodCutting);
