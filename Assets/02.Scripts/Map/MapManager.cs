@@ -51,7 +51,7 @@ public class MapManager : MonoBehaviour
     }
 
     /// Enter dungeon floor (1-based). Generates fresh terrain each time.
-    public Vector3Int EnterDungeon(int floor)
+    public void EnterDungeon(int floor, Transform player = null)
     {
         var mapType = floor switch
         {
@@ -63,21 +63,29 @@ public class MapManager : MonoBehaviour
         if (!_generators.ContainsKey(mapType))
         {
             Debug.LogError($"Generator not registered for {mapType}");
-            return Vector3Int.zero;
+            return;
         }
 
         int configIndex = floor - 1;
         if (configIndex >= _dungeonConfigs.Length)
         {
             Debug.LogError($"No config for dungeon floor {floor}");
-            return Vector3Int.zero;
+            return;
         }
 
         int seed = System.Environment.TickCount;
         var result = _generators[mapType].Generate(_dungeonConfigs[configIndex], seed);
         _gridManager.LoadFromData(result.GridData);
         CurrentMap = mapType;
-        return result.SpawnPoint;
+
+        if (player != null)
+        {
+            Vector3 spawnWorld = _gridManager.GridToWorld(result.SpawnPoint);
+            var cc = player.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+            player.position = spawnWorld;
+            if (cc != null) cc.enabled = true;
+        }
     }
 
     /// Exit dungeon. Call SaveManager.LoadAsync() after this to restore village.
