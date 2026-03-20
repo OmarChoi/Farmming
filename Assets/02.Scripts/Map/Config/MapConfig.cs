@@ -10,15 +10,19 @@ public class MapConfig : ScriptableObject
     public int BaseHeight = 4;
     public int MaxHeight = 8;
 
-    [Header("Hill Generation (Perlin Noise)")]
+    [Header("Perlin Noise")]
     [Range(0.01f, 0.1f)]
     public float NoiseScale = 0.05f;
+    [Range(0.01f, 0.2f)]
+    public float TileNoiseScale = 0.08f;
 
     [Header("Default Tile")]
     public ETileType DefaultTileType = ETileType.VillageDirt;
 
     [Header("Resource Spawning")]
     public ResourceEntry[] Resources;
+
+    public virtual IMapGenerator CreateGenerator() => new HeightMapGenerator();
 }
 
 [Serializable]

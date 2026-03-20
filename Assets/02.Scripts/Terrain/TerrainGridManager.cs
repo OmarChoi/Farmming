@@ -69,6 +69,11 @@ public class TerrainGridManager : MonoBehaviour
             prefab = _defaultCellPrefab.gameObject;
 
         Vector3 worldPos = GridToWorld(gridPos);
+        if (prefab == null)
+        {
+            Debug.LogError($"Prefab for tile type {data.TileType} not found and no default prefab is set. Skipping cell at {gridPos}.");
+            return;
+        }
         var cellObj = Instantiate(prefab, worldPos, Quaternion.identity, transform);
         var cell = cellObj.GetComponent<TerrainCell>();
         cell.name = $"Cell({gridPos.x},{gridPos.y},{gridPos.z})";
