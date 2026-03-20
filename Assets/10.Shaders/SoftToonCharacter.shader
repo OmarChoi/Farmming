@@ -103,6 +103,12 @@ Shader "Custom/SoftToon/Character"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"  // 조명 관련 함수 (GetMainLight 등)
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"   // 그림자 관련 함수
 
+            // ── 상수 정의 ──
+            #define RECEIVER_NORMAL_BIAS_SCALE 0.005  // 리시버 측 노말 바이어스 단위 변환 (Inspector 값 → 월드 스케일)
+            #define RIM_MASK_NDOTL_MIN       -0.1     // 림라이트 마스크 시작점 (이 NdotL 이하에서는 림 없음)
+            #define RIM_MASK_NDOTL_MAX        0.3     // 림라이트 마스크 끝점 (이 NdotL 이상에서 림 최대)
+            #define ADDITIONAL_LIGHT_SCALE    0.5     // 추가 광원의 메인 라이트 대비 강도 비율
+
             // ── 머티리얼 프로퍼티 상수 버퍼 ──
             // SRP Batcher 호환을 위해 모든 머티리얼 프로퍼티를 하나의 CBUFFER에 선언한다.
             // 모든 패스에서 동일한 레이아웃을 유지해야 SRP Batcher가 동작한다.
@@ -171,7 +177,7 @@ Shader "Custom/SoftToon/Character"
 
                 // 리시버 측 그림자 바이어스: 노말 방향으로 약간 밀어내서 shadow acne를 줄임
                 // (그림자를 받는 표면의 샘플링 위치를 노말 방향으로 오프셋)
-                float3 biasedPosWS = posInputs.positionWS + normInputs.normalWS * _ShadowNormalBias * 0.005;
+                float3 biasedPosWS = posInputs.positionWS + normInputs.normalWS * _ShadowNormalBias * RECEIVER_NORMAL_BIAS_SCALE;
                 OUT.shadowCoord = TransformWorldToShadowCoord(biasedPosWS);
 
                 return OUT;
@@ -230,7 +236,7 @@ Shader "Custom/SoftToon/Character"
                 // smoothstep으로 림라이트 경계를 부드럽게
                 half rim = smoothstep(0.5 - _RimSmoothness, 0.5 + _RimSmoothness, rimRaw);
                 // 라이트가 비치는 쪽에만 림라이트 표시 (NdotL > -0.1인 영역)
-                half rimMask = smoothstep(-0.1, 0.3, NdotL);
+                half rimMask = smoothstep(RIM_MASK_NDOTL_MIN, RIM_MASK_NDOTL_MAX, NdotL);
                 half3 rimColor = rim * rimMask * _RimColor.rgb * _RimIntensity;
 
                 // ── 추가 광원 (Additional Lights) ──
@@ -244,7 +250,7 @@ Shader "Custom/SoftToon/Character"
                         half addRamp = SoftToonRamp(addNdotL, _ShadowThreshold, _ShadowSmoothness);
                         addRamp *= addLight.shadowAttenuation * addLight.distanceAttenuation;
                         // 추가 광원은 0.5를 곱하여 메인 라이트보다 약하게 적용
-                        additionalLight += albedo.rgb * addLight.color * addRamp * 0.5;
+                        additionalLight += albedo.rgb * addLight.color * addRamp * ADDITIONAL_LIGHT_SCALE;
                     }
                 #endif
 
@@ -361,6 +367,9 @@ Shader "Custom/SoftToon/Character"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
+            // ── 상수 정의 ──
+            #define CASTER_BIAS_SCALE 0.01  // 캐스터 측 바이어스 단위 변환 (Inspector 값 → 월드 스케일)
+
             // SRP Batcher 호환을 위한 동일 CBUFFER
             CBUFFER_START(UnityPerMaterial)
                 float4 _MainTex_ST;
@@ -409,9 +418,9 @@ Shader "Custom/SoftToon/Character"
             //     빛이 수평(NdotL≈0)이면 바이어스가 최대
             float3 ApplyCustomShadowBias(float3 posWS, float3 normalWS, float3 lightDir, float depthBias, float normalBias)
             {
-                posWS -= lightDir * depthBias * 0.01;                      // 라이트 반대 방향으로 밀기
+                posWS -= lightDir * depthBias * CASTER_BIAS_SCALE;          // 라이트 반대 방향으로 밀기
                 float invNdotL = 1.0 - saturate(dot(normalWS, lightDir));  // 빗각 계수
-                posWS += normalWS * normalBias * invNdotL * 0.01;          // 노말 방향으로 밀기
+                posWS += normalWS * normalBias * invNdotL * CASTER_BIAS_SCALE; // 노말 방향으로 밀기
                 return posWS;
             }
 

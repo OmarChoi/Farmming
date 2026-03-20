@@ -126,6 +126,11 @@ Shader "Custom/SoftToon/Environment"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
+            // ── 상수 정의 ──
+            #define RECEIVER_NORMAL_BIAS_SCALE 0.02   // 리시버 측 노말 바이어스 단위 변환 (Inspector 값 → 월드 스케일)
+            #define RECEIVER_DEPTH_BIAS_SCALE  0.005  // 리시버 측 뎁스 바이어스 단위 변환
+            #define ADDITIONAL_LIGHT_SCALE     0.4    // 추가 광원의 메인 라이트 대비 강도 비율
+
             // ── 머티리얼 상수 버퍼 (SRP Batcher 호환) ──
             CBUFFER_START(UnityPerMaterial)
                 float4 _MainTex_ST;
@@ -240,9 +245,9 @@ Shader "Custom/SoftToon/Environment"
                 // 버텍스에서 보간하면 그림자 경계가 왜곡될 수 있으므로 픽셀에서 직접 계산.
                 // normalBias: 노말 방향으로 밀어서 shadow acne 방지
                 // depthBias: z값에 오프셋을 더해서 추가 보정
-                float3 biasedPosWS = IN.positionWS + normalWS * _ShadowNormalBias * 0.02;
+                float3 biasedPosWS = IN.positionWS + normalWS * _ShadowNormalBias * RECEIVER_NORMAL_BIAS_SCALE;
                 float4 shadowCoord = TransformWorldToShadowCoord(biasedPosWS);
-                shadowCoord.z += _ShadowDepthBias * 0.005;
+                shadowCoord.z += _ShadowDepthBias * RECEIVER_DEPTH_BIAS_SCALE;
 
                 // 6) 메인 라이트 정보
                 Light mainLight = GetMainLight(shadowCoord);
@@ -270,7 +275,7 @@ Shader "Custom/SoftToon/Environment"
                         half addRamp = SoftToonRamp(addNdotL, _ShadowThreshold, _ShadowSmoothness);
                         addRamp *= addLight.shadowAttenuation * addLight.distanceAttenuation;
                         // 추가 광원은 0.4를 곱하여 메인 라이트보다 약하게
-                        additionalLight += albedo.rgb * addLight.color * addRamp * 0.4;
+                        additionalLight += albedo.rgb * addLight.color * addRamp * ADDITIONAL_LIGHT_SCALE;
                     }
                 #endif
 
@@ -322,6 +327,9 @@ Shader "Custom/SoftToon/Environment"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
+            // ── 상수 정의 ──
+            #define CASTER_BIAS_SCALE 0.01  // 캐스터 측 바이어스 단위 변환 (Inspector 값 → 월드 스케일)
+
             CBUFFER_START(UnityPerMaterial)
                 float4 _MainTex_ST;
                 half4 _BaseColor;
@@ -364,9 +372,9 @@ Shader "Custom/SoftToon/Environment"
             // 라이트 방향(depth bias)과 표면 노말 방향(normal bias)으로 밀어낸다.
             float3 ApplyCustomShadowBias(float3 posWS, float3 normalWS, float3 lightDir, float depthBias, float normalBias)
             {
-                posWS -= lightDir * depthBias * 0.01;                      // 라이트 반대 방향으로 밀기
+                posWS -= lightDir * depthBias * CASTER_BIAS_SCALE;          // 라이트 반대 방향으로 밀기
                 float invNdotL = 1.0 - saturate(dot(normalWS, lightDir));  // 빗각 계수
-                posWS += normalWS * normalBias * invNdotL * 0.01;          // 노말 방향으로 밀기
+                posWS += normalWS * normalBias * invNdotL * CASTER_BIAS_SCALE; // 노말 방향으로 밀기
                 return posWS;
             }
 
