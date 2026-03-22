@@ -14,14 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
   QuestId: TestQuest
   QuestName: "\uBFCC\uB9AC \uAE4A\uC740 \uB098\uBB34"
-  Description: "\uB098\uBB34\uAC00 \uB108\uBB34 \uB9CE\uC544\uC11C \uD1B5\uD589\uC5D0
-    \uBC29\uD574\uAC00 \uB418\uACE0 \uC788\uC5B4. \uB204\uAC00 \uB098\uBB34 \uC880
-    \uC5C6\uC560\uC92C\uC73C\uBA74 \uC88B\uACA0\uC5B4!"
+  Description: "\uB098\uBB34\uAC00 \uB108\uBB34 \uB9CE\uC544\uC11C \uAE38\uC744 \uAC00\uB294
+    \uB370 \uBC29\uD574\uAC00 \uB418\uACE0 \uC788\uC5B4. \uB204\uAC00 \uB098\uBB34
+    \uC880 \uC5C6\uC560\uC92C\uC73C\uBA74 \uC88B\uACA0\uC5B4!"
   ObjectiveType: 0
-  TargetId: Tree
+  TargetId: NormalTree
   RequiredAmount: 3
   Reward:
     RewardType: 0
     RewardItem: {fileID: 0}
     Amount: 300
-  CanAppearOnBoard: 1

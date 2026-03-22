@@ -32,7 +32,7 @@ public class QuestBoard : MonoBehaviour
             return;
         }
 
-        if (questManager.CurrentQuest.QuestData == _boardQuest && questManager.CanCompleteQuest())
+        if (questManager.CanCompleteQuest())
         {
             bool success = questManager.CompleteQuest();
             if (success)
@@ -41,6 +41,7 @@ public class QuestBoard : MonoBehaviour
                 Debug.Log("퀘스트 완료!");
 #endif
             }
+            questManager.ClearCompletedQuest();
             return;
         }
 #if UNITY_EDITOR
@@ -58,12 +59,12 @@ public class QuestBoard : MonoBehaviour
             return;
         }
         _uiQuestBoard.Open(quests);
-        _playerController?.SetCursorLock(true);
+        _playerController?.SetCursorLock(false);
     }
 
     public void CloseQuestBoard()
     {
         _uiQuestBoard.Close();
-        _playerController?.SetCursorLock(false);
+        _playerController?.SetCursorLock(true);
     }
 }
