@@ -142,6 +142,24 @@ public class FarmTile : MonoBehaviour
         Debug.Log($"{seed.SeedName} 심음");
     }
 
+    public void Water()
+    {
+        if (StateMachine.CurrentStateType != EFarmTileStateType.FarmDry)
+        {
+            return;
+        }
+        if (!HasSeed)
+        {
+            return;
+        }
+
+        StateMachine.FarmTransition(EFarmTileStateType.FarmWet);
+        if (!_cropGrowth.HasStarted)
+        {
+            _cropGrowth.StartGrowth(PlantedSeed);
+        }
+    }
+
     public void RemoveSeed()
     {
         PlantedSeed = null;

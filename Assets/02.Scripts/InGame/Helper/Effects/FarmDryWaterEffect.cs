@@ -18,6 +18,6 @@ public class FarmDryWaterEffect : IWaterEffect
 
     public void Apply(TerrainCell cell)
     {
-        cell.FarmTile.Interact();
+        cell.FarmTile.Water();
     }
 }
