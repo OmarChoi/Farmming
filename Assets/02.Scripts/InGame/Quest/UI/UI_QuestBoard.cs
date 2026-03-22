@@ -58,20 +58,20 @@ public class UI_QuestBoard : MonoBehaviour
         }
     }
 
-    public void OnQuestSlotClicked(UI_QuestBoardSlot slot)
+    public void OnQuestSlotClicked(QuestDataSO questData)
     {
-        if (_currentQuestBoardData == null || slot.QuestData == null) return;
+        if (_currentQuestBoardData == null || questData == null) return;
 
-        bool success = QuestManager.Instance.AcceptQuest(slot.QuestData);
+        bool success = QuestManager.Instance.AcceptQuest(questData);
 
 #if UNITY_EDITOR
         if (success)
         {
-            Debug.Log($"퀘스트 수락: {slot.QuestData.QuestName}");
+            Debug.Log($"퀘스트 수락: {questData.QuestName}");
         }
         else
         {
-            Debug.LogWarning($"퀘스트 수락 실패: {(slot.QuestData != null ? slot.QuestData.QuestName : "null")}");
+            Debug.LogWarning($"퀘스트 수락 실패: {questData?.QuestName}");
         }
 #endif
     }

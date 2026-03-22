@@ -1,3 +1,4 @@
+using NUnit.Framework.Interfaces;
 using UnityEngine;
 
 public class QuestManager : MonoBehaviour
@@ -11,6 +12,9 @@ public class QuestManager : MonoBehaviour
     [Header("플레이어 컴포넌트")]
     [SerializeField] private PlayerInventoryAbility _playerInventory;
 
+    [Header("오브젝트 수확")]
+    [SerializeField] private GatheringObject _gatheringObject;
+
     public QuestRuntimeData CurrentQuest => _currentQuest;
 
     private void Awake()
@@ -22,6 +26,20 @@ public class QuestManager : MonoBehaviour
         }
 
         Instance = this;
+    }
+    private void OnEnable()
+    {
+        GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
+    }
+
+    private void OnDisable()
+    {
+        GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
+    }
+
+    private void HandleGatheringCompleted(GatheringObject obj)
+    {
+        AddProgress(EQuestObjectiveType.BreakObject, obj.GatheringData.ObjectName);
     }
 
     // 테스트를 위한 단일 구조 퀘스트 형태로 만든 메서드입니다.

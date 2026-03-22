@@ -52,6 +52,6 @@ public class UI_QuestBoardSlot : MonoBehaviour
 
     public void OnClickAcceptButton()
     {
-        _uiQuestBoard.OnQuestSlotClicked(this);
+        _uiQuestBoard.OnQuestSlotClicked(_questData);
     }
 }
