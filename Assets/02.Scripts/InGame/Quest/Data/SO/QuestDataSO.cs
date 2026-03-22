@@ -24,7 +24,4 @@ public class QuestDataSO : ScriptableObject
 
     // 퀘스트 보상 관련 정보입니다.
     public QuestRewardData Reward;
-
-    // 퀘스트 게시판에 뜰 수 있는 퀘스트인지 판단해줍니다.
-    public bool CanAppearOnBoard = true;
 }

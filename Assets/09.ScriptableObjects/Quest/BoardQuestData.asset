@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002c5ad1e0e02f74784441da1d9fa045, type: 3}
+  m_Name: BoardQuestData
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
+  QuestId: TestQuest
+  QuestName: "\uBFCC\uB9AC \uAE4A\uC740 \uB098\uBB34"
+  Description: "\uB098\uBB34\uAC00 \uB108\uBB34 \uB9CE\uC544\uC11C \uD1B5\uD589\uC5D0
+    \uBC29\uD574\uAC00 \uB418\uACE0 \uC788\uC5B4. \uB204\uAC00 \uB098\uBB34 \uC880
+    \uC5C6\uC560\uC92C\uC73C\uBA74 \uC88B\uACA0\uC5B4!"
+  ObjectiveType: 0
+  TargetId: Tree
+  RequiredAmount: 3
+  Reward:
+    RewardType: 0
+    RewardItem: {fileID: 0}
+    Amount: 300
+  CanAppearOnBoard: 1
