@@ -7,12 +7,12 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _waterVfxPrefab;
-    [SerializeField] private float _waterEffectDelay = 0.3f;
-    [SerializeField] private float _waterDelay = 0.5f;
+    [SerializeField] private float _vfxDuration = 0.5f;
 
     private HelperAnimationAbility _animAbility;
 
     private readonly List<IWaterEffect> _waterEffects = new();
+    private bool _isActing = false;
 
     protected override void Awake()
     {
@@ -37,6 +37,10 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         {
             return;
         }
+        if(_isActing)
+        {
+            return;
+        }
         
         StartCoroutine(WaterCoroutine(cell));
     }
@@ -48,25 +52,30 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     private IEnumerator WaterCoroutine(TerrainCell cell)
     {
-        Vector3 targetPos = GetTargetPosition(cell);
+        _isActing = true;
+
+        Vector3 spawnPos = _mouthPoint !=null ?_mouthPoint.position : _owner.transform.position;
+        Vector3 targerPos = GetTargetPosition(cell);
 
         _animAbility?.Play(EHelperAnim.Water);
-        yield return new WaitForSeconds(_waterEffectDelay);
 
-        if(_waterVfxPrefab != null && _mouthPoint != null)
+        if(_waterVfxPrefab != null)
         {
-            GameObject vfxObj = Instantiate(_waterVfxPrefab, _mouthPoint.position, Quaternion.identity);
-
-
+            GameObject vfxObj = Instantiate(_waterVfxPrefab, spawnPos, Quaternion.identity);
+            Debug.Log("물이펙트 생성");
             WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
-            waterVfx?.OnLand(targetPos);
+            waterVfx?.PlayeEffect(targerPos, _vfxDuration);
+            Debug.Log("플레이이펙트");
         }
 
-        yield return new WaitForSeconds(_waterDelay);
+        yield return new WaitForSeconds(_vfxDuration);
 
         ApplyWaterEffects(cell);
+        Debug.Log("땅물젖음 적용");
 
         _animAbility?.Play(EHelperAnim.Idle);
+        _isActing = false;
+
     }
 
     private void ApplyWaterEffects(TerrainCell cell)
