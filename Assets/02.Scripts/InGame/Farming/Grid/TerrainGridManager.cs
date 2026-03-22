@@ -18,6 +18,9 @@ public class TerrainGridManager : MonoBehaviour
 
     [Header("데이터베이스")]
     [SerializeField] private SeedDatabase _seedDatabase;
+    [SerializeField] private BuildingDatabase _buildingDatabase;
+
+    public BuildingDatabase BuildingDatabase => _buildingDatabase;
 
     private TerrainGridData _gridData;
     private readonly Dictionary<Vector3Int, TerrainCell> _cells = new();
