@@ -37,8 +37,17 @@ public class UI_QuestBoardSlot : MonoBehaviour
             return;
         }
         _questNameText.text = $"{quest.QuestName}";
-        _descriptionText.text = $"Cost: {quest.Description}";
-        _questRewardText.text = $"{quest.Reward}";
+        _descriptionText.text = $"{quest.Description}";
+
+        switch (quest.Reward.RewardType)
+        {
+            case (EQuestRewardType.Gold):
+                _questRewardText.text = $"퀘스트 보상: {quest.Reward.Amount} 골드";
+                break;
+            case (EQuestRewardType.Item):
+                _questRewardText.text = $"퀘스트 보상: {quest.Reward.RewardItem} {quest.Reward.Amount}개";
+                break;
+        }
     }
 
     public void OnClickAcceptButton()
