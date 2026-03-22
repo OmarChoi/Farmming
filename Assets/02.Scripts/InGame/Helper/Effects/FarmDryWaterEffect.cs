@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FarmDryWaterEffec : IWaterEffect
+public class FarmDryWaterEffect : IWaterEffect
 {
     public bool CanHandle(TerrainCell cell)
     {
