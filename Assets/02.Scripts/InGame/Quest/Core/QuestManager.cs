@@ -8,8 +8,8 @@ public class QuestManager : MonoBehaviour
     // 추후 여러 퀘스트를 동시에 진행할 때 List 혹은 Dictionary 구조로 바꿀 예정입니다.
     private QuestRuntimeData _currentQuest;
 
-    [Header("플레이어 인벤토리")]
-    private PlayerInventoryAbility _playerInventory;
+    [Header("플레이어 컴포넌트")]
+    [SerializeField] private PlayerInventoryAbility _playerInventory;
 
     public QuestRuntimeData CurrentQuest => _currentQuest;
 
