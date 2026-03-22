@@ -8,7 +8,8 @@ public class HarvestNotificationManager : MonoBehaviour
 
     [SerializeField] private HarvestNotification _notificationPrefab;
     [SerializeField] private Transform _notificationParent;
-    [SerializeField] private float _notificationDuration = 1.8f;   
+    [SerializeField] private float _notificationDuration = 1.8f;
+    [SerializeField] private HarvestItemSO _harvestItemSO;
 
     [Header("여러 개 동시 표시 시 세로 간격")]
     [SerializeField] private float _stackOffset = 60f;
@@ -28,12 +29,12 @@ public class HarvestNotificationManager : MonoBehaviour
 
     private void OnEnable()
     {
-        HarvestActionAbility.OnHarvested += Show;
+        _harvestItemSO.OnHarvested += Show;
     }
 
     private void OnDisable()
     {
-        HarvestActionAbility.OnHarvested -= Show;
+        _harvestItemSO.OnHarvested -= Show;
     }
 
     public void Show(Sprite icon, string seedName, int amount)
