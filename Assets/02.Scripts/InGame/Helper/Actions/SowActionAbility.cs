@@ -27,12 +27,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        if(cell == null)
+        if (cell == null)
         {
             return;
         }
 
-        if(cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
+        if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
             _cultivateAbility.JumpAndCultivate(cell, () =>
             {
@@ -42,15 +42,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         FarmTile farmTile = GetFarmTile(cell);
-        if(farmTile == null)
+        if (farmTile == null)
         {
             return;
         }
 
-        _cultivateAbility.JumpAndCultivate(cell, () =>
-        {
-            farmTile.Interact();
-        });
+        _cultivateAbility.JumpAndCultivate(cell, null);
     }
     
     public void InteractSecondary(TerrainCell cell)
