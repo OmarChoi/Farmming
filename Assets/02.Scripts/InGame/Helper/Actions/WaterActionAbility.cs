@@ -7,10 +7,9 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _waterVfxPrefab;
-    [SerializeField] private float _vfxDuration = 0.3f;
+    [SerializeField] private float _vfxDuration = 0.5f;
 
     private HelperAnimationAbility _animAbility;
-
     private readonly List<IWaterEffect> _waterEffects = new();
     private bool _isActing = false;
 
@@ -33,71 +32,78 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        if (cell == null)
-        {
-            return;
-        }
-        if(_isActing)
-        {
-            return;
-        }
-        
+        if (cell == null) return;
+        if (_isActing) return;
+
         StartCoroutine(WaterCoroutine(cell));
     }
-    
-    public void InteractSecondary(TerrainCell cell)
-    {
-        // TODO: 우클릭 동작 구현
-    }
+
+    public void InteractSecondary(TerrainCell cell) { }
 
     private IEnumerator WaterCoroutine(TerrainCell cell)
     {
         _isActing = true;
 
-        Vector3 spawnPos = _mouthPoint !=null ?_mouthPoint.position : _owner.transform.position;
-        Vector3 targetPos = GetTargetPosition(cell);
+        Vector3 spawnPos = _mouthPoint != null
+            ? _mouthPoint.position
+            : _owner.transform.position;
 
+        Vector3 targetPos = GetTargetPosition(cell);
         Vector3 direction = (targetPos - spawnPos).normalized;
+
         _animAbility?.Play(EHelperAnim.Water);
 
-        if(_waterVfxPrefab != null)
+        if (_waterVfxPrefab != null)
         {
-            GameObject vfxObj = Instantiate(_waterVfxPrefab, spawnPos, Quaternion.identity);
-            Debug.Log("물이펙트 생성");
+            GameObject vfxObj = Instantiate(
+                _waterVfxPrefab,
+                spawnPos,
+                Quaternion.identity
+            );
+
             WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
-            waterVfx?.PlayeEffect(targetPos, direction);
-            Debug.Log("플레이이펙트");
+
+            waterVfx?.Launch(targetPos, direction, () =>
+            {
+                ApplyWaterEffects(cell);
+            });
         }
 
         yield return new WaitForSeconds(_vfxDuration);
 
-        ApplyWaterEffects(cell);
-        Debug.Log("땅물젖음 적용");
-
         _animAbility?.Play(EHelperAnim.Idle);
         _isActing = false;
-
     }
 
     private void ApplyWaterEffects(TerrainCell cell)
     {
-        foreach(IWaterEffect effect in _waterEffects)
+        foreach (IWaterEffect effect in _waterEffects)
         {
-            if(effect.CanHandle(cell))
+            if (effect.CanHandle(cell))
             {
                 effect.Apply(cell);
                 return;
             }
         }
+        Debug.Log("물을 줄 수 있는 상태 아님");
     }
 
     private Vector3 GetTargetPosition(TerrainCell cell)
     {
-        if(cell.FarmTile !=null && cell.FarmTile.gameObject.activeSelf)
+        if (cell.FarmTile != null && cell.FarmTile.gameObject.activeSelf)
         {
-            return cell.FarmTile.CropSpawnPoint != null? cell.FarmTile.CropSpawnPoint.position : cell.transform.position;
+            Vector3 pos = cell.FarmTile.CropSpawnPoint != null ? cell.FarmTile.CropSpawnPoint.position : cell.transform.position;
+            return pos + Vector3.up * 0.1f;
         }
 
-        return cell.transform.position;
+        Vector3 rayOrigin = cell.transform.position + Vector3.up * 3f;
+        Ray ray = new Ray(rayOrigin, Vector3.down);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 5f))
+        {
+            return hit.point + Vector3.up * 0.1f;
+        }
+
+        return cell.transform.position + Vector3.up * 0.5f;
     }
 }

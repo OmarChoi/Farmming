@@ -109,7 +109,6 @@ GameObject:
   - component: {fileID: 7793466558248727200}
   - component: {fileID: 8688318908214569227}
   - component: {fileID: 2219988442827997113}
-  - component: {fileID: 4589218256478296593}
   m_Layer: 7
   m_Name: Ability
   m_TagString: Untagged
@@ -198,22 +197,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaterActionAbility
   _mouthPoint: {fileID: 1982235181728634582}
-  _waterVfxPrefab: {fileID: 4165125168863166457, guid: fe776968d6c2e8747a770c2121cc193d, type: 3}
-  _vfxDuration: 0.2
---- !u!114 &4589218256478296593
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 21e837918cd6ecf46891d1ebeb01bb25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WaterVFX
-  _landEffectPrefab: {fileID: 7393066510327719021, guid: 65fac4b7d0accec44951c1102c60d95e, type: 3}
-  _duration: 0.3
+  _waterVfxPrefab: {fileID: 4881571040572222668, guid: 6a570f51b4cf2924cb95f91f3f9db821, type: 3}
+  _vfxDuration: 1.5
 --- !u!1 &1720176448544815771
 GameObject:
   m_ObjectHideFlags: 0

@@ -83,15 +83,20 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         if(_seedVfxPrefab != null && _mouthPoint != null)
         {
-            GameObject vfxObj = Instantiate(_seedVfxPrefab, _mouthPoint.position, Quaternion.identity);
+            Vector3 spawnPos = _mouthPoint.position;
+            Vector3 targetPos = farmTile.CropSpawnPoint.position;
+
+            Vector3 direction = (targetPos - spawnPos).normalized;
+
+            GameObject vfxObj = Instantiate(_seedVfxPrefab, spawnPos, Quaternion.identity);
 
             SowVFX sowVfx = vfxObj.GetComponent<SowVFX>();
-            sowVfx?.Launch(farmTile.CropSpawnPoint.position);
+            sowVfx?.Launch(targetPos, direction);
         }
 
         yield return new WaitForSeconds(_sowDelay);
 
-        farmTile.Interact(seed);
+        farmTile.PlantSeed(seed);
 
         _animAbility?.Play(EHelperAnim.Idle);     
 
