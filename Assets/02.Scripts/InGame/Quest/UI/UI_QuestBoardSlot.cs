@@ -59,7 +59,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
         _questNameText.text = quest.QuestName;
         _descriptionText.text = quest.Description;
 
-        if (quest.TargetId == null)
+        if (string.IsNullOrEmpty(quest.TargetId))
         {
             _questTargetText.text = "";
         }
