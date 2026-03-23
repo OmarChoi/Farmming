@@ -25,5 +25,7 @@ public class PlayerStaminaAbility : PlayerAbility
             DayNightCycle.Instance.OnMorningStart -= HandleMorning;
     }
 
+    public bool TryConsume(float amount) => Stamina.TryConsume(amount);
+
     private void HandleMorning() => Stamina.RecoverFull();
 }
