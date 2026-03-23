@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0e94df61d7155824ba4ad3cb157b683b, type: 3}
-  m_Name: NormalTree
+  m_Name: Dungeon1_Tree
   m_EditorClassIdentifier: Assembly-CSharp::GatheringObjectSO
-  _objectName: NormalTree
+  _objectName: Dungeon1_Tree
   _maxHealth: 100
   _requiredLevel: 0
   _modelPrefabs:
-  - {fileID: 8676952158559593809, guid: 418119bc089da594caa33bd03ea445f2, type: 3}
-  - {fileID: 1470561777393996130, guid: fe31936cab7e0794097a481152b2dde8, type: 3}
-  - {fileID: 321735410901635458, guid: 8bcf7d324d7bf3d408efd85c3f387606, type: 3}
-  - {fileID: 4582802595405526183, guid: 1e164c3cf6879984cba9630b8bc6fd9d, type: 3}
-  - {fileID: 5054089686411890155, guid: 1351ebae22b0cf349b5d82e30d4ac3e7, type: 3}
+  - {fileID: 153390777879068599, guid: a812b6fe6eeb4784b921c3a2ec917bd4, type: 3}
+  - {fileID: 8197073615345042983, guid: 4c65fba7a7afb3245b6543d4fe3761bb, type: 3}
+  - {fileID: 2018712012370649323, guid: 6d4f75c2545a41f4ebfa7376e89d1e7a, type: 3}
+  - {fileID: 4673310249648018829, guid: 0ddd65ddbab11874896df2960326f6d3, type: 3}
+  - {fileID: 4744240992975039370, guid: e6142905e45a2114b961d6ac3e32ed29, type: 3}
   _drops:
   - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
     _minQuantity: 2

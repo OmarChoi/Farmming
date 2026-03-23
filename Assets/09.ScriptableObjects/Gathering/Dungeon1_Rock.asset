@@ -10,15 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0e94df61d7155824ba4ad3cb157b683b, type: 3}
-  m_Name: NoramlRock
+  m_Name: Dungeon1_Rock
   m_EditorClassIdentifier: Assembly-CSharp::GatheringObjectSO
-  _objectName: NormalRock
+  _objectName: Dungeon1_Rock
   _maxHealth: 100
   _requiredLevel: 0
   _modelPrefabs:
-  - {fileID: 8114600924028484287, guid: e66cb15f22a1c774387d321ee47d271a, type: 3}
-  - {fileID: 4016154500641946441, guid: 5058420d97eab5b4bbeb3541905be3e8, type: 3}
-  - {fileID: 6322247231731170682, guid: 1f55f8c68246dc3438b73700695ee09b, type: 3}
+  - {fileID: 5365756203952804134, guid: 462bf1c23aa91974ab86070a4f827130, type: 3}
+  - {fileID: 4252661232097606702, guid: 3cf4d4731c990114ba6661beb8f5e504, type: 3}
+  - {fileID: 4196975984229149536, guid: 019630e84b34e2e4f967f81487fdcc26, type: 3}
+  - {fileID: 5045110175054005872, guid: a1270ba2f02fb3242ac66c356b6ab658, type: 3}
   _drops:
   - _item: {fileID: 0}
     _minQuantity: 20
