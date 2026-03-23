@@ -37,6 +37,17 @@ public class CropGrowth : MonoBehaviour
         Debug.Log("수확물 인벤토리 연동");
     }
 
+    public void ShowFirstStage(SeedConfig seedConfig)
+    {
+        _seedConfig = seedConfig;
+        _currentStageIndex = 0;
+        _elapsedDays = 0;
+        _isGrowing = false;
+        _hasStarted = false; // 아직 성장 시작 아님
+
+        ApplyStagePrefab(); // 첫 단계 프리팹만 표시
+    }
+
     // 물을 줬을 때 외부에서 호출
     public void StartGrowth(SeedConfig seedConfig)
     {
@@ -45,7 +56,6 @@ public class CropGrowth : MonoBehaviour
         _hasStarted = true;
         _currentStageIndex = 0;
         _elapsedDays = 0;
-        ApplyStagePrefab();
     }
 
     public void CheckMorningGrowth()
