@@ -151,7 +151,7 @@ GameObject:
   - component: {fileID: 5803733403106800778}
   - component: {fileID: 5738592401809550899}
   m_Layer: 5
-  m_Name: UI_QuestSlot
+  m_Name: UI_QuestBoardSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -260,6 +260,8 @@ MonoBehaviour:
   _descriptionText: {fileID: 3618027520470827093}
   _questRewardText: {fileID: 2536573844009372506}
   _acceptButton: {fileID: 8395165983467157133}
+  _acceptButtonImage: {fileID: 8871530550406811965}
+  _acceptButtonText: {fileID: 5534099883310781008}
 --- !u!1 &1674158432008782472
 GameObject:
   m_ObjectHideFlags: 0
@@ -700,7 +702,7 @@ GameObject:
   - component: {fileID: 6290126404298333054}
   - component: {fileID: 5534099883310781008}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: AcceptButtonText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
