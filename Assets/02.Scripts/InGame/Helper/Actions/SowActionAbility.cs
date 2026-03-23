@@ -6,12 +6,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _seedVfxPrefab;
-    [SerializeField] private float _sowEffectDelay = 0.3f;
     [SerializeField] private float _sowDelay = 0.5f;
 
     private CultivateAbility _cultivateAbility;
     private SeedSelectAbility _seedSelector;
     private HelperAnimationAbility _animAbility;
+
+    private bool _isActing = false;
+    private FarmTile _currentFarmTile;
+    private SeedConfig _currentSeed;
 
     protected override void Awake()
     {
@@ -72,34 +75,46 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        StartCoroutine(SowCoroutine(farmTile, selectedSeed));
+        _isActing = true;
+        _currentFarmTile = farmTile;
+        _currentSeed = selectedSeed;
+
+        _animAbility?.Play(EHelperAnim.Sow);
     }
 
-    private IEnumerator SowCoroutine(FarmTile farmTile, SeedConfig seed)
+    public void SowOpen()
     {
-        _animAbility?.Play(EHelperAnim.Sow);
+        if (_currentFarmTile == null || _mouthPoint == null)
+        {
+            return;
+        }
 
         Vector3 spawnPos = _mouthPoint.position;
+        Vector3 targetPos = _currentFarmTile.CropSpawnPoint.position;
+        Vector3 direction = (targetPos - spawnPos).normalized;
 
-        yield return new WaitForSeconds(_sowEffectDelay);
-
-        if (_seedVfxPrefab != null && _mouthPoint != null)
+        if (_seedVfxPrefab != null)
         {
-            Vector3 targetPos = farmTile.CropSpawnPoint.position;
-            Vector3 direction = (targetPos - spawnPos).normalized;
-
             GameObject vfxObj = Instantiate(_seedVfxPrefab, spawnPos, Quaternion.identity);
-
             SowVFX sowVfx = vfxObj.GetComponent<SowVFX>();
             sowVfx?.Launch(targetPos, direction);
         }
 
+        StartCoroutine(PlantAfterDelay());
+    }
+
+    public void SowClose()
+    {
+        _animAbility?.Play(EHelperAnim.Idle);
+        _currentFarmTile = null;
+        _currentSeed = null;
+        _isActing = false;
+    }
+
+    private IEnumerator PlantAfterDelay()
+    {
         yield return new WaitForSeconds(_sowDelay);
-
-        farmTile.PlantSeed(seed);
-
-        _animAbility?.Play(EHelperAnim.Idle);     
-
+        _currentFarmTile?.PlantSeed(_currentSeed);
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)

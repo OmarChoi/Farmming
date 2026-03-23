@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 4bc2afdc9a5938440ab7f8621e9fcf05
+guid: 8972a295bbbb6754c9ab44a59243a53d
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable:
@@ -443,7 +443,7 @@ ModelImporter:
     second: Dino_Body
   - first:
       74: 7400000
-    second: Dino_Water
+    second: Dino_Eat
   - first:
       95: 9500000
     second: //RootNode
@@ -490,7 +490,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Dino_Water
+      name: Dino_Eat
       takeName: Dino_Eat
       internalID: 0
       firstFrame: 141
@@ -514,15 +514,15 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.28157437
-        functionName: WaterOpen
+      - time: 0.14003605
+        functionName: SowOpen
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.47865456
-        functionName: WaterClose
+      - time: 0.51705575
+        functionName: SowClose
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
