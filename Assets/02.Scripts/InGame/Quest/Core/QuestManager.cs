@@ -42,17 +42,13 @@ public class QuestManager : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
+    private void OnEnable()
     {
+        GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
         if (TestTimeManager.Instance != null)
         {
             TestTimeManager.Instance.OnDayChanged += HandleDayChanged;
         }
-    }
-
-    private void OnEnable()
-    {
-        GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
     }
 
     private void OnDisable()
