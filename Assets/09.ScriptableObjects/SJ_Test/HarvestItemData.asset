@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: HarvestItemData
   m_EditorClassIdentifier: Assembly-CSharp::ItemDataSO
   _id: 22
-  _displayName: HarvestItem
+  _displayName: "\uC625\uC218\uC218"
   _icon: {fileID: 21300000, guid: 9846cc10f28b0574dbab5fcc977c5880, type: 3}
   _type: 3
   _maxStack: 99
+  _buyCost: 300
+  _sellCost: 150
+  _displayExplanation: "\uC2E0\uC120\uD55C \uC625\uC218\uC218\uB2E4."

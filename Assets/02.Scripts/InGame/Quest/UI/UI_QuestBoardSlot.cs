@@ -45,7 +45,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
                 _questRewardText.text = $"퀘스트 보상: {quest.Reward.Amount} 골드";
                 break;
             case (EQuestRewardType.Item):
-                _questRewardText.text = $"퀘스트 보상: {quest.Reward.RewardItem} {quest.Reward.Amount}개";
+                _questRewardText.text = $"퀘스트 보상: {quest.Reward.RewardItem.DisplayName} {quest.Reward.Amount}개";
                 break;
         }
     }
