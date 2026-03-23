@@ -7,7 +7,7 @@ public class BuildingManager : MonoBehaviour
     public static BuildingManager Instance { get; private set; }
 
     [SerializeField] private TerrainGridManager _gridManager;
-    private BuildingDatabase _buildingDatabase;
+    [SerializeField] private BuildingDatabase _buildingDatabase;
 
     // anchorPos -> 건물 메타데이터. 철거 시 크기/방향 복원, 저장/로드 직렬화 대상.
     private readonly Dictionary<Vector3Int, BuildingSaveData> _buildings = new Dictionary<Vector3Int, BuildingSaveData>();
@@ -26,7 +26,6 @@ public class BuildingManager : MonoBehaviour
             return;
         }
         Instance = this;
-        _buildingDatabase = _gridManager.BuildingDatabase;
     }
 
     private void Start()
@@ -36,6 +35,8 @@ public class BuildingManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Instance == this) Instance = null;
+
         if (DayNightCycle.Instance != null)
         {
             DayNightCycle.Instance.OnMorningStart -= AdvanceDay;
@@ -67,6 +68,7 @@ public class BuildingManager : MonoBehaviour
             if (kvp.Value.RemainingDays <= 0) continue;
             kvp.Value.RemainingDays--;
             // todo. RemainingDays에 따른 건설 진행률 표시
+            // todo. 건설 종료에 따른 NPC에게 알림 설정 
         }
     }
 

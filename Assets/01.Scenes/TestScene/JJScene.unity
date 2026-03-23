@@ -3524,8 +3524,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBuildingAbility
   _buildingManager: {fileID: 1078627620}
   _buildingData: {fileID: 11400000, guid: ae9f03c977b21f24890ba4cc7f20b724, type: 2}
-  _ghostValidMaterial: {fileID: 2100000, guid: d6f88503848ba7b4cbb3a970646aefc7, type: 2}
-  _ghostInvalidMaterial: {fileID: 2100000, guid: 223b7e4bb539ae54c81d3bc285c86608, type: 2}
+  _ghostMaterial: {fileID: 2100000, guid: d6f88503848ba7b4cbb3a970646aefc7, type: 2}
+  _ghostValidColor: {r: 0, g: 0.5, b: 1, a: 0.29803923}
+  _ghostInvalidColor: {r: 1, g: 0, b: 0, a: 0.29803923}
   _placeKey: 98
   _removeKey: 118
   _rotateKey: 114

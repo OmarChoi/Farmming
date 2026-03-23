@@ -9,9 +9,10 @@ public class PlayerBuildingAbility : PlayerAbility
     [SerializeField] private BuildingManager _buildingManager;
     [SerializeField] private BuildingDataSO _buildingData;
 
-    [Header("Ghost 머티리얼")]
-    [SerializeField] private Material _ghostValidMaterial;
-    [SerializeField] private Material _ghostInvalidMaterial;
+    [Header("Ghost 설정")]
+    [SerializeField] private Material _ghostMaterial;
+    [SerializeField] private Color _ghostValidColor = new Color(0f, 1f, 0f, 0.5f);
+    [SerializeField] private Color _ghostInvalidColor = new Color(1f, 0f, 0f, 0.5f);
 
     [Header("키 설정")]
     [SerializeField] private KeyCode _placeKey = KeyCode.B;
@@ -25,6 +26,7 @@ public class PlayerBuildingAbility : PlayerAbility
     private BuildingGhost _ghost;
     private Vector3Int _prevGridPos;
     private bool _isLoadingPrefab;
+    private bool _isBuilding;
 
     protected override void Awake()
     {
@@ -66,7 +68,7 @@ public class PlayerBuildingAbility : PlayerAbility
         // Cancel
         if (Input.GetKeyDown(_cancelKey))
         {
-            ExitPreview();
+            CancelPreview();
             return;
         }
 
@@ -78,7 +80,7 @@ public class PlayerBuildingAbility : PlayerAbility
         }
 
         // Confirm
-        if (Input.GetKeyDown(_placeKey))
+        if (Input.GetKeyDown(_placeKey) && !_isBuilding)
         {
             TryConfirmAsync().Forget();
             return;
@@ -104,6 +106,17 @@ public class PlayerBuildingAbility : PlayerAbility
     private async UniTaskVoid EnterPreviewAsync()
     {
         if (_buildingData == null) return;
+
+        // 기존 Ghost가 있으면 재사용
+        if (_ghost?.Instance != null)
+        {
+            _state = BuildState.Previewing;
+            _swapped = false;
+            _ghost.SetVisible(true);
+            RefreshGhostInitial();
+            return;
+        }
+
         string prefabKey = AssetKey.Building.GetKey(_buildingData.BuildingId);
         if (string.IsNullOrEmpty(prefabKey)) return;
 
@@ -111,13 +124,17 @@ public class PlayerBuildingAbility : PlayerAbility
         var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
         _isLoadingPrefab = false;
 
-        if (prefab == null) return;
+        if (prefab == null || _state != BuildState.None) return;
 
         _state = BuildState.Previewing;
         _swapped = false;
         _ghost = new BuildingGhost();
-        _ghost.Spawn(prefab, _ghostValidMaterial, _ghostInvalidMaterial);
+        _ghost.Spawn(prefab, _ghostMaterial, _ghostValidColor, _ghostInvalidColor);
+        RefreshGhostInitial();
+    }
 
+    private void RefreshGhostInitial()
+    {
         TerrainCell cell = _terrainAbility.GetFrontCell();
         if (cell != null)
         {
@@ -130,7 +147,13 @@ public class PlayerBuildingAbility : PlayerAbility
         }
     }
 
-    private void ExitPreview()
+    private void CancelPreview()
+    {
+        _ghost?.SetVisible(false);
+        _state = BuildState.None;
+    }
+
+    private void DestroyGhost()
     {
         _ghost?.Destroy();
         _ghost = null;
@@ -147,6 +170,7 @@ public class PlayerBuildingAbility : PlayerAbility
 
         if (!_buildingManager.CanPlace(cell.GridPosition, footprint, out _)) return;
 
+        _isBuilding = true;
         var request = new BuildingRequest
         {
             Data = _buildingData,
@@ -155,7 +179,9 @@ public class PlayerBuildingAbility : PlayerAbility
             Swapped = _swapped
         };
         await _buildingManager.TryBuild(request);
-        ExitPreview();
+        _isBuilding = false;
+        if (_state != BuildState.Previewing) return;
+        DestroyGhost();
     }
 
     private void RefreshGhost()
