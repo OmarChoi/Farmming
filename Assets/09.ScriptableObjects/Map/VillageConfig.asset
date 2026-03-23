@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60484bfd9a76b0544b7a0dbe9e9d7725, type: 3}
   m_Name: VillageConfig
   m_EditorClassIdentifier: Assembly-CSharp::MapConfig
-  Width: 150
-  Height: 150
+  Width: 75
+  Height: 75
   BaseHeight: 4
   MaxHeight: 8
   NoiseScale: 0.06
@@ -22,7 +22,7 @@ MonoBehaviour:
   Resources:
   - Type: 1
     Level: 1
-    SpawnChance: 0.02
+    SpawnChance: 0.05
   - Type: 2
     Level: 1
-    SpawnChance: 0.02
+    SpawnChance: 0.05
