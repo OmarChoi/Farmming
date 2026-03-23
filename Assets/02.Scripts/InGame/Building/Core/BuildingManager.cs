@@ -113,11 +113,23 @@ public class BuildingManager : MonoBehaviour
             }
         }
 
-        // 4. 프리팹 스폰 (앵커 셀 위치 기준, Pivot은 프리팹에서 설정)
+        // 4. 프리팹 스폰 (Footprint 중앙 기준, Pivot은 프리팹에서 설정)
         if (request.Data.Prefab != null)
         {
             float yRot = footprint.Direction * 90f + (request.Swapped ? 90f : 0f);
-            Vector3 spawnPos = _gridManager.GridToWorld(anchor) + Vector3.up * (_gridManager.CellSize * 0.5f);
+            int offsetSize = (int)(_gridManager.CellSize * 0.5f);
+            anchor += Vector3Int.up * offsetSize;
+
+            // Depth 방향 중앙 오프셋 계산 (Width는 이미 중앙 정렬)
+            float depthCenter = (footprint.Depth - 1) * 0.5f;
+            float cellSize = _gridManager.CellSize;
+            Vector3 centerOffset = new Vector3(
+                footprint.Forward.x * depthCenter * cellSize,
+                0f,
+                footprint.Forward.y * depthCenter * cellSize
+            );
+
+            Vector3 spawnPos = _gridManager.GridToWorld(anchor) + centerOffset;
             var go = Instantiate(request.Data.Prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f), transform);
             _instances[anchor] = go;
         }
@@ -195,7 +207,7 @@ public class BuildingManager : MonoBehaviour
                 if (cell.Data.ObjectType != EGridObjectType.None) return false;
             }
         }
-
+        
         return true;
     }
 
