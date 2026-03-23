@@ -33,7 +33,7 @@ public class UI_QuestCompletePopup : MonoBehaviour
                 _completeRewardText.text = $"퀘스트 보상: {reward.Amount} 골드";
                 break;
             case (EQuestRewardType.Item):
-                _completeRewardText.text = $"퀘스트 보상: {reward.RewardItem} {reward.Amount}개";
+                _completeRewardText.text = $"퀘스트 보상: {reward.RewardItem.DisplayName} {reward.Amount}개";
                 break;
         }
     }

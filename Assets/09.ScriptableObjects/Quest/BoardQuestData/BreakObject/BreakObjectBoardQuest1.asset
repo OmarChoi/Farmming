@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 002c5ad1e0e02f74784441da1d9fa045, type: 3}
-  m_Name: BoardQuestData
+  m_Name: BreakObjectBoardQuest1
   m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
-  QuestId: TestQuest
+  QuestId: BreakObjectBoardQuest1
   QuestName: "\uBFCC\uB9AC \uAE4A\uC740 \uB098\uBB34"
   Description: "\uB098\uBB34\uAC00 \uB108\uBB34 \uB9CE\uC544\uC11C \uAE38\uC744 \uAC00\uB294
     \uB370 \uBC29\uD574\uAC00 \uB418\uACE0 \uC788\uC5B4. \uB204\uAC00 \uB098\uBB34
@@ -23,4 +23,4 @@ MonoBehaviour:
   Reward:
     RewardType: 0
     RewardItem: {fileID: 0}
-    Amount: 300
+    Amount: 600
