@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GatheringObjectSO
   _objectName: NormalRock
   _maxHealth: 100
+  _requiredLevel: 0
+  _modelPrefabs:
+  - {fileID: 8114600924028484287, guid: e66cb15f22a1c774387d321ee47d271a, type: 3}
+  - {fileID: 4016154500641946441, guid: 5058420d97eab5b4bbeb3541905be3e8, type: 3}
+  - {fileID: 6322247231731170682, guid: 1f55f8c68246dc3438b73700695ee09b, type: 3}
   _drops:
-  - _item: {fileID: 11400000, guid: 692903949ba5186469c9848fb66d41b2, type: 2}
+  - _item: {fileID: 0}
     _minQuantity: 20
     _maxQuantity: 50

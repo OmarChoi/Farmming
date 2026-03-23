@@ -16,6 +16,11 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
     }
 
+    private void OnDestroy()
+    {
+        Unsummon();
+    }
+
     private void Update()
     {
         if (!_owner.CanMove) return;
@@ -38,6 +43,8 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             Unsummon();
 
         _currentHelper = helper;
+        _currentHelper.OnActionStarted += OnHelperActionStarted;
+        _currentHelper.OnActionEnded += OnHelperActionEnded;
         _currentHelper.Summon(_owner);
     }
 
@@ -45,11 +52,32 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     {
         if (_currentHelper == null) return;
 
+        _currentHelper.OnActionStarted -= OnHelperActionStarted;
+        _currentHelper.OnActionEnded -= OnHelperActionEnded;
+
+        if (_currentHelper.IsActing)
+        {
+            _owner.AllowCameraRotation = false;
+            _owner.UnlockAction();
+        }
+
         if (_currentHelper.State == EHelperState.Equipped)
             _currentHelper.Unequip();
 
         _currentHelper.gameObject.SetActive(false);
         _currentHelper = null;
+    }
+
+    private void OnHelperActionStarted()
+    {
+        _owner.AllowCameraRotation = true;
+        _owner.LockAction();
+    }
+
+    private void OnHelperActionEnded()
+    {
+        _owner.AllowCameraRotation = false;
+        _owner.UnlockAction();
     }
 
     private void ToggleEquip()

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e94df61d7155824ba4ad3cb157b683b, type: 3}
+  m_Name: Dungeon1_Rock
+  m_EditorClassIdentifier: Assembly-CSharp::GatheringObjectSO
+  _objectName: Dungeon1_Rock
+  _maxHealth: 100
+  _requiredLevel: 0
+  _modelPrefabs:
+  - {fileID: 5365756203952804134, guid: 462bf1c23aa91974ab86070a4f827130, type: 3}
+  - {fileID: 4252661232097606702, guid: 3cf4d4731c990114ba6661beb8f5e504, type: 3}
+  - {fileID: 4196975984229149536, guid: 019630e84b34e2e4f967f81487fdcc26, type: 3}
+  - {fileID: 5045110175054005872, guid: a1270ba2f02fb3242ac66c356b6ab658, type: 3}
+  _drops:
+  - _item: {fileID: 0}
+    _minQuantity: 20
+    _maxQuantity: 50
