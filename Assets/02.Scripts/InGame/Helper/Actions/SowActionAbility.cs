@@ -29,10 +29,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
     {
         if(cell == null) return;
 
-        _owner.BeginAction();
-
         if(cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
+            _owner.BeginAction();
             _cultivateAbility.JumpAndCultivate(cell, () =>
             {
                 cell.TryConvertToFarm();
@@ -41,12 +40,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         FarmTile farmTile = GetFarmTile(cell);
-        if(farmTile == null)
-        {
-            _owner.EndAction();
-            return;
-        }
+        if(farmTile == null) return;
 
+        _owner.BeginAction();
         _cultivateAbility.JumpAndCultivate(cell, () =>
         {
             farmTile.Interact();
