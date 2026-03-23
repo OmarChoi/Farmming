@@ -55,6 +55,11 @@ public class SowActionAbility : HelperAbility, IHelperAction
     
     public void InteractSecondary(TerrainCell cell)
     {
+        if (_isActing)
+        {
+            return;
+        }
+
         FarmTile farmTile = GetFarmTile(cell);
         if (farmTile == null)
         {
@@ -100,7 +105,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
             sowVfx?.Launch(targetPos, direction);
         }
 
-        StartCoroutine(PlantAfterDelay());
+        FarmTile farmTile = _currentFarmTile;
+        SeedConfig seed = _currentSeed;
+
+        StartCoroutine(PlantAfterDelay(farmTile, seed));
     }
 
     public void SowClose()
@@ -111,10 +119,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _isActing = false;
     }
 
-    private IEnumerator PlantAfterDelay()
+    private IEnumerator PlantAfterDelay(FarmTile farmTile, SeedConfig seed)
     {
         yield return new WaitForSeconds(_sowDelay);
-        _currentFarmTile?.PlantSeed(_currentSeed);
+        farmTile?.PlantSeed(seed);
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)
