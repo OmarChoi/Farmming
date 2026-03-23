@@ -7,7 +7,6 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _waterVfxPrefab;
-    [SerializeField] private float _vfxDuration = 0.5f;
 
     private HelperAnimationAbility _animAbility;
     private readonly List<IWaterEffect> _waterEffects = new();
