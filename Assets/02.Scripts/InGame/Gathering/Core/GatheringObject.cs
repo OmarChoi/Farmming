@@ -4,16 +4,51 @@ using UnityEngine;
 public abstract class GatheringObject : MonoBehaviour, IGatherable
 {
     [SerializeField] private GatheringObjectSO _gatheringData;
+    [SerializeField] private Transform _modelRoot;
 
     private int _currentHealth;
+    private GameObject _modelInstance;
 
     public static event Action<GatheringObject> OnGatheringCompleted;
     public GatheringObjectSO GatheringData => _gatheringData;
 
     protected virtual void Awake()
     {
+        ApplyGatheringData();
+    }
+
+    public void Setup(GatheringObjectSO data)
+    {
+        _gatheringData = data;
+        ApplyGatheringData();
+    }
+
+    private void ApplyGatheringData()
+    {
+        if (_gatheringData == null)
+        {
+            Debug.LogWarning("GatheringData가 할당되지 않았습니다.");
+            return;
+        }
+
         _currentHealth = _gatheringData.MaxHealth;
+        SpawnModel();
         Init();
+    }
+
+    private void SpawnModel()
+    {
+        if (_gatheringData == null || _modelRoot == null) return;
+
+        var modelPrefab = _gatheringData.GetRandomModel();
+        if (modelPrefab == null) return;
+
+        if (_modelInstance != null)
+            Destroy(_modelInstance);
+
+        _modelInstance = Instantiate(modelPrefab, _modelRoot);
+        _modelInstance.transform.localPosition = Vector3.zero;
+        _modelInstance.transform.localRotation = Quaternion.identity;
     }
 
     protected virtual void Init() { }

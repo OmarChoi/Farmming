@@ -15,6 +15,12 @@ MonoBehaviour:
   _objectName: NormalTree
   _maxHealth: 100
   _requiredLevel: 0
+  _modelPrefabs:
+  - {fileID: 8676952158559593809, guid: 418119bc089da594caa33bd03ea445f2, type: 3}
+  - {fileID: 1470561777393996130, guid: fe31936cab7e0794097a481152b2dde8, type: 3}
+  - {fileID: 321735410901635458, guid: 8bcf7d324d7bf3d408efd85c3f387606, type: 3}
+  - {fileID: 4582802595405526183, guid: 1e164c3cf6879984cba9630b8bc6fd9d, type: 3}
+  - {fileID: 5054089686411890155, guid: 1351ebae22b0cf349b5d82e30d4ac3e7, type: 3}
   _drops:
   - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
     _minQuantity: 2

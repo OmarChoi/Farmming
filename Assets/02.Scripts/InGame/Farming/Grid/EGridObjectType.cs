@@ -3,5 +3,6 @@ public enum EGridObjectType
     None,
     Tree,
     Rock,
-    FarmLand
+    FarmLand,
+    Building
 }
