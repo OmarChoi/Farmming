@@ -16,15 +16,16 @@ MonoBehaviour:
   Height: 75
   BaseHeight: 3
   MaxHeight: 8
-  NoiseScale: 0.085
+  NoiseScale: 0.1
+  TileNoiseScale: 0.08
   DefaultTileType: 1
   Resources:
   - Type: 1
     Level: 2
-    SpawnChance: 0.05
+    SpawnChance: 0.08
   - Type: 2
     Level: 2
-    SpawnChance: 0.05
+    SpawnChance: 0.08
   TimeLimitSeconds: 180
   EntryCost: 100
   TileWeights: []

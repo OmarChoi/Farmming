@@ -56,7 +56,8 @@ public class StoneMineAbility : HelperAbility
 
     private Vector3 GetLandPosition(GameObject target)
     {
-        if (target.TryGetComponent<Collider>(out Collider col))
+        Collider col = target.GetComponentInChildren<Collider>();
+        if (col != null)
         {
             return new Vector3(target.transform.position.x, col.bounds.max.y, target.transform.position.z);
         }
