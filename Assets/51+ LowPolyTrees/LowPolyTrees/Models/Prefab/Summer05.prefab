@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1227130992289547903}
   - component: {fileID: 4475091441712826438}
   - component: {fileID: 7254607151199981904}
-  - component: {fileID: -2167374614922077924}
+  - component: {fileID: 6221418566274969229}
   m_Layer: 0
   m_Name: Summer05
   m_TagString: Untagged
@@ -91,8 +91,8 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &-2167374614922077924
-MeshCollider:
+--- !u!65 &6221418566274969229
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -109,7 +109,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 4530970969418327997, guid: c045d1399cf47e94396c3fb9f7040cb8, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 1.1838663, y: 7.337047, z: 1.1653463}
+  m_Center: {x: 0.05824721, y: 3.7473176, z: 0.03888887}

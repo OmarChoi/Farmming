@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1390260638832182502}
   - component: {fileID: 6292964890704953151}
   - component: {fileID: 3813902464692960666}
-  - component: {fileID: 1050366538894748596}
+  - component: {fileID: 1128044664908574456}
   m_Layer: 0
   m_Name: Spring02
   m_TagString: Untagged
@@ -91,8 +91,8 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &1050366538894748596
-MeshCollider:
+--- !u!65 &1128044664908574456
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -109,7 +109,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -7430725131872231940, guid: c045d1399cf47e94396c3fb9f7040cb8, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 1.4243143, y: 8.177089, z: 1.4248533}
+  m_Center: {x: -0.020281196, y: 4.0890117, z: -0.024378777}
