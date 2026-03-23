@@ -69,7 +69,7 @@ public class NpcScheduleManager : MonoBehaviour
     }
 
     // 하루가 지나면 스케줄을 리셋합니다.
-    private void HandleDayChanged()
+    private void HandleDayChanged(int day)
     {
         foreach (var npc in _npcs)
         {
