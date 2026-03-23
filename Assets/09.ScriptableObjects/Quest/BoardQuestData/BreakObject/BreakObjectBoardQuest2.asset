@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: BreakObjectBoardQuest2
   m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
   QuestId: BreakObjectBoardQuest2
-  QuestName: "\uB2E8\uB2E8\uD55C \uB3CC"
-  Description: "\uB9C8\uC744\uC5D0 \uB3CC\uC774 \uB108\uBB34 \uB9CE\uC544\uC11C \uACBD\uAD00\uC744
-    \uD574\uCE58\uB294 \uAC83 \uAC19\uAD6C\uB9CC. \uB204\uAC00 \uC870\uAE08 \uC5C6\uC560\uC8FC\uC9C0
-    \uC54A\uC73C\uB828\uC9C0..."
+  QuestName: "\uB108\uBB34 \uB9CE\uC740 \uB098\uBB34"
+  Description: "\uB9C8\uC744\uC5D0 \uB098\uBB34\uAC00 \uB108\uBB34 \uB9CE\uC544\uC11C
+    \uACBD\uAD00\uC744 \uD574\uCE58\uB294 \uAC83 \uAC19\uAD6C\uB9CC. \uB204\uAC00
+    \uC870\uAE08 \uC5C6\uC560\uC8FC\uC9C0 \uC54A\uC73C\uB828\uC9C0..."
+  QuestCategory: 2
   ObjectiveType: 0
-  TargetId: NormalRock
+  TargetId: NormalTree
   RequiredAmount: 4
   Reward:
     RewardType: 1
     RewardItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
-    Amount: 3
+    Amount: 4

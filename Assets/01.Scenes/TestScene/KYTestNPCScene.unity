@@ -25089,6 +25089,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30bc7aa48f2c56148bf7ec2664e639e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestTimeManager
+  _currentDay: 1
   _currentTime: 810
   _timeInterval: 3
   _timeStep: 100
@@ -31701,6 +31702,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestManager
   _playerInventory: {fileID: 1748227497}
+  _dailyQuestBoard: {fileID: 1081763462}
+  _dailyQuestCounts: 2
 --- !u!4 &794116319
 Transform:
   m_ObjectHideFlags: 0

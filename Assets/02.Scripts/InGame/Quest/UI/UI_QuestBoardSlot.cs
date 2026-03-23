@@ -110,7 +110,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
                     _acceptButtonImage.color = Color.yellow;
                 }
 
-                _acceptButtonText.text = "퀘스트 완료!";
+                _acceptButtonText.text = "완료 가능!";
             }
             else
             {
@@ -146,7 +146,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
                     _acceptButtonImage.color = Color.gray;
                 }
 
-                _acceptButtonText.text = "수락 불가능";
+                _acceptButtonText.text = "퀘스트 완료!";
             }
         }
     }

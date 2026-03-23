@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class QuestBoard : MonoBehaviour
@@ -10,6 +11,14 @@ public class QuestBoard : MonoBehaviour
     [SerializeField] private PlayerController _playerController;
 
     public QuestBoardDataSO BoardQuest => _boardQuest;
+
+    private void Start()
+    {
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.SetDailyQuestBoardData(_boardQuest);
+        }
+    }
 
     private void OnEnable()
     {
@@ -29,20 +38,24 @@ public class QuestBoard : MonoBehaviour
 
     public void Interact()
     {
-        OpenQuestBoard(_boardQuest);
+        OpenQuestBoard();
     }
 
-
-    public void OpenQuestBoard(QuestBoardDataSO quests)
+    public void OpenQuestBoard()
     {
-        if (quests == null || quests.AllQuests == null)
+        if (QuestManager.Instance == null) return;
+
+        var todayQuests = QuestManager.Instance.TodayDailyQuests;
+
+        if (todayQuests == null || todayQuests.Count == 0)
         {
 #if UNITY_EDITOR
-            Debug.LogWarning("열 수 있는 퀘스트 데이터가 없습니다.");
+            Debug.LogWarning("오늘 표시할 일일 퀘스트가 없습니다.");
 #endif
             return;
         }
-        _uiQuestBoard.Open(quests);
+
+        _uiQuestBoard.Open(new List<QuestDataSO>(todayQuests));
         _playerController?.SetCursorLock(false);
     }
 

@@ -15,7 +15,7 @@ public class UI_QuestBoard : MonoBehaviour
 
     private readonly List<UI_QuestBoardSlot> _slots = new();
 
-    private QuestBoardDataSO _currentQuestBoardData;
+    private List<QuestDataSO> _currentQuests = new();
 
     public Action OnCloseRequested;
 
@@ -27,24 +27,30 @@ public class UI_QuestBoard : MonoBehaviour
         }
     }
 
-    public void Open(QuestBoardDataSO questData)
+    public void Open(List<QuestDataSO> quests)
     {
-        _currentQuestBoardData = questData;
-        _uiQuestBoardRoot.SetActive(true);
+        _currentQuests.Clear();
 
+        if (quests != null)
+        {
+            _currentQuests.AddRange(quests);
+        }
+
+        _uiQuestBoardRoot.SetActive(true);
         CreateOrRefreshSlots();
     }
 
     public void Close()
     {
         _uiQuestBoardRoot.SetActive(false);
-        _currentQuestBoardData = null;
+        _currentQuests.Clear();
     }
 
     private void CreateOrRefreshSlots()
     {
-        if (_currentQuestBoardData == null || _currentQuestBoardData.AllQuests == null) return;
-        int slotCount = _currentQuestBoardData.AllQuests.Count;
+        if (_currentQuests == null) return;
+
+        int slotCount = _currentQuests.Count;
 
         while (_slots.Count < slotCount)
         {
@@ -60,14 +66,14 @@ public class UI_QuestBoard : MonoBehaviour
 
             if (isActive)
             {
-                _slots[i].Refresh(_currentQuestBoardData.AllQuests[i]);
+                _slots[i].Refresh(_currentQuests[i]);
             }
         }
     }
 
     public void OnQuestSlotClicked(QuestDataSO questData)
     {
-        if (_currentQuestBoardData == null || questData == null) return;
+        if (questData == null) return;
         if (QuestManager.Instance == null) return;
         if (string.IsNullOrEmpty(questData.QuestId)) return;
 
