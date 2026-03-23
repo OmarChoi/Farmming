@@ -24,7 +24,7 @@ public class UI_Stamina : MonoBehaviour
 
         _stamina = ability.Stamina;
         _stamina.OnChanged += UpdateFill;
-        _stamina.OnMaxChanged += _ => UpdateFill(_stamina.Current);
+        _stamina.OnMaxChanged += OnMaxChanged;
         UpdateFill(_stamina.Current);
     }
 
@@ -33,11 +33,23 @@ public class UI_Stamina : MonoBehaviour
         if (_stamina == null) return;
 
         _stamina.OnChanged -= UpdateFill;
+        _stamina.OnMaxChanged -= OnMaxChanged;
         _stamina = null;
+    }
+
+    private void OnMaxChanged(float _)
+    {
+        UpdateFill(_stamina.Current);
     }
 
     private void UpdateFill(float current)
     {
+        if (_stamina == null || _stamina.Max <= 0f)
+        {
+            _fillImage.fillAmount = 0f;
+            return;
+        }
+
         _fillImage.fillAmount = current / _stamina.Max;
     }
 }
