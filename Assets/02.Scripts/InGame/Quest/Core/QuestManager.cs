@@ -18,6 +18,10 @@ public class QuestManager : MonoBehaviour
     private readonly HashSet<string> _completedSubQuestIds = new();
     private readonly Dictionary<string, int> _dailyQuestCompletedDays = new();
     public IReadOnlyDictionary<string, QuestRuntimeData> ActiveQuests => _activeQuests;
+    public List<QuestRuntimeData> GetActiveQuestList()
+    {
+        return new List<QuestRuntimeData>(_activeQuests.Values);
+    }
 
     private readonly List<QuestDataSO> _todayDailyQuests = new();
     public IReadOnlyList<QuestDataSO> TodayDailyQuests => _todayDailyQuests;
