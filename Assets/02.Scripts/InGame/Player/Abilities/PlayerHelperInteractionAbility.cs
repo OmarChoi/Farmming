@@ -16,6 +16,11 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
     }
 
+    private void OnDestroy()
+    {
+        Unsummon();
+    }
+
     private void Update()
     {
         if (!_owner.CanMove) return;
