@@ -7,6 +7,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
     [Header("퀘스트 슬롯 텍스트")]
     [SerializeField] private TextMeshProUGUI _questNameText;
     [SerializeField] private TextMeshProUGUI _descriptionText;
+    [SerializeField] private TextMeshProUGUI _questTargetText;
     [SerializeField] private TextMeshProUGUI _questRewardText;
 
     [Header("퀘스트 수락 버튼")]
@@ -41,6 +42,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
         {
             _questNameText.text = "";
             _descriptionText.text = "";
+            _questTargetText.text = "";
             _questRewardText.text = "";
 
             if (_acceptButton != null)
@@ -57,6 +59,19 @@ public class UI_QuestBoardSlot : MonoBehaviour
         _questNameText.text = quest.QuestName;
         _descriptionText.text = quest.Description;
 
+        if (quest.TargetId == null)
+        {
+            _questTargetText.text = "";
+        }
+        else
+        {
+            switch (quest.ObjectiveType)
+            {
+                case EQuestObjectiveType.BreakObject:
+                    _questTargetText.text = $"퀘스트 조건: {quest.TargetId} {quest.RequiredAmount}만큼 캐기";
+                    break;
+            }
+        }
         if (quest.Reward == null)
         {
             _questRewardText.text = "";
