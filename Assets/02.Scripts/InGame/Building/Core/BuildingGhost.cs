@@ -3,9 +3,11 @@ using UnityEngine;
 
 public class BuildingGhost
 {
+    private static readonly int ColorId = Shader.PropertyToID("_BaseColor");
+
     private GameObject _instance;
-    private Material _validMaterial;
-    private Material _invalidMaterial;
+    private Color _validColor;
+    private Color _invalidColor;
 
     // 원본 머티리얼 캐싱 (Renderer별)
     // todo. _originalMaterials를 블렌딩 셰이더에 원본 텍스처로 전달
@@ -15,41 +17,36 @@ public class BuildingGhost
     // todo. SetProgress(float progress) - 건설 진행도(0=Ghost, 1=완성)에 따른 시각 효과
 
     private Renderer[] _cachedRenderers;
-    private Material[][] _cachedGhostMaterials;
+    private readonly MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
     // 중복 SetValid 호출 방지
     private bool? _lastValid;
 
     public GameObject Instance => _instance;
 
-    public void Spawn(GameObject prefab, Material validMaterial, Material invalidMaterial, Transform parent = null)
+    public void Spawn(GameObject prefab, Material ghostMaterial, Color validColor, Color invalidColor, Transform parent = null)
     {
-        _validMaterial = validMaterial;
-        _invalidMaterial = invalidMaterial;
+        _validColor = validColor;
+        _invalidColor = invalidColor;
         _lastValid = null;
 
         _instance = Object.Instantiate(prefab, parent);
         _originalMaterials.Clear();
 
-        // Renderer 캐싱
+        // Renderer 캐싱 + Ghost 머티리얼로 교체 (sharedMaterial 사용, 인스턴스 생성 없음)
         _cachedRenderers = _instance.GetComponentsInChildren<Renderer>();
-        _cachedGhostMaterials = new Material[_cachedRenderers.Length][];
-
-        for (int r = 0; r < _cachedRenderers.Length; r++)
+        foreach (var renderer in _cachedRenderers)
         {
-            var renderer = _cachedRenderers[r];
             _originalMaterials.Add((renderer, renderer.sharedMaterials));
 
-            // Renderer별 Ghost 머티리얼 배열 캐싱 (재할당 없이 내용만 교체)
-            int matCount = renderer.sharedMaterials.Length;
-            _cachedGhostMaterials[r] = new Material[matCount];
-            for (int i = 0; i < matCount; i++)
+            var ghostMats = new Material[renderer.sharedMaterials.Length];
+            for (int i = 0; i < ghostMats.Length; i++)
             {
-                _cachedGhostMaterials[r][i] = _validMaterial;
+                ghostMats[i] = ghostMaterial;
             }
-            renderer.materials = _cachedGhostMaterials[r];
+            renderer.sharedMaterials = ghostMats;
         }
-
-        // Ghost 건물이 다른 오브젝트와 충돌하지 않게 Collider 끄기 (설치 완료되면 킨다.)
+        
+        // Ghost 건물이 다른 오브젝트와 충돌하지 않게 Collider 끄기
         var colliders = _instance.GetComponentsInChildren<Collider>();
         foreach (var col in colliders)
         {
@@ -69,15 +66,10 @@ public class BuildingGhost
         if (_lastValid.HasValue && _lastValid.Value == isValid) return;
         _lastValid = isValid;
 
-        Material mat = isValid ? _validMaterial : _invalidMaterial;
-        for (int r = 0; r < _cachedRenderers.Length; r++)
+        _propBlock.SetColor(ColorId, isValid ? _validColor : _invalidColor);
+        foreach (var renderer in _cachedRenderers)
         {
-            var mats = _cachedGhostMaterials[r];
-            for (int i = 0; i < mats.Length; i++)
-            {
-                mats[i] = mat;
-            }
-            _cachedRenderers[r].materials = mats;
+            renderer.SetPropertyBlock(_propBlock);
         }
     }
 
@@ -96,7 +88,6 @@ public class BuildingGhost
         }
         _originalMaterials.Clear();
         _cachedRenderers = null;
-        _cachedGhostMaterials = null;
         _lastValid = null;
     }
 }

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public static class AssetKey
 {
     public static class Prefab
@@ -17,11 +19,15 @@ public static class AssetKey
     {
         public const string MarketStall = "MarketStall";
 
-        public static string GetKey(string buildingId) => buildingId switch
+        private static readonly HashSet<string> _registered = new HashSet<string>
         {
-            "MarketStall" => MarketStall,
-            _ => null
+            MarketStall
         };
+
+        public static string GetKey(string buildingId)
+        {
+            return _registered.Contains(buildingId) ? buildingId : null;
+        }
     }
 
     public static class UI
