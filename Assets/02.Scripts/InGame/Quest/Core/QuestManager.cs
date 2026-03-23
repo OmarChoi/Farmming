@@ -9,11 +9,18 @@ public class QuestManager : MonoBehaviour
     [Header("플레이어 컴포넌트")]
     [SerializeField] private PlayerInventoryAbility _playerInventory;
 
+    [Header("일일 퀘스트 개수")]
+    [SerializeField] private int _dailyQuestCounts = 2;
+    private QuestBoardDataSO _dailyQuestBoardData;
+
     private readonly Dictionary<string, QuestRuntimeData> _activeQuests = new();
     private readonly HashSet<string> _completedMainQuestIds = new();
     private readonly HashSet<string> _completedSubQuestIds = new();
     private readonly Dictionary<string, int> _dailyQuestCompletedDays = new();
     public IReadOnlyDictionary<string, QuestRuntimeData> ActiveQuests => _activeQuests;
+
+    private readonly List<QuestDataSO> _todayDailyQuests = new();
+    public IReadOnlyList<QuestDataSO> TodayDailyQuests => _todayDailyQuests;
 
     public event Action<QuestRuntimeData> OnQuestAccepted;
     public event Action<QuestRuntimeData> OnQuestUpdated;
@@ -51,6 +58,12 @@ public class QuestManager : MonoBehaviour
         {
             TestTimeManager.Instance.OnDayChanged -= HandleDayChanged;
         }
+    }
+
+    public void SetDailyQuestBoardData(QuestBoardDataSO boardData)
+    {
+        _dailyQuestBoardData = boardData;
+        RefreshTodayDailyQuests(_dailyQuestBoardData, _dailyQuestCounts);
     }
 
     private void HandleGatheringCompleted(GatheringObject obj)
@@ -216,6 +229,16 @@ public class QuestManager : MonoBehaviour
         }
     }
 
+    private void HandleDayChanged(int day)
+    {
+        ResetDailyQuests();
+        RefreshTodayDailyQuests(_dailyQuestBoardData, _dailyQuestCounts);
+
+#if UNITY_EDITOR
+        Debug.Log($"일일 퀘스트 초기화 - Day {day}");
+#endif
+    }
+
     public void ResetDailyQuests()
     {
         List<string> removeKeys = new();
@@ -237,12 +260,33 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    private void HandleDayChanged(int day)
+    public void RefreshTodayDailyQuests(QuestBoardDataSO boardData, int selectCount = 2)
     {
-        ResetDailyQuests();
+        _todayDailyQuests.Clear();
 
-#if UNITY_EDITOR
-        Debug.Log($"일일 퀘스트 초기화 - Day {day}");
-#endif
+        if (boardData == null || boardData.AllQuests == null) return;
+
+        List<QuestDataSO> candidates = new();
+
+        foreach (QuestDataSO quest in boardData.AllQuests)
+        {
+            if (quest == null) continue;
+            if (quest.QuestCategory != EQuestCategory.Daily) continue;
+
+            candidates.Add(quest);
+        }
+
+        if (candidates.Count <= selectCount)
+        {
+            _todayDailyQuests.AddRange(candidates);
+            return;
+        }
+
+        for (int i = 0; i < selectCount; i++)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, candidates.Count);
+            _todayDailyQuests.Add(candidates[randomIndex]);
+            candidates.RemoveAt(randomIndex);
+        }
     }
 }
