@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
@@ -19,6 +18,14 @@ public class UI_QuestBoard : MonoBehaviour
     private QuestBoardDataSO _currentQuestBoardData;
 
     public Action OnCloseRequested;
+
+    private void Awake()
+    {
+        if (_exitButton != null)
+        {
+            _exitButton.onClick.AddListener(OnClickCloseButton);
+        }
+    }
 
     public void Open(QuestBoardDataSO questData)
     {
@@ -61,19 +68,64 @@ public class UI_QuestBoard : MonoBehaviour
     public void OnQuestSlotClicked(QuestDataSO questData)
     {
         if (_currentQuestBoardData == null || questData == null) return;
+        if (QuestManager.Instance == null) return;
+        if (string.IsNullOrEmpty(questData.QuestId)) return;
 
-        bool success = QuestManager.Instance.AcceptQuest(questData);
+        QuestManager questManager = QuestManager.Instance;
+        string questId = questData.QuestId;
+
+        bool hasQuest = questManager.HasQuest(questId);
+
+        if (hasQuest)
+        {
+            if (questManager.CanCompleteQuest(questId))
+            {
+                bool success = questManager.CompleteQuest(questId);
 
 #if UNITY_EDITOR
-        if (success)
-        {
-            Debug.Log($"퀘스트 수락: {questData.QuestName}");
+                if (success)
+                {
+                    Debug.Log($"퀘스트 완료: {questData.QuestName}");
+                }
+                else
+                {
+                    Debug.LogWarning($"퀘스트 완료 실패: {questData.QuestName}");
+                }
+#endif
+            }
+            else
+            {
+#if UNITY_EDITOR
+                Debug.Log($"이미 진행 중인 퀘스트입니다: {questData.QuestName}");
+#endif
+            }
         }
         else
         {
-            Debug.LogWarning($"퀘스트 수락 실패: {questData?.QuestName}");
-        }
+            if (questManager.CanAcceptQuest(questData))
+            {
+                bool success = questManager.AcceptQuest(questData);
+
+#if UNITY_EDITOR
+                if (success)
+                {
+                    Debug.Log($"퀘스트 수락: {questData.QuestName}");
+                }
+                else
+                {
+                    Debug.LogWarning($"퀘스트 수락 실패: {questData.QuestName}");
+                }
 #endif
+            }
+            else
+            {
+#if UNITY_EDITOR
+                Debug.Log($"현재 수락할 수 없는 퀘스트입니다: {questData.QuestName}");
+#endif
+            }
+        }
+
+        CreateOrRefreshSlots();
     }
 
     public void OnClickCloseButton()

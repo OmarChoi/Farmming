@@ -8,6 +8,9 @@ public class QuestDataSO : ScriptableObject
     public string QuestName;
     public string Description;
 
+    // 퀘스트 종류(메인, 서브, 일일)입니다.
+    public EQuestCategory QuestCategory;
+
     // 퀘스트의 목적 종류(자원 캐기, 아이템 전달 등)와 관련된 정보입니다.
     public EQuestObjectiveType ObjectiveType;
     public string TargetId;         // 퀘스트 목표 판정 대상(자원 캐기의 Tree, Rock 등)의 Id입니다.

@@ -13,42 +13,25 @@ public class QuestBoard : MonoBehaviour
 
     private void OnEnable()
     {
-        _uiQuestBoard.OnCloseRequested += CloseQuestBoard;
+        if (_uiQuestBoard != null)
+        {
+            _uiQuestBoard.OnCloseRequested += CloseQuestBoard;
+        }
     }
 
     private void OnDisable()
     {
-        _uiQuestBoard.OnCloseRequested -= CloseQuestBoard;
+        if (_uiQuestBoard != null)
+        {
+            _uiQuestBoard.OnCloseRequested -= CloseQuestBoard;
+        }
     }
 
     public void Interact()
     {
-        var questManager = QuestManager.Instance;
-        if (questManager == null) return;
-
-        if (!questManager.HasActiveQuest())
-        {
-            OpenQuestBoard(_boardQuest);
-            return;
-        }
-
-        if (questManager.CanCompleteQuest())
-        {
-            bool success = questManager.CompleteQuest();
-            if (success)
-            {
-#if UNITY_EDITOR
-                Debug.Log("퀘스트 완료!");
-#endif
-            }
-            questManager.ClearCompletedQuest();
-            OpenQuestBoard(_boardQuest);
-            return;
-        }
-#if UNITY_EDITOR
-        Debug.Log("이미 진행 중인 퀘스트가 있습니다.");
-#endif
+        OpenQuestBoard(_boardQuest);
     }
+
 
     public void OpenQuestBoard(QuestBoardDataSO quests)
     {
