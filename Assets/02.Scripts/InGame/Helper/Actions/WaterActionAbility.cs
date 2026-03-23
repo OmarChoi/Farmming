@@ -7,7 +7,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _waterVfxPrefab;
-    [SerializeField] private float _vfxDuration = 0.5f;
+    [SerializeField] private float _vfxDuration = 0.3f;
 
     private HelperAnimationAbility _animAbility;
 
@@ -55,8 +55,9 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _isActing = true;
 
         Vector3 spawnPos = _mouthPoint !=null ?_mouthPoint.position : _owner.transform.position;
-        Vector3 targerPos = GetTargetPosition(cell);
+        Vector3 targetPos = GetTargetPosition(cell);
 
+        Vector3 direction = (targetPos - spawnPos).normalized;
         _animAbility?.Play(EHelperAnim.Water);
 
         if(_waterVfxPrefab != null)
@@ -64,7 +65,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             GameObject vfxObj = Instantiate(_waterVfxPrefab, spawnPos, Quaternion.identity);
             Debug.Log("물이펙트 생성");
             WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
-            waterVfx?.PlayeEffect(targerPos, _vfxDuration);
+            waterVfx?.PlayeEffect(targetPos, direction);
             Debug.Log("플레이이펙트");
         }
 

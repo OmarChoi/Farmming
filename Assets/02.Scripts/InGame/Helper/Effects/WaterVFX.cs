@@ -4,17 +4,23 @@ using UnityEngine;
 public class WaterVFX : MonoBehaviour
 {
     [SerializeField] private GameObject _landEffectPrefab;
+    [SerializeField] private float _duration = 0.3f;
 
-    public void PlayeEffect(Vector3 targetPosition, float duration)
+    public void PlayeEffect(Vector3 targetPosition, Vector3 direction)
     {
         transform.position = targetPosition;
 
-        if(_landEffectPrefab != null )
+        if(direction != Vector3.zero)
         {
-            GameObject effect = Instantiate(_landEffectPrefab, targetPosition, Quaternion.identity);
-            Destroy(effect, duration);
+            transform.rotation = Quaternion.LookRotation(direction);
         }
 
-        Destroy(gameObject, duration);
+        if(_landEffectPrefab != null )
+        {
+            GameObject effect = Instantiate(_landEffectPrefab, targetPosition, transform.rotation);
+            Destroy(effect, _duration);
+        }
+
+        Destroy(gameObject, _duration);
     }
 }
