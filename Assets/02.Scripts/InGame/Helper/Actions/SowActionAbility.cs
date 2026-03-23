@@ -27,13 +27,11 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        if(cell == null)
-        {
-            return;
-        }
+        if(cell == null) return;
 
         if(cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
+            _owner.BeginAction();
             _cultivateAbility.JumpAndCultivate(cell, () =>
             {
                 cell.TryConvertToFarm();
@@ -42,39 +40,25 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         FarmTile farmTile = GetFarmTile(cell);
-        if(farmTile == null)
-        {
-            return;
-        }
+        if(farmTile == null) return;
 
+        _owner.BeginAction();
         _cultivateAbility.JumpAndCultivate(cell, () =>
         {
             farmTile.Interact();
         });
     }
-    
+
     public void InteractSecondary(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);
-        if (farmTile == null)
-        {
-            Debug.Log("농지 없음");
-            return;
-        }
-
-        if (!farmTile.IsReadyToSow)
-        {
-            Debug.Log("씨앗 심을 수 없는 상태");
-            return;
-        }
+        if (farmTile == null) return;
+        if (!farmTile.IsReadyToSow) return;
 
         SeedConfig selectedSeed = _seedSelector?.SelectedSeed;
-        if(selectedSeed == null)
-        {
-            Debug.Log("씨앗이 선택되지 않음");
-            return;
-        }
+        if(selectedSeed == null) return;
 
+        _owner.BeginAction();
         StartCoroutine(SowCoroutine(farmTile, selectedSeed));
     }
 
@@ -96,8 +80,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         farmTile.Interact(seed);
 
-        _animAbility?.Play(EHelperAnim.Idle);     
-
+        _animAbility?.Play(EHelperAnim.Idle);
+        _owner.EndAction();
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)

@@ -35,7 +35,7 @@ public class StoneMineAbility : HelperAbility
         }
 
         if(cell.CurrentObject != null)
-        { 
+        {
             if(cell.Data.ObjectType == EGridObjectType.Tree)
             {
                 return;
@@ -45,7 +45,7 @@ public class StoneMineAbility : HelperAbility
             {
                 Vector3 targetPos = GetLandPosition(cell.CurrentObject);
                 StartCoroutine(JumpCoroutine(targetPos, gatherable));
-            }           
+            }
         }
         else
         {
@@ -80,9 +80,11 @@ public class StoneMineAbility : HelperAbility
 
     private IEnumerator JumpCoroutine(Vector3 targetPosition, IGatherable gatherable = null)
     {
-        _isJumping=true;
+        _isJumping = true;
 
-        Vector3 startPosition = transform.position;
+        Transform parentBackup = _owner.transform.parent;
+        _owner.transform.SetParent(null);
+
         Vector3 endPosition = targetPosition;
 
         _animAbility.Play(EHelperAnim.Jump);
@@ -94,13 +96,18 @@ public class StoneMineAbility : HelperAbility
 
         yield return new WaitForSeconds(_stunDuration);
 
-        _animAbility.Play(EHelperAnim.Jump);
-        yield return Move(_owner.transform, startPosition, _jumpHeight * _rejumpHeight, _returnDuration);
+        Vector3 returnPosition = parentBackup != null ? parentBackup.position : _owner.PlayerOwner.transform.position;
 
-        transform.rotation = _owner.PlayerOwner.transform.rotation;
+        _animAbility.Play(EHelperAnim.Jump);
+        yield return Move(_owner.transform, returnPosition, _jumpHeight * _rejumpHeight, _returnDuration);
+
+        _owner.transform.SetParent(parentBackup);
+        _owner.transform.localPosition = Vector3.zero;
+        _owner.transform.localRotation = Quaternion.identity;
 
         _animAbility.Play(EHelperAnim.Idle);
         _isJumping = false;
+        _owner.EndAction();
     }
 
     private YieldInstruction Move(Transform target, Vector3 to, float height, float duration)
