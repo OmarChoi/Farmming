@@ -6,12 +6,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _seedVfxPrefab;
-    [SerializeField] private float _sowEffectDelay = 0.3f;
     [SerializeField] private float _sowDelay = 0.5f;
 
     private CultivateAbility _cultivateAbility;
     private SeedSelectAbility _seedSelector;
     private HelperAnimationAbility _animAbility;
+
+    private bool _isActing = false;
+    private FarmTile _currentFarmTile;
+    private SeedConfig _currentSeed;
 
     protected override void Awake()
     {
@@ -27,9 +30,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        if(cell == null) return;
+        if (cell == null)
+        {
+            return;
+        }
 
-        if(cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
+        if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
             _owner.BeginAction();
             _cultivateAbility.JumpAndCultivate(cell, () =>
@@ -40,17 +46,21 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         FarmTile farmTile = GetFarmTile(cell);
-        if(farmTile == null) return;
-
-        _owner.BeginAction();
-        _cultivateAbility.JumpAndCultivate(cell, () =>
+        if (farmTile == null)
         {
-            farmTile.Interact();
-        });
+            return;
+        }
+
+        _cultivateAbility.JumpAndCultivate(cell, null);
     }
 
     public void InteractSecondary(TerrainCell cell)
     {
+        if (_isActing)
+        {
+            return;
+        }
+
         FarmTile farmTile = GetFarmTile(cell);
         if (farmTile == null) return;
         if (!farmTile.IsReadyToSow) return;
@@ -58,30 +68,49 @@ public class SowActionAbility : HelperAbility, IHelperAction
         SeedConfig selectedSeed = _seedSelector?.SelectedSeed;
         if(selectedSeed == null) return;
 
-        _owner.BeginAction();
-        StartCoroutine(SowCoroutine(farmTile, selectedSeed));
+        _isActing = true;
+        _currentFarmTile = farmTile;
+        _currentSeed = selectedSeed;
+
+        _animAbility?.Play(EHelperAnim.Sow);
     }
 
-    private IEnumerator SowCoroutine(FarmTile farmTile, SeedConfig seed)
+    public void SowOpen()
     {
-        _animAbility?.Play(EHelperAnim.Sow);
-
-        yield return new WaitForSeconds(_sowEffectDelay);
-
-        if(_seedVfxPrefab != null && _mouthPoint != null)
+        if (_currentFarmTile == null || _mouthPoint == null)
         {
-            GameObject vfxObj = Instantiate(_seedVfxPrefab, _mouthPoint.position, Quaternion.identity);
-
-            SowVFX sowVfx = vfxObj.GetComponent<SowVFX>();
-            sowVfx?.Launch(farmTile.CropSpawnPoint.position);
+            return;
         }
 
-        yield return new WaitForSeconds(_sowDelay);
+        Vector3 spawnPos = _mouthPoint.position;
+        Vector3 targetPos = _currentFarmTile.CropSpawnPoint.position;
+        Vector3 direction = (targetPos - spawnPos).normalized;
 
-        farmTile.Interact(seed);
+        if (_seedVfxPrefab != null)
+        {
+            GameObject vfxObj = Instantiate(_seedVfxPrefab, spawnPos, Quaternion.identity);
+            SowVFX sowVfx = vfxObj.GetComponent<SowVFX>();
+            sowVfx?.Launch(targetPos, direction);
+        }
 
+        FarmTile farmTile = _currentFarmTile;
+        SeedConfig seed = _currentSeed;
+
+        StartCoroutine(PlantAfterDelay(farmTile, seed));
+    }
+
+    public void SowClose()
+    {
         _animAbility?.Play(EHelperAnim.Idle);
-        _owner.EndAction();
+        _currentFarmTile = null;
+        _currentSeed = null;
+        _isActing = false;
+    }
+
+    private IEnumerator PlantAfterDelay(FarmTile farmTile, SeedConfig seed)
+    {
+        yield return new WaitForSeconds(_sowDelay);
+        farmTile?.PlantSeed(seed);
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)

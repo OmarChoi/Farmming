@@ -4,8 +4,7 @@ using UnityEngine;
 // 수확 공룡: IsHarvestable -> 수확
 public class HarvestActionAbility : HelperAbility, IHelperAction
 {
-    public static event Action<Sprite, string, int> OnHarvested;
-
+    [SerializeField] private HarvestItemSO _harvestItem;
     private PlayerInventoryAbility GetInventory()
     {
         return _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
@@ -43,7 +42,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
         if(seed.SeedIcon != null)
         {
-            OnHarvested?.Invoke(seed.SeedIcon, seed.SeedName, harvestAmount);
+            _harvestItem?.Raise(seed.SeedIcon, seed.SeedName, harvestAmount);
         }
 
         farmTile.Interact();

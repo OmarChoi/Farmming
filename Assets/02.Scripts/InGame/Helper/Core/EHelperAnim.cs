@@ -8,6 +8,7 @@ public enum EHelperAnim
     WoodCutting = 5,
     Stun = 4,
     Harvest = 24,
-    Sow = 5,
+    Sow = 30,
     Cultivate = 15,
+    Water = 31,
 }

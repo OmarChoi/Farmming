@@ -1,5 +1,6 @@
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class SowVFX : MonoBehaviour
 {
@@ -9,8 +10,13 @@ public class SowVFX : MonoBehaviour
     [SerializeField] private int _jumpCount = 1;
     [SerializeField] private float _effectDuration = 1f;
 
-    public void Launch(Vector3 targetPosition)
+    public void Launch(Vector3 targetPosition, Vector3 direction)
     {
+        if(direction != Vector3.zero)
+        {
+            transform.rotation = Quaternion.LookRotation(direction);
+        }
+
         transform.DOJump(targetPosition, _arcHeight, _jumpCount, _duration)
                  .SetEase(Ease.Linear)
                  .OnComplete(() => OnLand(targetPosition));
