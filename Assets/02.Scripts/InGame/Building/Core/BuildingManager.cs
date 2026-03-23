@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class BuildingManager : MonoBehaviour
@@ -74,7 +75,7 @@ public class BuildingManager : MonoBehaviour
     #region Build Object
 
     // 건물 배치
-    public bool TryBuild(BuildingRequest request)
+    public async UniTask<bool> TryBuild(BuildingRequest request)
     {
         // 1. Footprint 산출 및 배치 가능 여부 검증
         BuildingFootprint footprint = BuildingPlacer.GetFootprint(request.Data, request.Direction, request.Swapped);
@@ -114,24 +115,17 @@ public class BuildingManager : MonoBehaviour
         }
 
         // 4. 프리팹 스폰 (Footprint 중앙 기준, Pivot은 프리팹에서 설정)
-        if (request.Data.Prefab != null)
+        string prefabKey = AssetKey.Building.GetKey(request.Data.BuildingId);
+        if (!string.IsNullOrEmpty(prefabKey))
         {
-            float yRot = footprint.Direction * 90f + (request.Swapped ? 90f : 0f);
-            int offsetSize = (int)(_gridManager.CellSize * 0.5f);
-            anchor += Vector3Int.up * offsetSize;
-
-            // Depth 방향 중앙 오프셋 계산 (Width는 이미 중앙 정렬)
-            float depthCenter = (footprint.Depth - 1) * 0.5f;
-            float cellSize = _gridManager.CellSize;
-            Vector3 centerOffset = new Vector3(
-                footprint.Forward.x * depthCenter * cellSize,
-                0f,
-                footprint.Forward.y * depthCenter * cellSize
-            );
-
-            Vector3 spawnPos = _gridManager.GridToWorld(anchor) + centerOffset;
-            var go = Instantiate(request.Data.Prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f), transform);
-            _instances[anchor] = go;
+            var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
+            if (prefab != null)
+            {
+                float yRot = footprint.Direction * 90f + (request.Swapped ? 90f : 0f);
+                Vector3 spawnPos = CalculateSpawnPos(anchor, footprint);
+                var go = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f), transform);
+                _instances[anchor] = go;
+            }
         }
 
         return true;
@@ -181,8 +175,26 @@ public class BuildingManager : MonoBehaviour
         return true;
     }
 
+    // Footprint 중앙 기준 스폰 위치 계산 (Ghost 위치 갱신과 실제 건설 공용)
+    public Vector3 CalculateSpawnPos(Vector3Int anchorPos, BuildingFootprint footprint)
+    {
+        int offsetSize = (int)(_gridManager.CellSize * 0.5f);
+        var elevated = anchorPos + Vector3Int.up * offsetSize;
+
+        // Depth 방향 중앙 오프셋 계산 (Width는 이미 중앙 정렬)
+        float depthCenter = (footprint.Depth - 1) * 0.5f;
+        float cellSize = _gridManager.CellSize;
+        Vector3 centerOffset = new Vector3(
+            footprint.Forward.x * depthCenter * cellSize,
+            0f,
+            footprint.Forward.y * depthCenter * cellSize
+        );
+
+        return _gridManager.GridToWorld(elevated) + centerOffset;
+    }
+
     // 배치 가능 조건: 평탄 지형 + 빈 Dirt 셀 + 미점유
-    private bool CanPlace(Vector3Int anchorPos, BuildingFootprint footprint, out int baseY)
+    public bool CanPlace(Vector3Int anchorPos, BuildingFootprint footprint, out int baseY)
     {
         baseY = _gridManager.GetTopY(anchorPos.x, anchorPos.z);
         if (baseY < 0) return false;
