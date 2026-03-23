@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 1373160370965399828}
   - component: {fileID: 9009779382618116274}
   m_Layer: 0
-  m_Name: NormalRock
+  m_Name: Dungeon1_Rock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76,7 +76,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec6e799ec21b76343ae6b50d39c6f9cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Stone
-  _gatheringData: {fileID: 11400000, guid: 6ee4d63cbace32b4fa96b8b5b8230076, type: 2}
+  _gatheringData: {fileID: 11400000, guid: 36b94b6e0e8203049a9ff9f959253b33, type: 2}
   _modelRoot: {fileID: 77527298991691718}
   _shakeIntensity: 0.05
   _shakeDuration: 0.2
