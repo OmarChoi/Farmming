@@ -1,5 +1,5 @@
-using NUnit.Framework.Interfaces;
 using UnityEngine;
+using System;
 
 public class QuestManager : MonoBehaviour
 {
@@ -12,10 +12,11 @@ public class QuestManager : MonoBehaviour
     [Header("플레이어 컴포넌트")]
     [SerializeField] private PlayerInventoryAbility _playerInventory;
 
-    [Header("오브젝트 수확")]
-    [SerializeField] private GatheringObject _gatheringObject;
+    private GatheringObject _gatheringObject;
 
     public QuestRuntimeData CurrentQuest => _currentQuest;
+
+    public event Action<QuestRuntimeData> OnQuestCompleted;
 
     private void Awake()
     {
@@ -92,6 +93,8 @@ public class QuestManager : MonoBehaviour
 
         GiveReward(_currentQuest.QuestData.Reward);
         _currentQuest.Status = EQuestStatus.Completed;
+        OnQuestCompleted?.Invoke(_currentQuest);
+
         return true;
     }
 
