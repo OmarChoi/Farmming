@@ -14,14 +14,23 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
     protected virtual void Awake()
     {
-        _currentHealth = _gatheringData.MaxHealth;
-        SpawnModel();
-        Init();
+        ApplyGatheringData();
     }
 
     public void Setup(GatheringObjectSO data)
     {
         _gatheringData = data;
+        ApplyGatheringData();
+    }
+
+    private void ApplyGatheringData()
+    {
+        if (_gatheringData == null)
+        {
+            Debug.LogWarning("GatheringData가 할당되지 않았습니다.");
+            return;
+        }
+
         _currentHealth = _gatheringData.MaxHealth;
         SpawnModel();
         Init();
