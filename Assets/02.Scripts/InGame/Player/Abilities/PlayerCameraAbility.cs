@@ -56,7 +56,7 @@ public class PlayerCameraAbility : PlayerAbility
 
     private void LateUpdate()
     {
-        if (_owner.CanMove)
+        if (_owner.CanRotateCamera)
         {
             _mx += Input.GetAxis("Mouse X") * _owner.StatSo.MouseSensitivity * Time.deltaTime;
             _my += Input.GetAxis("Mouse Y") * _owner.StatSo.MouseSensitivity * Time.deltaTime;

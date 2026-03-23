@@ -55,7 +55,9 @@ public class CultivateAbility : HelperAbility
     {
         _isJumping = true;
 
-        Vector3 startPosition = _owner.transform.position;
+        Transform parentBackup = _owner.transform.parent;
+        _owner.transform.SetParent(null);
+
         Vector3 endPosition = targetPosition;
 
         _animAbility.Play(EHelperAnim.Jump);
@@ -67,11 +69,18 @@ public class CultivateAbility : HelperAbility
 
         yield return new WaitForSeconds(_cultivateDuration);
 
+        Vector3 returnPosition = parentBackup != null ? parentBackup.position : _owner.PlayerOwner.transform.position;
+
         _animAbility.Play(EHelperAnim.Jump);
-        yield return Move(_owner.transform, startPosition, _jumpHeight * _rejumpHeight, _returnDuration);
+        yield return Move(_owner.transform, returnPosition, _jumpHeight * _rejumpHeight, _returnDuration);
+
+        _owner.transform.SetParent(parentBackup);
+        _owner.transform.localPosition = Vector3.zero;
+        _owner.transform.localRotation = Quaternion.identity;
 
         _animAbility.Play(EHelperAnim.Idle);
         _isJumping = false;
+        _owner.EndAction();
     }
 
     private YieldInstruction Move(Transform target, Vector3 to, float height, float duration)

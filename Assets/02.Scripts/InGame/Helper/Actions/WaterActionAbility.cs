@@ -6,26 +6,15 @@ public class WaterActionAbility : FarmBaseAbility
     public override void InteractPrimary(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);
-        if(farmTile == null)
-        {
-            return;
-        }
+        if(farmTile == null) return;
+        if(farmTile.StateMachine.CurrentStateType != EFarmTileStateType.FarmDry) return;
+        if(!farmTile.HasSeed) return;
 
-        if(farmTile.StateMachine.CurrentStateType != EFarmTileStateType.FarmDry)
-        {
-            Debug.Log("물을 줄 수 없는 상태");
-            return;
-        }
-
-        if(!farmTile.HasSeed)
-        {
-            Debug.Log("씨앗없음");
-            return;
-        }
-
+        _owner.BeginAction();
         farmTile.Interact();
+        _owner.EndAction();
     }
-    
+
     public override void InteractSecondary(TerrainCell cell)
     {
         // TODO: 우클릭 동작 구현
