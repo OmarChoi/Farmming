@@ -8,12 +8,16 @@ public class FarmHelperActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        _owner.BeginAction();
+
         FarmTile farmTile = cell.FarmTile;
 
         if (farmTile != null && farmTile.gameObject.activeSelf)
             farmTile.Interact(_currentSeed);
         else
             cell.TryConvertToFarm();
+
+        _owner.EndAction();
     }
 
     public void InteractSecondary(TerrainCell cell)

@@ -11,7 +11,9 @@ public class PlayerController : MonoBehaviour
     public string PlayerId { get; private set; }
     public bool IsUIOpen { get; private set; }
     public bool CanMove => !IsUIOpen && !IsActionLocked;
+    public bool CanRotateCamera => !IsUIOpen && (!IsActionLocked || AllowCameraRotation);
     public bool IsActionLocked { get; private set; }
+    public bool AllowCameraRotation { get; set; }
 
     public void LockAction() => IsActionLocked = true;
     public void UnlockAction() => IsActionLocked = false;

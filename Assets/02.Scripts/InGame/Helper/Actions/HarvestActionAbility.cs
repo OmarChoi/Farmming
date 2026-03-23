@@ -21,26 +21,14 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     public void InteractPrimary(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);
-        if (farmTile == null)
-        {
-            return;
-        }
-
-        if(!farmTile.HasSeed)
-        {
-            return;
-        }
+        if (farmTile == null) return;
+        if (!farmTile.HasSeed) return;
 
         CropGrowth cropGrowth = farmTile.CropGrowth;
-        if (cropGrowth == null)
-        {
-            return;
-        }
-        if(!cropGrowth.IsHarvestable)
-        {
-            return;
-        }
+        if (cropGrowth == null) return;
+        if (!cropGrowth.IsHarvestable) return;
 
+        _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Harvest);
 
         SeedConfig seed = farmTile.PlantedSeed;
@@ -59,11 +47,13 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         }
 
         farmTile.Interact();
+        _owner.EndAction();
     }
-    
+
     public void InteractSecondary(TerrainCell cell)
     {
         // TODO: 우클릭 동작 구현
+        _owner.EndAction();
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)

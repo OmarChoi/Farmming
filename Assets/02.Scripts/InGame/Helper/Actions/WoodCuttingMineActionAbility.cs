@@ -27,6 +27,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.WoodCutting);
 
         // 이펙트 소환
@@ -42,11 +43,12 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     {
         yield return new WaitForSeconds(_idleTransition);
         _animAbility?.Play(EHelperAnim.Idle);
+        _owner.EndAction();
     }
 
     public void InteractSecondary(TerrainCell cell)
     {
-        // 이펙트 소환
+        _owner.BeginAction();
         _stoneMineAbility?.JumpAndSmash(cell);
     }
 }
