@@ -12,6 +12,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private HelperAnimationAbility _animAbility;
     private readonly List<IWaterEffect> _waterEffects = new();
     private bool _isActing = false;
+    private TerrainCell _currentCell;
 
     protected override void Awake()
     {
@@ -35,23 +36,24 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         if (cell == null) return;
         if (_isActing) return;
 
-        StartCoroutine(WaterCoroutine(cell));
+        _isActing = true;
+        _currentCell = cell;
+
+        _animAbility?.Play(EHelperAnim.Water);
     }
 
     public void InteractSecondary(TerrainCell cell) { }
 
-    private IEnumerator WaterCoroutine(TerrainCell cell)
+    public void WaterOpen()
     {
-        _isActing = true;
+        if (_currentCell == null) return;
 
         Vector3 spawnPos = _mouthPoint != null
             ? _mouthPoint.position
             : _owner.transform.position;
 
-        Vector3 targetPos = GetTargetPosition(cell);
+        Vector3 targetPos = GetTargetPosition(_currentCell);
         Vector3 direction = (targetPos - spawnPos).normalized;
-
-        _animAbility?.Play(EHelperAnim.Water);
 
         if (_waterVfxPrefab != null)
         {
@@ -62,18 +64,22 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             );
 
             WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
+            TerrainCell cell = _currentCell;
 
             waterVfx?.Launch(targetPos, direction, () =>
             {
                 ApplyWaterEffects(cell);
             });
         }
+    }
 
-        yield return new WaitForSeconds(_vfxDuration);
-
+    public void WaterClose()
+    {
         _animAbility?.Play(EHelperAnim.Idle);
+        _currentCell = null;
         _isActing = false;
     }
+
 
     private void ApplyWaterEffects(TerrainCell cell)
     {
