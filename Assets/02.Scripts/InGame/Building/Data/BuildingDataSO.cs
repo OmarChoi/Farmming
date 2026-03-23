@@ -5,7 +5,6 @@ public class BuildingDataSO : ScriptableObject
 {
     [SerializeField] private string _buildingId;
     [SerializeField] private string _displayName;
-    [SerializeField] private GameObject _prefab;
     [SerializeField] private int _width = 2;
     [SerializeField] private int _depth = 2;
     [SerializeField] private int _constructionDays = 0;
@@ -13,7 +12,6 @@ public class BuildingDataSO : ScriptableObject
 
     public string BuildingId => _buildingId;
     public string DisplayName => _displayName;
-    public GameObject Prefab => _prefab;
     public int Width => _width;
     public int Depth => _depth;
     public int ConstructionDays => _constructionDays;

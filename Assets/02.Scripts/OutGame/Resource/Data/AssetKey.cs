@@ -13,6 +13,17 @@ public static class AssetKey
         public const string NormalTree = "NormalTree";
     }
 
+    public static class Building
+    {
+        public const string MarketStall = "MarketStall";
+
+        public static string GetKey(string buildingId) => buildingId switch
+        {
+            "MarketStall" => MarketStall,
+            _ => null
+        };
+    }
+
     public static class UI
     {
         public const string Inventory = "UI_Inventory";
