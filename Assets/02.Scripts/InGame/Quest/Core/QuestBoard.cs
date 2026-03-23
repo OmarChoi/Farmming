@@ -42,6 +42,7 @@ public class QuestBoard : MonoBehaviour
 #endif
             }
             questManager.ClearCompletedQuest();
+            OpenQuestBoard(_boardQuest);
             return;
         }
 #if UNITY_EDITOR
