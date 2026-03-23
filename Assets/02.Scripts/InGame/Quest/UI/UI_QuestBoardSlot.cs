@@ -86,7 +86,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
 
                 case (EQuestRewardType.Item):
                     string itemName = quest.Reward.RewardItem != null ? quest.Reward.RewardItem.DisplayName : "아이템";
-                    _questRewardText.text = $"퀘스트 보상: {quest.Reward.RewardItem.DisplayName} {quest.Reward.Amount}개";
+                    _questRewardText.text = $"퀘스트 보상: {itemName} {quest.Reward.Amount}개";
                     break;
             }
         }
