@@ -29,6 +29,7 @@ public class HelperInteractionAbility : HelperAbility
 
     private bool CanInteract()
     {
+        if (_owner.IsActing) return false;
         if (_owner.Energy.IsExhausted) return false;
         if (_action == null) return false;
         if (_playerStamina != null && !_playerStamina.TryConsume(_owner.Data.StaminaCost)) return false;

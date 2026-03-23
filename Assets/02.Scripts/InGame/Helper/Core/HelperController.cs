@@ -12,6 +12,11 @@ public class HelperController : MonoBehaviour
     public EHelperState State { get; private set; } = EHelperState.Inventory;
     public Transform FollowTarget { get; private set; }
 
+    public bool IsActing { get; private set; }
+
+    public event Action OnActionStarted;
+    public event Action OnActionEnded;
+
     public HelperLevel Level { get; private set; }
     public HelperGrade Grade { get; private set; }
     public HelperEnergy Energy { get; private set; }
@@ -98,6 +103,20 @@ public class HelperController : MonoBehaviour
     {
         Level.CurrentLevel = data.Level;
         Grade.CurrentGrade = (EHelperGrade)data.Grade;
+    }
+
+    public void BeginAction()
+    {
+        if (IsActing) return;
+        IsActing = true;
+        OnActionStarted?.Invoke();
+    }
+
+    public void EndAction()
+    {
+        if (!IsActing) return;
+        IsActing = false;
+        OnActionEnded?.Invoke();
     }
 
     public void InteractPrimary(TerrainCell cell)
