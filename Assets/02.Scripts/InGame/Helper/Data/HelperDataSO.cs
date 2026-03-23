@@ -12,6 +12,7 @@ public class HelperDataSO : ScriptableObject
     public float EnergyRecoveryPerSecond = 5f;
 
     public int GatherDamage = 10;
+    public float StaminaCost = 5f;
 
     public int MaxLevel = 10;
     public float BaseEnergyCost = 10f;
