@@ -1,15 +1,13 @@
-using System;
 using UnityEngine;
 
 public class PlayerCustomizeAbility : PlayerAbility, ISaveableAbility
 {
     [SerializeField] private CharacterPartSwapper _partSwapper;
 
-    public static event Action<PlayerCustomizeAbility> OnReady;
-
     private void Start()
     {
-        OnReady?.Invoke(this);
+        if (CustomizeData.Instance != null)
+            Initialize(CustomizeData.Instance.Data);
     }
 
     public void Initialize(CustomizeSaveData data)

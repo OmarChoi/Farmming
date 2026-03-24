@@ -4,7 +4,7 @@ public class CustomizeData : MonoBehaviour
 {
     public static CustomizeData Instance { get; private set; }
 
-    private CustomizeSaveData _data = new();
+    public CustomizeSaveData Data { get; private set; } = new();
 
     private void Awake()
     {
@@ -18,23 +18,8 @@ public class CustomizeData : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    private void OnEnable()
-    {
-        PlayerCustomizeAbility.OnReady += OnPlayerCustomizeReady;
-    }
-
-    private void OnDisable()
-    {
-        PlayerCustomizeAbility.OnReady -= OnPlayerCustomizeReady;
-    }
-
     public void CopyFrom(CharacterPartSwapper swapper)
     {
-        _data = swapper.CreateSaveData();
-    }
-
-    private void OnPlayerCustomizeReady(PlayerCustomizeAbility ability)
-    {
-        ability.Initialize(_data);
+        Data = swapper.CreateSaveData();
     }
 }
