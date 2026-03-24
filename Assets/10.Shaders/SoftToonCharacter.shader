@@ -58,6 +58,7 @@ Shader "Custom/SoftToon/Character"
         [Header(Ambient)]
         _AmbientColor ("Ambient Color", Color) = (0.85, 0.85, 0.9, 1) // 앰비언트 색상
         _AmbientIntensity ("Ambient Intensity", Range(0, 1)) = 0.15   // 앰비언트 강도
+        _MinLight ("Minimum Light", Range(0, 1)) = 0.35       
 
         // ── 그림자 Acne 보정 ──
         // 셀프 셰도잉(shadow acne) 아티팩트를 줄이기 위한 바이어스 값.
@@ -131,6 +132,7 @@ Shader "Custom/SoftToon/Character"
                 float _OutlineWidth;         // 외곽선 두께 (이 패스에서는 미사용)
                 half4 _AmbientColor;         // 앰비언트 색상
                 half _AmbientIntensity;      // 앰비언트 강도
+                half _MinLight;              // 그림자 영역 최소 밝기
                 float _ShadowDepthBias;      // 그림자 깊이 바이어스
                 float _ShadowNormalBias;     // 그림자 노말 바이어스
             CBUFFER_END
@@ -219,6 +221,7 @@ Shader "Custom/SoftToon/Character"
                 half3 shadowTint = lerp(_ShadowColor.rgb, half3(1, 1, 1), toonRamp);
                 // _ShadowIntensity로 그림자 색의 영향력 조절 (0이면 그림자 색 무효)
                 shadowTint = lerp(half3(1, 1, 1), shadowTint, _ShadowIntensity);
+                half minLit = lerp(_MinLight, 1.0h, toonRamp);
                 half3 diffuse = albedo.rgb * lightColor * shadowTint; // 최종 디퓨즈 색상
 
                 // ── 스페큘러 (Blinn-Phong, 소프트 경계) ──
@@ -249,6 +252,7 @@ Shader "Custom/SoftToon/Character"
                         half addNdotL = dot(normalWS, normalize(addLight.direction));
                         half addRamp = SoftToonRamp(addNdotL, _ShadowThreshold, _ShadowSmoothness);
                         addRamp *= addLight.shadowAttenuation * addLight.distanceAttenuation;
+                        half addMinLit = lerp(_MinLight, 1.0h, addRamp); // 추가 광원도 암부 최소 밝기 보장
                         // 추가 광원은 0.5를 곱하여 메인 라이트보다 약하게 적용
                         additionalLight += albedo.rgb * addLight.color * addRamp * ADDITIONAL_LIGHT_SCALE;
                     }
@@ -309,6 +313,7 @@ Shader "Custom/SoftToon/Character"
                 float _OutlineWidth;
                 half4 _AmbientColor;
                 half _AmbientIntensity;
+                half _MinLight;
                 float _ShadowDepthBias;
                 float _ShadowNormalBias;
             CBUFFER_END
@@ -390,6 +395,7 @@ Shader "Custom/SoftToon/Character"
                 float _OutlineWidth;
                 half4 _AmbientColor;
                 half _AmbientIntensity;
+                half _MinLight;
                 float _ShadowDepthBias;
                 float _ShadowNormalBias;
             CBUFFER_END

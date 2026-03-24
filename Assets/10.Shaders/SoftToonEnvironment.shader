@@ -8,7 +8,6 @@
 // 토글 가능한 기능:
 //   _USE_VERTEX_COLOR    - 버텍스 컬러를 알베도에 곱함
 //   _USE_DETAIL          - 디테일 텍스처 블렌딩
-//   _USE_HEIGHT_GRADIENT - 월드 Y축 기반 색상 그라데이션
 //   _USE_FRESNEL         - 프레넬 림라이트
 //
 // 구성 Pass:
@@ -49,6 +48,7 @@ Shader "Custom/SoftToon/Environment"
         [Header(Ambient and Environment)]
         _AmbientColor ("Ambient Color", Color) = (0.85, 0.85, 0.9, 1)   // 앰비언트 색상
         _AmbientIntensity ("Ambient Intensity", Range(0, 1)) = 0.2      // 앰비언트 강도
+        _MinLight ("Minimum Light", Range(0, 1)) = 0.35                 // 그림자 영역 최소 밝기
         _AmbientOcclusionStrength ("AO from Vertex Alpha", Range(0, 1)) = 0.0
         // ↑ 버텍스 컬러의 알파 채널을 AO(Ambient Occlusion)로 사용.
         //   0이면 AO 무시, 1이면 버텍스 알파가 앰비언트를 완전히 조절.
@@ -142,6 +142,7 @@ Shader "Custom/SoftToon/Environment"
                 half4 _AmbientColor;
                 half _AmbientIntensity;
                 half _AmbientOcclusionStrength;
+                half _MinLight;
                 float4 _DetailTex_ST;       // 디테일 텍스처 타일링/오프셋
                 half _DetailStrength;
                 half4 _GradientBottomColor;
@@ -262,6 +263,7 @@ Shader "Custom/SoftToon/Environment"
 
                 half3 shadowTint = lerp(_ShadowColor.rgb, half3(1, 1, 1), toonRamp);
                 shadowTint = lerp(half3(1, 1, 1), shadowTint, _ShadowIntensity);
+                half minLit = lerp(_MinLight, 1.0h, toonRamp); // 암부 최소 밝기 보장
                 half3 diffuse = albedo.rgb * lightColor * shadowTint;
 
                 // ── 추가 광원 ──
@@ -274,6 +276,7 @@ Shader "Custom/SoftToon/Environment"
                         half addNdotL = dot(normalWS, normalize(addLight.direction));
                         half addRamp = SoftToonRamp(addNdotL, _ShadowThreshold, _ShadowSmoothness);
                         addRamp *= addLight.shadowAttenuation * addLight.distanceAttenuation;
+                        half addMinLit = lerp(_MinLight, 1.0h, addRamp); // 추가 광원도 암부 최소 밝기 보장
                         // 추가 광원은 0.4를 곱하여 메인 라이트보다 약하게
                         additionalLight += albedo.rgb * addLight.color * addRamp * ADDITIONAL_LIGHT_SCALE;
                     }
@@ -339,6 +342,7 @@ Shader "Custom/SoftToon/Environment"
                 half _ShadowIntensity;
                 half4 _AmbientColor;
                 half _AmbientIntensity;
+                half _MinLight;
                 half _AmbientOcclusionStrength;
                 float4 _DetailTex_ST;
                 half _DetailStrength;
@@ -433,6 +437,7 @@ Shader "Custom/SoftToon/Environment"
                 half _ShadowIntensity;
                 half4 _AmbientColor;
                 half _AmbientIntensity;
+                half _MinLight;
                 half _AmbientOcclusionStrength;
                 float4 _DetailTex_ST;
                 half _DetailStrength;
