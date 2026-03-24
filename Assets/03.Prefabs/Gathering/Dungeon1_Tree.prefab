@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 6476242747128799532}
   - component: {fileID: 2164250243309182394}
   - component: {fileID: 7451207869800401861}
+  - component: {fileID: 452067585896728718}
   m_Layer: 0
   m_Name: Dungeon1_Tree
   m_TagString: Untagged
@@ -213,3 +214,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!208 &452067585896728718
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5130300574329225930}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.3, y: 2, z: 0.3}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0.1, y: 1.6, z: 0.04}
+  m_TimeToStationary: 0.2
