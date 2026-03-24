@@ -97,6 +97,62 @@ public class InventoryDomain
         OnSlotChanged?.Invoke(to);
     }
 
+    /// 슬롯에서 절반을 분리하여 반환. 실패 시 0 반환
+    public int SplitHalf(int index)
+    {
+        if (index < 0 || index >= _slots.Count) return 0;
+
+        var slot = _slots[index];
+        if (slot.IsEmpty || slot.Count < 2) return 0;
+
+        int half = slot.Count / 2;
+        slot.Remove(half);
+        OnSlotChanged?.Invoke(index);
+        return half;
+    }
+
+    /// 분리한 아이템을 대상 슬롯에 배치. 실패 시 원래 슬롯에 복구
+    public void PlaceSplit(int sourceIndex, int targetIndex, ItemDataSO item, int amount)
+    {
+        if (targetIndex < 0 || targetIndex >= _slots.Count)
+        {
+            RestoreSplit(sourceIndex, item, amount);
+            return;
+        }
+
+        var targetSlot = _slots[targetIndex];
+
+        if (targetSlot.IsEmpty)
+        {
+            targetSlot.TryAdd(item, amount);
+            OnSlotChanged?.Invoke(targetIndex);
+        }
+        else if (targetSlot.Item == item)
+        {
+            int canAdd = item.MaxStack - targetSlot.Count;
+            int toAdd = Math.Min(amount, canAdd);
+            if (toAdd > 0)
+            {
+                targetSlot.TryAdd(item, toAdd);
+                OnSlotChanged?.Invoke(targetIndex);
+            }
+            int leftover = amount - toAdd;
+            if (leftover > 0)
+                RestoreSplit(sourceIndex, item, leftover);
+        }
+        else
+        {
+            RestoreSplit(sourceIndex, item, amount);
+        }
+    }
+
+    private void RestoreSplit(int sourceIndex, ItemDataSO item, int amount)
+    {
+        if (sourceIndex < 0 || sourceIndex >= _slots.Count) return;
+        _slots[sourceIndex].TryAdd(item, amount);
+        OnSlotChanged?.Invoke(sourceIndex);
+    }
+
     public void RemoveAt(int index, int amount = 1)
     {
         if (index < 0 || index >= _slots.Count) return;

@@ -47,7 +47,9 @@ public class UI_Slot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     public void OnPointerDown(PointerEventData eventData)
     {
         if (_currentItem == null) return;
-        _uiInventory.BeginDrag(this);
+
+        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        _uiInventory.BeginDrag(this, shift);
     }
 
     public void OnPointerClick(PointerEventData eventData)

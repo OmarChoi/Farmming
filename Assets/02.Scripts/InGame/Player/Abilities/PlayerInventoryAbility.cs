@@ -80,6 +80,9 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
     public InventorySlot GetSlot(int index) => _inventory.GetSlot(index);
     public void AddItem(ItemDataSO item, int amount = 1) => _inventory.AddItem(item, amount);
     public void SwapSlots(int from, int to) => _inventory.SwapSlots(from, to);
+    public int SplitHalf(int index) => _inventory.SplitHalf(index);
+    public void PlaceSplit(int sourceIndex, int targetIndex, ItemDataSO item, int amount)
+        => _inventory.PlaceSplit(sourceIndex, targetIndex, item, amount);
     public void RemoveAt(int index, int amount = 1) => _inventory.RemoveAt(index, amount);
 
     public void ExportTo(PlayerSaveData saveData)
