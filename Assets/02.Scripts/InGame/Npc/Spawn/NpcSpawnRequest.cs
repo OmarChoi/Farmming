@@ -9,6 +9,10 @@ public readonly struct NpcSpawnRequest
     public readonly bool ForceRespawn;
     public readonly string Reason;  // 스폰 사유 간단히 적는 용도입니다.
 
+    public string NpcId => Data?.NpcId;
+    public GameObject Prefab => Data?.Prefab;
+    public bool HasValidData => Data != null;
+
     public NpcSpawnRequest(
         NpcDataSO data,
         Vector3 requestedPosition,

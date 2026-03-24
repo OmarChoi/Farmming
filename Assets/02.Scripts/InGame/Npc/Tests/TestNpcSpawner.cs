@@ -6,7 +6,7 @@ public class TestNpcSpawner : MonoBehaviour
     [SerializeField] private NpcDataContainerSO _npcDatabase;
     [SerializeField] private string _npcId;
 
-    private float _spawnTime = 4f;
+    private const float SpawnDelay = 4f;
 
     private void Start()
     {
@@ -30,7 +30,7 @@ public class TestNpcSpawner : MonoBehaviour
 
     private IEnumerator TestSpawnNpc(NpcSpawnRequest request)
     {
-        yield return new WaitForSeconds(_spawnTime);
+        yield return new WaitForSeconds(SpawnDelay);
         NpcSpawnManager.Instance.GetOrSpawn(request);
     }
 }
