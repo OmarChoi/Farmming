@@ -33,6 +33,11 @@ public class UI_Inventory : MonoBehaviour
     private UI_Slot _dragSourceSlot;
     private UI_Slot _hoveredSlot;
 
+    // 분할 드래그 상태
+    private bool _isSplitDrag;
+    private ItemDataSO _splitItem;
+    private int _splitAmount;
+
     private void Awake()
     {
         _panelRect = _panel.GetComponent<RectTransform>();
@@ -173,10 +178,26 @@ public class UI_Inventory : MonoBehaviour
 
     // 드래그 앤 드롭
 
-    public void BeginDrag(UI_Slot source)
+    public void BeginDrag(UI_Slot source, bool shift = false)
     {
         if (_clickMode != EInventoryClickMode.Normal) return;
         if (source.CurrentItem == null) return;
+
+        if (shift)
+        {
+            var slot = _inventoryAbility.GetSlot(source.SlotIndex);
+            if (slot == null || slot.Count < 2) return;
+
+            _splitItem = slot.Item;
+            _splitAmount = _inventoryAbility.SplitHalf(source.SlotIndex);
+            if (_splitAmount <= 0) return;
+
+            _isSplitDrag = true;
+        }
+        else
+        {
+            _isSplitDrag = false;
+        }
 
         _isDragging = true;
         _dragSourceSlot = source;
@@ -185,7 +206,9 @@ public class UI_Inventory : MonoBehaviour
         _dragIcon.gameObject.SetActive(true);
         _dragIcon.transform.position = Input.mousePosition;
 
-        source.SetIconVisible(false);
+        if (!_isSplitDrag)
+            source.SetIconVisible(false);
+
         _scrollRect.enabled = false;
 
         if (_tooltip != null)
@@ -196,28 +219,46 @@ public class UI_Inventory : MonoBehaviour
     {
         if (!_isDragging) return;
 
-        if (_hoveredSlot != null && _hoveredSlot != _dragSourceSlot)
-            _inventoryAbility.SwapSlots(_dragSourceSlot.SlotIndex, _hoveredSlot.SlotIndex);
+        if (_isSplitDrag)
+        {
+            int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
+                ? _hoveredSlot.SlotIndex
+                : _dragSourceSlot.SlotIndex;
 
-        _dragSourceSlot.SetIconVisible(true);
-        RefreshSlot(_dragSourceSlot.SlotIndex);
+            _inventoryAbility.PlaceSplit(_dragSourceSlot.SlotIndex, targetIndex, _splitItem, _splitAmount);
+        }
+        else
+        {
+            if (_hoveredSlot != null && _hoveredSlot != _dragSourceSlot)
+                _inventoryAbility.SwapSlots(_dragSourceSlot.SlotIndex, _hoveredSlot.SlotIndex);
+            else
+                RefreshSlot(_dragSourceSlot.SlotIndex);
+        }
 
-        _dragIcon.gameObject.SetActive(false);
-        _scrollRect.enabled = true;
-        _isDragging = false;
-        _dragSourceSlot = null;
+        ClearDragState();
     }
 
     private void CancelDrag()
     {
         if (!_isDragging) return;
 
-        _dragSourceSlot.SetIconVisible(true);
-        RefreshSlot(_dragSourceSlot.SlotIndex);
+        if (_isSplitDrag)
+            _inventoryAbility.PlaceSplit(
+                _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
+        else
+            RefreshSlot(_dragSourceSlot.SlotIndex);
 
+        ClearDragState();
+    }
+
+    private void ClearDragState()
+    {
         _dragIcon.gameObject.SetActive(false);
         _scrollRect.enabled = true;
         _isDragging = false;
+        _isSplitDrag = false;
+        _splitItem = null;
+        _splitAmount = 0;
         _dragSourceSlot = null;
     }
 
