@@ -17,6 +17,12 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         base.Awake();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
+
+    private void OnDisable()
+    {
+        _owner?.EndAction();
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);

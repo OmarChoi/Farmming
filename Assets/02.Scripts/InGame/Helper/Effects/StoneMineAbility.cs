@@ -124,4 +124,11 @@ public class StoneMineAbility : HelperAbility
         GameObject effect = Instantiate(_effectStonePrefab, spawnPos, Quaternion.identity);
         Destroy(effect, _endEffect);
     }
+
+    private void OnDisable()
+    {
+        _isJumping = false;
+        _owner?.transform.DOKill();
+        _owner?.EndAction();
+    }
 }

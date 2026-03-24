@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using UnityEngine;
 
@@ -23,6 +24,12 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         base.Awake();
         _stoneMineAbility = _owner.GetAbility<StoneMineAbility>();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        _owner?.EndAction();
     }
 
     public void InteractPrimary(TerrainCell cell)
