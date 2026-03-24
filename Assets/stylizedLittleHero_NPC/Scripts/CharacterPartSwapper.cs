@@ -539,6 +539,31 @@ public class CharacterPartSwapper : MonoBehaviour
         Debug.Log("Random customization completed!");
     }
 
+    public CustomizeSaveData CreateSaveData()
+    {
+        return new CustomizeSaveData
+        {
+            BodyIndex = currentBodyIndex,
+            HairIndex = currentHairIndex,
+            HatIndex = currentHatIndex,
+            EyeIndex = currentEyeIndex,
+            MouthIndex = currentMouthIndex,
+            EyebrowIndex = currentEyebrowIndex,
+            CheekIndex = currentCheekIndex
+        };
+    }
+
+    public void ApplySaveData(CustomizeSaveData data)
+    {
+        SetBody(data.BodyIndex);
+        SetHair(data.HairIndex);
+        SetHat(data.HatIndex);
+        SetEye(data.EyeIndex);
+        SetMouth(data.MouthIndex);
+        SetEyebrow(data.EyebrowIndex);
+        SetCheek(data.CheekIndex);
+    }
+
     /// <summary>
     /// Find child in transform hierarchy by name (recursive)
     /// </summary>

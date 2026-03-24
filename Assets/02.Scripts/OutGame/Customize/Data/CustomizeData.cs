@@ -1,35 +1,30 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "CustomizeData", menuName = "Farmming/CustomizeData")]
-public class CustomizeData : ScriptableObject
+public class CustomizeData : MonoBehaviour
 {
-    public int BodyIndex;
-    public int HairIndex;
-    public int HatIndex;
-    public int EyeIndex;
-    public int MouthIndex;
-    public int EyebrowIndex;
-    public int CheekIndex;
+    public static CustomizeData Instance { get; private set; }
+
+    private CustomizeSaveData _data = new();
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     public void CopyFrom(CharacterPartSwapper swapper)
     {
-        BodyIndex = swapper.currentBodyIndex;
-        HairIndex = swapper.currentHairIndex;
-        HatIndex = swapper.currentHatIndex;
-        EyeIndex = swapper.currentEyeIndex;
-        MouthIndex = swapper.currentMouthIndex;
-        EyebrowIndex = swapper.currentEyebrowIndex;
-        CheekIndex = swapper.currentCheekIndex;
+        _data = swapper.CreateSaveData();
     }
 
     public void ApplyTo(CharacterPartSwapper swapper)
     {
-        swapper.SetBody(BodyIndex);
-        swapper.SetHair(HairIndex);
-        swapper.SetHat(HatIndex);
-        swapper.SetEye(EyeIndex);
-        swapper.SetMouth(MouthIndex);
-        swapper.SetEyebrow(EyebrowIndex);
-        swapper.SetCheek(CheekIndex);
+        swapper.ApplySaveData(_data);
     }
 }
