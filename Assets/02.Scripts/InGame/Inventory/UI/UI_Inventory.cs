@@ -1,24 +1,49 @@
+using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UI_Inventory : MonoBehaviour
 {
+    private const int Columns = 4;
+
     [Header("참조")]
     [SerializeField] private GameObject _panel;
     [SerializeField] private Transform _slotContainer;
     [SerializeField] private UI_Slot _uiSlotPrefab;
     [SerializeField] private ScrollRect _scrollRect;
+    [SerializeField] private UI_ItemTooltip _tooltip;
+    [SerializeField] private Image _dragIcon;
 
+    [Header("슬라이드 애니메이션")]
+    [SerializeField] private float _slideDuration = 0.3f;
+    [SerializeField] private float _slideDistance = 300f;
+
+    private RectTransform _panelRect;
+    private Vector2 _panelOriginPos;
+    private Tween _slideTween;
     private PlayerInventoryAbility _inventoryAbility;
-    private UI_Slot[] _slotUIs;
-    private UI_Slot _selectedSlot;
+    private readonly List<UI_Slot> _slotUIs = new();
 
     private TradeService _tradeService;
     private EInventoryClickMode _clickMode = EInventoryClickMode.Normal;
 
+    // 드래그 상태
+    private bool _isDragging;
+    private UI_Slot _dragSourceSlot;
+    private UI_Slot _hoveredSlot;
+
+    // 분할 드래그 상태
+    private bool _isSplitDrag;
+    private ItemDataSO _splitItem;
+    private int _splitAmount;
+
     private void Awake()
     {
+        _panelRect = _panel.GetComponent<RectTransform>();
+        _panelOriginPos = _panelRect.anchoredPosition;
         _panel.SetActive(false);
+        _dragIcon.gameObject.SetActive(false);
         PlayerInventoryAbility.OnLocalPlayerReady += Bind;
     }
 
@@ -28,6 +53,16 @@ public class UI_Inventory : MonoBehaviour
         Unbind();
     }
 
+    private void Update()
+    {
+        if (!_isDragging) return;
+
+        _dragIcon.transform.position = Input.mousePosition;
+
+        if (!Input.GetMouseButton(0))
+            EndDrag();
+    }
+
     private void Bind(PlayerInventoryAbility ability)
     {
         Unbind();
@@ -35,9 +70,9 @@ public class UI_Inventory : MonoBehaviour
         _inventoryAbility = ability;
         _inventoryAbility.OnToggle += OnToggle;
         _inventoryAbility.OnSlotChanged += RefreshSlot;
-        _inventoryAbility.OnInventoryResized += RebuildSlots;
+        _inventoryAbility.OnInventoryResized += SyncSlotCount;
 
-        CreateSlots();
+        SyncSlotCount();
         RefreshAll();
     }
 
@@ -47,93 +82,203 @@ public class UI_Inventory : MonoBehaviour
 
         _inventoryAbility.OnToggle -= OnToggle;
         _inventoryAbility.OnSlotChanged -= RefreshSlot;
-        _inventoryAbility.OnInventoryResized -= RebuildSlots;
+        _inventoryAbility.OnInventoryResized -= SyncSlotCount;
         _inventoryAbility = null;
     }
 
     private void OnToggle(bool open)
     {
-        _panel.SetActive(open);
-        _selectedSlot = null;
+        _slideTween?.Kill();
+        CancelDrag();
 
         if (open)
-            RefreshAll();
-    }
-
-    // 슬롯 생성
-
-    private void CreateSlots()
-    {
-        _slotUIs = new UI_Slot[_inventoryAbility.SlotCount];
-
-        for (int i = 0; i < _slotUIs.Length; i++)
         {
-            var slotUI = Instantiate(_uiSlotPrefab, _slotContainer);
-            slotUI.Init(this, i);
-            _slotUIs[i] = slotUI;
+            _panel.SetActive(true);
+            RefreshAll();
+            _panelRect.anchoredPosition = _panelOriginPos + Vector2.right * _slideDistance;
+            _slideTween = _panelRect.DOAnchorPos(_panelOriginPos, _slideDuration)
+                .SetEase(Ease.OutBack)
+                .SetLink(_panel);
+        }
+        else
+        {
+            if (_tooltip != null)
+                _tooltip.Hide();
+
+            Vector2 target = _panelOriginPos + Vector2.right * _slideDistance;
+            _slideTween = _panelRect.DOAnchorPos(target, _slideDuration)
+                .SetEase(Ease.InBack)
+                .SetLink(_panel)
+                .OnComplete(() => _panel.SetActive(false));
         }
     }
 
-    private void RebuildSlots()
-    {
-        foreach (var slot in _slotUIs)
-            Destroy(slot.gameObject);
+    // 슬롯 UI 동기화
 
-        CreateSlots();
-        RefreshAll();
+    private void SyncSlotCount()
+    {
+        int target = _inventoryAbility.SlotCount;
+
+        for (int i = _slotUIs.Count; i < target; i++)
+        {
+            var slotUI = Instantiate(_uiSlotPrefab, _slotContainer);
+            slotUI.Init(this, i);
+            _slotUIs.Add(slotUI);
+        }
+
+        while (_slotUIs.Count > target)
+        {
+            int last = _slotUIs.Count - 1;
+            Destroy(_slotUIs[last].gameObject);
+            _slotUIs.RemoveAt(last);
+        }
     }
 
     // 갱신
 
     private void RefreshAll()
     {
-        for (int i = 0; i < _slotUIs.Length; i++)
+        for (int i = 0; i < _slotUIs.Count; i++)
             RefreshSlot(i);
     }
 
     private void RefreshSlot(int index)
     {
-        if (index < 0 || index >= _slotUIs.Length) return;
+        if (index < 0 || index >= _slotUIs.Count) return;
         _slotUIs[index].Refresh(_inventoryAbility.GetSlot(index));
     }
 
-    // 클릭 모드 선택
+    // 툴팁
+
+    public void OnSlotHoverEnter(UI_Slot slot)
+    {
+        _hoveredSlot = slot;
+
+        if (_isDragging) return;
+        if (_tooltip == null) return;
+
+        if (slot.CurrentItem == null)
+        {
+            _tooltip.Hide();
+            return;
+        }
+
+        int column = slot.SlotIndex % Columns;
+        bool showRight = column < 2;
+        _tooltip.Show(slot.CurrentItem, slot.RectTransform, showRight);
+    }
+
+    public void OnSlotHoverExit()
+    {
+        _hoveredSlot = null;
+
+        if (!_isDragging && _tooltip != null)
+            _tooltip.Hide();
+    }
+
+    // 드래그 앤 드롭
+
+    public void BeginDrag(UI_Slot source, bool shift = false)
+    {
+        if (_clickMode != EInventoryClickMode.Normal) return;
+        if (source.CurrentItem == null) return;
+
+        if (shift)
+        {
+            var slot = _inventoryAbility.GetSlot(source.SlotIndex);
+            if (slot == null || slot.Count < 2) return;
+
+            _splitItem = slot.Item;
+            _splitAmount = _inventoryAbility.SplitHalf(source.SlotIndex);
+            if (_splitAmount <= 0) return;
+
+            _isSplitDrag = true;
+        }
+        else
+        {
+            _isSplitDrag = false;
+        }
+
+        _isDragging = true;
+        _dragSourceSlot = source;
+
+        _dragIcon.sprite = source.CurrentItem.Icon;
+        _dragIcon.gameObject.SetActive(true);
+        _dragIcon.transform.position = Input.mousePosition;
+
+        if (!_isSplitDrag)
+            source.SetIconVisible(false);
+
+        _scrollRect.enabled = false;
+
+        if (_tooltip != null)
+            _tooltip.Hide();
+    }
+
+    public void EndDrag()
+    {
+        if (!_isDragging) return;
+
+        if (_isSplitDrag)
+        {
+            int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
+                ? _hoveredSlot.SlotIndex
+                : _dragSourceSlot.SlotIndex;
+
+            _inventoryAbility.PlaceSplit(_dragSourceSlot.SlotIndex, targetIndex, _splitItem, _splitAmount);
+        }
+        else
+        {
+            if (_hoveredSlot != null && _hoveredSlot != _dragSourceSlot)
+                _inventoryAbility.SwapSlots(_dragSourceSlot.SlotIndex, _hoveredSlot.SlotIndex);
+            else
+                RefreshSlot(_dragSourceSlot.SlotIndex);
+        }
+
+        ClearDragState();
+    }
+
+    private void CancelDrag()
+    {
+        if (!_isDragging) return;
+
+        if (_isSplitDrag)
+            _inventoryAbility.PlaceSplit(
+                _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
+        else
+            RefreshSlot(_dragSourceSlot.SlotIndex);
+
+        ClearDragState();
+    }
+
+    private void ClearDragState()
+    {
+        _dragIcon.gameObject.SetActive(false);
+        _scrollRect.enabled = true;
+        _isDragging = false;
+        _isSplitDrag = false;
+        _splitItem = null;
+        _splitAmount = 0;
+        _dragSourceSlot = null;
+    }
+
+    // 클릭 모드
 
     public void SetClickMode(EInventoryClickMode mode)
     {
         _clickMode = mode;
-        _selectedSlot = null;
+        CancelDrag();
     }
 
     public void OnSlotClicked(UI_Slot clicked)
     {
-        switch (_clickMode)
-        {
-            case EInventoryClickMode.Normal:
-                HandleNormalClick(clicked);
-                break;
+        if (_isDragging) return;
 
-            case EInventoryClickMode.Trading:
-                HandleSellClick(clicked);
-                break;
-        }
+        if (_clickMode == EInventoryClickMode.Trading)
+            HandleSellClick(clicked);
     }
 
-    // 클릭으로 교환
-
-    private void HandleNormalClick(UI_Slot clicked)
-    {
-        if (_selectedSlot == null)
-        {
-            _selectedSlot = clicked;
-            return;
-        }
-
-        _inventoryAbility.SwapSlots(_selectedSlot.SlotIndex, clicked.SlotIndex);
-        _selectedSlot = null;
-    }
-
-    // 클릭으로 판매
+    // 판매
 
     public void Init(TradeService tradeService)
     {
@@ -148,13 +293,9 @@ public class UI_Inventory : MonoBehaviour
 
 #if UNITY_EDITOR
         if (success)
-        {
             Debug.Log($"판매 성공 - Slot: {clicked.SlotIndex}, Amount: 1");
-        }
         else
-        {
             Debug.LogWarning($"판매 실패 - Slot: {clicked.SlotIndex}");
-        }
 #endif
     }
 }
