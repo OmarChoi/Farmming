@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29943a3ad3f2dbf4f9cf2a769a5b2ee0, type: 3}
+  m_Name: ShopNpcData
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDataSO
+  NpcId: Shoper
+  NpcName: "\uC0C1\uC778"
+  Prefab: {fileID: 7840605641264675590, guid: 1de55a0ca33474646b2ffa05230ad64d, type: 3}
+  GreetDialogues:
+  - {fileID: 11400000, guid: cb1918f94c0a5b84eaab7556a2f22d60, type: 2}
+  - {fileID: 11400000, guid: b09ae15c4b052a84eac5c32e0a6ce6d0, type: 2}
+  - {fileID: 11400000, guid: 2a69bef3011eef5448bdf47ffc7038bd, type: 2}
+  TalkDialogues:
+  - {fileID: 11400000, guid: bddaa6d460175fc45a3ccd6de560b28f, type: 2}
+  - {fileID: 11400000, guid: 3ff1c310eb1e35c47940826590775409, type: 2}
+  - {fileID: 11400000, guid: e87f74dc434f0a64d8199f048924e6f2, type: 2}
+  UseRandomTimeOffset: 1
+  MinTimeOffset: -10
+  MaxTimeOffset: 10
