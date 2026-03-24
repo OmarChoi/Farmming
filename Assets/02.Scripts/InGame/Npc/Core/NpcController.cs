@@ -8,13 +8,13 @@ public class NpcController : MonoBehaviour
     [SerializeField] private NpcAnimatorController _anim;
 
     [Header("Npc 데이터")]
-    [SerializeField] private NpcSchedule _npcSchedule;
+    [SerializeField] private NpcScheduleSO _npcSchedule;
     [SerializeField] private NpcInteractionOption[] _interactionOptions;
 
     [Header("상점 옵션")]
     [SerializeField] private Shop _shop;
 
-    private NpcData _npcData;
+    private NpcDataSO _npcData;
     private Transform _currentInteractor;
 
     private int _timeOffset;
@@ -24,8 +24,8 @@ public class NpcController : MonoBehaviour
 
     public Animator Animator => _animator;
     public NpcAnimatorController Anim => _anim;
-    public NpcData Data => _npcData;
-    public NpcSchedule Schedule => _npcSchedule;
+    public NpcDataSO Data => _npcData;
+    public NpcScheduleSO Schedule => _npcSchedule;
     public Shop Shop => _shop;
     public Transform CurrentInteractor => _currentInteractor;
     public NpcInteractionOption[] InteractionOptions => _interactionOptions;
@@ -40,7 +40,7 @@ public class NpcController : MonoBehaviour
         _movement.Initialize(_anim);
     }
 
-    public void Initialize(NpcData data)
+    public void Initialize(NpcDataSO data)
     {
         _npcData = data;
         GenerateTimeOffset();

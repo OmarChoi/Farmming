@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class NpcLocationAnchor : MonoBehaviour
 {
-    [SerializeField] private NpcData _npcData;
+    [SerializeField] private NpcDataSO _npcData;
 
     [SerializeField] private ENpcLocationType _locationType;
 
@@ -18,7 +18,7 @@ public class NpcLocationAnchor : MonoBehaviour
 
     public Vector3 Position => _point != null ? _point.position : transform.position;
 
-    private void Start()
+    private void OnEnable()
     {
         if (NpcLocationManager.Instance != null)
         {

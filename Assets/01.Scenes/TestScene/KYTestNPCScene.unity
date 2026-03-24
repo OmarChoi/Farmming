@@ -333,14 +333,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
-  _npcData:
-    NpcId: Shoper
-    NpcName: Shoper
-    StartDialogues: []
-    TalkDialogues: []
-    UseRandomTimeOffset: 1
-    MinTimeOffset: 0
-    MaxTimeOffset: 10
+  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
   _locationType: 1
   _locationKey: Shopper_Shop_Counter
   _point: {fileID: 45109189}
@@ -974,14 +967,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
-  _npcData:
-    NpcId: Shoper
-    NpcName: Shoper
-    StartDialogues: []
-    TalkDialogues: []
-    UseRandomTimeOffset: 1
-    MinTimeOffset: 0
-    MaxTimeOffset: 10
+  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
   _locationType: 1
   _locationKey: Shopper_Shop
   _point: {fileID: 279814175}
@@ -1842,6 +1828,52 @@ Transform:
   - {fileID: 989914966}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &677648086
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 677648087}
+  - component: {fileID: 677648088}
+  m_Layer: 0
+  m_Name: NpcSpawnManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &677648087
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677648086}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &677648088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677648086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ba16a859af9f2a43a7d7af0b4260c0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcSpawnManager
+  _defaultNpcPrefab: {fileID: 7840605641264675590, guid: 1de55a0ca33474646b2ffa05230ad64d, type: 3}
+  _navMeshSampleRadius: 2
 --- !u!1 &678275061
 GameObject:
   m_ObjectHideFlags: 0
@@ -2625,7 +2657,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapNavMeshController
   _navMeshSurface: {fileID: 888629910}
-  _rebuildDelay: 0.3
 --- !u!4 &888629912
 Transform:
   m_ObjectHideFlags: 0
@@ -3302,6 +3333,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1358991607}
   - component: {fileID: 1358991606}
+  - component: {fileID: 1358991608}
   m_Layer: 0
   m_Name: NpcSpawner
   m_TagString: Untagged
@@ -3321,9 +3353,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc4efa25ee78bd84d8bb770d9c54c4dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestNpcSpawner
-  npcDatabase: {fileID: 11400000, guid: 12cf4e9ad41bcf44ea70dada746121fc, type: 2}
-  npcId: Shoper
-  npcPrefab: {fileID: 7840605641264675590, guid: 1de55a0ca33474646b2ffa05230ad64d, type: 3}
+  _npcDatabase: {fileID: 11400000, guid: 12cf4e9ad41bcf44ea70dada746121fc, type: 2}
+  _npcId: Shoper
 --- !u!4 &1358991607
 Transform:
   m_ObjectHideFlags: 0
@@ -3339,6 +3370,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1358991608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1358991605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 530284dfabd27dd4c8b14b6ce673fe19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingNpcSpawner
+  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
+  _spawnPoint: {fileID: 1358991607}
 --- !u!1 &1476945765
 GameObject:
   m_ObjectHideFlags: 0
@@ -3384,14 +3429,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
-  _npcData:
-    NpcId: Shoper
-    NpcName: Shoper
-    StartDialogues: []
-    TalkDialogues: []
-    UseRandomTimeOffset: 1
-    MinTimeOffset: 0
-    MaxTimeOffset: 10
+  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
   _locationType: 0
   _locationKey: Shopper_Home_Door
   _point: {fileID: 1476945766}
@@ -4373,14 +4411,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
-  _npcData:
-    NpcId: Shoper
-    NpcName: Shoper
-    StartDialogues: []
-    TalkDialogues: []
-    UseRandomTimeOffset: 1
-    MinTimeOffset: 0
-    MaxTimeOffset: 10
+  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
   _locationType: 0
   _locationKey: Shopper_Home
   _point: {fileID: 1864922478}
@@ -5168,3 +5199,4 @@ SceneRoots:
   - {fileID: 1933832229}
   - {fileID: 888629912}
   - {fileID: 1886390116}
+  - {fileID: 677648087}
