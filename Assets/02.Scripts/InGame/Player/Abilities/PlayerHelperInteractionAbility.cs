@@ -18,7 +18,11 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void OnDestroy()
     {
-        Unsummon();
+        if (_currentHelper == null) return;
+
+        _currentHelper.OnActionStarted -= OnHelperActionStarted;
+        _currentHelper.OnActionEnded -= OnHelperActionEnded;
+        _currentHelper = null;
     }
 
     private void Update()
