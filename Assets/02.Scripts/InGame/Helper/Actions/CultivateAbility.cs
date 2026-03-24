@@ -26,6 +26,14 @@ public class CultivateAbility : HelperAbility
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
+    private void OnDisable()
+    {
+        _isJumping = false;
+        _owner?.EndAction();
+
+        _owner?.transform.DOKill();
+    }
+
     public void JumpAndCultivate(TerrainCell cell, System.Action onCultivate = null)
     {
         if(_isJumping)

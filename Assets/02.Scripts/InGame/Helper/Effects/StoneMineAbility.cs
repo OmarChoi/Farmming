@@ -27,6 +27,13 @@ public class StoneMineAbility : HelperAbility
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
+    private void OnDisable()
+    {
+        _isJumping = false;
+        _owner?.transform.DOKill();
+        _owner?.EndAction();
+    }
+
     public void JumpAndSmash(TerrainCell cell)
     {
         if(_isJumping || cell == null)

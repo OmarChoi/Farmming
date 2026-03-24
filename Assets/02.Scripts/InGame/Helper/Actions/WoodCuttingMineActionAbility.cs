@@ -25,6 +25,12 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        _owner?.EndAction();
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         _owner.BeginAction();
