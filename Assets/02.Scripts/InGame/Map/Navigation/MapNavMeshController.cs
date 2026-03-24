@@ -9,12 +9,6 @@ public class MapNavMeshController : MonoBehaviour
     [Header("NavMeshSurface")]
     [SerializeField] private NavMeshSurface _navMeshSurface;
 
-    [Header("재생성 딜레이 시간")]
-    [SerializeField] private float _rebuildDelay = 0.3f;
-
-    private bool _rebuildRequested;
-    private float _timer;
-
     public bool IsReady { get; private set; }
 
     public event Action OnNavMeshRebuilt;
@@ -44,23 +38,6 @@ public class MapNavMeshController : MonoBehaviour
 #endif
             return;
         }
-
-        _navMeshSurface.BuildNavMesh();
-        IsReady = true;
-        OnNavMeshRebuilt?.Invoke();
-    }
-
-    public void RequestRebuild()
-    {
-        if (_navMeshSurface == null) return;
-
-        _timer = 0f;
-        _rebuildRequested = true;
-    }
-
-    public void RebuildNavMesh()
-    {
-        if (_navMeshSurface == null) return;
 
         _navMeshSurface.BuildNavMesh();
         IsReady = true;
