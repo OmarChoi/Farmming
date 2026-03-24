@@ -24,6 +24,11 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
+    private void OnDisable()
+    {
+        ResetState();
+    }
+
     private void AddWaterEffects()
     {
         _waterEffects.Add(new FarmDryWaterEffect());
@@ -76,9 +81,14 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     public void WaterClose()
     {
         _animAbility?.Play(EHelperAnim.Idle);
-        _currentCell = null;
+        ResetState();
+    }
+
+    private void ResetState()
+    {
         _isActing = false;
-        _owner.EndAction();
+        _currentCell = null;
+        _owner?.EndAction();
     }
 
 
@@ -112,12 +122,5 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         }
 
         return cell.transform.position + Vector3.up * 0.5f;
-    }
-
-    private void OnDisable()
-    {
-        _isActing = false;
-        _currentCell = null;
-        _owner?.EndAction();
     }
 }

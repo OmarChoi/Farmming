@@ -27,6 +27,13 @@ public class StoneMineAbility : HelperAbility
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
+    private void OnDisable()
+    {
+        _isJumping = false;
+        _owner?.transform.DOKill();
+        _owner?.EndAction();
+    }
+
     public void JumpAndSmash(TerrainCell cell)
     {
         if(_isJumping || cell == null)
@@ -123,12 +130,5 @@ public class StoneMineAbility : HelperAbility
         Vector3 spawnPos = _effectSpawnPoint != null ? _effectSpawnPoint.position : _owner.transform.position;
         GameObject effect = Instantiate(_effectStonePrefab, spawnPos, Quaternion.identity);
         Destroy(effect, _endEffect);
-    }
-
-    private void OnDisable()
-    {
-        _isJumping = false;
-        _owner?.transform.DOKill();
-        _owner?.EndAction();
     }
 }

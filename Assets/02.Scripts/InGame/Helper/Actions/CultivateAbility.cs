@@ -26,6 +26,14 @@ public class CultivateAbility : HelperAbility
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
+    private void OnDisable()
+    {
+        _isJumping = false;
+        _owner?.EndAction();
+
+        _owner?.transform.DOKill();
+    }
+
     public void JumpAndCultivate(TerrainCell cell, System.Action onCultivate = null)
     {
         if(_isJumping)
@@ -96,13 +104,5 @@ public class CultivateAbility : HelperAbility
         Vector3 spawnPos = _effectSpawnPoint != null ? _effectSpawnPoint.position : _owner.transform.position;
         GameObject effect = Instantiate(_effectDustPrefab, spawnPos, Quaternion.identity);
         Destroy(effect, _endEffect);
-    }
-
-    private void OnDisable()
-    {
-        _isJumping = false;
-        _owner?.EndAction();
-
-        _owner?.transform.DOKill();
     }
 }
