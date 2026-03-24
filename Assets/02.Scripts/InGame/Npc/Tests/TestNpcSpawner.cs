@@ -1,16 +1,36 @@
 using UnityEngine;
+using System.Collections;
 
 public class TestNpcSpawner : MonoBehaviour
 {
-    [SerializeField] private NpcDataContainerSO npcDatabase;
-    [SerializeField] private string npcId;
-    [SerializeField] private GameObject npcPrefab;
+    [SerializeField] private NpcDataContainerSO _npcDatabase;
+    [SerializeField] private string _npcId;
+
+    private float _spawnTime = 4f;
 
     private void Start()
     {
-        var data = npcDatabase.GetNpc(npcId);
+        NpcDataSO data = _npcDatabase.GetNpc(_npcId);
+        if (data == null)
+        {
+            Debug.LogWarning($"npc가 없습니다: {_npcId}");
+            return;
+        }
 
-        var npc = Instantiate(npcPrefab, transform.position, Quaternion.identity);
-        npc.GetComponent<NpcController>().Initialize(data);
+        var request = new NpcSpawnRequest(
+            data,
+            transform.position,
+            transform.rotation,
+            null,
+            false,
+            "TestNpcSpawner");
+
+        StartCoroutine(TestSpawnNpc(request));
+    }
+
+    private IEnumerator TestSpawnNpc(NpcSpawnRequest request)
+    {
+        yield return new WaitForSeconds(_spawnTime);
+        NpcSpawnManager.Instance.GetOrSpawn(request);
     }
 }
