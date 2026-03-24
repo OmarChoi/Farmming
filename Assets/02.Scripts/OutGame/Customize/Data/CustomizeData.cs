@@ -18,13 +18,23 @@ public class CustomizeData : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    private void OnEnable()
+    {
+        PlayerCustomizeAbility.OnReady += OnPlayerCustomizeReady;
+    }
+
+    private void OnDisable()
+    {
+        PlayerCustomizeAbility.OnReady -= OnPlayerCustomizeReady;
+    }
+
     public void CopyFrom(CharacterPartSwapper swapper)
     {
         _data = swapper.CreateSaveData();
     }
 
-    public void ApplyTo(CharacterPartSwapper swapper)
+    private void OnPlayerCustomizeReady(PlayerCustomizeAbility ability)
     {
-        swapper.ApplySaveData(_data);
+        ability.Initialize(_data);
     }
 }
