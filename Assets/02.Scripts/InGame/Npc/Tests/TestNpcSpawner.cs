@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class TestNpcSpawner : MonoBehaviour
 {
-    [SerializeField] private NpcDataContainer npcDatabase;
+    [SerializeField] private NpcDataContainerSO npcDatabase;
     [SerializeField] private string npcId;
     [SerializeField] private GameObject npcPrefab;
 

@@ -12,17 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4f3f9d9c02407741bdba1aa3d35142a, type: 3}
   m_Name: NpcDataContainer
   m_EditorClassIdentifier: Assembly-CSharp::NpcDataContainer
-  <NpcData>k__BackingField:
-  - NpcId: Shoper
-    NpcName: "\uC0C1\uC778"
-    StartDialogues:
-    - {fileID: 11400000, guid: cb1918f94c0a5b84eaab7556a2f22d60, type: 2}
-    - {fileID: 11400000, guid: b09ae15c4b052a84eac5c32e0a6ce6d0, type: 2}
-    - {fileID: 11400000, guid: 2a69bef3011eef5448bdf47ffc7038bd, type: 2}
-    TalkDialogues:
-    - {fileID: 11400000, guid: bddaa6d460175fc45a3ccd6de560b28f, type: 2}
-    - {fileID: 11400000, guid: 3ff1c310eb1e35c47940826590775409, type: 2}
-    - {fileID: 11400000, guid: e87f74dc434f0a64d8199f048924e6f2, type: 2}
-    UseRandomTimeOffset: 1
-    MinTimeOffset: -10
-    MaxTimeOffset: 10
+  _npcList:
+  - {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
