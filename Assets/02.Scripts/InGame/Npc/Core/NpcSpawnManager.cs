@@ -23,19 +23,15 @@ public class NpcSpawnManager : MonoBehaviour
     {
         if (!ValidateRequest(request)) return null;
 
-        string npcId = request.Data.NpcId;
+        string npcId = request.NpcId;
 
-        if (!request.ForceRespawn &&
-            NpcRegistry.Instance != null &&
-            NpcRegistry.Instance.TryGet(npcId, out var existing))
+        if (!request.ForceRespawn && NpcRegistry.Instance != null && NpcRegistry.Instance.TryGet(npcId, out var existing))
         {
             MoveExisting(existing, request);
             return existing;
         }
 
-        if (request.ForceRespawn &&
-            NpcRegistry.Instance != null &&
-            NpcRegistry.Instance.TryGet(npcId, out var oldNpc))
+        if (request.ForceRespawn && NpcRegistry.Instance != null && NpcRegistry.Instance.TryGet(npcId, out var oldNpc))
         {
             Despawn(oldNpc);
         }
@@ -51,22 +47,22 @@ public class NpcSpawnManager : MonoBehaviour
 
     private bool ValidateRequest(NpcSpawnRequest request)
     {
-        if (request.Data == null)
+        if (!request.HasValidData)
         {
-            Debug.LogWarning("[NpcSpawnManager] Spawn failed: data is null");
+            Debug.LogWarning("[NpcSpawnManager] 스폰 npc 데이터가 없습니다.");
             return false;
         }
 
         if (MapNavMeshController.Instance == null || !MapNavMeshController.Instance.IsReady)
         {
-            Debug.LogWarning($"[NpcSpawnManager] NavMesh not ready. Cannot spawn NPC: {request.Data.NpcId}");
+            Debug.LogWarning($"[NpcSpawnManager] NavMesh가 준비되지 않아 NPC 스폰 불가: {request.NpcId}");
             return false;
         }
 
-        GameObject prefab = request.Data.Prefab != null ? request.Data.Prefab : _defaultNpcPrefab;
+        GameObject prefab = request.Prefab != null ? request.Prefab : _defaultNpcPrefab;
         if (prefab == null)
         {
-            Debug.LogWarning($"[NpcSpawnManager] No prefab assigned for NPC: {request.Data.NpcId}");
+            Debug.LogWarning($"[NpcSpawnManager] NPC 프리팹이 없습니다: {request.NpcId}");
             return false;
         }
 
@@ -75,14 +71,14 @@ public class NpcSpawnManager : MonoBehaviour
 
     private NpcController SpawnNew(NpcSpawnRequest request)
     {
-        GameObject prefab = request.Data.Prefab != null ? request.Data.Prefab : _defaultNpcPrefab;
+        GameObject prefab = request.Prefab != null ? request.Prefab : _defaultNpcPrefab;
         Vector3 finalPos = ResolveSpawnPosition(request.RequestedPosition);
 
         GameObject npcObj = Instantiate(prefab, finalPos, request.Rotation, request.Parent);
 
         if (!npcObj.TryGetComponent(out NpcController controller))
         {
-            Debug.LogWarning($"[NpcSpawnManager] Spawned prefab has no NpcController: {request.Data.NpcId}");
+            Debug.LogWarning($"[NpcSpawnManager] NpcController가 없습니다: {request.NpcId}");
             Destroy(npcObj);
             return null;
         }
@@ -99,7 +95,7 @@ public class NpcSpawnManager : MonoBehaviour
             identity = npcObj.AddComponent<NpcRuntimeIdentity>();
         }
 
-        identity.Initialize(request.Data.NpcId, controller);
+        identity.Initialize(request.NpcId, controller);
 
         return controller;
     }
@@ -108,15 +104,15 @@ public class NpcSpawnManager : MonoBehaviour
     {
         if (controller == null) return;
 
-        Vector3 finalPos = ResolveSpawnPosition(request.RequestedPosition);
+        Vector3 finalPosition = ResolveSpawnPosition(request.RequestedPosition);
 
         if (controller.TryGetComponent(out NpcMovement movement))
         {
-            movement.TeleportTo(finalPos);
+            movement.TeleportTo(finalPosition);
         }
         else
         {
-            controller.transform.SetPositionAndRotation(finalPos, request.Rotation);
+            controller.transform.SetPositionAndRotation(finalPosition, request.Rotation);
         }
     }
 
