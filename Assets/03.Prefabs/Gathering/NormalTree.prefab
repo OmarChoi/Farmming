@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4884487107740886366}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: ModelRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,8 @@ GameObject:
   - component: {fileID: 6476242747128799532}
   - component: {fileID: 2164250243309182394}
   - component: {fileID: 7451207869800401861}
-  m_Layer: 0
+  - component: {fileID: 8726025989367392828}
+  m_Layer: 10
   m_Name: NormalTree
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -131,3 +132,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!208 &8726025989367392828
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5130300574329225930}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.3, y: 2, z: 0.3}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0.1, y: 1.6, z: 0.04}
+  m_TimeToStationary: 0.2
