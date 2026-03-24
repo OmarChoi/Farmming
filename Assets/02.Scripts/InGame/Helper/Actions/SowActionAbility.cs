@@ -51,6 +51,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
+        _owner.BeginAction();
         _cultivateAbility.JumpAndCultivate(cell, null);
     }
 
@@ -72,6 +73,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _currentFarmTile = farmTile;
         _currentSeed = selectedSeed;
 
+        _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Sow);
     }
 
@@ -105,6 +107,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _currentFarmTile = null;
         _currentSeed = null;
         _isActing = false;
+        _owner.EndAction();
     }
 
     private IEnumerator PlantAfterDelay(FarmTile farmTile, SeedConfig seed)
@@ -125,5 +128,13 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         return null;
+    }
+
+    private void OnDisable()
+    {
+        _isActing = false;
+        _currentFarmTile = null;
+        _currentSeed = null;
+        _owner?.EndAction();
     }
 }
