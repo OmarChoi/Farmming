@@ -3,7 +3,10 @@ using System.Collections.Generic;
 
 public class InventoryDomain
 {
-    private List<InventorySlot> _slots;
+    private const int INITIAL_SIZE = 16;
+    private const int EXPAND_SIZE = 4;
+
+    private readonly List<InventorySlot> _slots;
 
     public int SlotCount => _slots.Count;
 
@@ -12,7 +15,9 @@ public class InventoryDomain
 
     public InventoryDomain()
     {
-        _slots = new List<InventorySlot>();
+        _slots = new List<InventorySlot>(INITIAL_SIZE);
+        for (int i = 0; i < INITIAL_SIZE; i++)
+            _slots.Add(new InventorySlot());
     }
 
     public InventorySlot GetSlot(int index)
@@ -21,7 +26,7 @@ public class InventoryDomain
         return _slots[index];
     }
 
-    /// 아이템 추가. 기존 스택 → 새 슬롯 순으로 채운다
+    /// 아이템 추가. 기존 스택 → 빈 슬롯 → 확장 순으로 채운다
     public void AddItem(ItemDataSO item, int amount = 1)
     {
         int remaining = amount;
@@ -41,16 +46,26 @@ public class InventoryDomain
             OnSlotChanged?.Invoke(i);
         }
 
-        // 2) 빈 슬롯이 없으면 새 슬롯 생성
+        // 2) 빈 슬롯에 채우기
+        for (int i = 0; i < _slots.Count && remaining > 0; i++)
+        {
+            if (!_slots[i].IsEmpty) continue;
+
+            int toAdd = Math.Min(remaining, item.MaxStack);
+            _slots[i].TryAdd(item, toAdd);
+            remaining -= toAdd;
+            OnSlotChanged?.Invoke(i);
+        }
+
+        // 3) 슬롯이 모두 찬 경우 4칸 확장 후 채우기
         while (remaining > 0)
         {
-            var newSlot = new InventorySlot();
+            Expand();
+            int firstNew = _slots.Count - EXPAND_SIZE;
             int toAdd = Math.Min(remaining, item.MaxStack);
-            newSlot.TryAdd(item, toAdd);
-            _slots.Add(newSlot);
+            _slots[firstNew].TryAdd(item, toAdd);
             remaining -= toAdd;
-            OnInventoryResized?.Invoke();
-            OnSlotChanged?.Invoke(_slots.Count - 1);
+            OnSlotChanged?.Invoke(firstNew);
         }
     }
 
@@ -72,15 +87,6 @@ public class InventoryDomain
             int toMove = Math.Min(fromSlot.Count, canAdd);
             toSlot.TryAdd(toSlot.Item, toMove);
             fromSlot.Remove(toMove);
-
-            if (fromSlot.IsEmpty)
-            {
-                int toIndex = from < to ? to - 1 : to;
-                _slots.RemoveAt(from);
-                OnSlotChanged?.Invoke(toIndex);
-                OnInventoryResized?.Invoke();
-                return;
-            }
         }
         else
         {
@@ -94,23 +100,54 @@ public class InventoryDomain
     public void RemoveAt(int index, int amount = 1)
     {
         if (index < 0 || index >= _slots.Count) return;
-        _slots[index].Remove(amount);
 
-        if (_slots[index].IsEmpty)
-        {
-            _slots.RemoveAt(index);
-            OnInventoryResized?.Invoke();
-        }
-        else
-        {
-            OnSlotChanged?.Invoke(index);
-        }
+        _slots[index].Remove(amount);
+        OnSlotChanged?.Invoke(index);
+        TryShrink();
     }
 
-    public void ReplaceAll(IEnumerable<InventorySlot> newSlots)
+    public void ReplaceAll(int totalSlots, IEnumerable<(int index, InventorySlot slot)> filledSlots)
     {
         _slots.Clear();
-        _slots.AddRange(newSlots);
+        for (int i = 0; i < totalSlots; i++)
+            _slots.Add(new InventorySlot());
+
+        foreach (var (index, slot) in filledSlots)
+        {
+            if (index >= 0 && index < _slots.Count)
+                _slots[index] = slot;
+        }
+
         OnInventoryResized?.Invoke();
+    }
+
+    private void Expand()
+    {
+        for (int i = 0; i < EXPAND_SIZE; i++)
+            _slots.Add(new InventorySlot());
+        OnInventoryResized?.Invoke();
+    }
+
+    /// 마지막 4칸이 모두 비어있으면 제거 (최소 INITIAL_SIZE 유지)
+    private void TryShrink()
+    {
+        while (_slots.Count > INITIAL_SIZE)
+        {
+            int tailStart = _slots.Count - EXPAND_SIZE;
+            bool allEmpty = true;
+            for (int i = tailStart; i < _slots.Count; i++)
+            {
+                if (!_slots[i].IsEmpty)
+                {
+                    allEmpty = false;
+                    break;
+                }
+            }
+
+            if (!allEmpty) break;
+
+            _slots.RemoveRange(tailStart, EXPAND_SIZE);
+            OnInventoryResized?.Invoke();
+        }
     }
 }

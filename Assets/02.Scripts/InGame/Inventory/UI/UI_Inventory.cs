@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,7 @@ public class UI_Inventory : MonoBehaviour
     [SerializeField] private ScrollRect _scrollRect;
 
     private PlayerInventoryAbility _inventoryAbility;
-    private UI_Slot[] _slotUIs;
+    private readonly List<UI_Slot> _slotUIs = new();
     private UI_Slot _selectedSlot;
 
     private TradeService _tradeService;
@@ -35,9 +36,9 @@ public class UI_Inventory : MonoBehaviour
         _inventoryAbility = ability;
         _inventoryAbility.OnToggle += OnToggle;
         _inventoryAbility.OnSlotChanged += RefreshSlot;
-        _inventoryAbility.OnInventoryResized += RebuildSlots;
+        _inventoryAbility.OnInventoryResized += SyncSlotCount;
 
-        CreateSlots();
+        SyncSlotCount();
         RefreshAll();
     }
 
@@ -47,7 +48,7 @@ public class UI_Inventory : MonoBehaviour
 
         _inventoryAbility.OnToggle -= OnToggle;
         _inventoryAbility.OnSlotChanged -= RefreshSlot;
-        _inventoryAbility.OnInventoryResized -= RebuildSlots;
+        _inventoryAbility.OnInventoryResized -= SyncSlotCount;
         _inventoryAbility = null;
     }
 
@@ -60,40 +61,40 @@ public class UI_Inventory : MonoBehaviour
             RefreshAll();
     }
 
-    // 슬롯 생성
+    // 슬롯 UI 동기화 — 부족하면 추가, 초과하면 제거
 
-    private void CreateSlots()
+    private void SyncSlotCount()
     {
-        _slotUIs = new UI_Slot[_inventoryAbility.SlotCount];
+        int target = _inventoryAbility.SlotCount;
 
-        for (int i = 0; i < _slotUIs.Length; i++)
+        // 추가
+        for (int i = _slotUIs.Count; i < target; i++)
         {
             var slotUI = Instantiate(_uiSlotPrefab, _slotContainer);
             slotUI.Init(this, i);
-            _slotUIs[i] = slotUI;
+            _slotUIs.Add(slotUI);
         }
-    }
 
-    private void RebuildSlots()
-    {
-        foreach (var slot in _slotUIs)
-            Destroy(slot.gameObject);
-
-        CreateSlots();
-        RefreshAll();
+        // 축소
+        while (_slotUIs.Count > target)
+        {
+            int last = _slotUIs.Count - 1;
+            Destroy(_slotUIs[last].gameObject);
+            _slotUIs.RemoveAt(last);
+        }
     }
 
     // 갱신
 
     private void RefreshAll()
     {
-        for (int i = 0; i < _slotUIs.Length; i++)
+        for (int i = 0; i < _slotUIs.Count; i++)
             RefreshSlot(i);
     }
 
     private void RefreshSlot(int index)
     {
-        if (index < 0 || index >= _slotUIs.Length) return;
+        if (index < 0 || index >= _slotUIs.Count) return;
         _slotUIs[index].Refresh(_inventoryAbility.GetSlot(index));
     }
 

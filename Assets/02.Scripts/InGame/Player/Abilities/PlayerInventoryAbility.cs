@@ -84,6 +84,7 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 
     public void ExportTo(PlayerSaveData saveData)
     {
+        saveData.InventorySlotCount = _inventory.SlotCount;
         saveData.Inventory = new List<InventorySlotSaveData>();
         for (int i = 0; i < _inventory.SlotCount; i++)
         {
@@ -91,6 +92,7 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
             if (slot.IsEmpty) continue;
             saveData.Inventory.Add(new InventorySlotSaveData
             {
+                SlotIndex = i,
                 ItemId = slot.Item.Id,
                 Count = slot.Count
             });
@@ -99,7 +101,9 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 
     public void ImportFrom(PlayerSaveData saveData)
     {
-        var slots = new List<InventorySlot>();
+        int totalSlots = Math.Max(saveData.InventorySlotCount, 16);
+        var filled = new List<(int index, InventorySlot slot)>();
+
         foreach (var data in saveData.Inventory)
         {
             ItemDataSO item = _itemDatabase.GetById(data.ItemId);
@@ -107,8 +111,9 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 
             var slot = new InventorySlot();
             slot.TryAdd(item, data.Count);
-            slots.Add(slot);
+            filled.Add((data.SlotIndex, slot));
         }
-        _inventory.ReplaceAll(slots);
+
+        _inventory.ReplaceAll(totalSlots, filled);
     }
 }
