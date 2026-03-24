@@ -11,4 +11,5 @@ public class PlayerSaveData
     public float RotY;
     public List<InventorySlotSaveData> Inventory = new();
     public List<HelperSaveData> Helpers = new();
+    public CustomizeSaveData Customize = new();
 }
