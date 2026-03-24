@@ -2,12 +2,18 @@ using UnityEngine;
 
 public class PlayerTerrainAbility : PlayerAbility
 {
-    [SerializeField] private TerrainGridManager _gridManager;
     [SerializeField] private float _detectDistance = 2f;
     [SerializeField] private float _footOffset = -2f;
 
+    private TerrainGridManager _gridManager;
+
     private Vector3Int _lastGridPos;
     private bool _hasTarget;
+
+    private void Start()
+    {
+        _gridManager = TerrainGridManager.Instance;
+    }
 
     /// 플레이어 앞에 있는 셀을 반환. 없으면 null.
     public TerrainCell GetFrontCell()
