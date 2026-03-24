@@ -97,4 +97,12 @@ public class CultivateAbility : HelperAbility
         GameObject effect = Instantiate(_effectDustPrefab, spawnPos, Quaternion.identity);
         Destroy(effect, _endEffect);
     }
+
+    private void OnDisable()
+    {
+        _isJumping = false;
+        _owner?.EndAction();
+
+        _owner?.transform.DOKill();
+    }
 }
