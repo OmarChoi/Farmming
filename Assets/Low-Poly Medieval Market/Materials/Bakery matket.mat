@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Bakery matket
-  m_Shader: {fileID: 4800000, guid: ce6b9ced8d169df43b2512ff35c42720, type: 3}
+  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -30,7 +30,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
@@ -38,6 +39,10 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: fbcaea10385462040a79c4950d5f65ed, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseTexture:
         m_Texture: {fileID: 2800000, guid: fbcaea10385462040a79c4950d5f65ed, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -61,6 +66,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DetailTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -70,6 +79,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -114,8 +127,13 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DetailStrength: 0.3
+    - _DetailTiling: 4
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _EnableDetail: 0
+    - _EnableNormalMap: 0
+    - _EnableRim: 1
+    - _EnableSpecular: 0
     - _EnvironmentReflections: 1
     - _FresnelIntensity: 0.4
     - _FresnelPower: 3
@@ -127,10 +145,19 @@ Material:
     - _GradientTopY: 5
     - _Metallic: 0
     - _Mode: 0
+    - _NormalStrength: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RimPower: 4
+    - _RimSmoothness: 0.1
+    - _RimThreshold: 0.8
+    - _Shadow1Smoothness: 0.05
+    - _Shadow1Threshold: 0.5
+    - _Shadow2Smoothness: 0.05
+    - _Shadow2Threshold: 0.2
     - _ShadowDepthBias: 2
     - _ShadowIntensity: 0.5
     - _ShadowNormalBias: 1.5
@@ -139,6 +166,8 @@ Material:
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _SpecularSize: 0.9
+    - _SpecularSmoothness: 0.05
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
@@ -158,7 +187,11 @@ Material:
     - _FresnelColor: {r: 1, g: 1, b: 1, a: 1}
     - _GradientBottomColor: {r: 0.39999998, g: 0.54999995, b: 0.29999998, a: 1}
     - _GradientTopColor: {r: 0.6, g: 0.8, b: 0.45, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Shadow1Color: {r: 0.29999998, g: 0.29999998, b: 0.34999996, a: 1}
+    - _Shadow2Color: {r: 0.14999998, g: 0.14999998, b: 0.19999996, a: 1}
     - _ShadowColor: {r: 0.65, g: 0.6, b: 0.75, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
