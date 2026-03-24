@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 public class InventoryDomain
 {
-    private const int INITIAL_SIZE = 16;
-    private const int EXPAND_SIZE = 4;
+    private const int InitialSize = 16;
+    private const int ExpandSize = 4;
 
     private readonly List<InventorySlot> _slots;
 
@@ -15,8 +15,8 @@ public class InventoryDomain
 
     public InventoryDomain()
     {
-        _slots = new List<InventorySlot>(INITIAL_SIZE);
-        for (int i = 0; i < INITIAL_SIZE; i++)
+        _slots = new List<InventorySlot>(InitialSize);
+        for (int i = 0; i < InitialSize; i++)
             _slots.Add(new InventorySlot());
     }
 
@@ -61,7 +61,7 @@ public class InventoryDomain
         while (remaining > 0)
         {
             Expand();
-            int firstNew = _slots.Count - EXPAND_SIZE;
+            int firstNew = _slots.Count - ExpandSize;
             int toAdd = Math.Min(remaining, item.MaxStack);
             _slots[firstNew].TryAdd(item, toAdd);
             remaining -= toAdd;
@@ -179,7 +179,7 @@ public class InventoryDomain
 
     private void Expand()
     {
-        for (int i = 0; i < EXPAND_SIZE; i++)
+        for (int i = 0; i < ExpandSize; i++)
             _slots.Add(new InventorySlot());
         OnInventoryResized?.Invoke();
     }
@@ -187,9 +187,9 @@ public class InventoryDomain
     /// 마지막 4칸이 모두 비어있으면 제거 (최소 INITIAL_SIZE 유지)
     private void TryShrink()
     {
-        while (_slots.Count > INITIAL_SIZE)
+        while (_slots.Count > InitialSize)
         {
-            int tailStart = _slots.Count - EXPAND_SIZE;
+            int tailStart = _slots.Count - ExpandSize;
             bool allEmpty = true;
             for (int i = tailStart; i < _slots.Count; i++)
             {
@@ -202,7 +202,7 @@ public class InventoryDomain
 
             if (!allEmpty) break;
 
-            _slots.RemoveRange(tailStart, EXPAND_SIZE);
+            _slots.RemoveRange(tailStart, ExpandSize);
             OnInventoryResized?.Invoke();
         }
     }

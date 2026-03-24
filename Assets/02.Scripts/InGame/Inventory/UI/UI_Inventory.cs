@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class UI_Inventory : MonoBehaviour
 {
-    private const int COLUMNS = 4;
+    private const int Columns = 4;
 
     [Header("참조")]
     [SerializeField] private GameObject _panel;
@@ -163,7 +163,7 @@ public class UI_Inventory : MonoBehaviour
             return;
         }
 
-        int column = slot.SlotIndex % COLUMNS;
+        int column = slot.SlotIndex % Columns;
         bool showRight = column < 2;
         _tooltip.Show(slot.CurrentItem, slot.RectTransform, showRight);
     }
