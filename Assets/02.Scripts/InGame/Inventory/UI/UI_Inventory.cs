@@ -13,6 +13,7 @@ public class UI_Inventory : MonoBehaviour
     [SerializeField] private UI_Slot _uiSlotPrefab;
     [SerializeField] private ScrollRect _scrollRect;
     [SerializeField] private UI_ItemTooltip _tooltip;
+    [SerializeField] private Image _dragIcon;
 
     [Header("슬라이드 애니메이션")]
     [SerializeField] private float _slideDuration = 0.3f;
@@ -23,16 +24,21 @@ public class UI_Inventory : MonoBehaviour
     private Tween _slideTween;
     private PlayerInventoryAbility _inventoryAbility;
     private readonly List<UI_Slot> _slotUIs = new();
-    private UI_Slot _selectedSlot;
 
     private TradeService _tradeService;
     private EInventoryClickMode _clickMode = EInventoryClickMode.Normal;
+
+    // 드래그 상태
+    private bool _isDragging;
+    private UI_Slot _dragSourceSlot;
+    private UI_Slot _hoveredSlot;
 
     private void Awake()
     {
         _panelRect = _panel.GetComponent<RectTransform>();
         _panelOriginPos = _panelRect.anchoredPosition;
         _panel.SetActive(false);
+        _dragIcon.gameObject.SetActive(false);
         PlayerInventoryAbility.OnLocalPlayerReady += Bind;
     }
 
@@ -40,6 +46,16 @@ public class UI_Inventory : MonoBehaviour
     {
         PlayerInventoryAbility.OnLocalPlayerReady -= Bind;
         Unbind();
+    }
+
+    private void Update()
+    {
+        if (!_isDragging) return;
+
+        _dragIcon.transform.position = Input.mousePosition;
+
+        if (!Input.GetMouseButton(0))
+            EndDrag();
     }
 
     private void Bind(PlayerInventoryAbility ability)
@@ -68,7 +84,7 @@ public class UI_Inventory : MonoBehaviour
     private void OnToggle(bool open)
     {
         _slideTween?.Kill();
-        _selectedSlot = null;
+        CancelDrag();
 
         if (open)
         {
@@ -92,13 +108,12 @@ public class UI_Inventory : MonoBehaviour
         }
     }
 
-    // 슬롯 UI 동기화 — 부족하면 추가, 초과하면 제거
+    // 슬롯 UI 동기화
 
     private void SyncSlotCount()
     {
         int target = _inventoryAbility.SlotCount;
 
-        // 추가
         for (int i = _slotUIs.Count; i < target; i++)
         {
             var slotUI = Instantiate(_uiSlotPrefab, _slotContainer);
@@ -106,7 +121,6 @@ public class UI_Inventory : MonoBehaviour
             _slotUIs.Add(slotUI);
         }
 
-        // 축소
         while (_slotUIs.Count > target)
         {
             int last = _slotUIs.Count - 1;
@@ -133,6 +147,11 @@ public class UI_Inventory : MonoBehaviour
 
     public void OnSlotHoverEnter(UI_Slot slot)
     {
+        _hoveredSlot = slot;
+
+        if (_isDragging) return;
+        if (_tooltip == null) return;
+
         if (slot.CurrentItem == null)
         {
             _tooltip.Hide();
@@ -146,46 +165,79 @@ public class UI_Inventory : MonoBehaviour
 
     public void OnSlotHoverExit()
     {
-        _tooltip.Hide();
+        _hoveredSlot = null;
+
+        if (!_isDragging && _tooltip != null)
+            _tooltip.Hide();
     }
 
-    // 클릭 모드 선택
+    // 드래그 앤 드롭
+
+    public void BeginDrag(UI_Slot source)
+    {
+        if (_clickMode != EInventoryClickMode.Normal) return;
+        if (source.CurrentItem == null) return;
+
+        _isDragging = true;
+        _dragSourceSlot = source;
+
+        _dragIcon.sprite = source.CurrentItem.Icon;
+        _dragIcon.gameObject.SetActive(true);
+        _dragIcon.transform.position = Input.mousePosition;
+
+        source.SetIconVisible(false);
+        _scrollRect.enabled = false;
+
+        if (_tooltip != null)
+            _tooltip.Hide();
+    }
+
+    public void EndDrag()
+    {
+        if (!_isDragging) return;
+
+        if (_hoveredSlot != null && _hoveredSlot != _dragSourceSlot)
+            _inventoryAbility.SwapSlots(_dragSourceSlot.SlotIndex, _hoveredSlot.SlotIndex);
+
+        _dragSourceSlot.SetIconVisible(true);
+        RefreshSlot(_dragSourceSlot.SlotIndex);
+
+        _dragIcon.gameObject.SetActive(false);
+        _scrollRect.enabled = true;
+        _isDragging = false;
+        _dragSourceSlot = null;
+    }
+
+    private void CancelDrag()
+    {
+        if (!_isDragging) return;
+
+        _dragSourceSlot.SetIconVisible(true);
+        RefreshSlot(_dragSourceSlot.SlotIndex);
+
+        _dragIcon.gameObject.SetActive(false);
+        _scrollRect.enabled = true;
+        _isDragging = false;
+        _dragSourceSlot = null;
+    }
+
+    // 클릭 모드
 
     public void SetClickMode(EInventoryClickMode mode)
     {
         _clickMode = mode;
-        _selectedSlot = null;
+        CancelDrag();
     }
 
     public void OnSlotClicked(UI_Slot clicked)
     {
-        switch (_clickMode)
-        {
-            case EInventoryClickMode.Normal:
-                HandleNormalClick(clicked);
-                break;
+        if (_isDragging) return;
 
-            case EInventoryClickMode.Trading:
-                HandleSellClick(clicked);
-                break;
-        }
+        if (_clickMode == EInventoryClickMode.Trading)
+            HandleSellClick(clicked);
     }
 
-    // 클릭으로 교환
-
-    private void HandleNormalClick(UI_Slot clicked)
-    {
-        if (_selectedSlot == null)
-        {
-            _selectedSlot = clicked;
-            return;
-        }
-
-        _inventoryAbility.SwapSlots(_selectedSlot.SlotIndex, clicked.SlotIndex);
-        _selectedSlot = null;
-    }
-
-    // 클릭으로 판매
+    // 판매
 
     public void Init(TradeService tradeService)
     {
@@ -200,13 +252,9 @@ public class UI_Inventory : MonoBehaviour
 
 #if UNITY_EDITOR
         if (success)
-        {
             Debug.Log($"판매 성공 - Slot: {clicked.SlotIndex}, Amount: 1");
-        }
         else
-        {
             Debug.LogWarning($"판매 실패 - Slot: {clicked.SlotIndex}");
-        }
 #endif
     }
 }
