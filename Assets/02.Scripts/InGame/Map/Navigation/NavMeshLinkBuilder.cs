@@ -115,11 +115,11 @@ public class NavMeshLinkBuilder : MonoBehaviour
 
     public void ClearLinks()
     {
-        for (int i = 0; i < _links.Count; i++)
+        if (_linkRoot != null)
         {
-            if (_links[i] != null)
+            foreach (Transform child in _linkRoot)
             {
-                Destroy(_links[i].gameObject);
+                Destroy(child.gameObject);
             }
         }
         _links.Clear();
