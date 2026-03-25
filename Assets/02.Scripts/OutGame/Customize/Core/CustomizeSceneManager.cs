@@ -11,9 +11,29 @@ public class CustomizeSceneManager : MonoBehaviour
     {
         CustomizeData.Instance.CopyFrom(_partSwapper);
 
-        if (PhotonNetwork.IsConnected)
-            PhotonNetwork.LoadLevel(_gameSceneName);
-        else
+        if (RoomManager.Instance == null || RoomManager.Instance.PendingAction == RoomManager.ERoomAction.None)
+        {
             SceneManager.LoadScene(_gameSceneName);
+            return;
+        }
+
+        var action = RoomManager.Instance.PendingAction;
+        RoomManager.Instance.PendingAction = RoomManager.ERoomAction.None;
+
+        if (action == RoomManager.ERoomAction.Create)
+        {
+            PhotonNetwork.AutomaticallySyncScene = true;
+            PhotonNetwork.LoadLevel(_gameSceneName);
+        }
+        else
+        {
+            string roomId = RoomManager.Instance.PendingRoomId;
+            RoomManager.Instance.JoinRoom(roomId,
+                onJoined: () =>
+                {
+                    PhotonNetwork.LoadLevel(_gameSceneName);
+                }
+            );
+        }
     }
 }

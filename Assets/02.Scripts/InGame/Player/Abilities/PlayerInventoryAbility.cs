@@ -43,6 +43,8 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void Update()
     {
+        if (!_owner.PhotonView.IsMine) return;
+
         if (Input.GetKeyDown(_inventoryKey))
             Toggle();
     }

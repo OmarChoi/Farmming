@@ -21,6 +21,8 @@ public class PlayerNPCInteractionAbility : PlayerAbility
 
     private void Update()
     {
+        if (!_owner.PhotonView.IsMine) return;
+
         if (_faceTarget != null)
         {
             RotateTowardTarget();
