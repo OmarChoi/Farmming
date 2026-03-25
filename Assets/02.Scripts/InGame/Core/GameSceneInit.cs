@@ -31,8 +31,33 @@ public class GameSceneInit : MonoBehaviour
             {
                 LoadSaveData().Forget();
             }
+
+            // 플레이어 즉시 스폰 (마스터는 맵이 이미 있음)
+            SpawnPlayer(spawnPos);
+        }
+        else
+        {
+            // 클라이언트: 맵 동기화 완료 후 스폰
+            WaitForMapAndSpawn().Forget();
+        }
+    }
+
+    private async UniTaskVoid WaitForMapAndSpawn()
+    {
+        // MapSyncManager가 마스터로부터 맵 데이터를 받을 때까지 대기
+        if (MapSyncManager.Instance != null)
+        {
+            bool synced = false;
+            MapSyncManager.Instance.OnMapSynced += () => synced = true;
+
+            await UniTask.WaitUntil(() => synced);
         }
 
+        SpawnPlayer(Vector3.zero);
+    }
+
+    private void SpawnPlayer(Vector3 spawnPos)
+    {
         var playerObj = PhotonNetwork.Instantiate(_playerPrefabName, spawnPos, Quaternion.identity);
         var pc = playerObj.GetComponent<PlayerController>();
 
