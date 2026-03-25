@@ -1,0 +1,21 @@
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "NpcDataSO", menuName = "Scriptable Objects/Npc/NpcDataSO")]
+public class NpcDataSO : ScriptableObject
+{
+    [Header("기본 정보")]
+    public string NpcId;
+    public string NpcName;
+
+    [Header("프리팹")]
+    public GameObject Prefab;
+
+    [Header("대화")]
+    public NpcDialogueSO[] GreetDialogues;
+    public NpcDialogueSO[] TalkDialogues;
+
+    [Header("스케줄 시간 오프셋")]
+    public bool UseRandomTimeOffset = true;
+    public int MinTimeOffset = 0;
+    public int MaxTimeOffset = 10;
+}

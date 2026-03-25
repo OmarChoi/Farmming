@@ -12,7 +12,7 @@ public class ScriptedDialogueHandler : IDialogueHandler
     public void StartDialogue(NpcInteractionContext context, bool isStart)
     {
         NpcDialogueSO[] dialogueArray = isStart
-            ? context.Npc.Data.StartDialogues
+            ? context.Npc.Data.GreetDialogues
             : context.Npc.Data.TalkDialogues;
 
         if (dialogueArray == null || dialogueArray.Length == 0)
