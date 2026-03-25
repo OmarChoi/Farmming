@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +10,10 @@ public class CustomizeSceneManager : MonoBehaviour
     public void OnConfirm()
     {
         CustomizeData.Instance.CopyFrom(_partSwapper);
-        SceneManager.LoadScene(_gameSceneName);
+
+        if (PhotonNetwork.IsConnected)
+            PhotonNetwork.LoadLevel(_gameSceneName);
+        else
+            SceneManager.LoadScene(_gameSceneName);
     }
 }
