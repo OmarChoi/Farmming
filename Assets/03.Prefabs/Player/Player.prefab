@@ -138,7 +138,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39b72ad4b97bbf9468c4c34c3b2959b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerTerrainAbility
-  _gridManager: {fileID: 0}
   _detectDistance: 2
   _footOffset: -2
 --- !u!114 &3239668604596787163
@@ -175,7 +174,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2c22928b9528db74faea2e263f10b0b2, type: 2}
   - {fileID: 11400000, guid: e86140031d337c54b869bad6142d873b, type: 2}
   - {fileID: 11400000, guid: 936c6983fad88044d9c76e1791302207, type: 2}
-  - {fileID: 11400000, guid: 64ba958295657b94c85c31343313d5c3, type: 2}
+  - {fileID: 11400000, guid: a3c3d2b2383ca574ca74489e706053ff, type: 2}
+  - {fileID: 11400000, guid: b9c6732dbda3f2549a52885ef28b9a34, type: 2}
 --- !u!114 &1445132337226200713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220,7 +220,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCustomizeAbility
   _partSwapper: {fileID: 941056664359031014}
-  _customizeData: {fileID: 11400000, guid: 4e4081f28d759bf49a18d44ffb6e6320, type: 2}
 --- !u!1 &4055360776355550448
 GameObject:
   m_ObjectHideFlags: 0
