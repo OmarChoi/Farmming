@@ -142,7 +142,6 @@ public class NpcController : MonoBehaviour
             entry.NpcLocationType,
             entry.LocationKey,
             out Vector3 targetPosition);
-
         if (!found)
         {
 #if UNITY_EDITOR

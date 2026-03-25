@@ -26,7 +26,7 @@ public class NpcMovement : MonoBehaviour
     [SerializeField] private float _turnMoveSpeed = 0.5f;
 
     [Header("점프 옵션")]
-    [SerializeField] private float _jumpDuration = 1.2f;
+    [SerializeField] private float _jumpDuration = 0.8f;
     [SerializeField] private float _jumpHeight = 1.6f;
     private const float JumpCurveScale = 4f;  // t * (1-t)의 최대값(0.25)을 1로 정규화하기 위한 값입니다.
     private bool _isJumping;
