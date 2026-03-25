@@ -41,5 +41,6 @@ public static class AssetKey
         public const string QuestJournal = "UI_QuestJournal";
         public const string QuestCompletePopup = "UI_QuestCompletePopup";
         public const string Stamina = "UI_Stamina";
+        public const string BuildingPi = "UI_BuildingPi";
     }
 }

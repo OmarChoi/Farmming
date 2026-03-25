@@ -10,11 +10,22 @@ public class PiUIManagerEditor : Editor
 
     private void OnEnable()
     {
-        myTarget = (PiUIManager)target;
+        myTarget = target as PiUIManager;
     }
 
     public override void OnInspectorGUI()
     {
+        if (myTarget == null)
+        {
+            myTarget = target as PiUIManager;
+            if (myTarget == null)
+            {
+                EditorGUILayout.HelpBox("PiUIManager target could not be resolved. Re-select the object after scripts finish compiling.", MessageType.Warning);
+                DrawDefaultInspector( );
+                return;
+            }
+        }
+
         DrawDefaultInspector( );
         PiUI[] piMenus = myTarget.GetComponentsInChildren<PiUI>( );
         string[] piMenuNames = new string[myTarget.nameMenu.Length];
