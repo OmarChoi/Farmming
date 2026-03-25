@@ -21,7 +21,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     public static event Action<PlayerHelperInventoryAbility> OnLocalPlayerReady;
 
-    public event Action OnSelectionChanged;
+    public event Action<int> OnSelectionChanged;
     public event Action<int> OnSummonChanged;
 
     public HelperDataSO GetData(int index)
@@ -76,7 +76,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         int count = _helperDataList.Count;
         _currentIndex = ((_currentIndex + direction) % count + count) % count;
-        OnSelectionChanged?.Invoke();
+        OnSelectionChanged?.Invoke(direction);
     }
 
     private void ToggleSummon()
@@ -138,6 +138,6 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             newHelper.LoadState(data);
         }
 
-        OnSelectionChanged?.Invoke();
+        OnSelectionChanged?.Invoke(0);
     }
 }
