@@ -22,8 +22,10 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        // TODO: PUN2 도입 후 PhotonView.Owner.ActorNumber.ToString()으로 변경
-        PlayerId = "local";
+        PlayerId = NetworkManager.Instance != null
+            ? NetworkManager.Instance.GetPlayerId()
+            : "local";
+
         SetCursorLock(true);
 
         if (SaveManager.Instance != null)

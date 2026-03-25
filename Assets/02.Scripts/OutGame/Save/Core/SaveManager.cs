@@ -69,4 +69,17 @@ public class SaveManager : MonoBehaviour
     }
 
     public UniTask<bool> HasSaveAsync(int slot = 0) => _repository.HasSaveAsync(slot);
+
+    private SaveData _loadedData;
+
+    public async UniTask PreloadAsync(int slot = 0)
+    {
+        _loadedData = await _repository.LoadAsync(slot);
+    }
+
+    public bool HasPlayerData(string playerId)
+    {
+        if (_loadedData == null) return false;
+        return _loadedData.Players.Exists(p => p.PlayerId == playerId);
+    }
 }

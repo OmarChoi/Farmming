@@ -26,7 +26,8 @@ public class MapManager : MonoBehaviour
 
     /// Generate village terrain (new game only, then use SaveManager to load).
     /// player가 null이 아니면 맵 중앙 최상단 위에 자동 배치.
-    public void GenerateVillage(Transform player = null)
+    /// 반환값: 스폰 월드 좌표.
+    public Vector3 GenerateVillage(Transform player = null)
     {
         int seed = System.Environment.TickCount;
         var result = _villageConfig.CreateGenerator().Generate(_villageConfig, seed);
@@ -35,6 +36,8 @@ public class MapManager : MonoBehaviour
 
         if (player != null)
             PlacePlayer(player, result.SpawnPoint);
+
+        return _gridManager.GridToWorld(result.SpawnPoint);
     }
 
     /// Enter dungeon floor (1-based). Generates fresh terrain each time.
