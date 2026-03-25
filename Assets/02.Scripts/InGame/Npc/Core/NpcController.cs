@@ -164,6 +164,13 @@ public class NpcController : MonoBehaviour
 
         if (entry.NpcLocationType == ENpcLocationType.Wandering)
         {
+            if (entry.WanderSearchStep <= 0f)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"WanderSearchStep은 양수여야 합니다. {_npcData.NpcId}.");
+#endif
+                return false;
+            }
             return TryGetWanderPosition(entry, out targetPosition);
         }
 
