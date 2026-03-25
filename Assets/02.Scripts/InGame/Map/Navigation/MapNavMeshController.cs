@@ -9,6 +9,9 @@ public class MapNavMeshController : MonoBehaviour
     [Header("NavMeshSurface")]
     [SerializeField] private NavMeshSurface _navMeshSurface;
 
+    [Header("NavMeshLink")]
+    [SerializeField] private NavMeshLinkBuilder _linkBuilder;
+
     public bool IsReady { get; private set; }
 
     public event Action OnNavMeshRebuilt;
@@ -27,6 +30,10 @@ public class MapNavMeshController : MonoBehaviour
         {
             _navMeshSurface = GetComponent<NavMeshSurface>();
         }
+        if (_linkBuilder == null)
+        {
+            _linkBuilder = GetComponent<NavMeshLinkBuilder>();
+        }
     }
 
     public void BuildInitialNavMesh()
@@ -40,7 +47,13 @@ public class MapNavMeshController : MonoBehaviour
         }
 
         _navMeshSurface.BuildNavMesh();
+        _linkBuilder?.RebuildLinks();
         IsReady = true;
         OnNavMeshRebuilt?.Invoke();
+    }
+
+    public void ClearRuntimeLinks()
+    {
+        _linkBuilder?.ClearLinks();
     }
 }
