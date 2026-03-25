@@ -11,4 +11,5 @@ public enum EHelperAnim
     Sow = 30,
     Cultivate = 15,
     Water = 31,
+    Eat = 31,
 }
