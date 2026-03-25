@@ -36,6 +36,7 @@ public class PlayerBuildingAbility : PlayerAbility
 
     private void Update()
     {
+        if (!_owner.PhotonView.IsMine) return;
         if (!_owner.CanMove) return;
 
         switch (_state)

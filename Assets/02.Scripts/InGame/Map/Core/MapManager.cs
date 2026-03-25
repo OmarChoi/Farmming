@@ -10,6 +10,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] private MapConfig _villageConfig;
     [SerializeField] private DungeonMapConfig[] _dungeonConfigs;
 
+    public TerrainGridManager GridManager => _gridManager;
     public EMapType CurrentMap { get; private set; }
     public bool IsVillage => CurrentMap == EMapType.Village;
     public bool IsDungeon => CurrentMap != EMapType.Village;

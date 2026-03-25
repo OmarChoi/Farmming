@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -8,6 +9,7 @@ public class PlayerController : MonoBehaviour
 
     public PlayerStatSO StatSo => _statSo;
 
+    public PhotonView PhotonView { get; private set; }
     public string PlayerId { get; private set; }
     public bool IsUIOpen { get; private set; }
     public bool CanMove => !IsUIOpen && !IsActionLocked;
@@ -20,11 +22,18 @@ public class PlayerController : MonoBehaviour
 
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
 
+    private void Awake()
+    {
+        PhotonView = GetComponent<PhotonView>();
+    }
+
     private void Start()
     {
         PlayerId = NetworkManager.Instance != null
             ? NetworkManager.Instance.GetPlayerId()
             : "local";
+
+        if (PhotonView != null && !PhotonView.IsMine) return;
 
         SetCursorLock(true);
 
@@ -34,6 +43,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (PhotonView != null && !PhotonView.IsMine) return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
             SetCursorLock(Cursor.lockState != CursorLockMode.Locked);
     }

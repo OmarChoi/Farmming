@@ -22,7 +22,7 @@ public class GameSceneInit : MonoBehaviour
 
         if (PhotonNetwork.IsMasterClient)
         {
-            if (NetworkManager.Instance.IsFirstVisit)
+            if (RoomManager.Instance.IsFirstVisit)
             {
                 spawnPos = _mapManager.GenerateVillage();
                 _mapNavMeshController.BuildInitialNavMesh();
@@ -32,8 +32,10 @@ public class GameSceneInit : MonoBehaviour
                 LoadSaveData().Forget();
             }
 
-            // 플레이어 즉시 스폰 (마스터는 맵이 이미 있음)
             SpawnPlayer(spawnPos);
+
+            // 맵 준비 완료 → 클라이언트 입장 허용
+            RoomManager.Instance.OpenRoom();
         }
         else
         {
@@ -44,16 +46,46 @@ public class GameSceneInit : MonoBehaviour
 
     private async UniTaskVoid WaitForMapAndSpawn()
     {
-        // MapSyncManager가 마스터로부터 맵 데이터를 받을 때까지 대기
         if (MapSyncManager.Instance != null)
         {
             bool synced = false;
             MapSyncManager.Instance.OnMapSynced += () => synced = true;
 
+            // GameScene에 도착한 후 마스터에게 맵 데이터 요청
+            MapSyncManager.Instance.RequestMapFromMaster();
+
             await UniTask.WaitUntil(() => synced);
         }
 
-        SpawnPlayer(Vector3.zero);
+        SpawnPlayer(FindSpawnPosition());
+    }
+
+    private Vector3 FindSpawnPosition()
+    {
+        var gridManager = _mapManager.GridManager;
+        var gridData = gridManager.GetGridData();
+
+        // 맵 중앙 좌표 계산
+        int minX = int.MaxValue, maxX = int.MinValue;
+        int minZ = int.MaxValue, maxZ = int.MinValue;
+        foreach (var pos in gridData.Cells.Keys)
+        {
+            if (pos.x < minX) minX = pos.x;
+            if (pos.x > maxX) maxX = pos.x;
+            if (pos.z < minZ) minZ = pos.z;
+            if (pos.z > maxZ) maxZ = pos.z;
+        }
+
+        int cx = (minX + maxX) / 2;
+        int cz = (minZ + maxZ) / 2;
+
+        for (int y = 20; y >= 0; y--)
+        {
+            if (gridData.HasCell(new Vector3Int(cx, y, cz)))
+                return gridManager.GridToWorld(new Vector3Int(cx, y + 1, cz));
+        }
+
+        return Vector3.zero;
     }
 
     private void SpawnPlayer(Vector3 spawnPos)
@@ -78,7 +110,7 @@ public class GameSceneInit : MonoBehaviour
 
     private async UniTaskVoid LoadSaveData()
     {
-        int slot = NetworkManager.Instance.SelectedSlot;
+        int slot = RoomManager.Instance.SelectedSlot;
         await SaveManager.Instance.LoadAsync(slot);
     }
 }

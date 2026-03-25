@@ -61,6 +61,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void Update()
     {
+        if (!_owner.PhotonView.IsMine) return;
         if (_owner.IsUIOpen) return;
         if (_helperDataList.Count == 0) return;
 

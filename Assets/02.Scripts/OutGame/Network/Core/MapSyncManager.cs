@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Text;
+using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 
@@ -12,8 +15,9 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     [SerializeField] private MapNavMeshController _mapNavMeshController;
 
     private const int CHUNK_SIZE = 4096;
+    private const int SEND_INTERVAL_MS = 50;
 
-    private readonly Dictionary<int, string[]> _pendingChunks = new();
+    private readonly Dictionary<int, byte[][]> _pendingChunks = new();
 
     public event Action OnMapSynced;
 
@@ -31,36 +35,44 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     public void SendMapTo(Photon.Realtime.Player target)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-
-        var saveData = _terrainGridManager.ExportSaveData();
-        string json = JsonUtility.ToJson(saveData);
-
-        int totalChunks = Mathf.CeilToInt((float)json.Length / CHUNK_SIZE);
-        int syncId = UnityEngine.Random.Range(0, int.MaxValue);
-
-        photonView.RPC(nameof(RPC_MapSyncStart), target, syncId, totalChunks);
-
-        for (int i = 0; i < totalChunks; i++)
-        {
-            int start = i * CHUNK_SIZE;
-            int length = Mathf.Min(CHUNK_SIZE, json.Length - start);
-            string chunk = json.Substring(start, length);
-
-            photonView.RPC(nameof(RPC_MapSyncChunk), target, syncId, i, chunk);
-        }
-
-        photonView.RPC(nameof(RPC_MapSyncEnd), target, syncId);
+        SendChunksAsync(target).Forget();
     }
 
     /// 마스터가 모든 클라이언트에게 맵 전송
     public void BroadcastMap()
     {
         if (!PhotonNetwork.IsMasterClient) return;
+        BroadcastChunksAsync().Forget();
+    }
 
-        var saveData = _terrainGridManager.ExportSaveData();
-        string json = JsonUtility.ToJson(saveData);
+    private async UniTaskVoid SendChunksAsync(Photon.Realtime.Player target)
+    {
+        byte[] compressed = CompressMapData();
+        int totalChunks = Mathf.CeilToInt((float)compressed.Length / CHUNK_SIZE);
+        int syncId = UnityEngine.Random.Range(0, int.MaxValue);
 
-        int totalChunks = Mathf.CeilToInt((float)json.Length / CHUNK_SIZE);
+        Debug.Log($"맵 동기화 전송: 압축 {compressed.Length} bytes, {totalChunks} 청크");
+
+        photonView.RPC(nameof(RPC_MapSyncStart), target, syncId, totalChunks);
+
+        for (int i = 0; i < totalChunks; i++)
+        {
+            int start = i * CHUNK_SIZE;
+            int length = Mathf.Min(CHUNK_SIZE, compressed.Length - start);
+            byte[] chunk = new byte[length];
+            Array.Copy(compressed, start, chunk, 0, length);
+
+            photonView.RPC(nameof(RPC_MapSyncChunk), target, syncId, i, chunk);
+            await UniTask.Delay(SEND_INTERVAL_MS);
+        }
+
+        photonView.RPC(nameof(RPC_MapSyncEnd), target, syncId);
+    }
+
+    private async UniTaskVoid BroadcastChunksAsync()
+    {
+        byte[] compressed = CompressMapData();
+        int totalChunks = Mathf.CeilToInt((float)compressed.Length / CHUNK_SIZE);
         int syncId = UnityEngine.Random.Range(0, int.MaxValue);
 
         photonView.RPC(nameof(RPC_MapSyncStart), RpcTarget.Others, syncId, totalChunks);
@@ -68,24 +80,47 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         for (int i = 0; i < totalChunks; i++)
         {
             int start = i * CHUNK_SIZE;
-            int length = Mathf.Min(CHUNK_SIZE, json.Length - start);
-            string chunk = json.Substring(start, length);
+            int length = Mathf.Min(CHUNK_SIZE, compressed.Length - start);
+            byte[] chunk = new byte[length];
+            Array.Copy(compressed, start, chunk, 0, length);
 
             photonView.RPC(nameof(RPC_MapSyncChunk), RpcTarget.Others, syncId, i, chunk);
+            await UniTask.Delay(SEND_INTERVAL_MS);
         }
 
         photonView.RPC(nameof(RPC_MapSyncEnd), RpcTarget.Others, syncId);
     }
 
+    private byte[] CompressMapData()
+    {
+        var saveData = _terrainGridManager.ExportSaveData();
+        string json = JsonUtility.ToJson(saveData);
+        byte[] raw = Encoding.UTF8.GetBytes(json);
+
+        using var ms = new MemoryStream();
+        using (var gz = new GZipStream(ms, CompressionMode.Compress))
+            gz.Write(raw, 0, raw.Length);
+
+        return ms.ToArray();
+    }
+
+    private string DecompressMapData(byte[] compressed)
+    {
+        using var ms = new MemoryStream(compressed);
+        using var gz = new GZipStream(ms, CompressionMode.Decompress);
+        using var reader = new StreamReader(gz, Encoding.UTF8);
+        return reader.ReadToEnd();
+    }
+
     [PunRPC]
     private void RPC_MapSyncStart(int syncId, int totalChunks)
     {
-        _pendingChunks[syncId] = new string[totalChunks];
+        _pendingChunks[syncId] = new byte[totalChunks][];
         Debug.Log($"맵 동기화 시작 (청크 {totalChunks}개)");
     }
 
     [PunRPC]
-    private void RPC_MapSyncChunk(int syncId, int index, string chunk)
+    private void RPC_MapSyncChunk(int syncId, int index, byte[] chunk)
     {
         if (!_pendingChunks.ContainsKey(syncId)) return;
         _pendingChunks[syncId][index] = chunk;
@@ -96,25 +131,40 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     {
         if (!_pendingChunks.TryGetValue(syncId, out var chunks)) return;
 
-        var sb = new StringBuilder();
+        int totalLength = 0;
         foreach (var chunk in chunks)
-            sb.Append(chunk);
+            totalLength += chunk.Length;
+
+        byte[] compressed = new byte[totalLength];
+        int offset = 0;
+        foreach (var chunk in chunks)
+        {
+            Array.Copy(chunk, 0, compressed, offset, chunk.Length);
+            offset += chunk.Length;
+        }
 
         _pendingChunks.Remove(syncId);
 
-        string json = sb.ToString();
+        string json = DecompressMapData(compressed);
         var saveData = JsonUtility.FromJson<TerrainSaveData>(json);
 
         _terrainGridManager.ImportSaveData(saveData);
 
-        Debug.Log("맵 동기화 완료 (클라이언트)");
+        Debug.Log($"맵 동기화 완료 (압축 {compressed.Length} bytes)");
         OnMapSynced?.Invoke();
     }
 
-    // 늦은 접속자: 방에 들어왔을 때 마스터가 자동 전송
-    public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
+    /// 클라이언트가 GameScene에 도착한 후 마스터에게 맵 요청
+    public void RequestMapFromMaster()
+    {
+        if (PhotonNetwork.IsMasterClient) return;
+        photonView.RPC(nameof(RPC_RequestMap), RpcTarget.MasterClient);
+    }
+
+    [PunRPC]
+    private void RPC_RequestMap(PhotonMessageInfo info)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        SendMapTo(newPlayer);
+        SendMapTo(info.Sender);
     }
 }

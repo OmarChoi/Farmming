@@ -49,7 +49,6 @@ public class TitleUIManager : MonoBehaviour
 
     private async UniTaskVoid RefreshSaveSlots()
     {
-        // 기존 슬롯 제거
         foreach (Transform child in _saveSlotParent)
             Destroy(child.gameObject);
 
@@ -71,22 +70,16 @@ public class TitleUIManager : MonoBehaviour
         NetworkManager.Instance.Connect(
             onConnected: () =>
             {
-                NetworkManager.Instance.CreateRoom(
+                RoomManager.Instance.CreateRoom(
                     onJoined: () =>
                     {
                         ShowPanel(_roomPanel);
-                        _createdRoomIdText.text = NetworkManager.Instance.RoomId;
+                        _createdRoomIdText.text = RoomManager.Instance.RoomId;
                     },
-                    onFailed: () =>
-                    {
-                        ShowPanel(_lobbyPanel);
-                    }
+                    onFailed: () => ShowPanel(_lobbyPanel)
                 );
             },
-            onFailed: () =>
-            {
-                ShowPanel(_lobbyPanel);
-            }
+            onFailed: () => ShowPanel(_lobbyPanel)
         );
     }
 
@@ -97,12 +90,12 @@ public class TitleUIManager : MonoBehaviour
         if (_joinErrorText != null) _joinErrorText.text = "";
     }
 
-    // === Room Panel (방 생성 완료) ===
+    // === Room Panel ===
 
     public void OnClickRoomStart()
     {
-        PhotonNetwork.AutomaticallySyncScene = true;
-        PhotonNetwork.LoadLevel(_customizeSceneName);
+        RoomManager.Instance.PendingAction = RoomManager.ERoomAction.Create;
+        SceneManager.LoadScene(_customizeSceneName);
     }
 
     // === Join Panel ===
@@ -122,22 +115,21 @@ public class TitleUIManager : MonoBehaviour
         NetworkManager.Instance.Connect(
             onConnected: () =>
             {
-                NetworkManager.Instance.JoinRoom(roomId,
-                    onJoined: () =>
+                RoomManager.Instance.CheckRoomExists(roomId, exists =>
+                {
+                    if (exists)
                     {
-                        PhotonNetwork.AutomaticallySyncScene = true;
-                        NetworkManager.Instance.CheckFirstVisit(
-                            onFirstVisit: () => PhotonNetwork.LoadLevel(_customizeSceneName),
-                            onReturning: () => PhotonNetwork.LoadLevel(_gameSceneName)
-                        );
-                    },
-                    onFailed: () =>
+                        RoomManager.Instance.PendingAction = RoomManager.ERoomAction.Join;
+                        RoomManager.Instance.PendingRoomId = roomId;
+                        SceneManager.LoadScene(_customizeSceneName);
+                    }
+                    else
                     {
                         ShowPanel(_joinPanel);
                         if (_joinErrorText != null)
                             _joinErrorText.text = "방을 찾을 수 없습니다.";
                     }
-                );
+                });
             },
             onFailed: () =>
             {
