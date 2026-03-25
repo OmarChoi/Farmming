@@ -10,14 +10,13 @@ public class NavMeshLinkBuilder : MonoBehaviour
     [SerializeField] private NavMeshSurface _navMeshSurface;
     [SerializeField] private Transform _linkRoot;
 
-    [Header("생성 조건")]
+    [Header("링크 생성 조건")]
     [SerializeField] private int _maxJumpUpStep = 1;          // 몇 칸까지 위로 오를지 결정합니다.
     [SerializeField] private bool _bidirectional = true;      // 위/아래 양방향으로 이동 가능합니다.
     [SerializeField] private float _sampleDistance = 1.0f;    // NavMesh.SamplePosition 반경입니다.
     [SerializeField] private float _linkWidth = 0.4f;
 
     [Header("링크 포인트 보정")]
-    [SerializeField] private float _edgeInset = 0.2f;          // 셀 경계에서 안쪽으로 얼마나 들여놓을지 결정합니다.
     [SerializeField] private float _topOffset = 0.2f;          // 셀 윗면보다 얼마나 위에서 지정할 지 결정합니다.
     [SerializeField] private float _pointVerticalOffset = 0f;  // 수치 보정용입니다.
 
