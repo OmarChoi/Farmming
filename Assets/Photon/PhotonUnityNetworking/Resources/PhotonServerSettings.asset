@@ -41,6 +41,9 @@ MonoBehaviour:
   - RespawnSpaceship
   - RPC_CheckPlayerData
   - RPC_PlayerDataResult
+  - RPC_MapSyncChunk
+  - RPC_MapSyncEnd
+  - RPC_MapSyncStart
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
