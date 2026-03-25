@@ -10,24 +10,22 @@ public class NpcMovement : MonoBehaviour
     private NavMeshAgent _agent;
     private NpcAnimatorController _anim;
 
-    public float MoveSpeed => Mathf.Clamp01(_agent.desiredVelocity.magnitude / _originalSpeed);
-
-    private float _originalSpeed;
-    private const float HalfSpeedMultiplier = 0.5f;
-    private const float MinAngle = 0.5f;
-
     private Coroutine _rotateCoroutine;
 
     [Header("이동 옵션")]
     [SerializeField] private float _walkDistance = 18f;
+    private float _walkSpeed = 2f;
+    private float _runSpeed = 4f;
+    public float MoveSpeed => Mathf.Clamp01(_agent.desiredVelocity.magnitude / _runSpeed);
 
     [Header("회전 옵션")]
     [SerializeField] private float _rotationSpeed = 240f;  // 초당 돌 각도입니다. (360f = 초당 360도)
     [SerializeField] private float _turnMoveSpeed = 0.5f;
+    private const float MinAngle = 0.5f;
 
     [Header("점프 옵션")]
-    [SerializeField] private float _jumpDuration = 0.8f;
-    [SerializeField] private float _jumpHeight = 1.6f;
+    private float _jumpDuration = 0.8f;
+    private float _jumpHeight = 1.6f;
     private const float JumpCurveScale = 4f;  // t * (1-t)의 최대값(0.25)을 1로 정규화하기 위한 값입니다.
     private bool _isJumping;
 
@@ -35,8 +33,7 @@ public class NpcMovement : MonoBehaviour
     {
         _agent = GetComponent<NavMeshAgent>();
         _anim = GetComponent<NpcAnimatorController>();
-
-        _originalSpeed = _agent.speed;
+        _agent.speed = _walkSpeed;
     }
 
     private void Update()
@@ -93,9 +90,13 @@ public class NpcMovement : MonoBehaviour
         _isJumping = false;
     }
 
-    public void Initialize(NpcAnimatorController anim)
+    public void Initialize(NpcAnimatorController anim, float walkSpeed, float runSpeed, float jumpDuration, float jumpHeight)
     {
         _anim = anim;
+        _walkSpeed = walkSpeed;
+        _runSpeed = runSpeed;
+        _jumpDuration = jumpDuration;
+        _jumpHeight = jumpHeight;
     }
 
     public void MoveTo(Vector3 destination)
@@ -104,11 +105,11 @@ public class NpcMovement : MonoBehaviour
 
         if (distance <= _walkDistance)
         {
-            _agent.speed = _originalSpeed * HalfSpeedMultiplier;
+            _agent.speed = _walkSpeed;
         }
         else
         {
-            _agent.speed = _originalSpeed;
+            _agent.speed = _runSpeed;
         }
 
         _agent.SetDestination(destination);

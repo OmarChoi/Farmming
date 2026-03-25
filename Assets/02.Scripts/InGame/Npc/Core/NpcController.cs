@@ -39,14 +39,13 @@ public class NpcController : MonoBehaviour
         if (_animator == null) _animator = GetComponent<Animator>();
         if (_movement == null) _movement = GetComponent<NpcMovement>();
         if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
-
-        _movement.Initialize(_anim);
     }
 
     public void Initialize(NpcDataSO data)
     {
         _npcData = data;
         GenerateTimeOffset();
+        _movement.Initialize(_anim, data.WalkSpeed, data.RunSpeed, data.JumpDuration, data.JumpHeight);
     }
 
     private void Start()
