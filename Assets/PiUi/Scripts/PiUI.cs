@@ -131,13 +131,15 @@ public class PiUI : MonoBehaviour
 
     private void Awake()
     {
-		if(transform.parent.GetComponent<Canvas>().renderMode == RenderMode.WorldSpace) {
-			worldSpace = true;
-		}
-		else
-		{
-			worldSpace = false;
-		}
+        Canvas parentCanvas = GetComponentInParent<Canvas>();
+        if (parentCanvas != null && parentCanvas.renderMode == RenderMode.WorldSpace)
+        {
+            worldSpace = true;
+        }
+        else
+        {
+            worldSpace = false;
+        }
 
         if (dynamicallyScaleToResolution)
         {
@@ -152,7 +154,10 @@ public class PiUI : MonoBehaviour
         }
         innerRadius *= scaleModifier;
         outerRadius *= scaleModifier;
-        GeneratePi(new Vector2(-1000, -1000));
+        if (piData != null && piData.Length > 0)
+        {
+            GeneratePi(new Vector2(-1000, -1000));
+        }
     }
 
 
@@ -162,6 +167,15 @@ public class PiUI : MonoBehaviour
     /// <param name="screenPosition">Screen position that the pi will be made at</param>
     public void GeneratePi(Vector2 screenPosition)
     {
+        if (piData == null || piData.Length == 0)
+        {
+            sliceCount = 0;
+            ClearMenu( );
+            transform.position = screenPosition;
+            openedMenu = false;
+            return;
+        }
+
         sliceCount = piData.Length;
         if (piList.Count > 1)
         {

@@ -19,7 +19,7 @@ public class PiUIEditor : Editor
 
     private void OnEnable()
     {
-        myTarget = (PiUI)target;
+        myTarget = target as PiUI;
         addSlice = AddSlice;
         removeSlice = SliceToRemove;
         angleUpdate = AngleUpdate;
@@ -27,6 +27,17 @@ public class PiUIEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        if (myTarget == null)
+        {
+            myTarget = target as PiUI;
+            if (myTarget == null)
+            {
+                EditorGUILayout.HelpBox("PiUI target could not be resolved. Re-select the object after scripts finish compiling.", MessageType.Warning);
+                DrawDefaultInspector( );
+                return;
+            }
+        }
+
         if (lastAngles == null)
         {
             lastAngles = new float[myTarget.piData.Length];
@@ -202,6 +213,8 @@ public class PiUIEditor : Editor
 
     private void OnSceneGUI()
     {
+        if (myTarget == null) return;
+
         Color temp = Color.blue;
         temp.a = .25f;
         Handles.color = temp;

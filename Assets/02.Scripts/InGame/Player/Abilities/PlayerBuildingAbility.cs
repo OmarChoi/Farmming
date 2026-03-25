@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -28,10 +29,20 @@ public class PlayerBuildingAbility : PlayerAbility
     private bool _isLoadingPrefab;
     private bool _isBuilding;
 
+    public static event Action<PlayerBuildingAbility> OnLocalPlayerReady;
+    public event Action<BuildingDataSO> OnSelectedBuildingChanged;
+
+    public BuildingDataSO CurrentBuildingData => _buildingData;
+
     protected override void Awake()
     {
         base.Awake();
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
+    }
+
+    private void Start()
+    {
+        OnLocalPlayerReady?.Invoke(this);
     }
 
     private void Update()
@@ -59,8 +70,60 @@ public class PlayerBuildingAbility : PlayerAbility
         
         if (Input.GetKeyDown(_placeKey) && !_isLoadingPrefab)
         {
-            EnterPreviewAsync().Forget();
+            if (UIController.Instance != null)
+            {
+                OpenBuildingSelectionUi();
+            }
+            else
+            {
+                EnterPreviewAsync().Forget();
+            }
         }
+    }
+
+    public void SetBuildingData(BuildingDataSO buildingData)
+    {
+        if (_buildingData == buildingData) return;
+
+        _buildingData = buildingData;
+
+        if (_state == BuildState.Previewing)
+        {
+            DestroyGhost();
+        }
+
+        OnSelectedBuildingChanged?.Invoke(_buildingData);
+    }
+
+    public void NotifyCurrentBuildingData()
+    {
+        OnSelectedBuildingChanged?.Invoke(_buildingData);
+    }
+
+    public void OpenBuildingSelectionUi()
+    {
+        OpenBuildingSelectionUi(new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
+    }
+
+    public void OpenBuildingSelectionUi(Vector2 screenPosition)
+    {
+        if (UIController.Instance == null) return;
+
+        UIController.Instance.OpenAsync<UI_BuildingPi>(ui => ui.SetMenuPosition(screenPosition)).Forget();
+    }
+
+    public void OpenBuildingSelectionUiAtMousePosition()
+    {
+        OpenBuildingSelectionUi(Input.mousePosition);
+    }
+
+    public void SelectBuildingFromUi(BuildingDataSO buildingData)
+    {
+        SetBuildingData(buildingData);
+
+        if (_isLoadingPrefab) return;
+
+        EnterPreviewAsync().Forget();
     }
 
     private void HandlePreviewingState()
