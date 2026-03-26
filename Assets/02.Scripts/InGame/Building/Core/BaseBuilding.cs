@@ -24,6 +24,12 @@ public abstract class BaseBuilding : MonoBehaviour
 
     public void HandleConstructionCompleted()
     {
+        BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
+        if (spawner != null && spawner.HasValidData)
+        {
+            spawner.SpawnNpc();
+        }
+
         OnConstructionCompleted();
     }
 

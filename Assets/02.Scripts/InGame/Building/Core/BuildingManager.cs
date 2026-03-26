@@ -239,7 +239,7 @@ public class BuildingManager : MonoBehaviour
     {
         if (instance == null) return;
 
-        BaseBuilding buildingInstance = instance.GetComponentInChildren<BaseBuilding>();
+        BaseBuilding buildingInstance = instance.GetComponent<BaseBuilding>();
         if (buildingInstance == null) return;
 
         buildingInstance.Initialize(buildingData, saveData);
@@ -255,9 +255,7 @@ public class BuildingManager : MonoBehaviour
     private void HandleConstructionCompleted(Vector3Int anchor)
     {
         if (!_buildingInstances.TryGetValue(anchor, out BaseBuilding buildingInstance) || buildingInstance == null) return;
-        BuildingNpcSpawner spawner = buildingInstance.GetComponent<BuildingNpcSpawner>();
-        if (spawner == null || !spawner.HasValidData) return;
-        spawner.SpawnNpc();
+        buildingInstance.HandleConstructionCompleted();
     }
 
     private void DestroyBuildingInstance(Vector3Int anchor)
