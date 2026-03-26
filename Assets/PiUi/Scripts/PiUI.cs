@@ -613,9 +613,7 @@ public class PiUI : MonoBehaviour
                 SyncColor( );
             }
             Image sliceIcon = currentPi.transform.GetChild(0).GetComponent<Image>( );
-            Text sliceText = currentPi.transform.GetChild(1).GetComponent<Text>( );
             sliceIcon.sprite = piData[piList.IndexOf(currentPi)].icon;
-            sliceText.text = piData[piList.IndexOf(currentPi)].sliceLabel;
             currentPi.SetData(piData[piList.IndexOf(currentPi)], innerRadius, outerRadius, this);
         }
 
