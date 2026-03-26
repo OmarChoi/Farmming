@@ -1,4 +1,3 @@
-using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -29,20 +28,20 @@ public class PlayerBuildingAbility : PlayerAbility
     private bool _isLoadingPrefab;
     private bool _isBuilding;
 
-    public static event Action<PlayerBuildingAbility> OnLocalPlayerReady;
-    public event Action<BuildingDataSO> OnSelectedBuildingChanged;
-
-    public BuildingDataSO CurrentBuildingData => _buildingData;
-
     protected override void Awake()
     {
         base.Awake();
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        OnLocalPlayerReady?.Invoke(this);
+        _buildingManager.OnBuildingSelected += OnBuildingSelectedFromUi;
+    }
+
+    private void OnDisable()
+    {
+        _buildingManager.OnBuildingSelected -= OnBuildingSelectedFromUi;
     }
 
     private void Update()
@@ -81,7 +80,7 @@ public class PlayerBuildingAbility : PlayerAbility
         }
     }
 
-    public void SetBuildingData(BuildingDataSO buildingData)
+    private void SetBuildingData(BuildingDataSO buildingData)
     {
         if (_buildingData == buildingData) return;
 
@@ -91,33 +90,16 @@ public class PlayerBuildingAbility : PlayerAbility
         {
             DestroyGhost();
         }
-
-        OnSelectedBuildingChanged?.Invoke(_buildingData);
     }
 
-    public void NotifyCurrentBuildingData()
-    {
-        OnSelectedBuildingChanged?.Invoke(_buildingData);
-    }
-
-    public void OpenBuildingSelectionUi()
-    {
-        OpenBuildingSelectionUi(new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
-    }
-
-    public void OpenBuildingSelectionUi(Vector2 screenPosition)
+    private void OpenBuildingSelectionUi()
     {
         if (UIController.Instance == null) return;
-
-        UIController.Instance.OpenAsync<UI_BuildingPi>(ui => ui.SetMenuPosition(screenPosition)).Forget();
+        // todo. 마우스 잠금 처리
+        UIController.Instance.OpenAsync<UI_BuildingList>().Forget();
     }
 
-    public void OpenBuildingSelectionUiAtMousePosition()
-    {
-        OpenBuildingSelectionUi(Input.mousePosition);
-    }
-
-    public void SelectBuildingFromUi(BuildingDataSO buildingData)
+    private void OnBuildingSelectedFromUi(BuildingDataSO buildingData)
     {
         SetBuildingData(buildingData);
 
@@ -229,9 +211,9 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell == null) return;
 
         int direction = BuildingPlacer.GetDirection(_owner.transform.forward);
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(_buildingData, direction, _swapped);
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
 
-        if (!_buildingManager.CanPlace(cell.GridPosition, footprint, out _)) return;
+        if (!preview.CanPlace) return;
 
         _isBuilding = true;
         var request = new BuildingRequest
@@ -253,16 +235,10 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell == null) return;
 
         int direction = BuildingPlacer.GetDirection(_owner.transform.forward);
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(_buildingData, direction, _swapped);
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
 
-        // 위치 계산
-        bool canPlace = _buildingManager.CanPlace(cell.GridPosition, footprint, out int baseY);
-        var anchorPos = new Vector3Int(cell.GridPosition.x, baseY >= 0 ? baseY : cell.GridPosition.y, cell.GridPosition.z);
-        Vector3 spawnPos = _buildingManager.CalculateSpawnPos(anchorPos, footprint);
-
-        float yRot = footprint.Direction * 90f + (_swapped ? 90f : 0f);
-        _ghost.UpdateTransform(spawnPos, Quaternion.Euler(0f, yRot, 0f));
-        _ghost.SetValid(canPlace);
+        _ghost.UpdateTransform(preview.SpawnPosition, preview.Rotation);
+        _ghost.SetValid(preview.CanPlace);
     }
 
     private void ToggleSwap()

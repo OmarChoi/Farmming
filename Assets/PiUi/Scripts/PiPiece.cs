@@ -47,7 +47,6 @@ public class PiPiece : MonoBehaviour
 
     private float maxAngle;
     private float minAngle;
-    private Text sliceLabel;
     private Image sliceIcon;
     private bool isInteractable;
     private bool lastFrameIsOver;
@@ -56,7 +55,6 @@ public class PiPiece : MonoBehaviour
     {
         thisImg = GetComponent<Image>( );
         sliceIcon = transform.GetChild(0).GetComponent<Image>( );
-        sliceLabel = GetComponentInChildren<Text>( );
     }
 
     private void Start()
@@ -69,7 +67,6 @@ public class PiPiece : MonoBehaviour
     {
         Vector2 inputAxis = parent.joystickInput;
         sliceIcon.transform.position = Center( );
-        sliceLabel.transform.position = Center( ) - new Vector2(0, sliceIcon.rectTransform.sizeDelta.y + parent.textVerticalOffset) * parent.scaleModifier * transform.lossyScale.magnitude;
         if (isInteractable)
         {
             if (isOver && transform.localScale.sqrMagnitude < (Vector2.one * parent.hoverScale).sqrMagnitude)
@@ -153,7 +150,6 @@ public class PiPiece : MonoBehaviour
             maxAngle = transform.rotation.eulerAngles.z;
             minAngle = transform.rotation.eulerAngles.z - (thisImg.fillAmount * 360);
         }
-        sliceLabel.transform.rotation = Quaternion.identity;
         sliceIcon.transform.rotation = Quaternion.identity;
         if (lastFrameIsOver != isOver && isInteractable && parent.interactable && onHoverEvents)
         {
@@ -190,11 +186,10 @@ public class PiPiece : MonoBehaviour
     public void SetData(PiUI.PiData piData, float iR, float oR, PiUI creator)
     {
         parent = creator;
-        if (!thisImg || !sliceIcon || !sliceLabel)
+        if (!thisImg || !sliceIcon)
         {
             thisImg = GetComponent<Image>( );
             sliceIcon = transform.GetChild(0).GetComponent<Image>( );
-            sliceLabel = GetComponentInChildren<Text>( );
         }
         innerRadius = iR;
         outerRadius = oR;
@@ -216,10 +211,8 @@ public class PiPiece : MonoBehaviour
         }
         sliceIcon.rectTransform.sizeDelta = new Vector2(piData.iconSize, piData.iconSize);
 
-        sliceLabel.text = piData.sliceLabel;
         sliceIcon.sprite = piData.icon;
         sliceIcon.transform.position = Center( );
-        sliceLabel.transform.position = Center( ) - new Vector2(0, sliceIcon.rectTransform.sizeDelta.y + parent.textVerticalOffset) * parent.scaleModifier * transform.localScale.magnitude;
         isInteractable = piData.isInteractable;
         onHoverEvents = piData.hoverFunctions;
         if (onHoverEvents)
