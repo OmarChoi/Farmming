@@ -8,16 +8,16 @@ public class BuildingManager : MonoBehaviour
 
     [SerializeField] private TerrainGridManager _gridManager;
     [SerializeField] private BuildingDatabase _buildingDatabase;
+    
 
     // anchorPos -> 건물 메타데이터. 철거 시 크기/방향 복원, 저장/로드 직렬화 대상.
     private readonly Dictionary<Vector3Int, BuildingSaveData> _buildings = new Dictionary<Vector3Int, BuildingSaveData>();
     // 점유 셀 -> 앵커 좌표. 아무 셀에서 건물 전체를 역추적하기 위한 매핑.
     private readonly Dictionary<Vector3Int, Vector3Int> _occupiedCells = new Dictionary<Vector3Int, Vector3Int>();
-    // anchorPos -> 스폰된 건물 프리팹 인스턴스.
-    private readonly Dictionary<Vector3Int, GameObject> _instances = new Dictionary<Vector3Int, GameObject>();
+    // anchorPos -> 건물 프리팹에 붙은 공통 건물 컴포넌트.
+    private readonly Dictionary<Vector3Int, BaseBuilding> _buildingInstances = new Dictionary<Vector3Int, BaseBuilding>();
 
     #region Lifecycle
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -42,11 +42,9 @@ public class BuildingManager : MonoBehaviour
             DayNightCycle.Instance.OnMorningStart -= AdvanceDay;
         }
     }
-
     #endregion
 
     #region Query
-
     public bool IsOccupied(Vector3Int gridPos) => _occupiedCells.ContainsKey(gridPos);
 
     public bool IsConstructionComplete(Vector3Int anyPos)
@@ -55,27 +53,30 @@ public class BuildingManager : MonoBehaviour
         if (!_buildings.TryGetValue(anchor, out var saveData)) return false;
         return saveData.RemainingDays <= 0;
     }
-
     #endregion
 
     #region Construction Progress
-
     // 아침마다 호출. 건설 중인 건물의 남은 일수 차감.
     private void AdvanceDay()
     {
         foreach (KeyValuePair<Vector3Int, BuildingSaveData> kvp in _buildings)
         {
             if (kvp.Value.RemainingDays <= 0) continue;
+
+            int previousRemainingDays = kvp.Value.RemainingDays;
             kvp.Value.RemainingDays--;
+            RefreshBuildingInstance(kvp.Key, kvp.Value);
             // todo. RemainingDays에 따른 건설 진행률 표시
-            // todo. 건설 종료에 따른 NPC에게 알림 설정 
+
+            if (previousRemainingDays > 0 && kvp.Value.RemainingDays <= 0)
+            {
+                HandleConstructionCompleted(kvp.Key);
+            }
         }
     }
-
     #endregion
 
     #region Build Object
-
     // 건물 배치
     public async UniTask<bool> TryBuild(BuildingRequest request)
     {
@@ -86,7 +87,7 @@ public class BuildingManager : MonoBehaviour
         // 2. 앵커 좌표 확정 및 SaveData 등록
         var anchor = new Vector3Int(request.AnchorPos.x, baseY, request.AnchorPos.z);
 
-        _buildings[anchor] = new BuildingSaveData
+        BuildingSaveData saveData = new BuildingSaveData
         {
             BuildingId = request.Data.BuildingId,
             AnchorX = request.AnchorPos.x,
@@ -97,24 +98,10 @@ public class BuildingManager : MonoBehaviour
             RemainingDays = request.Data.ConstructionDays
         };
 
+        _buildings[anchor] = saveData;
+
         // 3. 셀 순회: 모든 셀을 점유 마킹
-        for (int f = 0; f < footprint.Depth; f++)
-        {
-            for (int r = footprint.WidthOffset; r < footprint.WidthOffset + footprint.Width; r++)
-            {
-                int cx = request.AnchorPos.x + footprint.Forward.x * f + footprint.Right.x * r;
-                int cz = request.AnchorPos.z + footprint.Forward.y * f + footprint.Right.y * r;
-                var pos = new Vector3Int(cx, baseY, cz);
-
-                _occupiedCells[pos] = anchor;
-
-                var cell = _gridManager.GetCell(pos);
-                if (cell != null)
-                {
-                    cell.Data.SetObject(EGridObjectType.Building, int.MaxValue);
-                }
-            }
-        }
+        MarkOccupiedCells(anchor, footprint);
 
         // 4. 프리팹 스폰 (Footprint 중앙 기준, Pivot은 프리팹에서 설정)
         string prefabKey = AssetKey.Building.GetKey(request.Data.BuildingId);
@@ -126,8 +113,13 @@ public class BuildingManager : MonoBehaviour
                 float yRot = footprint.Direction * 90f + (request.Swapped ? 90f : 0f);
                 Vector3 spawnPos = CalculateSpawnPos(anchor, footprint);
                 var go = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f), transform);
-                _instances[anchor] = go;
+                InitializeBuildingInstance(anchor, go, request.Data, saveData);
             }
+        }
+
+        if (saveData.RemainingDays <= 0)
+        {
+            HandleConstructionCompleted(anchor);
         }
 
         return true;
@@ -147,11 +139,7 @@ public class BuildingManager : MonoBehaviour
         BuildingFootprint footprint = BuildingPlacer.GetFootprint(buildingData, saveData.Direction, saveData.Swapped);
 
         // 3. 프리팹 파괴
-        if (_instances.TryGetValue(anchor, out var go))
-        {
-            Destroy(go);
-            _instances.Remove(anchor);
-        }
+        DestroyBuildingInstance(anchor);
 
         // 4. 셀 순회: 모든 셀의 점유 마킹 해제
         for (var f = 0; f < footprint.Depth; f++)
@@ -221,9 +209,61 @@ public class BuildingManager : MonoBehaviour
                 if (cell.Data.ObjectType != EGridObjectType.None) return false;
             }
         }
-        
+
         return true;
     }
-
     #endregion
+
+    private void MarkOccupiedCells(Vector3Int anchor, BuildingFootprint footprint)
+    {
+        for (int f = 0; f < footprint.Depth; f++)
+        {
+            for (int r = footprint.WidthOffset; r < footprint.WidthOffset + footprint.Width; r++)
+            {
+                int cx = anchor.x + footprint.Forward.x * f + footprint.Right.x * r;
+                int cz = anchor.z + footprint.Forward.y * f + footprint.Right.y * r;
+                var pos = new Vector3Int(cx, anchor.y, cz);
+
+                _occupiedCells[pos] = anchor;
+
+                var cell = _gridManager.GetCell(pos);
+                if (cell != null)
+                {
+                    cell.Data.SetObject(EGridObjectType.Building, int.MaxValue);
+                }
+            }
+        }
+    }
+
+    private void InitializeBuildingInstance(Vector3Int anchor, GameObject instance, BuildingDataSO buildingData, BuildingSaveData saveData)
+    {
+        if (instance == null) return;
+
+        BaseBuilding buildingInstance = instance.GetComponent<BaseBuilding>();
+        if (buildingInstance == null) return;
+
+        buildingInstance.Initialize(buildingData, saveData);
+        _buildingInstances[anchor] = buildingInstance;
+    }
+
+    private void RefreshBuildingInstance(Vector3Int anchor, BuildingSaveData saveData)
+    {
+        if (!_buildingInstances.TryGetValue(anchor, out BaseBuilding buildingInstance)) return;
+        buildingInstance.SetConstructionState(saveData);
+    }
+
+    private void HandleConstructionCompleted(Vector3Int anchor)
+    {
+        if (!_buildingInstances.TryGetValue(anchor, out BaseBuilding buildingInstance) || buildingInstance == null) return;
+        buildingInstance.HandleConstructionCompleted();
+    }
+
+    private void DestroyBuildingInstance(Vector3Int anchor)
+    {
+        if (!_buildingInstances.Remove(anchor, out BaseBuilding buildingInstance)) return;
+        if (buildingInstance == null) return;
+
+        Transform instanceRoot = buildingInstance.transform;
+        Destroy(instanceRoot.gameObject);
+    }
 }
