@@ -2,8 +2,6 @@ using UnityEngine;
 
 public abstract class BaseBuilding : MonoBehaviour
 {
-    [SerializeField] private Transform _npcSpawnPoint;
-    public Transform NpcSpawnPoint => _npcSpawnPoint;
     public BuildingDataSO BuildingData { get; private set; }
     public BuildingSaveData SaveData { get; private set; }
     
@@ -13,11 +11,8 @@ public abstract class BaseBuilding : MonoBehaviour
     public void Initialize(BuildingDataSO buildingData, BuildingSaveData saveData)
     {
         BuildingData = buildingData;
-        SaveData = CloneSaveData(saveData);
-        ConstructionProgress = CalculateConstructionProgress();
-
+        SetConstructionState(saveData);
         OnBuildingInitialized();
-        OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
     }
 
     public void SetConstructionState(BuildingSaveData saveData)
