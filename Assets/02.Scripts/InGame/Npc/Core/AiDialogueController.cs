@@ -1,6 +1,6 @@
+using UnityEngine;
 using Cysharp.Threading.Tasks;
 using LLMUnity;
-using UnityEngine;
 
 public class AiDialogueController : MonoBehaviour
 {
@@ -56,7 +56,7 @@ public class AiDialogueController : MonoBehaviour
 
         await _llmAgent.Warmup();
 
-        _uiDialogue.AddSystemMessage("깊은 대화가 시작되었습니다.");
+        _uiDialogue.AddSystemMessage("대화를 시작할 수 있습니다.");
     }
 
     private void HandleSendRequested(string playerInput)
