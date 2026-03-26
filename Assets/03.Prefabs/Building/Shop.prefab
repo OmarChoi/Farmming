@@ -11,8 +11,10 @@ GameObject:
   - component: {fileID: 2733302261439990771}
   - component: {fileID: 1315465029719950422}
   - component: {fileID: 3865653293518221468}
+  - component: {fileID: -4931103949792982886}
+  - component: {fileID: 1326319481979180853}
   m_Layer: 0
-  m_Name: MarketStall
+  m_Name: Shop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -91,6 +93,33 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &-4931103949792982886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3361219416931389769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bb0ab032ef54d34eaa5dafb0830ecdc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultBuilding
+  _npcSpawnPoint: {fileID: 6523910426269313122}
+--- !u!114 &1326319481979180853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3361219416931389769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 530284dfabd27dd4c8b14b6ce673fe19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingNpcSpawner
+  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
+  _spawnPoint: {fileID: 6523910426269313122}
 --- !u!1 &8945769715672933444
 GameObject:
   m_ObjectHideFlags: 0
