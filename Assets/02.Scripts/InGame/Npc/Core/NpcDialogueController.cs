@@ -164,7 +164,19 @@ public class NpcDialogueController : MonoBehaviour
                 _interactionService.ExecuteScriptedTalk(CreateContext(), false);
                 break;
 
+            case ENpcInteractionType.DeepTalk:
+                _interactionService.Execute(type, CreateContext());
+                break;
+
             case ENpcInteractionType.Trade:
+                _interactionService.Execute(type, CreateContext());
+                break;
+
+            case ENpcInteractionType.Upgrade:
+                _interactionService.Execute(type, CreateContext());
+                break;
+
+            case ENpcInteractionType.Quest:
                 _interactionService.Execute(type, CreateContext());
                 break;
 

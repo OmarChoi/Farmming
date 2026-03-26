@@ -15,6 +15,8 @@ public class NpcPromptBuilder
         sb.AppendLine($"직업: {request.Job}");
         sb.AppendLine();
         sb.AppendLine("[말투 규칙]");
+        sb.AppendLine("- 무조건 한글, 한국어를 사용해서 말한다");
+        sb.AppendLine("- 맞춤법을 꼭 지켜준다");
         sb.AppendLine("- 항상 캐릭터 성격에 맞게 말한다");
         sb.AppendLine("- 한 번에 1~3문장만 말한다");
         sb.AppendLine("- 너무 설명하지 말고 자연스럽게 말한다");
@@ -31,6 +33,7 @@ public class NpcPromptBuilder
 
         if (request.IsGreeting)
         {
+            sb.AppendLine("- 첫 번째 대화는 플레이어가 아무 말도 치지 않아도 먼저 말을 건다.");
             sb.AppendLine("- 이번 대화의 첫 턴이다. 짧고 자연스럽게 인사로 시작한다.");
         }
         else
