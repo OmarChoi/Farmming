@@ -50,7 +50,9 @@ public class TerrainCell : MonoBehaviour
         bool isFarmLand = _data.ObjectType == EGridObjectType.FarmLand;
         bool isDirt = _data.CellType == ECellType.Dirt && !isFarmLand;
 
-        _dirtBlock.SetActive(isDirt && !_data.IsTop);
+        if (_dirtBlock != null)
+            _dirtBlock.SetActive(isDirt && !_data.IsTop);
+
         if (_grassBlock != null)
             _grassBlock.SetActive(isDirt && _data.IsTop);
 
