@@ -8,6 +8,7 @@ public class BuildingManager : MonoBehaviour
 
     [SerializeField] private TerrainGridManager _gridManager;
     [SerializeField] private BuildingDatabase _buildingDatabase;
+    
 
     // anchorPos -> 건물 메타데이터. 철거 시 크기/방향 복원, 저장/로드 직렬화 대상.
     private readonly Dictionary<Vector3Int, BuildingSaveData> _buildings = new Dictionary<Vector3Int, BuildingSaveData>();
@@ -254,19 +255,9 @@ public class BuildingManager : MonoBehaviour
     private void HandleConstructionCompleted(Vector3Int anchor)
     {
         if (!_buildingInstances.TryGetValue(anchor, out BaseBuilding buildingInstance) || buildingInstance == null) return;
-        buildingInstance.HandleConstructionCompleted();
-
-        var request = new NpcSpawnRequest
-        (
-            buildingInstance.BuildingData.RelatedNpcData,
-            buildingInstance.NpcSpawnPoint.position,
-            transform.rotation,
-            null,
-            false,
-            "Build Complete"
-        );
-
-        NpcSpawnManager.Instance.GetOrSpawn(request);
+        BuildingNpcSpawner spawner = buildingInstance.GetComponent<BuildingNpcSpawner>();
+        if (spawner == null || !spawner.HasValidData) return;
+        spawner.SpawnNpc();
     }
 
     private void DestroyBuildingInstance(Vector3Int anchor)
@@ -275,11 +266,6 @@ public class BuildingManager : MonoBehaviour
         if (buildingInstance == null) return;
 
         Transform instanceRoot = buildingInstance.transform;
-        while (instanceRoot.parent != null && instanceRoot.parent != transform)
-        {
-            instanceRoot = instanceRoot.parent;
-        }
-
         Destroy(instanceRoot.gameObject);
     }
 }
