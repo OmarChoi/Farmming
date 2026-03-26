@@ -109,6 +109,7 @@ GameObject:
   - component: {fileID: 7793466558248727200}
   - component: {fileID: 8688318908214569227}
   - component: {fileID: 2219988442827997113}
+  - component: {fileID: 35709084181415738}
   m_Layer: 7
   m_Name: Ability
   m_TagString: Untagged
@@ -198,7 +199,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaterActionAbility
   _mouthPoint: {fileID: 1982235181728634582}
   _waterVfxPrefab: {fileID: 4881571040572222668, guid: 6a570f51b4cf2924cb95f91f3f9db821, type: 3}
-  _vfxDuration: 1.5
+  _iceVfxPrefab: {fileID: 6137449325422851024, guid: 9b0c4a3f931856d45bc0194eb434105d, type: 3}
+  _secondaryEnergyCost: 25
+  _iceSpawnOffset: 3.4
+--- !u!114 &35709084181415738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560332179249728770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45dc8e81d8b881c40b67929b44d655ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IceVFX
+  _iceEffect: {fileID: 6137449325422851024, guid: 9b0c4a3f931856d45bc0194eb434105d, type: 3}
+  _effectDuration: 1
 --- !u!1 &1720176448544815771
 GameObject:
   m_ObjectHideFlags: 0
