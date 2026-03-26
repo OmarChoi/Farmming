@@ -67,7 +67,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
-        if(cell == null)
+        if (cell == null)
         {
             return;
         }
@@ -106,9 +106,10 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             if (_iceVfxPrefab != null)
             {
                 Vector3 iceSpawnPos = targetPos + Vector3.up * _iceSpawnOffset;
+                Debug.Log($"{iceSpawnPos}");
 
                 GameObject vfxObj = Instantiate(_iceVfxPrefab, iceSpawnPos, Quaternion.identity);
-                IceVFX iceVfx = vfxObj.GetComponent<IceVFX>();
+                IceVFX iceVfx = vfxObj.GetComponentInChildren<IceVFX>();
                 iceVfx?.Launch(targetPos, direction, () =>
                 {
                     ApplyEffects(cell, _iceEffects);

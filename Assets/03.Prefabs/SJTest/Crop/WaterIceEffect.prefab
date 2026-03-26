@@ -79276,6 +79276,7 @@ GameObject:
   - component: {fileID: 5614947292988903248}
   - component: {fileID: 8720297535556954153}
   - component: {fileID: 2428407665341999886}
+  - component: {fileID: 708808598970227745}
   m_Layer: 0
   m_Name: FrostDrops_01
   m_TagString: Untagged
@@ -83186,7 +83187,7 @@ ParticleSystem:
     maxCollisionShapes: 5
     quality: 2
     voxelSize: 0.5
-    collisionMessages: 0
+    collisionMessages: 1
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -84237,3 +84238,17 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &708808598970227745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8257492808113435275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45dc8e81d8b881c40b67929b44d655ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IceVFX
+  _iceEffect: {fileID: 6137449325422851024}
+  _effectDuration: 3

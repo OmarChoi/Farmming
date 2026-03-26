@@ -1,12 +1,14 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 public class IceVFX : MonoBehaviour
 {
     [SerializeField] private GameObject _iceEffect;
-    [SerializeField] private float _effectDuration = 1f;
+    [SerializeField] private float _effectDuration = 3f;
 
     private Action _onLandCallback;
+    private bool _landing = false;
 
     public void Launch(Vector3 targetPosition, Vector3 direction, Action onLand = null)
     {
@@ -17,19 +19,22 @@ public class IceVFX : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(direction);
         }
 
-        transform.position = targetPosition;
-        OnLand(targetPosition);
+       //transform.position = targetPosition;
     }
 
     private void OnLand(Vector3 position)
     {
-        if(_iceEffect != null)
-        {
-            GameObject effect = Instantiate(_iceEffect, position, Quaternion.identity);
-            Destroy(effect, _effectDuration);
-        }
-         _onLandCallback?.Invoke();
-        Destroy(gameObject);
+        _onLandCallback?.Invoke(); 
+        Destroy(gameObject, _effectDuration);
     }
 
+    private void OnParticleCollision(GameObject other)
+    {
+        if (!_landing)
+        {
+            _landing = true;
+            _onLandCallback?.Invoke();
+            Destroy(gameObject, _effectDuration);
+        }
+    }
 }

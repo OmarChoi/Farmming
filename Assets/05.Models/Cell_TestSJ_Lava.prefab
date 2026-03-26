@@ -332,6 +332,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8b357df8a8203974b872d234f7304b4e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4842463974024754630}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8b357df8a8203974b872d234f7304b4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6075486966917010896}
   m_SourcePrefab: {fileID: 100100000, guid: 8b357df8a8203974b872d234f7304b4e, type: 3}
 --- !u!4 &3919792229747036887 stripped
 Transform:
@@ -376,11 +379,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc6b25169ef408249811ce9455f41f2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
-  _dirtBlock: {fileID: 0}
-  _grassBlock: {fileID: 0}
-  _objectPoint: {fileID: 0}
+  _dirtBlock: {fileID: 4408521486673430637}
+  _grassBlock: {fileID: 4408521486673430637}
+  _objectPoint: {fileID: 7805203216124815766}
   _initialCellType: 1
-  _initialTileType: 1
+  _initialTileType: 5
   _initialDirtLevel: 2
   _initialObjectType: 0
   _initialObjectLevel: 0
+--- !u!114 &6075486966917010896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4408521486673430637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28a8408e594cad349bf75ca255a49e95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LavaTileTransition
+  _transitionDuration: 2
+  _blendMaterial: {fileID: 2100000, guid: b3486f11750cac549ab8cd0ab69de6aa, type: 2}

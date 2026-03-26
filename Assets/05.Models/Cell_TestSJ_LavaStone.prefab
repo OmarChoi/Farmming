@@ -372,12 +372,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainCell
   _dirtBlock: {fileID: 2855450842110137251}
-  _grassBlock: {fileID: 0}
+  _grassBlock: {fileID: 2855450842110137251}
   _objectPoint: {fileID: 1374676041045627146}
   _initialCellType: 1
-  _initialTileType: 5
+  _initialTileType: 3
   _initialDirtLevel: 2
-  _initialObjectType: 3
+  _initialObjectType: 0
   _initialObjectLevel: 0
 --- !u!4 &3236761871530903833 stripped
 Transform:
