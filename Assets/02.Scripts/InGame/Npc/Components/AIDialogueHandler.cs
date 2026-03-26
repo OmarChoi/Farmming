@@ -1,18 +1,31 @@
+using UnityEngine;
+using Cysharp.Threading.Tasks;
 
-public class AIDialogueHandler //: IDialogueHandler
+public class AIDialogueHandler : IDialogueHandler
 {
-    // todo.추후 AI 대화 시스템이 구현되면 해당 시스템과 연동 예정입니다.
-    /*
-    private AIChatController _chatController;
+    private readonly AiDialogueController _aiDialogueController;
 
-    public AIDialogueHandler(AIChatController chatController)
+    public AIDialogueHandler(AiDialogueController aiDialogueController)
     {
-        _chatController = chatController;
+        _aiDialogueController = aiDialogueController;
     }
 
-    public void StartDialogue(NpcInteractionContext context)
+    public void StartDialogue(NpcInteractionContext context, bool isStart)
     {
-        _chatController.Open(context);
+        if (_aiDialogueController == null || context == null) return;
+
+        OpenAiDialogueAsync(context).Forget();
     }
-    */
+
+    private async UniTask OpenAiDialogueAsync(NpcInteractionContext context)
+    {
+        try
+        {
+            await _aiDialogueController.OpenSessionAsync(context);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
 }
