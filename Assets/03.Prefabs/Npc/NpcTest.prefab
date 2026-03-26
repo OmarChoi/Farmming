@@ -158,8 +158,6 @@ MonoBehaviour:
   _walkDistance: 18
   _rotationSpeed: 240
   _turnMoveSpeed: 0.5
-  _jumpDuration: 0.8
-  _jumpHeight: 1.6
 --- !u!114 &919438771620180480
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,9 +177,9 @@ MonoBehaviour:
   _interactionOptions:
   - _type: 0
     _buttonName: "\uB300\uD654"
-  - _type: 1
+  - _type: 2
     _buttonName: "\uC0C1\uC810"
-  - _type: 4
+  - _type: 5
     _buttonName: "\uB300\uD654 \uC885\uB8CC"
   _shop: {fileID: 7734502852426753408}
 --- !u!114 &7734502852426753408

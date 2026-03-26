@@ -25,6 +25,9 @@ public class NpcPromptBuilder
         // sb.AppendLine("[관계 상태]");
         // sb.AppendLine($"현재 Friendship: {request.Friendship} / 100");
         // sb.AppendLine($"현재 Friendship 단계: {request.FriendshipStep}");
+        sb.AppendLine();
+        sb.AppendLine("[상황]");
+        sb.AppendLine(request.Context);
 
         if (request.IsGreeting)
         {

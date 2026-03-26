@@ -3,7 +3,10 @@ using UnityEngine;
 public class InteractService : MonoBehaviour
 {
     [SerializeField] private NpcDialogueController _dialogueController;
-    private DialogueHandlerSelector _handlerSelector;
+    [SerializeField] private AiDialogueController _aiDialogueController;
+
+    private IDialogueHandler _scriptedHandler;
+    private IDialogueHandler _aiHandler;
 
     private void Awake()
     {
@@ -11,25 +14,48 @@ public class InteractService : MonoBehaviour
         {
             _dialogueController = FindFirstObjectByType<NpcDialogueController>();
         }
-        // var aiController = FindFirstObjectByType<AIChatController>();
 
-        var scripted = new ScriptedDialogueHandler(_dialogueController);
-        var ai = new ScriptedDialogueHandler(_dialogueController);
-        // var ai = new AIDialogueHandler(aiController); ai는 추후 이런 식으로 변경할 예정입니다.
+        if (_aiDialogueController == null)
+        {
+            _aiDialogueController = FindFirstObjectByType<AiDialogueController>();
+        }
 
-        _handlerSelector = new DialogueHandlerSelector(ai, scripted);
+        _scriptedHandler = new ScriptedDialogueHandler(_dialogueController);
+        _aiHandler = new AIDialogueHandler(_aiDialogueController);
     }
 
     public void Execute(ENpcInteractionType type, NpcInteractionContext context)
     {
+        if (context == null || context.Npc == null) return;
+
         switch (type)
         {
             case ENpcInteractionType.Talk:
-                ExecuteNormalTalk(context);
+                ExecuteScriptedTalk(context, true);
+                break;
+
+            case ENpcInteractionType.DeepTalk:
+                if (!HasInteractionOption(context, ENpcInteractionType.DeepTalk))
+                {
+#if UNITY_EDITOR
+                    Debug.LogWarning($"[{context.NpcName}] 는 깊은 대화를 지원하지 않습니다.");
+#endif
+                    return;
+                }
+
+                _aiHandler.StartDialogue(context, true);
                 break;
 
             case ENpcInteractionType.Trade:
                 ExecuteTrade(context);
+                break;
+
+            case ENpcInteractionType.Upgrade:
+                ExecuteUpgrade(context);
+                break;
+
+            case ENpcInteractionType.Quest:
+                ExecuteQuest(context);
                 break;
 
             case ENpcInteractionType.EndTalk:
@@ -38,16 +64,24 @@ public class InteractService : MonoBehaviour
         }
     }
 
-    public void ExecuteStartTalk(NpcInteractionContext context)
+    private bool HasInteractionOption(NpcInteractionContext context, ENpcInteractionType type)
     {
-        var handler = _handlerSelector.Resolve();
-        handler.StartDialogue(context, true);
+        var options = context.Npc.InteractionOptions;
+        if (options == null) return false;
+
+        foreach (var option in options)
+        {
+            if (option.Type == type) return true;
+        }
+
+        return false;
     }
 
-    public void ExecuteNormalTalk(NpcInteractionContext context)
+    public void ExecuteScriptedTalk(NpcInteractionContext context, bool isStart)
     {
-        var handler = _handlerSelector.Resolve();
-        handler.StartDialogue(context, false);
+        if (context == null || context.Npc == null) return;
+
+        _scriptedHandler.StartDialogue(context, isStart);
     }
 
     private void ExecuteTrade(NpcInteractionContext context)
@@ -71,7 +105,14 @@ public class InteractService : MonoBehaviour
         shopController.OpenShop(context.Npc.Shop, context);
         _dialogueController.Close();
     }
-
+    private void ExecuteUpgrade(NpcInteractionContext context)
+    {
+        // todo.업그레이드 기능 연결
+    }
+    private void ExecuteQuest(NpcInteractionContext context)
+    {
+        // todo.npc 전용 퀘스트 연결
+    }
     private void ExecuteEndTalk(NpcInteractionContext context)
     {
         context.InteractionComponent.EndInteraction();

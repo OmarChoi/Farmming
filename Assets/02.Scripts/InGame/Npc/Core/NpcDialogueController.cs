@@ -66,7 +66,7 @@ public class NpcDialogueController : MonoBehaviour
         if (_currentNpc == null || _interactionService == null) return;
 
         _dialogueState = EDialogueUiState.Greeting;
-        _interactionService.ExecuteStartTalk(CreateContext());
+        _interactionService.ExecuteScriptedTalk(CreateContext(), true);
     }
 
     public void StartDialogue(NpcDialogueSO dialogueSO)
@@ -161,7 +161,7 @@ public class NpcDialogueController : MonoBehaviour
             case ENpcInteractionType.Talk:
                 _anim.PlayTalk();
                 _dialogueState = EDialogueUiState.Talking;
-                _interactionService.ExecuteNormalTalk(CreateContext());
+                _interactionService.ExecuteScriptedTalk(CreateContext(), false);
                 break;
 
             case ENpcInteractionType.Trade:
