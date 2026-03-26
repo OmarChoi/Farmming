@@ -722,7 +722,7 @@ MonoBehaviour:
   _treePrefab: {fileID: 5130300574329225930, guid: 9997c66b54f47944b86438422151638b, type: 3}
   _rockPrefab: {fileID: 5182465649738605643, guid: d475ade41136cf843992876390db7ea6, type: 3}
   _seedDatabase: {fileID: 11400000, guid: 2b0eebad31ca72b459824d19fe83952f, type: 2}
-  _buildingDatabase: {fileID: 0}
+  _buildingDatabase: {fileID: 11400000, guid: 866bf7a11d319f24fa3776a9d4a8f35e, type: 2}
 --- !u!4 &200659287
 Transform:
   m_ObjectHideFlags: 0
@@ -2002,7 +2002,6 @@ GameObject:
   - component: {fileID: 706509212}
   - component: {fileID: 706509211}
   - component: {fileID: 706509214}
-  - component: {fileID: 706509213}
   m_Layer: 0
   m_Name: TestShop
   m_TagString: Untagged
@@ -2134,20 +2133,6 @@ MonoBehaviour:
   _playerInventory: {fileID: 1748227497}
   _uiInventory: {fileID: 454807997}
   _uiShop: {fileID: 318243691}
---- !u!114 &706509213
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 706509206}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc4efa25ee78bd84d8bb770d9c54c4dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestNpcSpawner
-  _npcDatabase: {fileID: 11400000, guid: 12cf4e9ad41bcf44ea70dada746121fc, type: 2}
-  _npcId: Shopper
 --- !u!114 &706509214
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2809,7 +2794,24 @@ MonoBehaviour:
   _leftIcon: {fileID: 167352502}
   _centerIcon: {fileID: 945036762}
   _rightIcon: {fileID: 831541646}
+  _iconBgGroup: {fileID: 0}
+  _leftDecor: {fileID: 0}
+  _centerDecor: {fileID: 0}
+  _rightDecor: {fileID: 0}
+  _decorGrayColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  _decorScale: 1.2
+  _showOnExpand1: {fileID: 0}
+  _showOnExpand2: {fileID: 0}
+  _helperNameText: {fileID: 0}
   _summonedIndicator: {fileID: 1993647025}
+  _background: {fileID: 0}
+  _smallScale: 0.5
+  _sideScale: 1
+  _centerScale: 1.7
+  _spreadOffset: 50
+  _offScreenOffset: 100
+  _animDuration: 0.3
+  _hideDelay: 3
 --- !u!114 &987149369
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2894,6 +2896,63 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueController
   _uiDialogue: {fileID: 435173624}
   _interactionService: {fileID: 1823474760}
+--- !u!1001 &1013026992
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.3169
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.50004
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6343905988405584697, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9110155669325577010, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
+      propertyPath: m_Name
+      value: DayNightCycle
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7ca0ee7cc6d24324c83ddff8bb2ac28b, type: 3}
 --- !u!1 &1081763461
 GameObject:
   m_ObjectHideFlags: 0
@@ -5030,3 +5089,4 @@ SceneRoots:
   - {fileID: 888629912}
   - {fileID: 1886390116}
   - {fileID: 677648087}
+  - {fileID: 1013026992}
