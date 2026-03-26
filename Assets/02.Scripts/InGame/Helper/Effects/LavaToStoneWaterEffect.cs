@@ -1,16 +1,26 @@
 using UnityEngine;
 
-public class LavaToStoneWaterEffect : MonoBehaviour
+public class LavaToStoneWaterEffect : IWaterEffect
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public bool CanHandle(TerrainCell cell)
     {
-        
+        return cell.Data.TileType == ETileType.Dungeon2Lava;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Apply(TerrainCell cell)
     {
-        
+        Vector3Int pos = cell.GridPosition;
+
+        TerrainCellData newData = new TerrainCellData(
+            cell.Data.CellType,
+            ETileType.Dungeon2Stone,
+            cell.Data.DirtLevel,
+            cell.Data.ObjectType,
+            cell.Data.ObjectLevel,
+            cell.Data.IsIndestructible,
+            cell.Data.IsTop
+        );
+
+        TerrainGridManager.Instance.SetCell(pos, newData);
     }
 }
