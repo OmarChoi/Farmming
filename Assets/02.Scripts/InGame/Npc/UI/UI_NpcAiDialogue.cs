@@ -9,15 +9,17 @@ public class UI_NpcAiDialogue : MonoBehaviour
     [SerializeField] private TMP_InputField _inputField;
     [SerializeField] private Button _sendButton;
     [SerializeField] private Button _stopButton;
+    [SerializeField] private Button _closeButton;
     [SerializeField] private TextMeshProUGUI _playerChatText;
     [SerializeField] private TextMeshProUGUI _npcChatText;
     [SerializeField] private TextMeshProUGUI _systemChatText;
     [SerializeField] private TextMeshProUGUI _npcNameText;
 
-    [SerializeField] private GameObject _playerAiChatPrefab;
+    [SerializeField] private GameObject _playerAiChatRoot;
 
     public event Action<string> OnSendRequested;
     public event Action OnStopRequested;
+    public event Action OnCloseRequested;
 
     private void Awake()
     {
@@ -27,12 +29,18 @@ public class UI_NpcAiDialogue : MonoBehaviour
         _stopButton.onClick.RemoveAllListeners();
         _stopButton.onClick.AddListener(() => OnStopRequested?.Invoke());
 
+        _closeButton.onClick.RemoveAllListeners();
+        _closeButton.onClick.AddListener(() => OnCloseRequested?.Invoke());
+
         _stopButton.gameObject.SetActive(false);
+        _closeButton.gameObject.SetActive(false);
+        _playerAiChatRoot.SetActive(false);
     }
 
     public void Open(string npcName)
     {
-        _playerAiChatPrefab.SetActive(true);
+        _playerAiChatRoot.SetActive(true);
+        _closeButton.gameObject.SetActive(true);
         if (_npcNameText != null)
         {
             _npcNameText.text = npcName;
@@ -41,7 +49,8 @@ public class UI_NpcAiDialogue : MonoBehaviour
 
     public void Close()
     {
-        _playerAiChatPrefab.SetActive(false);
+        _closeButton.gameObject.SetActive(false);
+        _playerAiChatRoot.SetActive(false);
     }
 
     public void ClearMessages()
@@ -50,6 +59,18 @@ public class UI_NpcAiDialogue : MonoBehaviour
         {
             _playerChatText.text = string.Empty;
         }
+        if (_npcChatText != null)
+        {
+            _npcChatText.text = string.Empty;
+        }
+        if (_systemChatText != null)
+        {
+            _systemChatText.text = string.Empty;
+        }
+    }
+
+    public void ClearMessagesExcludePlayer()
+    {
         if (_npcChatText != null)
         {
             _npcChatText.text = string.Empty;
@@ -75,7 +96,7 @@ public class UI_NpcAiDialogue : MonoBehaviour
     public void BeginNpcStreaming()
     {
         if (_npcChatText == null) return;
-        _npcChatText.text += "...\n";
+        _npcChatText.text = "...\n";
     }
 
     public void UpdateNpcStreaming(string partial)
@@ -93,7 +114,7 @@ public class UI_NpcAiDialogue : MonoBehaviour
 
         if (lastIndex < 0) return;
 
-        lines[lastIndex] = $"NPC: {partial}";
+        lines[lastIndex] = $"{partial}";
         _npcChatText.text = string.Join("\n", lines);
     }
 

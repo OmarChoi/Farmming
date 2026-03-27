@@ -20,6 +20,7 @@ public class AiDialogueController : MonoBehaviour
 
         _uiDialogue.OnSendRequested += HandleSendRequested;
         _uiDialogue.OnStopRequested += HandleStopRequested;
+        _uiDialogue.OnCloseRequested += HandleCloseRequested;
     }
 
     private void OnDisable()
@@ -28,15 +29,15 @@ public class AiDialogueController : MonoBehaviour
 
         _uiDialogue.OnSendRequested -= HandleSendRequested;
         _uiDialogue.OnStopRequested -= HandleStopRequested;
+        _uiDialogue.OnCloseRequested -= HandleCloseRequested;
     }
 
     public async UniTask OpenSessionAsync(NpcInteractionContext context)
     {
         if (context == null || context.Npc == null || _uiDialogue == null || _llmAgent == null) return;
-        _uiDialogue.AddSystemMessage("대화할 준비 중이에요.");
         if (_isSessionOpen)
         {
-            await CloseSessionAsync();
+            await CloseSessionAsync(false);
         }
 
         _currentContext = context;
@@ -46,10 +47,12 @@ public class AiDialogueController : MonoBehaviour
         _uiDialogue.Open(context.NpcName);
         _uiDialogue.ClearMessages();
         _uiDialogue.SetGenerating(false);
+        _uiDialogue.AddSystemMessage("대화할 준비 중이에요.");
 
+        _llmAgent.CancelRequests();
         await _llmAgent.ClearHistory();
 
-        NpcAiDialogueRequest openRequest = BuildRequest(context, string.Empty, true);
+        var openRequest = BuildRequest(context, string.Empty, true);
         _llmAgent.systemPrompt = _promptBuilder.BuildSystemPrompt(openRequest);
 
         await _llmAgent.Warmup();
@@ -59,9 +62,7 @@ public class AiDialogueController : MonoBehaviour
 
     private void HandleSendRequested(string playerInput)
     {
-        if (!_isSessionOpen || _isGenerating) return;
-
-        if (string.IsNullOrWhiteSpace(playerInput)) return;
+        if (!_isSessionOpen || _isGenerating || string.IsNullOrWhiteSpace(playerInput)) return;
 
         SendPlayerMessageAsync(playerInput).Forget();
     }
@@ -71,6 +72,7 @@ public class AiDialogueController : MonoBehaviour
         if (_currentContext == null || _llmAgent == null || _uiDialogue == null) return;
 
         _isGenerating = true;
+        _uiDialogue.ClearMessagesExcludePlayer();
         _uiDialogue.SetGenerating(true);
         _uiDialogue.AddPlayerMessage(playerInput);
         _uiDialogue.ClearInputField();
@@ -78,14 +80,11 @@ public class AiDialogueController : MonoBehaviour
 
         try
         {
-            NpcAiDialogueRequest req = BuildRequest(_currentContext, playerInput, false);
+            var req = BuildRequest(_currentContext, playerInput, false);
 
             string reply = await _llmAgent.Chat(
                 req.PlayerInput,
-                partial =>
-                {
-                    _uiDialogue.UpdateNpcStreaming(Sanitize(partial));
-                },
+                partial => _uiDialogue.UpdateNpcStreaming(Sanitize(partial)),
                 null,
                 true
             );
@@ -95,7 +94,7 @@ public class AiDialogueController : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogException(e);
-            _uiDialogue.CompleteNpcStreaming("……잠깐 생각이 많아졌네. 다시 한 번 말해줄래?");
+            _uiDialogue.CompleteNpcStreaming("...... (생각에 잠겨 있다.)");
         }
         finally
         {
@@ -114,18 +113,25 @@ public class AiDialogueController : MonoBehaviour
         _uiDialogue.MarkStreamingStopped();
     }
 
-    public void HandleCloseRequested()
+    private void HandleCloseRequested()
     {
-        CloseSessionAsync().Forget();
+        CloseSessionAndInteractionAsync().Forget();
     }
 
-    public async UniTask CloseSessionAsync()
+    public async UniTask CloseSessionAndInteractionAsync()
+    {
+        await CloseSessionAsync(true);
+    }
+
+    private async UniTask CloseSessionAsync(bool endInteraction)
     {
         if (_llmAgent != null)
         {
             _llmAgent.CancelRequests();
             await _llmAgent.ClearHistory();
         }
+
+        var context = _currentContext;
 
         _isGenerating = false;
         _isSessionOpen = false;
@@ -135,6 +141,11 @@ public class AiDialogueController : MonoBehaviour
         {
             _uiDialogue.SetGenerating(false);
             _uiDialogue.Close();
+        }
+
+        if (endInteraction)
+        {
+            context?.InteractionComponent?.EndInteraction();
         }
     }
 
@@ -160,7 +171,7 @@ public class AiDialogueController : MonoBehaviour
 
     private string BuildContext(NpcInteractionContext context)
     {
-        return $"현재 NPC 상태: 대화 중, 플레이어와 마주 보고 있음.";
+        return "현재 NPC 상태: 대화 중, 플레이어와 마주 보고 있다.";
     }
 
     private string GetPlayerId(NpcInteractionContext context)
@@ -168,20 +179,15 @@ public class AiDialogueController : MonoBehaviour
         return context.Interactor != null ? context.Interactor.name : "UnknownPlayer";
     }
 
-    private int GetFriendship(NpcInteractionContext context)
-    {
-        return 0;
-    }
-
-    private string GetFriendshipStep(NpcInteractionContext context)
-    {
-        return "Awkward";
-    }
+    private int GetFriendship(NpcInteractionContext context) => 0;
+    private string GetFriendshipStep(NpcInteractionContext context) => "Awkward";
 
     private string Sanitize(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
+        {
             return "……";
+        }
 
         text = text.Trim();
         text = text.Replace("\r", " ").Replace("\n", " ");

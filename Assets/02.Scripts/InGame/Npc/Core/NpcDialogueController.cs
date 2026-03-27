@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Linq;
 
 public class NpcDialogueController : MonoBehaviour
 {
@@ -9,7 +8,6 @@ public class NpcDialogueController : MonoBehaviour
     private NpcController _currentNpc;
     private Transform _currentInteractor;
     private NpcInteractionComponent _currentInteractionComponent;
-
     private NpcAnimatorController _anim;
 
     private NpcDialogueSO _currentDialogue;
@@ -62,12 +60,22 @@ public class NpcDialogueController : MonoBehaviour
         _uiDialogue.Close();
     }
 
+    public void PrepareForDeepTalk()
+    {
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.None;
+
+        _uiDialogue.HideButtons();
+        _uiDialogue.ClearDialogueText();
+    }
+
     private void StartGreeting()
     {
         if (_currentNpc == null || _interactionService == null) return;
 
         _dialogueState = EDialogueUiState.Greeting;
-        _interactionService.ExecuteScriptedTalk(CreateContext(), true);
+        _interactionService.StartGreeting(CreateContext());
     }
 
     public void StartDialogue(NpcDialogueSO dialogueSO)
@@ -101,8 +109,7 @@ public class NpcDialogueController : MonoBehaviour
             return;
         }
 
-        string line = _currentDialogue.Lines[_currentLineIndex].Text;
-        _uiDialogue.ShowLine(line);
+        _uiDialogue.ShowLine(_currentDialogue.Lines[_currentLineIndex].Text);
     }
 
     private void NextLine()
@@ -145,30 +152,9 @@ public class NpcDialogueController : MonoBehaviour
                 break;
         }
     }
-
-    private void ShowSingleOption(ENpcInteractionType type)
-    {
-        var option = GetOption(type);
-        _uiDialogue.ShowSingleButton(option, OnClickOption);
-    }
-
-    private NpcInteractionOption GetOption(ENpcInteractionType type)
-    {
-        if (_currentNpc == null || _currentNpc.InteractionOptions == null) return null;
-        var option = _currentNpc?.InteractionOptions?.FirstOrDefault(o => o.Type == type);
-
-        if (option == null)
-        {
-            Debug.LogWarning($"Npc에 {type} 옵션이 없습니다.");
-        }
-
-        return option;
-    }
-
     private void ShowChoiceButtons(NpcInteractionOption[] interactionOptions)
     {
         if (_currentNpc == null) return;
-
         _uiDialogue.ShowButtons(interactionOptions, OnClickOption);
     }
 
@@ -179,28 +165,15 @@ public class NpcDialogueController : MonoBehaviour
         switch (type)
         {
             case ENpcInteractionType.Talk:
-                _anim.PlayTalk();
+                _anim?.PlayTalk();
                 _dialogueState = EDialogueUiState.Talking;
-                _interactionService.ExecuteScriptedTalk(CreateContext(), false);
+                _interactionService.Execute(type, CreateContext());
                 break;
 
             case ENpcInteractionType.DeepTalk:
-                _dialogueState = EDialogueUiState.DeepTalking;
-                _interactionService.Execute(type, CreateContext());
-                break;
-
             case ENpcInteractionType.Trade:
-                _interactionService.Execute(type, CreateContext());
-                break;
-
             case ENpcInteractionType.Upgrade:
-                _interactionService.Execute(type, CreateContext());
-                break;
-
             case ENpcInteractionType.Quest:
-                _interactionService.Execute(type, CreateContext());
-                break;
-
             case ENpcInteractionType.EndTalk:
                 _interactionService.Execute(type, CreateContext());
                 break;
