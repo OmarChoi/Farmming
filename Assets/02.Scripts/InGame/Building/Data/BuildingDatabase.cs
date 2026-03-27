@@ -7,6 +7,8 @@ public class BuildingDatabase : ScriptableObject
     [SerializeField] private List<BuildingDataSO> _buildings;
     private Dictionary<string, BuildingDataSO> _buildingDictionary;
 
+    public IReadOnlyList<BuildingDataSO> Buildings => _buildings;
+
     private void OnEnable()
     {
         BuildDictionary();

@@ -16,6 +16,7 @@ public class PlayerStaminaAbility : PlayerAbility
     private void Start()
     {
         TimeEvents.OnDayStarted += HandleMorning;
+        if (!_owner.IsMine) return;
         OnLocalPlayerReady?.Invoke(this);
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -42,6 +43,17 @@ public class BuildingManager : MonoBehaviour
     #endregion
 
     #region Query
+
+    public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
+
+    /// <summary>UI에서 건물을 선택했을 때 발행되는 이벤트. PlayerBuildingAbility가 구독한다.</summary>
+    public event Action<BuildingDataSO> OnBuildingSelected;
+
+    public void SelectBuilding(BuildingDataSO data)
+    {
+        OnBuildingSelected?.Invoke(data);
+    }
+
     public bool IsOccupied(Vector3Int gridPos) => _occupiedCells.ContainsKey(gridPos);
 
     public bool IsConstructionComplete(Vector3Int anyPos)
@@ -71,6 +83,27 @@ public class BuildingManager : MonoBehaviour
             }
         }
     }
+    #endregion
+
+    #region Ghost Preview
+
+    public BuildingPreviewInfo GetPreviewInfo(Vector3Int anchorPos, BuildingDataSO data, int direction, bool swapped)
+    {
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction, swapped);
+        bool canPlace = CanPlace(anchorPos, footprint, out int baseY);
+
+        var adjustedAnchor = new Vector3Int(anchorPos.x, baseY >= 0 ? baseY : anchorPos.y, anchorPos.z);
+        Vector3 spawnPos = CalculateSpawnPos(adjustedAnchor, footprint);
+        float yRot = footprint.Direction * 90f + (swapped ? 90f : 0f);
+
+        return new BuildingPreviewInfo
+        {
+            SpawnPosition = spawnPos,
+            Rotation = Quaternion.Euler(0f, yRot, 0f),
+            CanPlace = canPlace
+        };
+    }
+
     #endregion
 
     #region Build Object
