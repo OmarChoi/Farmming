@@ -5,6 +5,7 @@ public class InteractService : MonoBehaviour
     [Header("컨트롤러")]
     [SerializeField] private NpcDialogueController _dialogueController;
     [SerializeField] private AiDialogueController _aiDialogueController;
+    [SerializeField] private ShopController _shopController;
 
     private IDialogueHandler _scriptedHandler;
     private IDialogueHandler _aiHandler;
@@ -15,10 +16,13 @@ public class InteractService : MonoBehaviour
         {
             _dialogueController = FindFirstObjectByType<NpcDialogueController>();
         }
-
         if (_aiDialogueController == null)
         {
             _aiDialogueController = FindFirstObjectByType<AiDialogueController>();
+        }
+        if (_shopController == null)
+        {
+            _shopController = FindFirstObjectByType<ShopController>();
         }
 
         _scriptedHandler = new ScriptedDialogueHandler(_dialogueController);
@@ -32,23 +36,15 @@ public class InteractService : MonoBehaviour
         switch (type)
         {
             case ENpcInteractionType.Talk:
-                ExecuteScriptedTalk(context, true);
+                _scriptedHandler.StartDialogue(context, false);
                 break;
 
             case ENpcInteractionType.DeepTalk:
-                if (!HasInteractionOption(context, ENpcInteractionType.DeepTalk))
-                {
-#if UNITY_EDITOR
-                    Debug.LogWarning($"[{context.NpcName}] 는 깊은 대화를 지원하지 않습니다.");
-#endif
-                    return;
-                }
-
-                _aiHandler.StartDialogue(context, true);
+                StartDeepTalk(context);
                 break;
 
             case ENpcInteractionType.Trade:
-                ExecuteTrade(context);
+                OpenTrade(context);
                 break;
 
             case ENpcInteractionType.Upgrade:
@@ -60,9 +56,36 @@ public class InteractService : MonoBehaviour
                 break;
 
             case ENpcInteractionType.EndTalk:
-                ExecuteEndTalk(context);
+                EndInteraction(context);
                 break;
         }
+    }
+
+    public void StartGreeting(NpcInteractionContext context)
+    {
+        if (context == null || context.Npc == null) return;
+        _scriptedHandler.StartDialogue(context, true);
+    }
+
+    private void StartDeepTalk(NpcInteractionContext context)
+    {
+        if (!HasInteractionOption(context, ENpcInteractionType.DeepTalk)) return;
+
+        _dialogueController.PrepareForDeepTalk();
+        _aiHandler.StartDialogue(context, true);
+    }
+
+    private void OpenTrade(NpcInteractionContext context)
+    {
+        if (_shopController == null || context.Npc.Shop == null) return;
+
+        _dialogueController.Close();
+        _shopController.OpenShop(context.Npc.Shop, context);
+    }
+
+    private void EndInteraction(NpcInteractionContext context)
+    {
+        context.InteractionComponent?.EndInteraction();
     }
 
     private bool HasInteractionOption(NpcInteractionContext context, ENpcInteractionType type)
@@ -78,45 +101,13 @@ public class InteractService : MonoBehaviour
         return false;
     }
 
-    public void ExecuteScriptedTalk(NpcInteractionContext context, bool isStart)
-    {
-        if (context == null || context.Npc == null) return;
-
-        _scriptedHandler.StartDialogue(context, isStart);
-    }
-
-    private void ExecuteTrade(NpcInteractionContext context)
-    {
-        if (context.Npc.Shop == null)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("연결된 상점 데이터가 없습니다.");
-#endif
-            return;
-        }
-
-        ShopController shopController = Object.FindFirstObjectByType<ShopController>();
-        if (shopController == null)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("ShopController를 찾지 못했습니다.");
-#endif
-            return;
-        }
-        shopController.OpenShop(context.Npc.Shop, context);
-        _dialogueController.Close();
-    }
     private void ExecuteUpgrade(NpcInteractionContext context)
     {
         // todo.업그레이드 기능 연결
     }
+
     private void ExecuteQuest(NpcInteractionContext context)
     {
         // todo.npc 전용 퀘스트 연결
-    }
-    private void ExecuteEndTalk(NpcInteractionContext context)
-    {
-        _aiDialogueController.HandleCloseRequested();
-        context.InteractionComponent.EndInteraction();
     }
 }
