@@ -96,7 +96,7 @@ public class TitleFlowManager : MonoBehaviour
         }
     }
 
-    /// 방 참가 확인: roomId 검증 → 접속 → 방 존재 체크 → 커스터마이즈
+    /// 방 참가 확인: roomId 검증 → 접속 → 방 참가 → 첫 방문 체크 → 분기
     public void ConfirmJoin(string roomId)
     {
         if (string.IsNullOrEmpty(roomId))
@@ -110,20 +110,29 @@ public class TitleFlowManager : MonoBehaviour
         NetworkManager.Instance.Connect(
             onConnected: () =>
             {
-                RoomManager.Instance.CheckRoomExists(roomId, exists =>
-                {
-                    if (exists)
+                RoomManager.Instance.JoinRoom(roomId,
+                    onJoined: () =>
                     {
-                        RoomManager.Instance.PendingAction = RoomManager.ERoomAction.Join;
-                        RoomManager.Instance.PendingRoomId = roomId;
-                        SceneManager.LoadScene(SceneName.Customize);
-                    }
-                    else
+                        RoomManager.Instance.CheckFirstVisit(
+                            onFirstVisit: () =>
+                            {
+                                // 첫 방문 → 커스터마이즈
+                                RoomManager.Instance.PendingAction = RoomManager.ERoomAction.Join;
+                                SceneManager.LoadScene(SceneName.Customize);
+                            },
+                            onReturning: () =>
+                            {
+                                // 재방문 → 바로 게임씬
+                                SceneManager.LoadScene(SceneName.Game);
+                            }
+                        );
+                    },
+                    onFailed: () =>
                     {
                         OnPanelChanged?.Invoke(ETitlePanel.Join);
-                        OnJoinError?.Invoke("방을 찾을 수 없습니다.");
+                        OnJoinError?.Invoke("방 참가에 실패했습니다.");
                     }
-                });
+                );
             },
             onFailed: () =>
             {

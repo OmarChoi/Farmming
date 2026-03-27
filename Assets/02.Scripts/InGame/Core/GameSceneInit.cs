@@ -107,22 +107,19 @@ public class GameSceneInit : MonoBehaviour
     {
         int slot = RoomManager.Instance.SelectedSlot;
 
-        // 1. 맵·지형 데이터 로드 (플레이어 데이터는 아직 적용하지 않음)
+        // 1. 맵·지형 데이터 로드 → _loadedData 보관
         await SaveManager.Instance.LoadAsync(slot);
 
         // 2. 맵 로드 후 NavMesh 빌드
         _mapNavMeshController.BuildInitialNavMesh();
 
-        // 3. 스폰 → Start()에서 RegisterPlayer 실행됨
+        // 3. 스폰 → Start()에서 RegisterPlayer → TryRestorePlayer 자동 복원
         SpawnPlayer(Vector3.zero);
 
         // 4. 한 프레임 대기 → Start() 실행 보장
         await UniTask.Yield();
 
-        // 5. 로드된 데이터로 위치 복원
-        await SaveManager.Instance.ApplyLoadedPlayers();
-
-        // 6. 클라이언트 입장 허용
+        // 5. 클라이언트 입장 허용
         RoomManager.Instance.OpenRoom();
     }
 }

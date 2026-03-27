@@ -27,8 +27,27 @@ public class SaveManager : MonoBehaviour
 
     public void RegisterPlayer(string playerId, PlayerController player)
     {
-        Debug.Log($"[SaveManager] RegisterPlayer: id={playerId}, isMine={player.PhotonView?.IsMine}");
         _players[playerId] = player;
+        TryRestorePlayer(playerId, player);
+    }
+
+    private void TryRestorePlayer(string playerId, PlayerController player)
+    {
+        if (_loadedData == null) return;
+        var save = _loadedData.Players.Find(p => p.PlayerId == playerId);
+        if (save == null) return;
+
+        if (player.PhotonView == null || player.PhotonView.IsMine)
+        {
+            // 로컬 플레이어: 직접 적용
+            player.ImportSaveData(save);
+        }
+        else
+        {
+            // 원격 플레이어: RPC로 전체 데이터 전송
+            string json = JsonUtility.ToJson(save);
+            player.PhotonView.RPC("RPC_RestoreSaveData", player.PhotonView.Owner, json);
+        }
     }
 
     public void UnregisterPlayer(string playerId)
@@ -65,23 +84,6 @@ public class SaveManager : MonoBehaviour
 
         _terrainGridManager.ImportSaveData(_loadedData.Terrain);
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
-    }
-
-    /// 등록된 플레이어에게 로드된 세이브 데이터 적용
-    public UniTask ApplyLoadedPlayers()
-    {
-        if (_loadedData == null) return UniTask.CompletedTask;
-
-        foreach (var playerSave in _loadedData.Players)
-        {
-            if (_players.TryGetValue(playerSave.PlayerId, out var target))
-            {
-                Debug.Log($"[SaveManager] 플레이어 복원: {playerSave.PlayerId}");
-                target.ImportSaveData(playerSave);
-            }
-        }
-
-        return UniTask.CompletedTask;
     }
 
     public UniTask<bool> HasSaveAsync(int slot = 0) => _repository.HasSaveAsync(slot);
