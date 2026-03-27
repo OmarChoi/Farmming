@@ -126,4 +126,17 @@ public class PlayerController : MonoBehaviour
         foreach (var saveable in GetComponentsInChildren<ISaveableAbility>())
             saveable.ImportFrom(saveData);
     }
+
+    [PunRPC]
+    public void RPC_RestoreSaveData(string json)
+    {
+        var saveData = JsonUtility.FromJson<PlayerSaveData>(json);
+        ImportSaveData(saveData);
+    }
+
+    [PunRPC]
+    public void RPC_SyncCustomize(string json)
+    {
+        GetAbility<PlayerCustomizeAbility>()?.ApplyFromJson(json);
+    }
 }
