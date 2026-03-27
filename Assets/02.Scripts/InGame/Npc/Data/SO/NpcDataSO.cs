@@ -10,6 +10,12 @@ public class NpcDataSO : ScriptableObject
     [Header("프리팹")]
     public GameObject Prefab;
 
+    [Header("이동 속도")]
+    public float WalkSpeed;
+    public float RunSpeed;
+    public float JumpDuration;
+    public float JumpHeight;
+    
     [Header("대화")]
     public NpcDialogueSO[] GreetDialogues;
     public NpcDialogueSO[] TalkDialogues;

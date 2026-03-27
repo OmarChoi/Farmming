@@ -62,8 +62,7 @@ public class TerrainCell : MonoBehaviour
     {
         if (!_data.CanDig(toolLevel)) return false;
 
-        _data.Dig();
-        Refresh();
+        //_data.Dig();
 
         // 아래 셀을 풀블록으로 전환
         var belowPos = GridPosition + Vector3Int.down;
@@ -73,6 +72,7 @@ public class TerrainCell : MonoBehaviour
             belowCell.Data.SetTop(true);
             belowCell.Refresh();
         }
+        TerrainGridManager.Instance.RemoveCell(GridPosition);
 
         return true;
     }

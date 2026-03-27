@@ -12,9 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29943a3ad3f2dbf4f9cf2a769a5b2ee0, type: 3}
   m_Name: ShopNpcData
   m_EditorClassIdentifier: Assembly-CSharp::NpcDataSO
-  NpcId: Shoper
+  NpcId: Shopper
   NpcName: "\uC0C1\uC778"
   Prefab: {fileID: 7840605641264675590, guid: 1de55a0ca33474646b2ffa05230ad64d, type: 3}
+  WalkSpeed: 2
+  RunSpeed: 4
+  JumpDuration: 0.8
+  JumpHeight: 1.6
   GreetDialogues:
   - {fileID: 11400000, guid: cb1918f94c0a5b84eaab7556a2f22d60, type: 2}
   - {fileID: 11400000, guid: b09ae15c4b052a84eac5c32e0a6ce6d0, type: 2}
