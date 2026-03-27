@@ -150,6 +150,7 @@ GameObject:
   - component: {fileID: 8788138005052979587}
   - component: {fileID: 5803733403106800778}
   - component: {fileID: 5738592401809550899}
+  - component: {fileID: 6195254105951585350}
   m_Layer: 5
   m_Name: UI_QuestBoardSlot
   m_TagString: Untagged
@@ -257,6 +258,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2468841a4ca0a044fa117c8cc97ab7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_QuestBoardSlot
+  _wrapper: {fileID: 6195254105951585350}
   _questNameText: {fileID: 2446786250014505730}
   _descriptionText: {fileID: 3618027520470827093}
   _questTargetText: {fileID: 1172438907284925714}
@@ -264,6 +266,19 @@ MonoBehaviour:
   _acceptButton: {fileID: 8395165983467157133}
   _acceptButtonImage: {fileID: 8871530550406811965}
   _acceptButtonText: {fileID: 5534099883310781008}
+--- !u!114 &6195254105951585350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1571692005207392369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12b65e13ba0b4264697941de996b893b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TypewriterWithWrap
+  _typingSpeed: 0
 --- !u!1 &1674158432008782472
 GameObject:
   m_ObjectHideFlags: 0

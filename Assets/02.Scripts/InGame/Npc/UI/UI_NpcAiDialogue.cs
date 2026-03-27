@@ -1,11 +1,11 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 public class UI_NpcAiDialogue : MonoBehaviour
 {
-    [Header("컴포넌트 참조")]
+    [Header("UI 참조")]
     [SerializeField] private TMP_InputField _inputField;
     [SerializeField] private Button _sendButton;
     [SerializeField] private Button _stopButton;
@@ -15,7 +15,13 @@ public class UI_NpcAiDialogue : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _systemChatText;
     [SerializeField] private TextMeshProUGUI _npcNameText;
 
+    [Header("컴포넌트 참조")]
+    [SerializeField] private TypewriterWithWrap _wrapper;
+
+    [Header("PlayerAiChat 루트")]
     [SerializeField] private GameObject _playerAiChatRoot;
+
+    private string _currentNpcStreamingRaw = string.Empty;
 
     public event Action<string> OnSendRequested;
     public event Action OnStopRequested;
@@ -23,6 +29,10 @@ public class UI_NpcAiDialogue : MonoBehaviour
 
     private void Awake()
     {
+        if (_wrapper == null)
+        {
+            _wrapper = FindFirstObjectByType<TypewriterWithWrap>();
+        }
         _sendButton.onClick.RemoveAllListeners();
         _sendButton.onClick.AddListener(HandleSendClicked);
 
@@ -96,6 +106,7 @@ public class UI_NpcAiDialogue : MonoBehaviour
     public void BeginNpcStreaming()
     {
         if (_npcChatText == null) return;
+        _currentNpcStreamingRaw = string.Empty;
         _npcChatText.text = "...\n";
     }
 
@@ -103,26 +114,28 @@ public class UI_NpcAiDialogue : MonoBehaviour
     {
         if (_npcChatText == null) return;
 
-        string[] lines = _npcChatText.text.Split('\n');
-        if (lines.Length == 0) return;
+        _currentNpcStreamingRaw = partial ?? string.Empty;
 
-        int lastIndex = lines.Length - 1;
-        if (lastIndex > 0 && string.IsNullOrEmpty(lines[lastIndex]))
+        if (string.IsNullOrEmpty(_currentNpcStreamingRaw))
         {
-            lastIndex--;
+            _npcChatText.text = "...\n";
+            return;
         }
 
-        if (lastIndex < 0) return;
-
-        lines[lastIndex] = $"{partial}";
-        _npcChatText.text = string.Join("\n", lines);
+        _npcChatText.text = _wrapper.WrapText(_currentNpcStreamingRaw, _npcChatText);
     }
 
     public void CompleteNpcStreaming(string reply)
     {
-        UpdateNpcStreaming(reply);
+        if (_npcChatText == null || _wrapper == null) return;
 
-        if (_npcChatText != null && !_npcChatText.text.EndsWith("\n"))
+        // 원본 데이터를 기준으로 합니다.
+        _currentNpcStreamingRaw = reply ?? string.Empty;
+
+        // 줄 바꿈을 적용해서 화면에 보여줍니다.
+        _npcChatText.text = _wrapper.WrapText(_currentNpcStreamingRaw, _npcChatText);
+
+        if (!_npcChatText.text.EndsWith("\n"))
         {
             _npcChatText.text += "\n";
         }
@@ -131,7 +144,11 @@ public class UI_NpcAiDialogue : MonoBehaviour
     public void MarkStreamingStopped()
     {
         if (_npcChatText == null) return;
-        _npcChatText.text += "\n";
+
+        if (!_npcChatText.text.EndsWith("\n"))
+        {
+            _npcChatText.text += "\n";
+        }
     }
 
     public void ClearInputField()

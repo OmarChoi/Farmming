@@ -46,9 +46,14 @@ public class TypewriterWithWrap : MonoBehaviour
         _isTyping = false;
     }
 
-    private string WrapText(string input)
+    public string WrapText(string input)
     {
-        float maxWidth = _tmp.rectTransform.rect.width - _tmp.margin.x - _tmp.margin.z;
+        return WrapText(input, _tmp);
+    }
+
+    public string WrapText(string input, TextMeshProUGUI target)
+    {
+        float maxWidth = target.rectTransform.rect.width - target.margin.x - target.margin.z;
 
         string[] words = input.Split(' ');
         StringBuilder result = new StringBuilder();
@@ -60,7 +65,7 @@ public class TypewriterWithWrap : MonoBehaviour
                 ? word
                 : currentLine + " " + word;
 
-            Vector2 size = _tmp.GetPreferredValues(testLine);
+            Vector2 size = target.GetPreferredValues(testLine);
 
             if (size.x > maxWidth)
             {
@@ -72,6 +77,7 @@ public class TypewriterWithWrap : MonoBehaviour
                 currentLine = testLine;
             }
         }
+
         result.Append(currentLine);
         return result.ToString();
     }
