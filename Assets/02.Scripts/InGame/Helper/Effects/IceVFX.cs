@@ -1,11 +1,13 @@
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
 public class IceVFX : MonoBehaviour
 {
-    [SerializeField] private GameObject _iceEffect;
+    [SerializeField] private SmokeEffect _iceSmokePrefab;
     [SerializeField] private float _effectDuration = 3f;
+    [SerializeField] private float _fadeOutDuration = 1f;
 
     private Action _onLandCallback;
     private bool _landed = false;
@@ -18,7 +20,6 @@ public class IceVFX : MonoBehaviour
         {
             transform.rotation = Quaternion.LookRotation(direction);
         }
-
     }
 
     private void OnParticleCollision(GameObject other)
@@ -26,11 +27,11 @@ public class IceVFX : MonoBehaviour
         if (_landed) return;
         _landed = true;
 
-        if (_iceEffect != null)
+        if (_iceSmokePrefab != null)
         {
             Vector3 hitPos = other.transform.position + Vector3.up * 0.1f;
-            GameObject effect = Instantiate(_iceEffect, hitPos, Quaternion.identity);
-            Destroy(effect, _effectDuration);
+            SmokeEffect effect = Instantiate(_iceSmokePrefab, hitPos, Quaternion.identity);
+            effect.StartSmokeEffect();
         }
 
         _onLandCallback?.Invoke();

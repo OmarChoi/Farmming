@@ -106,7 +106,6 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             if (_iceVfxPrefab != null)
             {
                 Vector3 iceSpawnPos = targetPos + Vector3.up * _iceSpawnOffset;
-                Debug.Log($"{iceSpawnPos}");
 
                 GameObject vfxObj = Instantiate(_iceVfxPrefab, iceSpawnPos, Quaternion.identity);
                 IceVFX iceVfx = vfxObj.GetComponentInChildren<IceVFX>();
