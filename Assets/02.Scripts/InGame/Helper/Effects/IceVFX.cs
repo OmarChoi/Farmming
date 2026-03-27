@@ -19,7 +19,6 @@ public class IceVFX : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(direction);
         }
 
-       //transform.position = targetPosition;
     }
 
     private void OnLand(Vector3 position)
