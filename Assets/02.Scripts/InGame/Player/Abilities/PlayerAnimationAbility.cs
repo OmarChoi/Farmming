@@ -33,7 +33,7 @@ public class PlayerAnimationAbility : PlayerAbility
         if (_animator == null) return;
         _animator.SetTrigger(GreetHash);
 
-        if (_owner.PhotonView.IsMine)
+        if (_owner.IsMine)
             _owner.PhotonView.RPC(nameof(RPC_PlayGreet), RpcTarget.Others);
     }
 

@@ -7,7 +7,7 @@ public class PlayerCustomizeAbility : PlayerAbility, ISaveableAbility
 
     private void Start()
     {
-        if (_owner.PhotonView != null && !_owner.PhotonView.IsMine) return;
+        if (!_owner.IsMine) return;
         if (CustomizeData.Instance != null)
             Initialize(CustomizeData.Instance.Data);
     }
@@ -34,7 +34,7 @@ public class PlayerCustomizeAbility : PlayerAbility, ISaveableAbility
 
     private void SyncToOthers(CustomizeSaveData data)
     {
-        if (_owner.PhotonView == null || !_owner.PhotonView.IsMine) return;
+        if (!_owner.IsMine) return;
         string json = JsonUtility.ToJson(data);
         _owner.PhotonView.RPC(nameof(PlayerController.RPC_SyncCustomize), RpcTarget.OthersBuffered, json);
     }

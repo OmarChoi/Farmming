@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public PlayerStatSO StatSo => _statSo;
 
     public PhotonView PhotonView { get; private set; }
+    public bool IsMine => PhotonView == null || PhotonView.IsMine;
     public string PlayerId { get; private set; }
     public bool IsUIOpen { get; private set; }
     public bool CanMove => !IsUIOpen && !IsActionLocked;
@@ -41,7 +42,7 @@ public class PlayerController : MonoBehaviour
         if (Photon.Pun.PhotonNetwork.IsMasterClient && SaveManager.Instance != null)
             SaveManager.Instance.RegisterPlayer(PlayerId, this);
 
-        if (PhotonView != null && !PhotonView.IsMine) return;
+        if (!IsMine) return;
 
         // 로컬 전용: 자기 자신도 등록 (비마스터 클라이언트)
         if (!Photon.Pun.PhotonNetwork.IsMasterClient && SaveManager.Instance != null)
@@ -52,7 +53,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (PhotonView != null && !PhotonView.IsMine) return;
+        if (!IsMine) return;
 
         if (Input.GetKeyDown(KeyCode.Escape))
             SetCursorLock(Cursor.lockState != CursorLockMode.Locked);
@@ -127,6 +128,8 @@ public class PlayerController : MonoBehaviour
             saveable.ImportFrom(saveData);
     }
 
+    // === PunRPC ===
+
     [PunRPC]
     public void RPC_RestoreSaveData(string json)
     {
@@ -138,5 +141,21 @@ public class PlayerController : MonoBehaviour
     public void RPC_SyncCustomize(string json)
     {
         GetAbility<PlayerCustomizeAbility>()?.ApplyFromJson(json);
+    }
+
+    [PunRPC]
+    public void RPC_RequestSaveData()
+    {
+        var saveData = ExportSaveData(PlayerId);
+        string json = JsonUtility.ToJson(saveData);
+        PhotonView.RPC(nameof(RPC_RespondSaveData), RpcTarget.MasterClient, json);
+    }
+
+    [PunRPC]
+    public void RPC_RespondSaveData(string json)
+    {
+        var saveData = JsonUtility.FromJson<PlayerSaveData>(json);
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.ReceiveSaveData(saveData);
     }
 }

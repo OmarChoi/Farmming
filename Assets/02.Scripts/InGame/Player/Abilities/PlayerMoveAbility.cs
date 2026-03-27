@@ -31,7 +31,7 @@ public class PlayerMoveAbility : PlayerAbility
 
     private void Update()
     {
-        if (!_owner.PhotonView.IsMine) return;
+        if (!_owner.IsMine) return;
 
         if (!_owner.CanMove)
         {

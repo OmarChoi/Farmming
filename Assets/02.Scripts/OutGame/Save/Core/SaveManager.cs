@@ -46,13 +46,21 @@ public class SaveManager : MonoBehaviour
         {
             // 원격 플레이어: RPC로 전체 데이터 전송
             string json = JsonUtility.ToJson(save);
-            player.PhotonView.RPC("RPC_RestoreSaveData", player.PhotonView.Owner, json);
+            player.PhotonView.RPC(nameof(PlayerController.RPC_RestoreSaveData), player.PhotonView.Owner, json);
         }
     }
 
     public void UnregisterPlayer(string playerId)
     {
         _players.Remove(playerId);
+    }
+
+    private readonly List<PlayerSaveData> _receivedSaveData = new();
+    private int _expectedResponses;
+
+    public void ReceiveSaveData(PlayerSaveData data)
+    {
+        _receivedSaveData.Add(data);
     }
 
     public async UniTask SaveAsync(int slot = 0)
@@ -62,12 +70,51 @@ public class SaveManager : MonoBehaviour
         if (_mapManager == null || _mapManager.IsVillage)
             data.Terrain = _terrainGridManager.ExportSaveData();
 
-        Debug.Log($"[SaveManager] 등록된 플레이어 수: {_players.Count}");
+        _receivedSaveData.Clear();
+        _expectedResponses = 0;
+
         foreach (var kvp in _players)
         {
-            Debug.Log($"[SaveManager] 저장 중: {kvp.Key} (pos={kvp.Value.transform.position})");
-            data.Players.Add(kvp.Value.ExportSaveData(kvp.Key));
+            var player = kvp.Value;
+            if (player.IsMine)
+            {
+                data.Players.Add(player.ExportSaveData(kvp.Key));
+            }
+            else if (player.PhotonView != null)
+            {
+                _expectedResponses++;
+                player.PhotonView.RPC(
+                    nameof(PlayerController.RPC_RequestSaveData),
+                    player.PhotonView.Owner);
+            }
         }
+
+        // 원격 플레이어 응답 대기 (최대 5초)
+        if (_expectedResponses > 0)
+        {
+            float timeout = Time.time + 5f;
+            await UniTask.WaitUntil(() =>
+                _receivedSaveData.Count >= _expectedResponses || Time.time > timeout);
+        }
+
+        data.Players.AddRange(_receivedSaveData);
+        _receivedSaveData.Clear();
+
+        // 오프라인 플레이어: _loadedData에 있지만 현재 접속 중이 아닌 플레이어 보존
+        if (_loadedData != null)
+        {
+            var onlineIds = new HashSet<string>();
+            foreach (var p in data.Players)
+                onlineIds.Add(p.PlayerId);
+
+            foreach (var saved in _loadedData.Players)
+            {
+                if (!onlineIds.Contains(saved.PlayerId))
+                    data.Players.Add(saved);
+            }
+        }
+
+        _loadedData = data;
 
         await _repository.SaveAsync(data, slot);
         Debug.Log($"저장 완료 (슬롯 {slot}, 플레이어 {data.Players.Count}명)");
