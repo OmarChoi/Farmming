@@ -4,11 +4,14 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 {
     [SerializeField] private KeyCode _equipKey = KeyCode.F;
     [SerializeField] private Transform _equipSlot;
+    [SerializeField] private Transform _backEquipSlot;
 
     private PlayerTerrainAbility _terrainAbility;
     private HelperController _currentHelper;
+    private HelperController _backHelper;
 
     public HelperController CurrentHelper => _currentHelper;
+    public HelperController BackHelper => _backHelper;
 
     protected override void Awake()
     {
@@ -28,7 +31,8 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (Input.GetKeyDown(_equipKey))
             ToggleEquip();
 
-        if (_currentHelper != null && _currentHelper.State == EHelperState.Equipped)
+        HelperController activeHelper = _currentHelper;
+        if (activeHelper != null && activeHelper.State == EHelperState.Equipped)
         {
             if (Input.GetMouseButtonDown(0))
                 TryInteractPrimary();
@@ -39,13 +43,28 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     public void Summon(HelperController helper)
     {
-        if (_currentHelper != null)
-            Unsummon();
+        bool isLightHelper = helper.GetAbility<LightActionAbility>() != null;
 
-        _currentHelper = helper;
-        _currentHelper.OnActionStarted += OnHelperActionStarted;
-        _currentHelper.OnActionEnded += OnHelperActionEnded;
-        _currentHelper.Summon(_owner);
+        if(isLightHelper)
+        {
+            if(_backHelper != null)
+            {
+                UnsummonBack();
+            }
+
+            _backHelper = helper;
+            _backHelper.Summon(_owner);
+        }
+        else
+        {
+            if (_currentHelper != null)
+                Unsummon();
+
+            _currentHelper = helper;
+            _currentHelper.OnActionStarted += OnHelperActionStarted;
+            _currentHelper.OnActionEnded += OnHelperActionEnded;
+            _currentHelper.Summon(_owner);
+        }
     }
 
     public void Unsummon()
@@ -68,6 +87,17 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         _currentHelper = null;
     }
 
+    public void UnsummonBack()
+    {
+        if (_backHelper == null) return;
+
+        if (_backHelper.State == EHelperState.Equipped)
+            _backHelper.Unequip();
+
+        _backHelper.gameObject.SetActive(false);
+        _backHelper = null;
+    }
+
     private void OnHelperActionStarted()
     {
         _owner.AllowCameraRotation = true;
@@ -82,6 +112,15 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void ToggleEquip()
     {
+        if (_backHelper != null)
+        {
+            if (_backHelper.State == EHelperState.Equipped)
+                _backHelper.Unequip();
+            else
+                _backHelper.Equip(_backEquipSlot != null ? _backEquipSlot : _equipSlot);
+            return;
+        }
+
         if (_currentHelper == null) return;
 
         if (_currentHelper.State == EHelperState.Equipped)
