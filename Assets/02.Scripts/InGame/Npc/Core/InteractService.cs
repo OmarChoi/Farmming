@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class InteractService : MonoBehaviour
 {
+    [Header("컨트롤러")]
     [SerializeField] private NpcDialogueController _dialogueController;
     [SerializeField] private AiDialogueController _aiDialogueController;
 
@@ -115,6 +116,7 @@ public class InteractService : MonoBehaviour
     }
     private void ExecuteEndTalk(NpcInteractionContext context)
     {
+        _aiDialogueController.HandleCloseRequested();
         context.InteractionComponent.EndInteraction();
     }
 }

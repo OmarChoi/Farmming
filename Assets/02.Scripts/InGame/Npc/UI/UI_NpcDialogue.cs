@@ -102,6 +102,18 @@ public class UI_NpcDialogue : MonoBehaviour
         }
     }
 
+    public void ShowSingleButton(NpcInteractionOption option, Action<ENpcInteractionType> onClickOption)
+    {
+        ClearButtons();
+        _interactionButtonRoot.gameObject.SetActive(true);
+
+        if (option == null) return;
+
+        GameObject button = Instantiate(_interactionButtonPrefab, _interactionButtonRoot);
+        UI_InteractionButton uiButton = button.GetComponent<UI_InteractionButton>();
+        uiButton.Init(option.ButtonName, () => onClickOption?.Invoke(option.Type));
+    }
+
     public void ClearDialogueText()
     {
         _npcDialogueText.text = string.Empty;

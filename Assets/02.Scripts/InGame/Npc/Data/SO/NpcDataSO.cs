@@ -13,7 +13,9 @@ public class NpcDataSO : ScriptableObject
     [Header("AI 대화 성격 정보")]
     public string NpcMbti;
     public string NpcPersonality;
+    public string Age;
     public string Job;
+    public string WayOfTone;
 
     [Header("프리팹")]
     public GameObject Prefab;

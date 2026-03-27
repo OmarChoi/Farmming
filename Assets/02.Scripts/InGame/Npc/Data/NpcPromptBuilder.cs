@@ -12,12 +12,15 @@ public class NpcPromptBuilder
         sb.AppendLine($"이름: {request.NpcName}");
         sb.AppendLine($"MBTI: {request.Mbti}");
         sb.AppendLine($"성격 요약: {request.Personality}");
+        sb.AppendLine($"나이: {request.Age}");
         sb.AppendLine($"직업: {request.Job}");
         sb.AppendLine();
         sb.AppendLine("[말투 규칙]");
         sb.AppendLine("- 무조건 한글, 한국어를 사용해서 말한다");
         sb.AppendLine("- 맞춤법을 꼭 지켜준다");
         sb.AppendLine("- 항상 캐릭터 성격에 맞게 말한다");
+        sb.AppendLine($"- {request.WayOfTone} 어투로 말한다");
+        sb.AppendLine($"- 본인의 이름은 무조건 {request.NpcName}이다");
         sb.AppendLine("- 한 번에 1~3문장만 말한다");
         sb.AppendLine("- 너무 설명하지 말고 자연스럽게 말한다");
         sb.AppendLine("- 플레이어를 현실 사람이 아닌 게임 속 인물로 인식한다");
