@@ -44,6 +44,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void Start()
     {
+        if (!_owner.IsMine) return;
         OnLocalPlayerReady?.Invoke(this);
     }
 
@@ -61,6 +62,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void Update()
     {
+        if (!_owner.IsMine) return;
         if (_owner.IsUIOpen) return;
         if (_helperDataList.Count == 0) return;
 

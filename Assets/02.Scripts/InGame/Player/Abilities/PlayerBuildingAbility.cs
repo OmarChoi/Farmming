@@ -34,8 +34,19 @@ public class PlayerBuildingAbility : PlayerAbility
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
     }
 
+    private void OnEnable()
+    {
+        _buildingManager.OnBuildingSelected += OnBuildingSelectedFromUi;
+    }
+
+    private void OnDisable()
+    {
+        _buildingManager.OnBuildingSelected -= OnBuildingSelectedFromUi;
+    }
+
     private void Update()
     {
+        if (!_owner.IsMine) return;
         if (!_owner.CanMove) return;
 
         switch (_state)
@@ -59,8 +70,43 @@ public class PlayerBuildingAbility : PlayerAbility
         
         if (Input.GetKeyDown(_placeKey) && !_isLoadingPrefab)
         {
-            EnterPreviewAsync().Forget();
+            if (UIController.Instance != null)
+            {
+                OpenBuildingSelectionUi();
+            }
+            else
+            {
+                EnterPreviewAsync().Forget();
+            }
         }
+    }
+
+    private void SetBuildingData(BuildingDataSO buildingData)
+    {
+        if (_buildingData == buildingData) return;
+
+        _buildingData = buildingData;
+
+        if (_state == BuildState.Previewing)
+        {
+            DestroyGhost();
+        }
+    }
+
+    private void OpenBuildingSelectionUi()
+    {
+        if (UIController.Instance == null) return;
+        // todo. 마우스 잠금 처리
+        UIController.Instance.OpenAsync<UI_BuildingList>().Forget();
+    }
+
+    private void OnBuildingSelectedFromUi(BuildingDataSO buildingData)
+    {
+        SetBuildingData(buildingData);
+
+        if (_isLoadingPrefab) return;
+
+        EnterPreviewAsync().Forget();
     }
 
     private void HandlePreviewingState()
@@ -166,9 +212,9 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell == null) return;
 
         int direction = BuildingPlacer.GetDirection(_owner.transform.forward);
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(_buildingData, direction, _swapped);
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
 
-        if (!_buildingManager.CanPlace(cell.GridPosition, footprint, out _)) return;
+        if (!preview.CanPlace) return;
 
         _isBuilding = true;
         var request = new BuildingRequest
@@ -190,16 +236,10 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell == null) return;
 
         int direction = BuildingPlacer.GetDirection(_owner.transform.forward);
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(_buildingData, direction, _swapped);
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
 
-        // 위치 계산
-        bool canPlace = _buildingManager.CanPlace(cell.GridPosition, footprint, out int baseY);
-        var anchorPos = new Vector3Int(cell.GridPosition.x, baseY >= 0 ? baseY : cell.GridPosition.y, cell.GridPosition.z);
-        Vector3 spawnPos = _buildingManager.CalculateSpawnPos(anchorPos, footprint);
-
-        float yRot = footprint.Direction * 90f + (_swapped ? 90f : 0f);
-        _ghost.UpdateTransform(spawnPos, Quaternion.Euler(0f, yRot, 0f));
-        _ghost.SetValid(canPlace);
+        _ghost.UpdateTransform(preview.SpawnPosition, preview.Rotation);
+        _ghost.SetValid(preview.CanPlace);
     }
 
     private void ToggleSwap()
