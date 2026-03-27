@@ -8,6 +8,9 @@ public class UIController : MonoBehaviour
 {
     public static UIController Instance { get; private set; }
 
+    
+    [SerializeField] private KeyCode _escapeKey = KeyCode.Escape;
+    
     [Header("Canvas 참조")]
     [SerializeField] private Transform _hudCanvas;
     [SerializeField] private Transform _popupCanvas;
@@ -44,7 +47,7 @@ public class UIController : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(_escapeKey))
         {
             CloseTopAsync().Forget();
         }
@@ -56,7 +59,7 @@ public class UIController : MonoBehaviour
 
     public async UniTask<T> OpenAsync<T>(Action<T> onBeforeOpen = null) where T : UIBase
     {
-        string key = typeof(T).Name;
+        string key = AssetKey.UI.GetKey<T>();
         T ui = await GetOrCreateAsync<T>(key);
 
         if (ui == null) return null;
