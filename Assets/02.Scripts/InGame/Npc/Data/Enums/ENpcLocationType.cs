@@ -2,5 +2,6 @@
 public enum ENpcLocationType
 {
     Home,
-    Shop
+    Shop,
+    Wandering
 }
