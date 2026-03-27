@@ -84,31 +84,24 @@ public class UIController : MonoBehaviour
         }
     }
 
-    public bool HasOpenUI()
+    public void OnClickUI<T>() where T : UIBase
     {
-        foreach (UIBase uiBase in _activeInstance)
-        {
-            if (uiBase != null && uiBase.Config.Layer != EUILayer.HUD) return true;
-        }
-
-        return false;
+        if (!_instances.TryGetValue(typeof(T).Name, out UIBase ui) || !ui.IsOpen) return;
+        if (_activeInstance[^1] == ui) return;
+        BringToFront(ui);
     }
-
-    public void BringToFront(UIBase ui)
-    {
-        if (ui == null || !ui.IsOpen) return;
-
-        _activeInstance.Remove(ui);
-        _activeInstance.Add(ui);
-        ui.transform.SetAsLastSibling();
-    }
-
+    
     #endregion
 
     #region Active Instance 관리
 
     private async UniTask CloseTopAsync()
     {
+        if (_activeInstance.Count == 0)
+        {
+            // todo: 일시정지 UI Popup 표시
+            return;
+        }
         for (int i = _activeInstance.Count - 1; i >= 0; i--)
         {
             UIBase ui = _activeInstance[i];
@@ -123,7 +116,6 @@ public class UIController : MonoBehaviour
 
     private void PushToStack(UIBase ui)
     {
-        _activeInstance.Remove(ui);
         _activeInstance.Add(ui);
         ui.transform.SetAsLastSibling();
     }
@@ -131,6 +123,15 @@ public class UIController : MonoBehaviour
     private void RemoveFromStack(UIBase ui)
     {
         _activeInstance.Remove(ui);
+    }
+    
+    private void BringToFront(UIBase ui)
+    {
+        if (ui == null || !ui.IsOpen) return;
+
+        _activeInstance.Remove(ui);
+        _activeInstance.Add(ui);
+        ui.transform.SetAsLastSibling();
     }
 
     #endregion
@@ -179,6 +180,7 @@ public class UIController : MonoBehaviour
 
     private void ClearAll()
     {
+        // todo. Clear All이 아닌 현재 Scene과 상황에 따른 Clear 할 UI 설정
         _activeInstance.Clear();
         _loadingKeys.Clear();
 
