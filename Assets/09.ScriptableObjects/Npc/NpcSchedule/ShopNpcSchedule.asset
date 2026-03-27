@@ -14,14 +14,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcSchedule
   <ScheduleEntries>k__BackingField:
   - ScheduleTime: 0
-    NpcLocationType: 0
-    LocationKey: Shopper_Home_Door
-  - ScheduleTime: 150
     NpcLocationType: 1
     LocationKey: Shopper_Shop_Counter
-  - ScheduleTime: 280
-    NpcLocationType: 0
-    LocationKey: Shopper_Home
-  - ScheduleTime: 440
+    WanderingDirection: {x: 0, y: 0, z: 0}
+    WanderingDistance: 0
+    WanderingRadius: 0
+    WanderSearchStep: 0
+  - ScheduleTime: 400
+    NpcLocationType: 2
+    LocationKey: Shopper_Wandering1
+    WanderingDirection: {x: 0, y: 0, z: 1}
+    WanderingDistance: 20
+    WanderingRadius: 6
+    WanderSearchStep: 5
+  - ScheduleTime: 1000
+    NpcLocationType: 2
+    LocationKey: Shopper_Wandering2
+    WanderingDirection: {x: 1, y: 0, z: 0}
+    WanderingDistance: 30
+    WanderingRadius: 12
+    WanderSearchStep: 5
+  - ScheduleTime: 1600
     NpcLocationType: 1
     LocationKey: Shopper_Shop
+    WanderingDirection: {x: 0, y: 0, z: 0}
+    WanderingDistance: 0
+    WanderingRadius: 0
+    WanderSearchStep: 0
+  - ScheduleTime: 2000
+    NpcLocationType: 2
+    LocationKey: Shopper_Wandering3
+    WanderingDirection: {x: 1, y: 0, z: 1}
+    WanderingDistance: 10
+    WanderingRadius: 3
+    WanderSearchStep: 5
