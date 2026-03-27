@@ -35,12 +35,12 @@ public class RoomManager : MonoBehaviourPunCallbacks
         Instance = this;
     }
 
-    public void CreateRoom(Action onJoined, Action onFailed = null)
+    public void CreateRoom(Action onJoined, Action onFailed = null, bool isFirstVisit = true)
     {
         _onJoinedCallback = onJoined;
         _onFailedCallback = onFailed;
         RoomId = GenerateRoomId();
-        IsFirstVisit = true;
+        IsFirstVisit = isFirstVisit;
 
         var options = new RoomOptions
         {
@@ -79,6 +79,19 @@ public class RoomManager : MonoBehaviourPunCallbacks
         Debug.LogError($"방 참가 실패: {message}");
         _onFailedCallback?.Invoke();
         _onFailedCallback = null;
+    }
+
+    /// 마스터가 나가면 방 폐쇄 — 클라이언트 전원 타이틀로 복귀
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        // 마스터가 바뀌었다 = 원래 마스터가 나갔다 → 방 나가고 타이틀로
+        Debug.LogWarning("방장이 퇴장하여 방을 종료합니다.");
+        PhotonNetwork.LeaveRoom();
+    }
+
+    public override void OnLeftRoom()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
     }
 
     /// 마스터가 GameScene에 도착한 후 호출 — 클라이언트 입장 허용

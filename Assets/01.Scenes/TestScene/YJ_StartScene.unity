@@ -1372,6 +1372,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 793312558}
   m_CullTransparentMesh: 1
+--- !u!1 &821852762
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 821852764}
+  - component: {fileID: 821852763}
+  m_Layer: 0
+  m_Name: TitleFlowManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &821852763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821852762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c635231d587bcbd4497e35f2eea0c156, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TitleFlowManager
+  _maxSlots: 3
+  _customizeSceneName: YJ_Customizing
+  _gameSceneName: YJ_Scene
+--- !u!4 &821852764
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821852762}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &857910764
 GameObject:
   m_ObjectHideFlags: 0
@@ -3894,12 +3941,10 @@ MonoBehaviour:
   _connectingPanel: {fileID: 485531819}
   _saveSlotParent: {fileID: 1172352686}
   _saveSlotPrefab: {fileID: 3298815960676949327, guid: 0967c7e6269903e47b3bf48826f3df8a, type: 3}
-  _maxSlots: 3
   _roomIdInput: {fileID: 1272142884}
   _joinErrorText: {fileID: 1669936307}
   _createdRoomIdText: {fileID: 718371242}
-  _customizeSceneName: YJ_Customizing
-  _gameSceneName: YJ_Scene
+  _flowManager: {fileID: 821852763}
 --- !u!4 &1960843159
 Transform:
   m_ObjectHideFlags: 0
@@ -4137,3 +4182,4 @@ SceneRoots:
   - {fileID: 1777057033}
   - {fileID: 1960843159}
   - {fileID: 1877693503}
+  - {fileID: 821852764}
