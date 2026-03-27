@@ -6,9 +6,11 @@ using UnityEngine.UI;
 [Serializable]
 public class BuildingSlot : MonoBehaviour
 {
-    public Image SliceImage;
-    public Image IconImage;
-    public TextMeshProUGUI Label;
+    [SerializeField] private Image _sliceImage;
+    [SerializeField] private Image _iconImage;
+    [SerializeField] private TextMeshProUGUI _label;
+    
+    private RectTransform _rectTransform;
 
     public struct LayoutData
     {
@@ -22,37 +24,37 @@ public class BuildingSlot : MonoBehaviour
 
     public void SetData(Sprite icon, string name)
     {
-        if (IconImage != null) IconImage.sprite = icon;
-        if (Label != null) Label.text = name;
+        if (_iconImage != null) _iconImage.sprite = icon;
+        if (_label != null) _label.text = name;
     }
 
     public void SetColor(Color color)
     {
-        if (SliceImage != null) SliceImage.color = color;
+        if (_sliceImage != null) _sliceImage.color = color;
     }
 
     // 슬라이스 회전/채움 + 아이콘 위치/크기 설정
     public void SetLayout(LayoutData data)
     {
-        if (SliceImage != null)
+        if (_sliceImage != null)
         {
-            var sliceRt = SliceImage.GetComponent<RectTransform>();
+            var sliceRt = _sliceImage.GetComponent<RectTransform>();
             sliceRt.localRotation = Quaternion.Euler(0, 0, -data.Rotation);
 
-            SliceImage.type = Image.Type.Filled;
-            SliceImage.fillMethod = Image.FillMethod.Radial360;
-            SliceImage.fillOrigin = 2;
-            SliceImage.fillClockwise = true;
-            SliceImage.fillAmount = data.FillAmount;
+            _sliceImage.type = Image.Type.Filled;
+            _sliceImage.fillMethod = Image.FillMethod.Radial360;
+            _sliceImage.fillOrigin = 2;
+            _sliceImage.fillClockwise = true;
+            _sliceImage.fillAmount = data.FillAmount;
         }
 
-        if (IconImage != null)
+        if (_iconImage != null)
         {
             float rad = data.IconAngle * Mathf.Deg2Rad;
             Vector2 dir = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
             Vector2 pos = dir * data.IconDist + Vector2.up * data.IconYOffset;
 
-            var iconRt = IconImage.GetComponent<RectTransform>();
+            var iconRt = _iconImage.GetComponent<RectTransform>();
             iconRt.anchoredPosition = pos;
             iconRt.sizeDelta = Vector2.one * data.IconSize;
         }

@@ -127,8 +127,8 @@ public class UI_BuildingList : UIBase
             out Vector2 local
         );
 
-        float dist = local.magnitude;
-        if (dist < _innerRadius || dist > _outerRadius) return;
+        float distSqr = local.sqrMagnitude;
+        if (distSqr < _innerRadius * _innerRadius || distSqr > _outerRadius * _outerRadius) return;
 
         float angle = Mathf.Atan2(local.y, local.x) * Mathf.Rad2Deg;
         float normalized = (90f - angle + 360f) % 360f;
