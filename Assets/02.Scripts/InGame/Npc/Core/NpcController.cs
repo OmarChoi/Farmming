@@ -105,10 +105,7 @@ public class NpcController : MonoBehaviour
         _isInteracting = false;
         _currentInteractor = null;
 
-        if (TimeSystem.Instance != null)
-        {
-            ResumeScheduleByCurrentTime(TimeSystem.Instance.CurrentTime);
-        }
+        ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
     }
 
     // 시간이 되면 Npc가 다음 일정대로 움직이는 것을 시도합니다.
