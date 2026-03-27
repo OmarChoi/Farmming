@@ -10,13 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd2a9ca7cb51afd4e99fac6204fb4665, type: 3}
-  m_Name: Shop
+  m_Name: Smithy
   m_EditorClassIdentifier: Assembly-CSharp::BuildingDataSO
-  _buildingId: MarketStall
-  _displayName: MarketStall
-  _icon: {fileID: 21300000, guid: a5849a82a6c2ebc488bbf34f7d17c355, type: 3}
+  _buildingId: Smith
+  _displayName: Smith
   _width: 5
   _depth: 2
   _constructionDays: 2
-  _npcDataData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
-  _npcSpawnOffset: {x: -0.92, y: 0, z: -0.57}
+  _icon: {fileID: 21300000, guid: a08e80d5a9a04b84890002dfd948030d, type: 3}
