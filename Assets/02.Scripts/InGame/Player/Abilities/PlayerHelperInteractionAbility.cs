@@ -45,18 +45,27 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     {
         bool isLightHelper = helper.GetAbility<LightActionAbility>() != null;
 
-        if(isLightHelper)
+        if (isLightHelper)
         {
-            if(_backHelper != null)
+            if (_currentHelper != null)
             {
-                UnsummonBack();
+                return;
             }
+
+            if (_backHelper != null)
+                UnsummonBack();
 
             _backHelper = helper;
             _backHelper.Summon(_owner);
         }
         else
         {
+
+            if (_backHelper != null && _backHelper.State != EHelperState.Equipped)
+            {
+                return;
+            }
+
             if (_currentHelper != null)
                 Unsummon();
 
@@ -69,6 +78,12 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     public void Unsummon()
     {
+        if (_currentHelper == null && _backHelper != null)
+        {
+            UnsummonBack();
+            return;
+        }
+
         if (_currentHelper == null) return;
 
         _currentHelper.OnActionStarted -= OnHelperActionStarted;
@@ -112,21 +127,22 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void ToggleEquip()
     {
+        if (_currentHelper != null)
+        {
+            if (_currentHelper.State == EHelperState.Equipped)
+                _currentHelper.Unequip();
+            else
+                _currentHelper.Equip(_equipSlot);
+            return;
+        }
+
         if (_backHelper != null)
         {
             if (_backHelper.State == EHelperState.Equipped)
                 _backHelper.Unequip();
             else
                 _backHelper.Equip(_backEquipSlot != null ? _backEquipSlot : _equipSlot);
-            return;
         }
-
-        if (_currentHelper == null) return;
-
-        if (_currentHelper.State == EHelperState.Equipped)
-            _currentHelper.Unequip();
-        else
-            _currentHelper.Equip(_equipSlot);
     }
 
     private void TryInteractPrimary()
