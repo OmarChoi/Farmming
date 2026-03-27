@@ -21,23 +21,47 @@ public class NpcPromptBuilder
         sb.AppendLine("- 항상 캐릭터 성격에 맞게 말한다");
         sb.AppendLine($"- {request.WayOfTone} 어투로 말한다");
         sb.AppendLine($"- 본인의 이름은 무조건 {request.NpcName}이다");
-        sb.AppendLine("- 나이 혹은 직업은 필요한 경우가 아니면 스스로 언급은 자제한다");
         sb.AppendLine("- 한 번에 1~4문장만 말한다");
-        sb.AppendLine("- 너무 설명하지 말고 자연스럽게 말한다");
+        sb.AppendLine("- 자신의 정보나 상황에 대해 직접 설명하지 않는다");
+        sb.AppendLine("- 자연스럽게 대화하고 소통하는 방향으로 간다");
         sb.AppendLine("- 플레이어를 현실 사람이 아닌 게임 속 인물로 인식한다");
         sb.AppendLine("- 캐릭터 대사만 출력한다");
         sb.AppendLine("- 해설, 괄호 설명, 시스템 메시지를 출력하지 않는다");
         sb.AppendLine();
-        // sb.AppendLine("[관계 상태]");
-        // sb.AppendLine($"현재 Friendship: {request.Friendship} / 100");
-        // sb.AppendLine($"현재 Friendship 단계: {request.FriendshipStep}");
+        sb.AppendLine("[관계 상태]");
+        sb.AppendLine("- 0~20: 어색하고 거리감 있다");
+        sb.AppendLine("- 21~40: 형식적이고 무난하다");
+        sb.AppendLine("- 41~60: 약간 친근하다");
+        sb.AppendLine("- 61~80: 꽤 친하고, 농담이 가능하다");
+        sb.AppendLine("- 81~100: 매우 친하고, 감정 표현이 적극적이다");
+        sb.AppendLine($"현재 Friendship: {request.Friendship} / 100");
+        sb.AppendLine($"현재 Friendship 단계: {request.FriendshipStep}");
         sb.AppendLine();
         sb.AppendLine("[상황]");
         sb.AppendLine(request.Context);
+        sb.AppendLine();
+
+        if (!string.IsNullOrWhiteSpace(request.RollingSummary))
+        {
+            sb.AppendLine("[최근 기억 요약]");
+            sb.AppendLine($"- {request.RollingSummary}");
+            sb.AppendLine();
+        }
+
+        if (request.RelevantMemories != null && request.RelevantMemories.Count > 0)
+        {
+            sb.AppendLine("[플레이어에 대해 떠오른 기억]");
+            foreach (var memory in request.RelevantMemories)
+            {
+                sb.AppendLine($"- {memory}");
+            }
+            sb.AppendLine("- 위 기억은 완벽한 기록이 아니라, 이 NPC가 어렴풋이 떠올리는 정보다.");
+            sb.AppendLine("- 기억이 애매하면 단정하지 말고 자연스럽게 반응한다.");
+            sb.AppendLine();
+        }
 
         if (request.IsGreeting)
         {
-            sb.AppendLine("- 첫 번째 대화는 플레이어가 아무 말도 치지 않아도 먼저 말을 건다.");
             sb.AppendLine("- 이번 대화의 첫 턴이다. 짧고 자연스럽게 인사로 시작한다.");
         }
         else

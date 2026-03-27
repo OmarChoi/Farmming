@@ -1,5 +1,7 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 using LLMUnity;
 
 public class AiDialogueController : MonoBehaviour
@@ -7,12 +9,47 @@ public class AiDialogueController : MonoBehaviour
     [Header("컴포넌트 참조")]
     [SerializeField] private UI_NpcAiDialogue _uiDialogue;
     [SerializeField] private LLMAgent _llmAgent;
+    [SerializeField] private NpcMemoryLlmRagService _ragService;
+
+    [Header("RAG에서 가져올 기억 개수")]
+    [SerializeField] private int _memoryTopK = 4;
 
     private readonly NpcPromptBuilder _promptBuilder = new();
+    private NpcMemoryService _memoryService;
+    private readonly NpcMemoryExtractor _memoryExtractor = new();
+    private readonly NpcSessionSummarizer _summarizer = new();
 
     private NpcInteractionContext _currentContext;
+    private NpcMemoryProfile _currentProfile;
+    private readonly List<DialogueTurnRecord> _sessionTurns = new();
+
     private bool _isSessionOpen;
     private bool _isGenerating;
+
+    private void Awake()
+    {
+        if (_uiDialogue == null)
+        {
+            _uiDialogue = FindFirstObjectByType<UI_NpcAiDialogue>();
+        }
+        if (_llmAgent == null)
+        {
+            _llmAgent = FindFirstObjectByType<LLMAgent>();
+        }
+        if (_ragService == null)
+        {
+            _ragService = FindFirstObjectByType<NpcMemoryLlmRagService>();
+        }
+        var repository = new JsonNpcMemoryRepository();
+        _memoryService = new NpcMemoryService(repository, _ragService);
+    }
+    private async void Start()
+    {
+        if (_ragService != null)
+        {
+            await _ragService.InitializeMemoryRagAsync();
+        }
+    }
 
     private void OnEnable()
     {
@@ -43,6 +80,12 @@ public class AiDialogueController : MonoBehaviour
         _currentContext = context;
         _isSessionOpen = true;
         _isGenerating = false;
+        _sessionTurns.Clear();
+
+        string npcId = context.Npc.Data.NpcId;
+        string playerId = GetPlayerId(context);
+
+        _currentProfile = await _memoryService.LoadProfileAsync(npcId, playerId);
 
         _uiDialogue.Open(context.NpcName);
         _uiDialogue.ClearMessages();
@@ -52,18 +95,41 @@ public class AiDialogueController : MonoBehaviour
         _llmAgent.CancelRequests();
         await _llmAgent.ClearHistory();
 
-        var openRequest = BuildRequest(context, string.Empty, true);
+        var openRequest = BuildRequest(context, string.Empty, true, new List<string>());
         _llmAgent.systemPrompt = _promptBuilder.BuildSystemPrompt(openRequest);
 
+        await RestoreRecentTurnsAsync(_currentProfile);
         await _llmAgent.Warmup();
+
         _uiDialogue.ClearMessagesExcludePlayer();
         _uiDialogue.AddSystemMessage("준비가 끝났어요.");
+    }
+
+    private async UniTask RestoreRecentTurnsAsync(NpcMemoryProfile profile)
+    {
+        if (profile == null || profile.RecentTurns == null) return;
+
+        foreach (var turn in profile.RecentTurns)
+        {
+            if (turn.Role == "user")
+            {
+                await _llmAgent.AddUserMessage(turn.Text);
+            }
+            else if (turn.Role == "assistant")
+            {
+                await _llmAgent.AddAssistantMessage(turn.Text);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(profile.RollingSummary))
+        {
+            _llmAgent.SetSummary(profile.RollingSummary);
+        }
     }
 
     private void HandleSendRequested(string playerInput)
     {
         if (!_isSessionOpen || _isGenerating || string.IsNullOrWhiteSpace(playerInput)) return;
-
         SendPlayerMessageAsync(playerInput).Forget();
     }
 
@@ -78,9 +144,20 @@ public class AiDialogueController : MonoBehaviour
         _uiDialogue.ClearInputField();
         _uiDialogue.BeginNpcStreaming();
 
+        _sessionTurns.Add(new DialogueTurnRecord{Role = "user", Text = playerInput, Ticks = DateTime.UtcNow.Ticks});
+
         try
         {
-            var req = BuildRequest(_currentContext, playerInput, false);
+            var relevantMemories = await _memoryService.SearchRelevantAsync(
+                _currentProfile.NpcId,
+                _currentProfile.PlayerId,
+                playerInput,
+                _memoryTopK);
+
+            var req = BuildRequest(_currentContext, playerInput, false, relevantMemories);
+
+            // 매 턴 기억 검색 결과가 달라지므로 시스템 프롬프트를 갱신합니다.
+            _llmAgent.systemPrompt = _promptBuilder.BuildSystemPrompt(req);
 
             string reply = await _llmAgent.Chat(
                 req.PlayerInput,
@@ -89,12 +166,20 @@ public class AiDialogueController : MonoBehaviour
                 true
             );
 
-            _uiDialogue.CompleteNpcStreaming(Sanitize(reply));
+            string sanitizedReply = Sanitize(reply);
+
+            _sessionTurns.Add(new DialogueTurnRecord{Role = "assistant", Text = sanitizedReply, Ticks = DateTime.UtcNow.Ticks});
+
+            _uiDialogue.CompleteNpcStreaming(sanitizedReply);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogException(e);
-            _uiDialogue.CompleteNpcStreaming("...... (생각에 잠겨 있다.)");
+
+            string fallback = "...... (생각에 잠겨 있다.)";
+            _sessionTurns.Add(new DialogueTurnRecord{Role = "assistant", Text = fallback, Ticks = DateTime.UtcNow.Ticks});
+
+            _uiDialogue.CompleteNpcStreaming(fallback);
         }
         finally
         {
@@ -125,6 +210,16 @@ public class AiDialogueController : MonoBehaviour
 
     private async UniTask CloseSessionAsync(bool endInteraction)
     {
+        if (_currentProfile != null)
+        {
+            string summary = _summarizer.Summarize(_sessionTurns);
+            List<NpcMemoryEntry> extracted = _memoryExtractor.Extract(
+                _currentProfile.NpcId,
+                _currentProfile.PlayerId,
+                _sessionTurns);
+
+            await _memoryService.SaveAfterDialogueAsync(_currentProfile, _sessionTurns, summary, extracted);
+        }
         if (_llmAgent != null)
         {
             _llmAgent.CancelRequests();
@@ -136,6 +231,8 @@ public class AiDialogueController : MonoBehaviour
         _isGenerating = false;
         _isSessionOpen = false;
         _currentContext = null;
+        _currentProfile = null;
+        _sessionTurns.Clear();
 
         if (_uiDialogue != null)
         {
@@ -149,7 +246,7 @@ public class AiDialogueController : MonoBehaviour
         }
     }
 
-    private NpcAiDialogueRequest BuildRequest(NpcInteractionContext context, string playerInput, bool isGreeting)
+    private NpcAiDialogueRequest BuildRequest(NpcInteractionContext context, string playerInput, bool isGreeting, List<string> relevantMemories)
     {
         return new NpcAiDialogueRequest
         {
@@ -164,8 +261,10 @@ public class AiDialogueController : MonoBehaviour
             PlayerInput = playerInput,
             PlayerId = GetPlayerId(context),
             IsGreeting = isGreeting,
-            Friendship = GetFriendship(context),
-            FriendshipStep = GetFriendshipStep(context)
+            Friendship = _currentProfile?.Friendship ?? 0,
+            FriendshipStep = _currentProfile?.FriendshipStep ?? "Awkward",
+            RollingSummary = _currentProfile?.RollingSummary ?? string.Empty,
+            RelevantMemories = relevantMemories ?? new List<string>()
         };
     }
 
@@ -178,9 +277,6 @@ public class AiDialogueController : MonoBehaviour
     {
         return context.Interactor != null ? context.Interactor.name : "UnknownPlayer";
     }
-
-    private int GetFriendship(NpcInteractionContext context) => 0;
-    private string GetFriendshipStep(NpcInteractionContext context) => "Awkward";
 
     private string Sanitize(string text)
     {
