@@ -96,7 +96,7 @@ public class TitleFlowManager : MonoBehaviour
         }
     }
 
-    /// 방 참가 확인: roomId 검증 → 접속 → 방 참가 → 첫 방문 체크 → 분기
+    /// 방 참가 확인: roomId 검증 → 접속 → 로비에서 재방문 체크 → 분기
     public void ConfirmJoin(string roomId)
     {
         if (string.IsNullOrEmpty(roomId))
@@ -110,29 +110,39 @@ public class TitleFlowManager : MonoBehaviour
         NetworkManager.Instance.Connect(
             onConnected: () =>
             {
-                RoomManager.Instance.JoinRoom(roomId,
-                    onJoined: () =>
-                    {
-                        RoomManager.Instance.CheckFirstVisit(
-                            onFirstVisit: () =>
-                            {
-                                // 첫 방문 → 커스터마이즈
-                                RoomManager.Instance.PendingAction = RoomManager.ERoomAction.Join;
-                                SceneManager.LoadScene(SceneName.Customize);
-                            },
-                            onReturning: () =>
-                            {
-                                // 재방문 → 바로 게임씬
-                                SceneManager.LoadScene(SceneName.Game);
-                            }
-                        );
-                    },
-                    onFailed: () =>
+                RoomManager.Instance.CheckRoomExists(roomId, exists =>
+                {
+                    if (!exists)
                     {
                         OnPanelChanged?.Invoke(ETitlePanel.Join);
-                        OnJoinError?.Invoke("방 참가에 실패했습니다.");
+                        OnJoinError?.Invoke("방을 찾을 수 없습니다.");
+                        return;
                     }
-                );
+
+                    string playerId = NetworkManager.Instance.LocalPlayerId;
+                    bool returning = RoomManager.Instance.IsReturningPlayer(roomId, playerId);
+                    RoomManager.Instance.PendingRoomId = roomId;
+                    RoomManager.Instance.PendingAction = RoomManager.ERoomAction.Join;
+                    RoomManager.Instance.IsFirstVisit = !returning;
+
+                    if (returning)
+                    {
+                        // 재방문 → 방 입장 → 게임씬
+                        RoomManager.Instance.JoinRoom(roomId,
+                            onJoined: () => PhotonNetwork.LoadLevel(SceneName.Game),
+                            onFailed: () =>
+                            {
+                                OnPanelChanged?.Invoke(ETitlePanel.Join);
+                                OnJoinError?.Invoke("방 참가에 실패했습니다.");
+                            }
+                        );
+                    }
+                    else
+                    {
+                        // 첫 방문 → 커스터마이징 → 커스터마이징 끝나면 방 입장
+                        SceneManager.LoadScene(SceneName.Customize);
+                    }
+                });
             },
             onFailed: () =>
             {
