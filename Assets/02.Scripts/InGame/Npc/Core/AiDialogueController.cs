@@ -20,7 +20,6 @@ public class AiDialogueController : MonoBehaviour
 
         _uiDialogue.OnSendRequested += HandleSendRequested;
         _uiDialogue.OnStopRequested += HandleStopRequested;
-        _uiDialogue.OnCloseRequested += HandleCloseRequested;
     }
 
     private void OnDisable()
@@ -29,13 +28,12 @@ public class AiDialogueController : MonoBehaviour
 
         _uiDialogue.OnSendRequested -= HandleSendRequested;
         _uiDialogue.OnStopRequested -= HandleStopRequested;
-        _uiDialogue.OnCloseRequested -= HandleCloseRequested;
     }
 
     public async UniTask OpenSessionAsync(NpcInteractionContext context)
     {
         if (context == null || context.Npc == null || _uiDialogue == null || _llmAgent == null) return;
-
+        _uiDialogue.AddSystemMessage("대화할 준비 중이에요.");
         if (_isSessionOpen)
         {
             await CloseSessionAsync();
@@ -56,7 +54,7 @@ public class AiDialogueController : MonoBehaviour
 
         await _llmAgent.Warmup();
 
-        _uiDialogue.AddSystemMessage("대화를 시작할 수 있습니다.");
+        _uiDialogue.AddSystemMessage("준비가 끝났어요.");
     }
 
     private void HandleSendRequested(string playerInput)
@@ -116,7 +114,7 @@ public class AiDialogueController : MonoBehaviour
         _uiDialogue.MarkStreamingStopped();
     }
 
-    private void HandleCloseRequested()
+    public void HandleCloseRequested()
     {
         CloseSessionAsync().Forget();
     }
@@ -148,7 +146,9 @@ public class AiDialogueController : MonoBehaviour
             NpcName = context.Npc.Data.NpcName,
             Mbti = context.Npc.Data.NpcMbti,
             Personality = context.Npc.Data.NpcPersonality,
+            Age = context.Npc.Data.Age,
             Job = context.Npc.Data.Job,
+            WayOfTone = context.Npc.Data.WayOfTone,
             Context = BuildContext(context),
             PlayerInput = playerInput,
             PlayerId = GetPlayerId(context),

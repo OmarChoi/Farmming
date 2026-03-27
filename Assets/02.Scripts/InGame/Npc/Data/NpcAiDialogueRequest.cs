@@ -6,7 +6,9 @@ public class NpcAiDialogueRequest
     public string NpcName;
     public string Mbti;
     public string Personality;
+    public string Age;
     public string Job;
+    public string WayOfTone;
     public string Context;
     public string PlayerInput;
     public string PlayerId;

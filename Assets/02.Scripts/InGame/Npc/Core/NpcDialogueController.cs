@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 public class NpcDialogueController : MonoBehaviour
 {
@@ -131,7 +132,7 @@ public class NpcDialogueController : MonoBehaviour
         {
             case EDialogueUiState.Greeting:
                 _dialogueState = EDialogueUiState.Choice;
-                ShowChoiceButtons();
+                ShowChoiceButtons(_currentNpc.InteractionOptions);
                 break;
 
             case EDialogueUiState.Talking:
@@ -145,11 +146,30 @@ public class NpcDialogueController : MonoBehaviour
         }
     }
 
-    private void ShowChoiceButtons()
+    private void ShowSingleOption(ENpcInteractionType type)
+    {
+        var option = GetOption(type);
+        _uiDialogue.ShowSingleButton(option, OnClickOption);
+    }
+
+    private NpcInteractionOption GetOption(ENpcInteractionType type)
+    {
+        if (_currentNpc == null || _currentNpc.InteractionOptions == null) return null;
+        var option = _currentNpc?.InteractionOptions?.FirstOrDefault(o => o.Type == type);
+
+        if (option == null)
+        {
+            Debug.LogWarning($"Npc에 {type} 옵션이 없습니다.");
+        }
+
+        return option;
+    }
+
+    private void ShowChoiceButtons(NpcInteractionOption[] interactionOptions)
     {
         if (_currentNpc == null) return;
 
-        _uiDialogue.ShowButtons(_currentNpc.InteractionOptions, OnClickOption);
+        _uiDialogue.ShowButtons(interactionOptions, OnClickOption);
     }
 
     private void OnClickOption(ENpcInteractionType type)
@@ -165,6 +185,7 @@ public class NpcDialogueController : MonoBehaviour
                 break;
 
             case ENpcInteractionType.DeepTalk:
+                _dialogueState = EDialogueUiState.DeepTalking;
                 _interactionService.Execute(type, CreateContext());
                 break;
 
