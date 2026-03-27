@@ -8,7 +8,7 @@ public class IceVFX : MonoBehaviour
     [SerializeField] private float _effectDuration = 3f;
 
     private Action _onLandCallback;
-    private bool _landing = false;
+    private bool _landed = false;
 
     public void Launch(Vector3 targetPosition, Vector3 direction, Action onLand = null)
     {
@@ -21,19 +21,20 @@ public class IceVFX : MonoBehaviour
 
     }
 
-    private void OnLand(Vector3 position)
-    {
-        _onLandCallback?.Invoke(); 
-        Destroy(gameObject, _effectDuration);
-    }
-
     private void OnParticleCollision(GameObject other)
     {
-        if (!_landing)
+        if (_landed) return;
+        _landed = true;
+
+        if (_iceEffect != null)
         {
-            _landing = true;
-            _onLandCallback?.Invoke();
-            Destroy(gameObject, _effectDuration);
+            Vector3 hitPos = other.transform.position + Vector3.up * 0.1f;
+            GameObject effect = Instantiate(_iceEffect, hitPos, Quaternion.identity);
+            Destroy(effect, _effectDuration);
         }
+
+        _onLandCallback?.Invoke();
+
+        Destroy(gameObject, _effectDuration);
     }
 }
