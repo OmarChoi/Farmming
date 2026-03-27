@@ -10,8 +10,6 @@ public class GameSceneInit : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log($"[GameSceneInit] Start — IsConnected={PhotonNetwork.IsConnected}, InRoom={PhotonNetwork.InRoom}, IsMaster={PhotonNetwork.IsMasterClient}");
-
         if (PhotonNetwork.IsConnected)
             InitNetworkGame();
         else
@@ -20,8 +18,6 @@ public class GameSceneInit : MonoBehaviour
 
     private void InitNetworkGame()
     {
-        Debug.Log($"[GameSceneInit] InitNetworkGame — IsMaster={PhotonNetwork.IsMasterClient}");
-
         if (PhotonNetwork.IsMasterClient)
         {
             if (RoomManager.Instance.IsFirstVisit)
@@ -45,57 +41,20 @@ public class GameSceneInit : MonoBehaviour
 
     private async UniTaskVoid WaitForMapAndSpawn()
     {
-        try
-        {
-            Debug.Log($"[Client] WaitForMapAndSpawn 시작 — InRoom={PhotonNetwork.InRoom}, MapSync={MapSyncManager.Instance != null}");
+        if (!PhotonNetwork.InRoom) return;
+        if (MapSyncManager.Instance == null) return;
 
-            if (!PhotonNetwork.InRoom)
-            {
-                Debug.LogError("[Client] 방에 입장하지 않은 상태 — 스폰 불가");
-                return;
-            }
+        bool synced = false;
+        MapSyncManager.Instance.OnMapSynced += () => synced = true;
+        MapSyncManager.Instance.RequestMapFromMaster();
 
-            if (MapSyncManager.Instance != null)
-            {
-                bool synced = false;
-                MapSyncManager.Instance.OnMapSynced += () => synced = true;
-                MapSyncManager.Instance.RequestMapFromMaster();
+        float timeout = Time.time + 10f;
+        await UniTask.WaitUntil(() => synced || Time.time > timeout);
 
-                Debug.Log("[Client] 맵 동기화 요청 완료, 대기 중...");
+        if (!synced) return;
 
-                float timeout = Time.time + 10f;
-                await UniTask.WaitUntil(() => synced || Time.time > timeout);
-
-                Debug.Log($"[Client] 대기 종료 — synced={synced}");
-
-                if (!synced)
-                {
-                    Debug.LogError("[Client] 맵 동기화 시간 초과");
-                    return;
-                }
-            }
-            else
-            {
-                Debug.LogError("[Client] MapSyncManager.Instance가 null");
-                return;
-            }
-
-            var pos = FindSpawnPosition();
-            Debug.Log($"[Client] 스폰 위치: {pos}");
-            SpawnPlayer(pos);
-            Debug.Log("[Client] 플레이어 스폰 완료");
-
-            // 1초 후 존재 확인
-            await UniTask.Delay(1000);
-            var allPlayers = Object.FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-            Debug.Log($"[Client] 1초 후 PlayerController 수: {allPlayers.Length}");
-            foreach (var p in allPlayers)
-                Debug.Log($"  - {p.name}, IsMine={p.IsMine}, pos={p.transform.position}");
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"[Client] WaitForMapAndSpawn 실패: {e}");
-        }
+        var pos = FindSpawnPosition();
+        SpawnPlayer(pos);
     }
 
     private Vector3 FindSpawnPosition()
@@ -129,8 +88,6 @@ public class GameSceneInit : MonoBehaviour
     private void SpawnPlayer(Vector3 spawnPos)
     {
         var playerObj = PhotonNetwork.Instantiate(_playerPrefabName, spawnPos, Quaternion.identity);
-        var pv = playerObj.GetPhotonView();
-        Debug.Log($"[SpawnPlayer] name={playerObj.name}, active={playerObj.activeSelf}, ViewID={pv?.ViewID}, IsMine={pv?.IsMine}, scene={playerObj.scene.name}");
         var pc = playerObj.GetComponent<PlayerController>();
 
         if (CustomizeData.Instance != null)

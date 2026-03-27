@@ -61,9 +61,6 @@ public class PlayerController : MonoBehaviour
 
     private void OnDestroy()
     {
-        Debug.LogError($"[PlayerController] OnDestroy 호출! PlayerId={PlayerId}, IsMine={IsMine}, name={gameObject.name}", gameObject);
-        Debug.LogError(System.Environment.StackTrace);
-
         if (SaveManager.Instance != null && PlayerId != null)
             SaveManager.Instance.UnregisterPlayer(PlayerId);
     }
