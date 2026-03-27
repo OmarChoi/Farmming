@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: e855645ee87064940b33c7cb22a6cd2c, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -1531,7 +1531,6 @@ MonoBehaviour:
   _mapManager: {fileID: 1331096362}
   _player: {fileID: 1547890027}
   _generateVillageKey: 286
-  _dungeon1SceneName: YJ_Dungeon1
   _mapNavMeshController: {fileID: 0}
 --- !u!1001 &896830585
 PrefabInstance:
@@ -3749,6 +3748,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1f89a0ae6e543de96eccae1c49df5ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIController
+  _escapeKey: 27
   _hudCanvas: {fileID: 2145415653}
   _popupCanvas: {fileID: 1339350060}
   _overlayCanvas: {fileID: 1339350060}
@@ -4707,3 +4707,4 @@ SceneRoots:
   - {fileID: 1302747790}
   - {fileID: 1605015274}
   - {fileID: 7509436397392349548}
+  - {fileID: 711722685}
