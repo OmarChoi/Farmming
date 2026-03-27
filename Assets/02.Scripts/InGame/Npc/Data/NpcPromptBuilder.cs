@@ -21,7 +21,8 @@ public class NpcPromptBuilder
         sb.AppendLine("- 항상 캐릭터 성격에 맞게 말한다");
         sb.AppendLine($"- {request.WayOfTone} 어투로 말한다");
         sb.AppendLine($"- 본인의 이름은 무조건 {request.NpcName}이다");
-        sb.AppendLine("- 한 번에 1~3문장만 말한다");
+        sb.AppendLine("- 나이 혹은 직업은 필요한 경우가 아니면 스스로 언급은 자제한다");
+        sb.AppendLine("- 한 번에 1~4문장만 말한다");
         sb.AppendLine("- 너무 설명하지 말고 자연스럽게 말한다");
         sb.AppendLine("- 플레이어를 현실 사람이 아닌 게임 속 인물로 인식한다");
         sb.AppendLine("- 캐릭터 대사만 출력한다");

@@ -600,8 +600,9 @@ MonoBehaviour:
   _closeButton: {fileID: 6766806069734933675}
   _playerChatText: {fileID: 4751616003059010126}
   _npcChatText: {fileID: 3685133607933124924}
-  _systemChatText: {fileID: 3685133607933124924}
+  _systemChatText: {fileID: 3366771917138438007}
   _npcNameText: {fileID: 3115703660864716535}
+  _wrapper: {fileID: 0}
   _playerAiChatRoot: {fileID: 6574804075946369987}
 --- !u!114 &1815893298679195429
 MonoBehaviour:
@@ -1001,6 +1002,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 46583655773767145, guid: a467ce3854fde5541993b722bc1d1782, type: 3}
   m_PrefabInstance: {fileID: 1334916795443006792}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3366771917138438007 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4341398539073055295, guid: a467ce3854fde5541993b722bc1d1782, type: 3}
+  m_PrefabInstance: {fileID: 1334916795443006792}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!114 &4096014398178856338 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3049329078432907482, guid: a467ce3854fde5541993b722bc1d1782, type: 3}

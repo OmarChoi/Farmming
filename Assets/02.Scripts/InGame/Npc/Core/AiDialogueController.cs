@@ -56,7 +56,7 @@ public class AiDialogueController : MonoBehaviour
         _llmAgent.systemPrompt = _promptBuilder.BuildSystemPrompt(openRequest);
 
         await _llmAgent.Warmup();
-
+        _uiDialogue.ClearMessagesExcludePlayer();
         _uiDialogue.AddSystemMessage("준비가 끝났어요.");
     }
 
