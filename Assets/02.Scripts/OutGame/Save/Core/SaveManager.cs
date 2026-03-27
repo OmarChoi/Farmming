@@ -12,6 +12,7 @@ public class SaveManager : MonoBehaviour
     private readonly Dictionary<string, PlayerController> _players = new();
     private ISaveRepository _repository;
     private SaveData _loadedData;
+    private const float RemoteSaveTimeout = 5f;
 
     private void Awake()
     {
@@ -92,7 +93,7 @@ public class SaveManager : MonoBehaviour
         // 원격 플레이어 응답 대기 (최대 5초)
         if (_expectedResponses > 0)
         {
-            float timeout = Time.time + 5f;
+            float timeout = Time.time + RemoteSaveTimeout;
             await UniTask.WaitUntil(() =>
                 _receivedSaveData.Count >= _expectedResponses || Time.time > timeout);
         }

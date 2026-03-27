@@ -7,7 +7,9 @@ public class GameSceneInit : MonoBehaviour
     [SerializeField] private string _playerPrefabName = "Player";
     [SerializeField] private MapManager _mapManager;
     [SerializeField] private MapNavMeshController _mapNavMeshController;
-
+    private const float MapSyncTimeoutSeconds = 10f;
+    private const int MaxSpawnCheckHeight = 20;
+    
     private void Start()
     {
         if (PhotonNetwork.IsConnected)
@@ -48,7 +50,7 @@ public class GameSceneInit : MonoBehaviour
         MapSyncManager.Instance.OnMapSynced += () => synced = true;
         MapSyncManager.Instance.RequestMapFromMaster();
 
-        float timeout = Time.time + 10f;
+        float timeout = Time.time + MapSyncTimeoutSeconds;
         await UniTask.WaitUntil(() => synced || Time.time > timeout);
 
         if (!synced) return;
@@ -76,7 +78,7 @@ public class GameSceneInit : MonoBehaviour
         int cx = (minX + maxX) / 2;
         int cz = (minZ + maxZ) / 2;
 
-        for (int y = 20; y >= 0; y--)
+        for (int y = MaxSpawnCheckHeight; y >= 0; y--)
         {
             if (gridData.HasCell(new Vector3Int(cx, y, cz)))
                 return gridManager.GridToWorld(new Vector3Int(cx, y + 1, cz));
