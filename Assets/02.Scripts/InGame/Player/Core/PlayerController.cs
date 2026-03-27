@@ -29,16 +29,25 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        PlayerId = NetworkManager.Instance != null
-            ? NetworkManager.Instance.GetPlayerId()
-            : "local";
+        // IsMine → 로컬 GUID, 원격 → NickName (상대방의 GUID)
+        if (PhotonView != null && !PhotonView.IsMine && PhotonView.Owner != null)
+            PlayerId = PhotonView.Owner.NickName;
+        else
+            PlayerId = NetworkManager.Instance != null
+                ? NetworkManager.Instance.GetPlayerId()
+                : "local";
+
+        // 마스터: 모든 플레이어 등록 (저장 대상)
+        if (Photon.Pun.PhotonNetwork.IsMasterClient && SaveManager.Instance != null)
+            SaveManager.Instance.RegisterPlayer(PlayerId, this);
 
         if (PhotonView != null && !PhotonView.IsMine) return;
 
-        SetCursorLock(true);
-
-        if (SaveManager.Instance != null)
+        // 로컬 전용: 자기 자신도 등록 (비마스터 클라이언트)
+        if (!Photon.Pun.PhotonNetwork.IsMasterClient && SaveManager.Instance != null)
             SaveManager.Instance.RegisterPlayer(PlayerId, this);
+
+        SetCursorLock(true);
     }
 
     private void Update()

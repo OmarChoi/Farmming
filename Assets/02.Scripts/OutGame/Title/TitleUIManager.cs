@@ -1,9 +1,6 @@
 using Cysharp.Threading.Tasks;
-using Photon.Pun;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class TitleUIManager : MonoBehaviour
 {
@@ -17,7 +14,6 @@ public class TitleUIManager : MonoBehaviour
     [Header("로비 - 세이브 슬롯")]
     [SerializeField] private Transform _saveSlotParent;
     [SerializeField] private TitleSaveSlot _saveSlotPrefab;
-    [SerializeField] private int _maxSlots = 3;
 
     [Header("방 참여")]
     [SerializeField] private TMP_InputField _roomIdInput;
@@ -26,140 +22,87 @@ public class TitleUIManager : MonoBehaviour
     [Header("방 생성 완료")]
     [SerializeField] private TMP_Text _createdRoomIdText;
 
-    [Header("씬 이름")]
-    [SerializeField] private string _customizeSceneName = "YJ_Customizing";
-    [SerializeField] private string _gameSceneName = "GameScene";
+    [Header("참조")]
+    [SerializeField] private TitleFlowManager _flowManager;
 
-    private int _selectedSlot;
+    private void Awake()
+    {
+        _flowManager.OnPanelChanged += ShowPanel;
+        _flowManager.OnRoomIdReady += roomId => _createdRoomIdText.text = roomId;
+        _flowManager.OnJoinError += msg => { if (_joinErrorText != null) _joinErrorText.text = msg; };
+    }
 
     private void Start()
     {
-        ShowPanel(_titlePanel);
+        ShowPanel(ETitlePanel.Title);
     }
 
-    // === Title Panel ===
+    private void OnDestroy()
+    {
+        if (_flowManager != null)
+            _flowManager.OnPanelChanged -= ShowPanel;
+    }
+
+    // === Button Handlers (Inspector 연결) ===
 
     public void OnClickGameStart()
     {
-        ShowPanel(_lobbyPanel);
-        RefreshSaveSlots().Forget();
+        ShowPanel(ETitlePanel.Lobby);
+        RefreshSlotUI().Forget();
     }
 
-    // === Lobby Panel ===
-
-    private async UniTaskVoid RefreshSaveSlots()
-    {
-        foreach (Transform child in _saveSlotParent)
-            Destroy(child.gameObject);
-
-        var repo = new LocalJsonSaveRepository();
-
-        for (int i = 0; i < _maxSlots; i++)
-        {
-            bool exists = await repo.HasSaveAsync(i);
-            var slot = Instantiate(_saveSlotPrefab, _saveSlotParent);
-            int slotIndex = i;
-            slot.Setup(slotIndex, exists, () => _selectedSlot = slotIndex);
-        }
-    }
-
-    public void OnClickCreateRoom()
-    {
-        ShowPanel(_connectingPanel);
-
-        NetworkManager.Instance.Connect(
-            onConnected: () =>
-            {
-                RoomManager.Instance.CreateRoom(
-                    onJoined: () =>
-                    {
-                        ShowPanel(_roomPanel);
-                        _createdRoomIdText.text = RoomManager.Instance.RoomId;
-                    },
-                    onFailed: () => ShowPanel(_lobbyPanel)
-                );
-            },
-            onFailed: () => ShowPanel(_lobbyPanel)
-        );
-    }
+    public void OnClickCreateRoom() => _flowManager.CreateNewGame();
+    public void OnClickRoomStart() => _flowManager.StartRoom();
 
     public void OnClickJoinRoom()
     {
-        ShowPanel(_joinPanel);
+        ShowPanel(ETitlePanel.Join);
         _roomIdInput.text = "";
         if (_joinErrorText != null) _joinErrorText.text = "";
     }
 
-    // === Room Panel ===
+    public void OnClickConfirmJoin() => _flowManager.ConfirmJoin(_roomIdInput.text.Trim().ToUpper());
+    public void OnClickJoinBack() => ShowPanel(ETitlePanel.Lobby);
+    public void OnClickLobbyBack() => ShowPanel(ETitlePanel.Title);
 
-    public void OnClickRoomStart()
+    // === Slot UI ===
+
+    private async UniTaskVoid RefreshSlotUI()
     {
-        RoomManager.Instance.PendingAction = RoomManager.ERoomAction.Create;
-        SceneManager.LoadScene(_customizeSceneName);
-    }
+        foreach (Transform child in _saveSlotParent)
+            Destroy(child.gameObject);
 
-    // === Join Panel ===
+        await _flowManager.RefreshSlotsAsync();
 
-    public void OnClickConfirmJoin()
-    {
-        string roomId = _roomIdInput.text.Trim().ToUpper();
-
-        if (string.IsNullOrEmpty(roomId))
+        var service = _flowManager.SlotService;
+        for (int i = 0; i < service.MaxSlots; i++)
         {
-            if (_joinErrorText != null) _joinErrorText.text = "방 ID를 입력해주세요.";
-            return;
+            var slot = Instantiate(_saveSlotPrefab, _saveSlotParent);
+            int idx = i;
+            bool hasSave = service.HasSave(i);
+
+            if (hasSave)
+                slot.Setup(i, true,
+                    () => _flowManager.LoadExistingGame(idx),
+                    () => DeleteSlot(idx));
+            else
+                slot.Setup(i, false, null, null);
         }
-
-        ShowPanel(_connectingPanel);
-
-        NetworkManager.Instance.Connect(
-            onConnected: () =>
-            {
-                RoomManager.Instance.CheckRoomExists(roomId, exists =>
-                {
-                    if (exists)
-                    {
-                        RoomManager.Instance.PendingAction = RoomManager.ERoomAction.Join;
-                        RoomManager.Instance.PendingRoomId = roomId;
-                        SceneManager.LoadScene(_customizeSceneName);
-                    }
-                    else
-                    {
-                        ShowPanel(_joinPanel);
-                        if (_joinErrorText != null)
-                            _joinErrorText.text = "방을 찾을 수 없습니다.";
-                    }
-                });
-            },
-            onFailed: () =>
-            {
-                ShowPanel(_joinPanel);
-                if (_joinErrorText != null)
-                    _joinErrorText.text = "서버 연결에 실패했습니다.";
-            }
-        );
     }
 
-    public void OnClickJoinBack()
+    private void DeleteSlot(int slot)
     {
-        ShowPanel(_lobbyPanel);
+        _flowManager.DeleteSlotAsync(slot).ContinueWith(() => RefreshSlotUI().Forget());
     }
 
-    // === Lobby Panel 뒤로가기 ===
+    // === Panel ===
 
-    public void OnClickLobbyBack()
+    private void ShowPanel(ETitlePanel panel)
     {
-        ShowPanel(_titlePanel);
-    }
-
-    // === 유틸 ===
-
-    private void ShowPanel(GameObject panel)
-    {
-        _titlePanel.SetActive(panel == _titlePanel);
-        _lobbyPanel.SetActive(panel == _lobbyPanel);
-        _joinPanel.SetActive(panel == _joinPanel);
-        _roomPanel.SetActive(panel == _roomPanel);
-        _connectingPanel.SetActive(panel == _connectingPanel);
+        _titlePanel.SetActive(panel == ETitlePanel.Title);
+        _lobbyPanel.SetActive(panel == ETitlePanel.Lobby);
+        _joinPanel.SetActive(panel == ETitlePanel.Join);
+        _roomPanel.SetActive(panel == ETitlePanel.Room);
+        _connectingPanel.SetActive(panel == ETitlePanel.Connecting);
     }
 }

@@ -8,10 +8,6 @@ public class TestMapGenerator : MonoBehaviour
 
     [Header("Generate")]
     [SerializeField] private KeyCode _generateVillageKey = KeyCode.F1;
-
-    [Header("Dungeon Scene Names")]
-    [SerializeField] private string _dungeon1SceneName = "Dungeon1Scene";
-
     [SerializeField] private MapNavMeshController _mapNavMeshController;
 
     private void Update()
@@ -26,7 +22,7 @@ public class TestMapGenerator : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.F6))
         {
-            SceneManager.LoadScene(_dungeon1SceneName);
+            SceneManager.LoadScene(SceneName.Dungeon1);
         }
     }
 }

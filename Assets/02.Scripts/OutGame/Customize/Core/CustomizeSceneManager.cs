@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 public class CustomizeSceneManager : MonoBehaviour
 {
     [SerializeField] private CharacterPartSwapper _partSwapper;
-    [SerializeField] private string _gameSceneName = "GameScene";
 
     public void OnConfirm()
     {
@@ -13,7 +12,7 @@ public class CustomizeSceneManager : MonoBehaviour
 
         if (RoomManager.Instance == null || RoomManager.Instance.PendingAction == RoomManager.ERoomAction.None)
         {
-            SceneManager.LoadScene(_gameSceneName);
+            SceneManager.LoadScene(SceneName.Game);
             return;
         }
 
@@ -23,7 +22,7 @@ public class CustomizeSceneManager : MonoBehaviour
         if (action == RoomManager.ERoomAction.Create)
         {
             PhotonNetwork.AutomaticallySyncScene = true;
-            PhotonNetwork.LoadLevel(_gameSceneName);
+            PhotonNetwork.LoadLevel(SceneName.Game);
         }
         else
         {
@@ -31,7 +30,7 @@ public class CustomizeSceneManager : MonoBehaviour
             RoomManager.Instance.JoinRoom(roomId,
                 onJoined: () =>
                 {
-                    PhotonNetwork.LoadLevel(_gameSceneName);
+                    PhotonNetwork.LoadLevel(SceneName.Game);
                 }
             );
         }

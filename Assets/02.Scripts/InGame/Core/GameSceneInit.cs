@@ -18,24 +18,19 @@ public class GameSceneInit : MonoBehaviour
 
     private void InitNetworkGame()
     {
-        Vector3 spawnPos = Vector3.zero;
-
         if (PhotonNetwork.IsMasterClient)
         {
             if (RoomManager.Instance.IsFirstVisit)
             {
-                spawnPos = _mapManager.GenerateVillage();
+                Vector3 spawnPos = _mapManager.GenerateVillage();
                 _mapNavMeshController.BuildInitialNavMesh();
+                SpawnPlayer(spawnPos);
+                RoomManager.Instance.OpenRoom();
             }
             else
             {
-                LoadSaveData().Forget();
+                LoadAndSpawnMaster().Forget();
             }
-
-            SpawnPlayer(spawnPos);
-
-            // 맵 준비 완료 → 클라이언트 입장 허용
-            RoomManager.Instance.OpenRoom();
         }
         else
         {
@@ -108,9 +103,26 @@ public class GameSceneInit : MonoBehaviour
             existing.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
     }
 
-    private async UniTaskVoid LoadSaveData()
+    private async UniTaskVoid LoadAndSpawnMaster()
     {
         int slot = RoomManager.Instance.SelectedSlot;
+
+        // 1. 맵·지형 데이터 로드 (플레이어 데이터는 아직 적용하지 않음)
         await SaveManager.Instance.LoadAsync(slot);
+
+        // 2. 맵 로드 후 NavMesh 빌드
+        _mapNavMeshController.BuildInitialNavMesh();
+
+        // 3. 스폰 → Start()에서 RegisterPlayer 실행됨
+        SpawnPlayer(Vector3.zero);
+
+        // 4. 한 프레임 대기 → Start() 실행 보장
+        await UniTask.Yield();
+
+        // 5. 로드된 데이터로 위치 복원
+        await SaveManager.Instance.ApplyLoadedPlayers();
+
+        // 6. 클라이언트 입장 허용
+        RoomManager.Instance.OpenRoom();
     }
 }
