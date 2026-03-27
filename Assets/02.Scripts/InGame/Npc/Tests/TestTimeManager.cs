@@ -48,7 +48,7 @@ public class TestTimeManager : MonoBehaviour
         }
 
 #if UNITY_EDITOR
-        Debug.Log($"Day : {_currentDay}, Time : {_currentTime}");
+        //Debug.Log($"Day : {_currentDay}, Time : {_currentTime}");
 #endif
 
         OnTimeChanged?.Invoke(_currentTime);

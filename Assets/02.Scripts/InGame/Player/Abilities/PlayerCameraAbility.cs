@@ -30,8 +30,11 @@ public class PlayerCameraAbility : PlayerAbility
         _defaultLocalPos = _cameraRoot.localPosition;
         _currentOffset = _defaultLocalPos;
 
-        CinemachineCamera vcam = GameObject.Find("FollowCamera").GetComponent<CinemachineCamera>();
-        vcam.Follow = _cameraRoot;
+        if (!_owner.IsMine) return;
+
+        var followCamObj = GameObject.Find("FollowCamera");
+        if (followCamObj != null)
+            followCamObj.GetComponent<CinemachineCamera>().Follow = _cameraRoot;
     }
 
     public void SetPreset(CameraPreset preset, Transform target = null)
@@ -56,6 +59,8 @@ public class PlayerCameraAbility : PlayerAbility
 
     private void LateUpdate()
     {
+        if (!_owner.IsMine) return;
+
         if (_owner.CanRotateCamera)
         {
             _mx += Input.GetAxis("Mouse X") * _owner.StatSo.MouseSensitivity * Time.deltaTime;
