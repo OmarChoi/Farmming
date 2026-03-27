@@ -41,6 +41,7 @@ public class HelperFollowAbility : HelperAbility
 
     private void Update()
     {
+        if (!_owner.IsMine) return;
         if (_owner.State != EHelperState.Summoned) return;
         if (_owner.FollowTarget == null) return;
 

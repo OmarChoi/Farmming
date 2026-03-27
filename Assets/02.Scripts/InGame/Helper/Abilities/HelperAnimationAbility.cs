@@ -17,5 +17,15 @@ public class HelperAnimationAbility : HelperAbility
         if (_currentAnim == anim) return;
         _currentAnim = anim;
         _animator.SetInteger(AnimHash, (int)anim);
+
+        if (_owner.IsMine && _owner.PhotonView != null)
+            _owner.PhotonView.RPC(nameof(HelperController.RPC_PlayAnimation), Photon.Pun.RpcTarget.Others, (int)anim);
+    }
+
+    public void PlayLocal(EHelperAnim anim)
+    {
+        if (_currentAnim == anim) return;
+        _currentAnim = anim;
+        _animator.SetInteger(AnimHash, (int)anim);
     }
 }
