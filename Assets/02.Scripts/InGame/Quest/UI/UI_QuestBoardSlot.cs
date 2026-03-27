@@ -4,11 +4,15 @@ using UnityEngine.UI;
 
 public class UI_QuestBoardSlot : MonoBehaviour
 {
+    [Header("컴포넌트 참조")]
+    [SerializeField] private TypewriterWithWrap _wrapper;
+
     [Header("퀘스트 슬롯 텍스트")]
     [SerializeField] private TextMeshProUGUI _questNameText;
     [SerializeField] private TextMeshProUGUI _descriptionText;
     [SerializeField] private TextMeshProUGUI _questTargetText;
     [SerializeField] private TextMeshProUGUI _questRewardText;
+    private string _rewardText;
 
     [Header("퀘스트 수락 버튼")]
     [SerializeField] private Button _acceptButton;
@@ -21,6 +25,14 @@ public class UI_QuestBoardSlot : MonoBehaviour
 
     public int SlotIndex => _slotIndex;
     public QuestDataSO QuestData => _questData;
+
+    private void Awake()
+    {
+        if (_wrapper == null)
+        {
+            _wrapper = FindFirstObjectByType<TypewriterWithWrap>();
+        }
+    }
 
     public void Init(UI_QuestBoard uiQuestBoard, int index)
     {
@@ -57,7 +69,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
         }
 
         _questNameText.text = quest.QuestName;
-        _descriptionText.text = quest.Description;
+        _descriptionText.text = _wrapper.WrapText(quest.Description, _descriptionText);
 
         if (string.IsNullOrEmpty(quest.TargetId))
         {
@@ -81,12 +93,14 @@ public class UI_QuestBoardSlot : MonoBehaviour
             switch (quest.Reward.RewardType)
             {
                 case (EQuestRewardType.Gold):
-                    _questRewardText.text = $"퀘스트 보상: {quest.Reward.Amount} 골드";
+                    _rewardText = $"퀘스트 보상: {quest.Reward.Amount} 골드";
+                    _questRewardText.text = _wrapper.WrapText(_rewardText, _questRewardText);
                     break;
 
                 case (EQuestRewardType.Item):
                     string itemName = quest.Reward.RewardItem != null ? quest.Reward.RewardItem.DisplayName : "아이템";
-                    _questRewardText.text = $"퀘스트 보상: {itemName} {quest.Reward.Amount}개";
+                    _rewardText = $"퀘스트 보상: {itemName} {quest.Reward.Amount}개";
+                    _questRewardText.text = _questRewardText.text = _wrapper.WrapText(_rewardText, _questRewardText);
                     break;
             }
         }
