@@ -46,6 +46,16 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _iceEffects.Add(new LavaToStoneWaterEffect());
     }
 
+    private void StartWaterAction(TerrainCell cell, bool isSecondary)
+    {
+        _isActing = true;
+        _isSecondary = isSecondary;
+        _currentCell = cell;
+
+        _owner.BeginAction();
+        _animAbility?.Play(EHelperAnim.Water);
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         if (cell == null)
@@ -57,12 +67,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        _isActing = true;
-        _isSecondary = false;
-        _currentCell = cell;
-
-        _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.Water);
+        StartWaterAction(cell, isSecondary: false);
     }
 
     public void InteractSecondary(TerrainCell cell)
@@ -81,12 +86,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        _isActing = true;
-        _isSecondary = true;
-        _currentCell = cell;
-
-        _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.Water);
+        StartWaterAction(cell, isSecondary: true);
     }
 
     public void WaterOpen()
@@ -129,7 +129,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
                 waterVfx?.Launch(targetPos, direction, () =>
                 {
-                    ApplyWaterEffects(cell);
+                    ApplyEffects(cell, _waterEffects);
                 });
             }
         }
@@ -159,20 +159,6 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _isSecondary = false;
         _currentCell = null;
         _owner?.EndAction();
-    }
-
-
-    private void ApplyWaterEffects(TerrainCell cell)
-    {
-        foreach (IWaterEffect effect in _waterEffects)
-        {
-            if (effect.CanHandle(cell))
-            {
-                effect.Apply(cell);
-                return;
-            }
-        }
-        Debug.Log("물을 줄 수 있는 상태 아님");
     }
 
     private Vector3 GetTargetPosition(TerrainCell cell)

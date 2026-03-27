@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
-using TMPro;
 using UnityEngine;
 
 public class IceVFX : MonoBehaviour
 {
     [SerializeField] private SmokeEffect _iceSmokePrefab;
     [SerializeField] private float _effectDuration = 3f;
-    [SerializeField] private float _fadeOutDuration = 1f;
 
     private Action _onLandCallback;
     private bool _landed = false;

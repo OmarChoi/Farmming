@@ -34,7 +34,5 @@ public class TestLavaTilePlacer : MonoBehaviour
                 TerrainGridManager.Instance.SetCell(pos, data);
             }
         }
-
-        Debug.Log($"용암 타일 {_width * _height}개 배치 완료");
     }
 }
