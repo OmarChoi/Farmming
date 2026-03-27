@@ -15,7 +15,10 @@ public class PlayerStaminaAbility : PlayerAbility
 
     private void Start()
     {
-        DayNightCycle.Instance.OnMorningStart += HandleMorning;
+        if (DayNightCycle.Instance != null)
+            DayNightCycle.Instance.OnMorningStart += HandleMorning;
+
+        if (!_owner.IsMine) return;
         OnLocalPlayerReady?.Invoke(this);
     }
 

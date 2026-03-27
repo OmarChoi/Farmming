@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -8,6 +9,8 @@ public class PlayerController : MonoBehaviour
 
     public PlayerStatSO StatSo => _statSo;
 
+    public PhotonView PhotonView { get; private set; }
+    public bool IsMine => PhotonView == null || PhotonView.IsMine;
     public string PlayerId { get; private set; }
     public bool IsUIOpen { get; private set; }
     public bool CanMove => !IsUIOpen && !IsActionLocked;
@@ -20,25 +23,45 @@ public class PlayerController : MonoBehaviour
 
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
 
+    private void Awake()
+    {
+        PhotonView = GetComponent<PhotonView>();
+    }
+
     private void Start()
     {
-        // TODO: PUN2 도입 후 PhotonView.Owner.ActorNumber.ToString()으로 변경
-        PlayerId = "local";
-        SetCursorLock(true);
+        // IsMine → 로컬 GUID, 원격 → NickName (상대방의 GUID)
+        if (PhotonView != null && !PhotonView.IsMine && PhotonView.Owner != null)
+            PlayerId = PhotonView.Owner.NickName;
+        else
+            PlayerId = NetworkManager.Instance != null
+                ? NetworkManager.Instance.GetPlayerId()
+                : "local";
 
-        if (SaveManager.Instance != null)
+        // 마스터: 모든 플레이어 등록 (저장 대상)
+        if (Photon.Pun.PhotonNetwork.IsMasterClient && SaveManager.Instance != null)
             SaveManager.Instance.RegisterPlayer(PlayerId, this);
+
+        if (!IsMine) return;
+
+        // 로컬 전용: 자기 자신도 등록 (비마스터 클라이언트)
+        if (!Photon.Pun.PhotonNetwork.IsMasterClient && SaveManager.Instance != null)
+            SaveManager.Instance.RegisterPlayer(PlayerId, this);
+
+        SetCursorLock(true);
     }
 
     private void Update()
     {
+        if (!IsMine) return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
             SetCursorLock(Cursor.lockState != CursorLockMode.Locked);
     }
 
     private void OnDestroy()
     {
-        if (SaveManager.Instance != null)
+        if (SaveManager.Instance != null && PlayerId != null)
             SaveManager.Instance.UnregisterPlayer(PlayerId);
     }
 
@@ -103,5 +126,36 @@ public class PlayerController : MonoBehaviour
 
         foreach (var saveable in GetComponentsInChildren<ISaveableAbility>())
             saveable.ImportFrom(saveData);
+    }
+
+    // === PunRPC ===
+
+    [PunRPC]
+    public void RPC_RestoreSaveData(string json)
+    {
+        var saveData = JsonUtility.FromJson<PlayerSaveData>(json);
+        ImportSaveData(saveData);
+    }
+
+    [PunRPC]
+    public void RPC_SyncCustomize(string json)
+    {
+        GetAbility<PlayerCustomizeAbility>()?.ApplyFromJson(json);
+    }
+
+    [PunRPC]
+    public void RPC_RequestSaveData()
+    {
+        var saveData = ExportSaveData(PlayerId);
+        string json = JsonUtility.ToJson(saveData);
+        PhotonView.RPC(nameof(RPC_RespondSaveData), RpcTarget.MasterClient, json);
+    }
+
+    [PunRPC]
+    public void RPC_RespondSaveData(string json)
+    {
+        var saveData = JsonUtility.FromJson<PlayerSaveData>(json);
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.ReceiveSaveData(saveData);
     }
 }
