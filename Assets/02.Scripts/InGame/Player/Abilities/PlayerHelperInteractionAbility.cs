@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class PlayerHelperInteractionAbility : PlayerAbility
@@ -9,6 +10,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     private HelperController _currentHelper;
 
     public HelperController CurrentHelper => _currentHelper;
+    public Transform EquipSlot => _equipSlot;
 
     protected override void Awake()
     {
@@ -18,7 +20,11 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void OnDestroy()
     {
-        Unsummon();
+        if (_currentHelper == null) return;
+
+        _currentHelper.OnActionStarted -= OnHelperActionStarted;
+        _currentHelper.OnActionEnded -= OnHelperActionEnded;
+        _currentHelper = null;
     }
 
     private void Update()
@@ -65,7 +71,11 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (_currentHelper.State == EHelperState.Equipped)
             _currentHelper.Unequip();
 
-        _currentHelper.gameObject.SetActive(false);
+        if (PhotonNetwork.IsConnected)
+            PhotonNetwork.Destroy(_currentHelper.gameObject);
+        else
+            Destroy(_currentHelper.gameObject);
+
         _currentHelper = null;
     }
 
@@ -86,9 +96,17 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (_currentHelper == null) return;
 
         if (_currentHelper.State == EHelperState.Equipped)
+        {
             _currentHelper.Unequip();
+            _currentHelper.PhotonView?.RPC(
+                nameof(HelperController.RPC_Unequip), RpcTarget.Others);
+        }
         else
+        {
             _currentHelper.Equip(_equipSlot);
+            _currentHelper.PhotonView?.RPC(
+                nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+        }
     }
 
     private void TryInteractPrimary()
