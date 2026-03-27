@@ -105,15 +105,11 @@ public class NpcController : MonoBehaviour
         _isInteracting = false;
         _currentInteractor = null;
 
-        // todo. 추후 TimeManager로 바꾸기
-        if (TestTimeManager.Instance != null)
-        {
-            ResumeScheduleByCurrentTime(TestTimeManager.Instance.CurrentTime);
-        }
+        ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
     }
 
     // 시간이 되면 Npc가 다음 일정대로 움직이는 것을 시도합니다.
-    public bool TryGetNextScheduleEntry(int time, out NpcScheduleEntry entry)
+    public bool TryGetNextScheduleEntry(GameTime time, out NpcScheduleEntry entry)
     {
         entry = null;
 
@@ -122,7 +118,7 @@ public class NpcController : MonoBehaviour
         if (_isInteracting) return false;
 
         NpcScheduleEntry nextEntry = _npcSchedule.ScheduleEntries[_currentScheduleIndex];
-        int scheduleTime = nextEntry.ScheduleTime + _timeOffset;
+        GameTime scheduleTime = nextEntry.ScheduleTime + _timeOffset;
 
         if (time >= scheduleTime)
         {
@@ -234,7 +230,7 @@ public class NpcController : MonoBehaviour
     }
 
     // 대화 등으로 스케줄이 끊기면 재개합니다.
-    public void ResumeScheduleByCurrentTime(int currentTime)
+    public void ResumeScheduleByCurrentTime(GameTime currentTime)
     {
         if (_npcSchedule == null || _npcSchedule.ScheduleEntries == null || _npcSchedule.ScheduleEntries.Count == 0) return;
 
@@ -244,7 +240,7 @@ public class NpcController : MonoBehaviour
         for (int i = 0; i < _npcSchedule.ScheduleEntries.Count; i++)
         {
             var entry = _npcSchedule.ScheduleEntries[i];
-            int scheduleTime = entry.ScheduleTime + _timeOffset;
+            GameTime scheduleTime = entry.ScheduleTime + _timeOffset;
 
             if (currentTime >= scheduleTime)
             {

@@ -15,17 +15,14 @@ public class PlayerStaminaAbility : PlayerAbility
 
     private void Start()
     {
-        if (DayNightCycle.Instance != null)
-            DayNightCycle.Instance.OnMorningStart += HandleMorning;
-
+        TimeEvents.OnDayStarted += HandleMorning;
         if (!_owner.IsMine) return;
         OnLocalPlayerReady?.Invoke(this);
     }
 
     private void OnDestroy()
     {
-        if (DayNightCycle.Instance != null)
-            DayNightCycle.Instance.OnMorningStart -= HandleMorning;
+        TimeEvents.OnDayStarted -= HandleMorning;
     }
 
     public bool TryConsume(float amount) => Stamina.TryConsume(amount);
