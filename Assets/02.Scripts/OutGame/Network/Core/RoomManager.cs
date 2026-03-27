@@ -8,6 +8,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
 {
     public static RoomManager Instance { get; private set; }
 
+    private const string VISITED_KEY = "vp";
+
     public enum ERoomAction { None, Create, Join }
 
     public string RoomId { get; private set; }
@@ -46,7 +48,9 @@ public class RoomManager : MonoBehaviourPunCallbacks
         {
             MaxPlayers = 4,
             IsVisible = true,
-            IsOpen = false
+            IsOpen = false,
+            CustomRoomProperties = new ExitGames.Client.Photon.Hashtable { { VISITED_KEY, "" } },
+            CustomRoomPropertiesForLobby = new[] { VISITED_KEY }
         };
 
         PhotonNetwork.CreateRoom(RoomId, options);
@@ -178,6 +182,24 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
         _onFirstVisit = null;
         _onReturning = null;
+    }
+
+    /// 로비에서 방 목록의 커스텀 프로퍼티를 확인하여 재방문 여부 판별
+    public bool IsReturningPlayer(string roomId, string playerId)
+    {
+        if (!_cachedRoomList.TryGetValue(roomId, out var info)) return false;
+        if (!info.CustomProperties.TryGetValue(VISITED_KEY, out var val)) return false;
+        if (val is not string players) return false;
+        return players.Contains(playerId);
+    }
+
+    /// 저장 완료 후 호출 — 방 커스텀 프로퍼티에 방문 플레이어 목록 갱신
+    public void UpdateVisitedPlayers(List<string> playerIds)
+    {
+        if (!PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == null) return;
+        string joined = string.Join(",", playerIds);
+        PhotonNetwork.CurrentRoom.SetCustomProperties(
+            new ExitGames.Client.Photon.Hashtable { { VISITED_KEY, joined } });
     }
 
     private string GenerateRoomId()

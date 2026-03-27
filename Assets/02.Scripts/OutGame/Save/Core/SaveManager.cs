@@ -117,6 +117,16 @@ public class SaveManager : MonoBehaviour
         _loadedData = data;
 
         await _repository.SaveAsync(data, slot);
+
+        // 방 커스텀 프로퍼티에 방문 플레이어 목록 갱신
+        if (RoomManager.Instance != null)
+        {
+            var ids = new List<string>();
+            foreach (var p in data.Players)
+                ids.Add(p.PlayerId);
+            RoomManager.Instance.UpdateVisitedPlayers(ids);
+        }
+
         Debug.Log($"저장 완료 (슬롯 {slot}, 플레이어 {data.Players.Count}명)");
     }
 

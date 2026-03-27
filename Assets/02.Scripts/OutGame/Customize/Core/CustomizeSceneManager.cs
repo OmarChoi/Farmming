@@ -26,8 +26,11 @@ public class CustomizeSceneManager : MonoBehaviour
         }
         else
         {
-            // 클라이언트: ConfirmJoin에서 이미 방에 입장한 상태
-            SceneManager.LoadScene(SceneName.Game);
+            // 첫 방문 클라이언트: 커스터마이징 후 방 입장
+            string roomId = RoomManager.Instance.PendingRoomId;
+            RoomManager.Instance.JoinRoom(roomId,
+                onJoined: () => PhotonNetwork.LoadLevel(SceneName.Game)
+            );
         }
     }
 }
