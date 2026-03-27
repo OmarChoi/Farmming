@@ -6,10 +6,6 @@ public class SmokeEffect : MonoBehaviour
     [SerializeField] private float _effectDuration = 3f;
     [SerializeField] private float _fadeOutDuration = 1f;
 
-
-    //생성되면
-    // 사라지는것
-
     public void StartSmokeEffect()
     {
         StartCoroutine(FadeOutAndDestroy(_effectDuration, _fadeOutDuration));

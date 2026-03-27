@@ -5,8 +5,13 @@ public class LavaTileTransition : MonoBehaviour
 {
     [SerializeField] private float _transitionDuration = 2f;
     [SerializeField] private Material _blendMaterial;
-
+    private Material _instanceMat;
     private static readonly int BlendFactorID = Shader.PropertyToID("_BlendFactor");
+
+    private void Awake()
+    {
+        _instanceMat = new Material(_blendMaterial);
+    }
 
     public void StartTransition(TerrainCell cell)
     {
@@ -22,21 +27,20 @@ public class LavaTileTransition : MonoBehaviour
             yield break;
         }
 
-        Material instanceMat = new Material(_blendMaterial);
         foreach (var r in renderers)
-            r.material = instanceMat;
+            r.material = _instanceMat;
 
         float elapsed = 0f;
         while (elapsed < _transitionDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, elapsed / _transitionDuration);
-            instanceMat.SetFloat(BlendFactorID, t);
+            _instanceMat.SetFloat(BlendFactorID, t);
             yield return null;
         }
 
         ApplyStoneCell(cell);
-        Destroy(instanceMat);
+        Destroy(_instanceMat);
     }
 
     private void ApplyStoneCell(TerrainCell cell)
