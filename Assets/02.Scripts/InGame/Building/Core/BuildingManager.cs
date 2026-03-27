@@ -30,16 +30,19 @@ public class BuildingManager : MonoBehaviour
 
     private void Start()
     {
-        DayNightCycle.Instance.OnMorningStart += AdvanceDay;
+        if (TimeSystem.Instance != null)
+        {
+            TimeSystem.Instance.OnDayStarted += AdvanceDay;
+        }
     }
 
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
 
-        if (DayNightCycle.Instance != null)
+        if (TimeSystem.Instance != null)
         {
-            DayNightCycle.Instance.OnMorningStart -= AdvanceDay;
+            TimeSystem.Instance.OnDayStarted -= AdvanceDay;
         }
     }
     #endregion
