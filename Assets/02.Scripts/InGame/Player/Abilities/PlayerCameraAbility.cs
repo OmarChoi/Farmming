@@ -30,7 +30,7 @@ public class PlayerCameraAbility : PlayerAbility
         _defaultLocalPos = _cameraRoot.localPosition;
         _currentOffset = _defaultLocalPos;
 
-        if (!_owner.PhotonView.IsMine) return;
+        if (!_owner.IsMine) return;
 
         var followCamObj = GameObject.Find("FollowCamera");
         if (followCamObj != null)
@@ -59,7 +59,7 @@ public class PlayerCameraAbility : PlayerAbility
 
     private void LateUpdate()
     {
-        if (!_owner.PhotonView.IsMine) return;
+        if (!_owner.IsMine) return;
 
         if (_owner.CanRotateCamera)
         {

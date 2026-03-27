@@ -23,7 +23,7 @@ public class PlayerTerrainAbility : PlayerAbility
 
     private void Update()
     {
-        if (!_owner.PhotonView.IsMine) return;
+        if (!_owner.IsMine) return;
         UpdateFrontGridPos();
     }
 

@@ -23,7 +23,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void Update()
     {
-        if (!_owner.PhotonView.IsMine) return;
+        if (!_owner.IsMine) return;
         if (!_owner.CanMove) return;
 
         if (Input.GetKeyDown(_equipKey))

@@ -37,13 +37,13 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void Start()
     {
-        // TODO: PUN2 도입 후 PhotonView.IsMine 체크 추가
+        if (!_owner.IsMine) return;
         OnLocalPlayerReady?.Invoke(this);
     }
 
     private void Update()
     {
-        if (!_owner.PhotonView.IsMine) return;
+        if (!_owner.IsMine) return;
 
         if (Input.GetKeyDown(_inventoryKey))
             Toggle();
