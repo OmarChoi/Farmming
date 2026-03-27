@@ -8,6 +8,7 @@ public class GameClock
     public int CurrentDay { get; private set; }
     public GameTime CurrentTime { get; private set; }
     public bool IsDayTime { get; private set; }
+    public int ElapsedDays => CurrentDay - 1;
 
     public GameClock(int defaultDay, GameTime defaultTime, GameTime dayStartTime, GameTime dayEndTime)
     {

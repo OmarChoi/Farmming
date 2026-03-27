@@ -15,19 +15,13 @@ public class PlayerStaminaAbility : PlayerAbility
 
     private void Start()
     {
-        if (TimeSystem.Instance != null)
-        {
-            TimeSystem.Instance.OnDayStarted += HandleMorning;
-        }
+        TimeEvents.OnDayStarted += HandleMorning;
         OnLocalPlayerReady?.Invoke(this);
     }
 
     private void OnDestroy()
     {
-        if (TimeSystem.Instance != null)
-        {
-            TimeSystem.Instance.OnDayStarted -= HandleMorning;
-        }
+        TimeEvents.OnDayStarted -= HandleMorning;
     }
 
     public bool TryConsume(float amount) => Stamina.TryConsume(amount);

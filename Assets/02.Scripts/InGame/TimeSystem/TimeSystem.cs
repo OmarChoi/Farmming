@@ -1,10 +1,7 @@
-using System;
 using UnityEngine;
 
-public class TimeSystem : MonoBehaviour, ITimeReader
+public class TimeSystem : MonoBehaviour
 {
-    public static TimeSystem Instance { get; private set; }
-
     [SerializeField] private TimeSettingSO _timeSettings;
 
     private GameClock _clock;
@@ -13,21 +10,10 @@ public class TimeSystem : MonoBehaviour, ITimeReader
     public int CurrentDay => _clock?.CurrentDay ?? 0;
     public GameTime CurrentTime => _clock?.CurrentTime ?? default;
     public bool IsDayTime => _clock is { IsDayTime: true };
-
-    public event Action<GameTime> OnMinuteChanged;
-    public event Action<int> OnDayChanged;
-    public event Action OnDayStarted;
-    public event Action OnDayEnded;
+    public int ElapsedDays => _clock?.ElapsedDays ?? 0;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
         TryCreateClock();
     }
 
@@ -36,39 +22,41 @@ public class TimeSystem : MonoBehaviour, ITimeReader
         Tick(Time.deltaTime);
     }
 
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Instance = null;
-        }
-    }
-
     public void Initialize(TimeSettingSO timeSettings)
     {
         _timeSettings = timeSettings;
-        TryCreateClock(resetClock: true);
+        TryCreateClock(true);
+    }
+
+    public void SkipToNextDay()
+    {
+        if (_clock == null || _timeSettings == null) return;
+
+        int previousDay = _clock.CurrentDay;
+        bool wasDayTime = _clock.IsDayTime;
+
+        _clock.SetTime(previousDay + 1, _timeSettings.WakeUpTime);
+        _accumulatedGameMinutes = 0f;
+        SyncState();
+
+        TimeEvents.InvokeDayChanged(_clock.CurrentDay);
+
+        if (wasDayTime)
+        {
+            TimeEvents.InvokeDayEnded();
+        }
+        TimeEvents.InvokeDayStarted();
     }
 
     public void Tick(float deltaTime)
     {
-        if (!TryCreateClock())
-        {
-            return;
-        }
-
-        if (_timeSettings.GameMinutesPerSecond <= 0f)
-        {
-            return;
-        }
+        if (!TryCreateClock()) return;
+        if (_timeSettings.GameMinutesPerSecond <= 0f) return;
 
         _accumulatedGameMinutes += deltaTime * _timeSettings.GameMinutesPerSecond;
 
         int elapsedMinutes = (int)_accumulatedGameMinutes;
-        if (elapsedMinutes <= 0)
-        {
-            return;
-        }
+        if (elapsedMinutes <= 0) return;
 
         _accumulatedGameMinutes -= elapsedMinutes;
 
@@ -78,7 +66,6 @@ public class TimeSystem : MonoBehaviour, ITimeReader
         }
     }
 
-    // resetClock : _clock이 이미 있어도 새 설정값으로 다시 생성
     private bool TryCreateClock(bool resetClock = false)
     {
         if (!resetClock && _clock != null) return true;
@@ -93,7 +80,13 @@ public class TimeSystem : MonoBehaviour, ITimeReader
         );
 
         _accumulatedGameMinutes = 0f;
+        SyncState();
         return true;
+    }
+
+    private void SyncState()
+    {
+        TimeEvents.UpdateState(CurrentDay, CurrentTime, IsDayTime, ElapsedDays);
     }
 
     private void AdvanceOneMinute()
@@ -102,21 +95,22 @@ public class TimeSystem : MonoBehaviour, ITimeReader
         int previousDay = _clock.CurrentDay;
 
         _clock.AdvanceMinutes(1);
+        SyncState();
 
-        OnMinuteChanged?.Invoke(_clock.CurrentTime);
+        TimeEvents.InvokeMinuteChanged(_clock.CurrentTime);
 
         if (previousDay != _clock.CurrentDay)
         {
-            OnDayChanged?.Invoke(_clock.CurrentDay);
+            TimeEvents.InvokeDayChanged(_clock.CurrentDay);
         }
 
         if (!wasDayTime && _clock.IsDayTime)
         {
-            OnDayStarted?.Invoke();
+            TimeEvents.InvokeDayStarted();
         }
         else if (wasDayTime && !_clock.IsDayTime)
         {
-            OnDayEnded?.Invoke();
+            TimeEvents.InvokeDayEnded();
         }
     }
 }
