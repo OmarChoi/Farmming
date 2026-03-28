@@ -93,10 +93,11 @@ public class HelperController : MonoBehaviour
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
-        if(GetAbility<LightActionAbility>() != null)
+        IEquipOverride equipOverride = GetComponentInChildren<IEquipOverride>();
+        if (equipOverride != null)
         {
-            transform.localRotation = Quaternion.Euler(_rotationEuler);
-            transform.localScale = _originalScale * _equippedSmallScale;
+            transform.localRotation = Quaternion.Euler(equipOverride.GetEquipRotation());
+            transform.localScale = _originalScale * equipOverride.GetEquipScale();
         }
 
         GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
