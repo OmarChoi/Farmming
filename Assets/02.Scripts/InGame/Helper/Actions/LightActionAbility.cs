@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class LightActionAbility : HelperAbility,IEquipOverride
 {
-{
     //helper 소환된 상태
     //helper 따라다니는 상태
     // spotlight 빛은 helper 머리위 vector3.up * _headOffset 에 위치해있다. _haedOffset은 5f정도, helper근처 빛 범위도 5f 정도의원으로 비추게, 빛 intensity는 2f
@@ -31,9 +30,14 @@ public class LightActionAbility : HelperAbility,IEquipOverride
 
     private EHelperState _lastState;
     private Coroutine _transitionCoroutine;
+    private CharacterController _characterController;
 
     private void Start()
     {
+        if(_owner.PlayerOwner != null)
+        {
+            _characterController = _owner.PlayerOwner.GetComponent<CharacterController>();
+        }
         _lastState = _owner.State;
         ApplyState(_owner.State, instant: true);
     }
@@ -78,7 +82,7 @@ public class LightActionAbility : HelperAbility,IEquipOverride
                 }
                 else
                 {
-                    _transitionCoroutine = StartCoroutine(TransitionLight(summonedPos, _summonedRange, _summonedIntensity));
+                    _transitionCoroutine = StartCoroutine(TransitionLight_Coroutine(summonedPos, _summonedRange, _summonedIntensity));
                 }
                     break;
 
@@ -91,7 +95,7 @@ public class LightActionAbility : HelperAbility,IEquipOverride
                 }
                 else
                 {
-                    _transitionCoroutine = StartCoroutine(TransitionLightWorld(equippedPos, _equippedRange, _equippedIntensity));
+                    _transitionCoroutine = StartCoroutine(TransitionLightWorld_Coroutine(equippedPos, _equippedRange, _equippedIntensity));
                 }
                 break;
 
@@ -136,16 +140,15 @@ public class LightActionAbility : HelperAbility,IEquipOverride
             return _owner.transform.position + Vector3.up * _defaultHeadHeight;
         }
 
-        CharacterController characterController = _owner.PlayerOwner.GetComponent<CharacterController>();
-        if (characterController != null)
+        if (_characterController != null)
         {
-            return _owner.PlayerOwner.transform.position + Vector3.up * characterController.height;
+            return _owner.PlayerOwner.transform.position + Vector3.up * _characterController.height;
         }
 
         return _owner.PlayerOwner.transform.position + Vector3.up * _defaultHeadHeight;
     }
 
-    private IEnumerator TransitionLight(Vector3 targetLocalPos, float targetRange, float targetIntensity)
+    private IEnumerator TransitionLight_Coroutine(Vector3 targetLocalPos, float targetRange, float targetIntensity)
     {
         if (_light == null)
         {
@@ -174,7 +177,7 @@ public class LightActionAbility : HelperAbility,IEquipOverride
         SetLight(targetLocalPos, targetRange, targetIntensity);
     }
 
-    private IEnumerator TransitionLightWorld(Vector3 targetWorldPos, float targetRange, float targetIntensity)
+    private IEnumerator TransitionLightWorld_Coroutine(Vector3 targetWorldPos, float targetRange, float targetIntensity)
     {
         if (_light == null)
         {
