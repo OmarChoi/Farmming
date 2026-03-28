@@ -23,12 +23,10 @@ public class NpcMemoryService
         return _ragService.SearchRelevantMemoriesAsync(npcId, playerId, query, topK);
     }
 
-    public async UniTask SaveAfterDialogueAsync(
-        NpcMemoryProfile profile,
-        IReadOnlyList<DialogueTurnRecord> sessionTurns,
-        string sessionSummary,
-        List<NpcMemoryEntry> extractedMemories)
+    public async UniTask SaveAfterDialogueAsync(NpcMemoryProfile profile, IReadOnlyList<DialogueTurnRecord> sessionTurns, string sessionSummary)
     {
+        if (profile == null) return;
+
         profile.RecentTurns.Clear();
 
         int start = Math.Max(0, sessionTurns.Count - 4);
@@ -39,15 +37,11 @@ public class NpcMemoryService
 
         profile.RollingSummary = sessionSummary ?? string.Empty;
 
-        if (extractedMemories != null)
-        {
-            foreach (var memory in extractedMemories)
-            {
-                profile.Entries.Add(memory);
-            }
-        }
-
         await _repository.SaveMemoryAsync(profile);
-        await _ragService.RebuildIndexMemoryRagAsync(profile);
+
+        if (_ragService != null)
+        {
+            await _ragService.RebuildIndexMemoryRagAsync(profile);
+        }
     }
 }
