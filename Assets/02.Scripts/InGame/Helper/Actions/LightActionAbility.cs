@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
-using System.ComponentModel.Design;
 using UnityEngine;
 
-public class LightActionAbility : HelperAbility
+public class LightActionAbility : HelperAbility,IEquipOverride
+{
 {
     //helper 소환된 상태
     //helper 따라다니는 상태
@@ -26,10 +26,11 @@ public class LightActionAbility : HelperAbility
 
     [SerializeField] private float _transitionSpeed = 2f;
 
+    public Vector3 GetEquipRotation() => new Vector3(0f, 180f, 0f);
+    public float GetEquipScale() => 0.55f;
+
     private EHelperState _lastState;
     private Coroutine _transitionCoroutine;
-
-    private HelperAnimationAbility _animAbility;
 
     private void Start()
     {
