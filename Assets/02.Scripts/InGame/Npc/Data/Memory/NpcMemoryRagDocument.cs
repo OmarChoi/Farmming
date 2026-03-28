@@ -6,6 +6,6 @@ public class NpcMemoryRagDocument
     public string MemoryId;
     public string NpcId;
     public string PlayerId;
-    public string Category;
+    public EMemoryCategory Category;
     public string Content;
 }

@@ -7,7 +7,7 @@ public class NpcMemoryEntry
     public string MemoryId;
     public string NpcId;
     public string PlayerId;
-    public string Category; // Fact / Impression / Episode / Promise / Preference
+    public EMemoryCategory Category;
     public string Text;
     public long CreatedAtTicks;
     public long UpdatedAtTicks;

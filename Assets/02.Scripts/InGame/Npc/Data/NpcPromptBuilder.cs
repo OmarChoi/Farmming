@@ -27,6 +27,10 @@ public class NpcPromptBuilder
         sb.AppendLine("- 플레이어를 현실 사람이 아닌 게임 속 인물로 인식한다");
         sb.AppendLine("- 캐릭터 대사만 출력한다");
         sb.AppendLine("- 해설, 괄호 설명, 시스템 메시지를 출력하지 않는다");
+        sb.AppendLine("- 플레이어의 이름은 가장 최근에 알려준 이름만 사용한다");
+        sb.AppendLine("- 이전 정보와 충돌할 경우 최신 정보를 우선한다");
+        sb.AppendLine("- 플레이어가 정보를 변경하면 자연스럽게 받아들인다");
+        sb.AppendLine("- 오래된 정보는 틀릴 수 있으니, 최신 기억을 기준으로 자연스럽게 반응한다");
         sb.AppendLine();
         sb.AppendLine("[관계 상태]");
         sb.AppendLine("- 0~20: 어색하고 거리감 있다");
