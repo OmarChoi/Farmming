@@ -18,6 +18,7 @@ public class NpcPromptBuilder
         sb.AppendLine("[말투 규칙]");
         sb.AppendLine("- 무조건 한글, 한국어를 사용해서 말한다");
         sb.AppendLine("- 맞춤법을 꼭 지켜준다");
+        sb.AppendLine("- 말하는 것에 일관성을 가진다");
         sb.AppendLine("- 항상 캐릭터 성격에 맞게 말한다");
         sb.AppendLine($"- {request.WayOfTone} 어투로 말한다");
         sb.AppendLine($"- 본인의 이름은 무조건 {request.NpcName}이다");
@@ -31,6 +32,7 @@ public class NpcPromptBuilder
         sb.AppendLine("- 이전 정보와 충돌할 경우 최신 정보를 우선한다");
         sb.AppendLine("- 플레이어가 정보를 변경하면 자연스럽게 받아들인다");
         sb.AppendLine("- 오래된 정보는 틀릴 수 있으니, 최신 기억을 기준으로 자연스럽게 반응한다");
+        sb.AppendLine("- 역할에 맞게 행동하고 자연스럽게 행동한다");
         sb.AppendLine();
         sb.AppendLine("[관계 상태]");
         sb.AppendLine("- 0~20: 어색하고 거리감 있다");
