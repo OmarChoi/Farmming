@@ -1,8 +1,9 @@
-using UnityEngine;
 using Cysharp.Threading.Tasks;
+using LLMUnity;
 using System;
 using System.Collections.Generic;
-using LLMUnity;
+using System.Net.Http;
+using UnityEngine;
 
 public class AiDialogueController : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class AiDialogueController : MonoBehaviour
     private NpcInteractionContext _currentContext;
     private NpcMemoryProfile _currentProfile;
     private readonly List<DialogueTurnRecord> _sessionTurns = new();
+    private INpcMemoryRepository _repository;
 
     private bool _isSessionOpen;
     private bool _isGenerating;
@@ -41,8 +43,12 @@ public class AiDialogueController : MonoBehaviour
         {
             _ragService = FindFirstObjectByType<NpcMemoryLlmRagService>();
         }
-        var repository = new JsonNpcMemoryRepository();
-        _memoryService = new NpcMemoryService(repository, _ragService);
+        if (_repository == null)
+        {
+            _repository = new JsonNpcMemoryRepository();
+        }
+
+        _memoryService = new NpcMemoryService(_repository, _ragService);
     }
     private async void Start()
     {
@@ -72,7 +78,11 @@ public class AiDialogueController : MonoBehaviour
 
     public async UniTask OpenSessionAsync(NpcInteractionContext context)
     {
-        if (context == null || context.Npc == null || _uiDialogue == null || _llmAgent == null) return;
+        if (context == null) throw new ArgumentNullException(nameof(context));
+        if (context.Npc == null) throw new ArgumentNullException(nameof(context.Npc));
+        if (_uiDialogue == null) throw new InvalidOperationException("UIDialogue가 없습니다.");
+        if (_llmAgent == null) throw new InvalidOperationException("LLMAgent가 없습니다.");
+
         if (_isSessionOpen)
         {
             await CloseSessionAsync(false);
@@ -173,20 +183,42 @@ public class AiDialogueController : MonoBehaviour
 
             _uiDialogue.CompleteNpcStreaming(sanitizedReply);
         }
+        catch (OperationCanceledException)
+        {
+            _uiDialogue.MarkStreamingStopped();
+        }
+        catch (HttpRequestException)
+        {
+            Debug.LogError("Network error during chat.");
+            HandleFallback("서버와 연결이 불안정해요.");
+        }
+        catch (TimeoutException)
+        {
+            Debug.LogError("Chat timeout.");
+            HandleFallback("응답이 너무 늦어지고 있어요.");
+        }
         catch (Exception e)
         {
             Debug.LogException(e);
-
-            string fallback = "...... (생각에 잠겨 있다.)";
-            _sessionTurns.Add(new DialogueTurnRecord{Role = "assistant", Text = fallback, Ticks = DateTime.UtcNow.Ticks});
-
-            _uiDialogue.CompleteNpcStreaming(fallback);
+            HandleFallback("...... (생각에 잠겨 있다.)");
         }
         finally
         {
             _isGenerating = false;
             _uiDialogue.SetGenerating(false);
         }
+    }
+
+    private void HandleFallback(string message)
+    {
+        _sessionTurns.Add(new DialogueTurnRecord
+        {
+            Role = "assistant",
+            Text = message,
+            Ticks = DateTime.UtcNow.Ticks
+        });
+
+        _uiDialogue.CompleteNpcStreaming(message);
     }
 
     private void HandleStopRequested()
