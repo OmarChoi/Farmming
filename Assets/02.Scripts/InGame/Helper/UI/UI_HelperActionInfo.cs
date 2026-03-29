@@ -84,8 +84,15 @@ public class UI_HelperActionInfo : MonoBehaviour
 
     private void SetIcon(Image image, Sprite sprite)
     {
-        if (image == null) return;
-        image.sprite = sprite;
-        image.enabled = sprite != null;
+        if (image == null)
+        {
+            return;
+        }
+        bool hasSprite = sprite != null;
+        image.gameObject.SetActive(hasSprite);
+        if (hasSprite)
+        {
+            image.sprite = sprite;
+        }
     }
 }
