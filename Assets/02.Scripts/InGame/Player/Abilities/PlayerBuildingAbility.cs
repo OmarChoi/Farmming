@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ public class PlayerBuildingAbility : PlayerAbility
     [SerializeField] private KeyCode _cancelKey = KeyCode.Escape;
 
     private PlayerTerrainAbility _terrainAbility;
+    private PlayerInventoryAbility _inventoryAbility;
     private bool _swapped;
     private BuildState _state = BuildState.None;
     private BuildingGhost _ghost;
@@ -32,6 +34,7 @@ public class PlayerBuildingAbility : PlayerAbility
     {
         base.Awake();
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
+        _inventoryAbility = _owner.GetAbility<PlayerInventoryAbility>();
     }
 
     private void OnEnable()
@@ -216,6 +219,10 @@ public class PlayerBuildingAbility : PlayerAbility
 
         if (!preview.CanPlace) return;
 
+        // 자원 검증 후 소모 → 건설 시도
+        if (!HasResources(_buildingData)) return;
+        if (!ConsumeResources(_buildingData)) return;
+
         _isBuilding = true;
         var request = new BuildingRequest
         {
@@ -239,7 +246,8 @@ public class PlayerBuildingAbility : PlayerAbility
         BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
 
         _ghost.UpdateTransform(preview.SpawnPosition, preview.Rotation);
-        _ghost.SetValid(preview.CanPlace);
+        // 지형 조건 + 자원 보유 조건 모두 충족해야 배치 가능
+        _ghost.SetValid(preview.CanPlace && HasResources(_buildingData));
     }
 
     private void ToggleSwap()
@@ -254,5 +262,30 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell == null) return;
 
         _buildingManager.TryRemove(cell.GridPosition);
+    }
+
+    // 건설에 필요한 모든 자원이 인벤토리에 충분한지 확인
+    private bool HasResources(BuildingDataSO data)
+    {
+        if (_inventoryAbility == null) return false;
+        IReadOnlyList<BuildingCostEntry> costs = data.Costs;
+        foreach (BuildingCostEntry cost in costs)
+        {
+            if (cost.Item == null) continue;
+            if (_inventoryAbility.GetItemCount(cost.Item) < cost.Amount) return false;
+        }
+        return true;
+    }
+
+    // 건설 비용만큼 인벤토리에서 자원 차감
+    private bool ConsumeResources(BuildingDataSO data)
+    {
+        IReadOnlyList<BuildingCostEntry> costs = data.Costs;
+        foreach (BuildingCostEntry cost in costs)
+        {
+            if (cost.Item == null) continue;
+            if (!_inventoryAbility.RemoveItem(cost.Item, cost.Amount)) return false;
+        }
+        return true;
     }
 }
