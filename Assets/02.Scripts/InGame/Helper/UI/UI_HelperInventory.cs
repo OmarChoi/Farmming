@@ -38,6 +38,8 @@ public class UI_HelperInventory : MonoBehaviour
     [SerializeField] private float _animDuration = 0.3f;
     [SerializeField] private float _hideDelay = 3f;
 
+    [SerializeField] private UI_HelperActionInfo _actionInfoPanel;
+
     private PlayerHelperInventoryAbility _ability;
     private float _hideTimer;
     private bool _isShowing;
@@ -254,6 +256,12 @@ public class UI_HelperInventory : MonoBehaviour
         if (_helperNameText == null) return;
         var data = _ability != null ? _ability.CenterData : null;
         _helperNameText.text = data != null ? data.HelperName : "";
+
+        if (_ability != null)
+        {
+            var dataToShow = _isShowing ? data : _ability.SummonedData;
+            _actionInfoPanel.Show(dataToShow);
+        }
     }
 
     private void RefreshSummonedIndicator()
