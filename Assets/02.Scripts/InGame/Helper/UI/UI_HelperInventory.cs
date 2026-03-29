@@ -249,18 +249,6 @@ public class UI_HelperInventory : MonoBehaviour
         if (_showOnExpand1 != null) _showOnExpand1.SetActive(active);
         if (_showOnExpand2 != null) _showOnExpand2.SetActive(active);
         RefreshHelperName();
-
-        if (_actionInfoPanel != null)
-        {
-            if (active && _ability != null)
-            { 
-                _actionInfoPanel.Show(_ability.CenterData);
-            }
-            else
-            {
-                _actionInfoPanel.Hide();
-            }
-        }
     }
 
     private void RefreshHelperName()
@@ -269,9 +257,10 @@ public class UI_HelperInventory : MonoBehaviour
         var data = _ability != null ? _ability.CenterData : null;
         _helperNameText.text = data != null ? data.HelperName : "";
 
-        if (_actionInfoPanel != null && _isShowing)
+        if (_ability != null)
         {
-            _actionInfoPanel.Show(data);
+            var dataToShow = _isShowing ? data : _ability.SummonedData;
+            _actionInfoPanel.Show(dataToShow);
         }
     }
 
