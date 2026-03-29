@@ -13,6 +13,8 @@ public struct GameTime : IEquatable<GameTime>, IComparable<GameTime>
 
     public int Hour => _hour;
     public int Minute => _minute;
+    public int Hour12 => _hour % 12 == 0 ? 12 : _hour % 12;
+    public bool IsAM => _hour < 12;
 
     public int TotalMinutes => _hour == HoursPerDay ? MinutesPerDay : (_hour * MinutesPerHour) + _minute;
 
@@ -35,6 +37,12 @@ public struct GameTime : IEquatable<GameTime>, IComparable<GameTime>
     public override string ToString()
     {
         return $"{Hour:00}시 {Minute:00}분";
+    }
+
+    public string To12HourString()
+    {
+        string period = IsAM ? "오전" : "오후";
+        return $"{period} {Hour12}:{Minute:00}";
     }
 
     public bool Equals(GameTime other)
