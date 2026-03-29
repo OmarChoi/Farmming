@@ -10,6 +10,10 @@ public class BuildingManager : MonoBehaviour
     [SerializeField] private TerrainGridManager _gridManager;
     [SerializeField] private BuildingDatabase _buildingDatabase;
     
+    // 현재 선택된 건물 데이터.
+    public BuildingDataSO SelectedBuilding { get; private set; }
+    // UI에서 건물을 선택했을 때 발행되는 이벤트.
+    public event Action<BuildingDataSO> OnBuildingSelected;
 
     // anchorPos -> 건물 메타데이터. 철거 시 크기/방향 복원, 저장/로드 직렬화 대상.
     private readonly Dictionary<Vector3Int, BuildingSaveData> _buildings = new Dictionary<Vector3Int, BuildingSaveData>();
@@ -17,6 +21,8 @@ public class BuildingManager : MonoBehaviour
     private readonly Dictionary<Vector3Int, Vector3Int> _occupiedCells = new Dictionary<Vector3Int, Vector3Int>();
     // anchorPos -> 건물 프리팹에 붙은 공통 건물 컴포넌트.
     private readonly Dictionary<Vector3Int, BaseBuilding> _buildingInstances = new Dictionary<Vector3Int, BaseBuilding>();
+    
+    public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
 
     #region Lifecycle
     private void Awake()
@@ -44,13 +50,9 @@ public class BuildingManager : MonoBehaviour
 
     #region Query
 
-    public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
-
-    /// <summary>UI에서 건물을 선택했을 때 발행되는 이벤트. PlayerBuildingAbility가 구독한다.</summary>
-    public event Action<BuildingDataSO> OnBuildingSelected;
-
     public void SelectBuilding(BuildingDataSO data)
     {
+        SelectedBuilding = data;
         OnBuildingSelected?.Invoke(data);
     }
 
