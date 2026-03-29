@@ -1,5 +1,7 @@
-using UnityEngine;
 using Cysharp.Threading.Tasks;
+using System;
+using System.IO;
+using UnityEngine;
 
 public class AIDialogueHandler : IDialogueHandler
 {
@@ -23,9 +25,18 @@ public class AIDialogueHandler : IDialogueHandler
         {
             await _aiDialogueController.OpenSessionAsync(context);
         }
-        catch (System.Exception e)
+        catch (OperationCanceledException)
+        {
+            Debug.Log("AI dialogue가 취소되었습니다.");
+        }
+        catch (IOException e)
+        {
+            Debug.LogError($"IO error: {e.Message}");
+        }
+        catch (Exception e)
         {
             Debug.LogException(e);
+            throw; // 숨기지 않고 표시한다.
         }
     }
 }
