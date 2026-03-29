@@ -9,7 +9,9 @@ public class BuildingDataSO : ScriptableObject
     [SerializeField] private string _buildingId;
     [SerializeField] private string _displayName;
     [SerializeField] private Sprite _icon;
-    
+    [TextArea(2, 4)]
+    [SerializeField] private string _description;
+
     [Header("Construction Data")]
     [SerializeField] private int _width = 2;
     [SerializeField] private int _depth = 2;
@@ -21,7 +23,8 @@ public class BuildingDataSO : ScriptableObject
     public string BuildingId => _buildingId;
     public string DisplayName => _displayName;
     public Sprite Icon => _icon;
-    
+    public string Description => _description;
+
     public int Width => _width;
     public int Depth => _depth;
     public int ConstructionDays => _constructionDays;

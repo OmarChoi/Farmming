@@ -163,6 +163,7 @@ public class PlayerBuildingAbility : PlayerAbility
             _swapped = false;
             _ghost.SetVisible(true);
             RefreshGhostInitial();
+            UIController.Instance?.OpenAsync<UI_BuildInfo>().Forget();
             return;
         }
 
@@ -180,6 +181,9 @@ public class PlayerBuildingAbility : PlayerAbility
         _ghost = new BuildingGhost();
         _ghost.Spawn(prefab, _ghostMaterial, _ghostValidColor, _ghostInvalidColor);
         RefreshGhostInitial();
+
+        // 건물 정보 패널 표시
+        UIController.Instance?.OpenAsync<UI_BuildInfo>().Forget();
     }
 
     private void RefreshGhostInitial()
@@ -200,6 +204,7 @@ public class PlayerBuildingAbility : PlayerAbility
     {
         _ghost?.SetVisible(false);
         _state = BuildState.None;
+        UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
 
     private void DestroyGhost()
@@ -207,6 +212,7 @@ public class PlayerBuildingAbility : PlayerAbility
         _ghost?.Destroy();
         _ghost = null;
         _state = BuildState.None;
+        UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
 
     private async UniTaskVoid TryConfirmAsync()

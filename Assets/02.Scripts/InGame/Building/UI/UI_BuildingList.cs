@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class UI_BuildingList : UIBase
 {
     [Header("Slots")]
-    [SerializeField] private List<BuildingSlot> _slots = new List<BuildingSlot>();
+    [SerializeField] private List<BuildingListSlot> _slots = new List<BuildingListSlot>();
 
     [Header("Layout")]
     [SerializeField] private float _innerRadius = 150f;
@@ -35,12 +35,12 @@ public class UI_BuildingList : UIBase
     protected override UniTask OnCloseAnimation() => UniTask.CompletedTask;
 
     // 슬롯 레이아웃 데이터 생성
-    private BuildingSlot.LayoutData CreateLayoutData(int index, int count)
+    private BuildingListSlot.LayoutData CreateLayoutData(int index, int count)
     {
         float angleStep = 360f / count;
         float sliceThickness = _outerRadius - _innerRadius;
 
-        return new BuildingSlot.LayoutData
+        return new BuildingListSlot.LayoutData
         {
             Rotation = angleStep * index,
             FillAmount = 1f / count + 0.002f,
