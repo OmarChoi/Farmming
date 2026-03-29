@@ -14,11 +14,11 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  m_FogMode: 3
+  m_Fog: 1
+  m_FogColor: {r: 0.83137256, g: 0.58431375, b: 0.41960785, a: 1}
+  m_FogMode: 1
   m_FogDensity: 0.01
-  m_LinearFogStart: 0
+  m_LinearFogStart: 50
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
@@ -1465,10 +1465,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30bc7aa48f2c56148bf7ec2664e639e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestTimeManager
-  _currentDay: 1
-  _currentTime: 810
-  _timeInterval: 3
-  _timeStep: 100
 --- !u!4 &723395211
 Transform:
   m_ObjectHideFlags: 0
@@ -4675,8 +4671,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1297318230509913425, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7509436397392349550}
   m_SourcePrefab: {fileID: 100100000, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+--- !u!1 &7509436397392349549 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1297318230509913425, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+  m_PrefabInstance: {fileID: 7509436397392349548}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7509436397392349550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7509436397392349549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4aa31f520f99dd048bd94488cbd775b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyboxController
+  _timeSettings: {fileID: 11400000, guid: 32a7545f3266cc94a8852b9a7e1b3a65, type: 2}
+  _skyboxTemplate: {fileID: 2100000, guid: e855645ee87064940b33c7cb22a6cd2c, type: 2}
+  _skyDatabase: {fileID: 11400000, guid: cc0e57470567cfa41a8c43d922008210, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
