@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 public class NpcMemoryExtractor
 {
+    private const int PlayerNamePriority = 100;
+    private const int PlayerPreferenceLikePriority = 60;
+    private const int PlayerPreferenceDislikePriority = 60;
+    private const int PlayerPromisePriority = 80;
+    private const int PlayerEpisodePriority = 20;
+
     public List<NpcMemoryEntry> Extract(string npcId, string playerId, IReadOnlyList<DialogueTurnRecord> turns)
     {
         var result = new List<NpcMemoryEntry>();
@@ -21,7 +27,7 @@ public class NpcMemoryExtractor
                     playerId,
                     EMemoryCategory.PlayerName,
                     $"플레이어의 이름은 {playerName}이다.",
-                    100));
+                    PlayerNamePriority));
             }
 
             if (text.Contains("좋아해"))
@@ -31,7 +37,7 @@ public class NpcMemoryExtractor
                     playerId,
                     EMemoryCategory.PlayerPreference,
                     $"플레이어가 '{text}' 라고 말했다.",
-                    60));
+                    PlayerPreferenceLikePriority));
             }
             else if (text.Contains("싫어해"))
             {
@@ -40,7 +46,7 @@ public class NpcMemoryExtractor
                     playerId,
                     EMemoryCategory.PlayerPreference,
                     $"플레이어가 '{text}' 라고 말했다.",
-                    60));
+                    PlayerPreferenceDislikePriority));
             }
             else if (text.Contains("기억해") || text.Contains("약속"))
             {
@@ -49,7 +55,7 @@ public class NpcMemoryExtractor
                     playerId,
                     EMemoryCategory.Promise,
                     $"플레이어와 관련된 약속/기억 단서: {text}",
-                    80));
+                    PlayerPromisePriority));
             }
 
             result.Add(Create(
@@ -57,7 +63,7 @@ public class NpcMemoryExtractor
                 playerId,
                 EMemoryCategory.Episode,
                 $"플레이어가 '{text}' 라고 말했다.",
-                20));
+                PlayerEpisodePriority));
         }
 
         return result;
