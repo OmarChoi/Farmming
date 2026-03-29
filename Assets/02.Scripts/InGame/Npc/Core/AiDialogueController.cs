@@ -20,6 +20,7 @@ public class AiDialogueController : MonoBehaviour
     private readonly NpcMemoryExtractor _memoryExtractor = new();
     private readonly NpcSessionSummarizer _summarizer = new();
     private readonly NpcMemoryUpdater _memoryUpdater = new();
+    private readonly NpcMemoryDecaySystem _memoryDecaySystem = new();
 
     private NpcInteractionContext _currentContext;
     private NpcMemoryProfile _currentProfile;
@@ -253,7 +254,7 @@ public class AiDialogueController : MonoBehaviour
                 _sessionTurns);
 
             _memoryUpdater.Apply(_currentProfile, extracted);
-
+            _memoryDecaySystem.ApplyDecay(_currentProfile);
             await _memoryService.SaveAfterDialogueAsync(_currentProfile, _sessionTurns, summary);
         }
         if (_llmAgent != null)
