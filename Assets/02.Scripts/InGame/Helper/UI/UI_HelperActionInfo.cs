@@ -20,8 +20,8 @@ public class UI_HelperActionInfo : MonoBehaviour
     {
         if(_canvasGroup != null)
         {
-            _canvasGroup.alpha = 0f;
-            _canvasGroup.interactable =false;
+            _canvasGroup.alpha = _invisibleAlpha;
+            _canvasGroup.interactable = false;
             _canvasGroup.blocksRaycasts = false;
         }
     }
@@ -45,22 +45,29 @@ public class UI_HelperActionInfo : MonoBehaviour
         SetIcon(_leftClickIcon, data.LeftClickIcon);
         SetIcon(_rightClickIcon, data.RightClickIcon);
 
-        if(_leftClickExplanation != null)
-        {
-            _leftClickExplanation.text = data.LeftClickExplanation;
-        }
+        SetExplanation(_leftClickExplanation, data.LeftClickExplanation);
+        SetExplanation(_rightClickExplanation, data.RightClickExplanation);
 
-        if(_rightClickExplanation != null)
-        {
-            _rightClickExplanation.text = data.RightClickExplanation;
-        }
-
-        if( _canvasGroup != null)
+        if ( _canvasGroup != null)
         {
             _canvasGroup.DOKill();
             _canvasGroup.interactable = true;
             _canvasGroup.blocksRaycasts = true;
             _canvasGroup.DOFade(_visibleAlpha, _animDuration).SetEase(Ease.OutCubic);
+        }
+    }
+
+    private void SetExplanation(TextMeshProUGUI textElement, string explanation)
+    {
+        if (textElement == null)
+        {
+            return;
+        }
+        bool hasText = !string.IsNullOrEmpty(explanation);
+        textElement.gameObject.SetActive(hasText);
+        if (hasText)
+        {
+            textElement.text = explanation;
         }
     }
 
