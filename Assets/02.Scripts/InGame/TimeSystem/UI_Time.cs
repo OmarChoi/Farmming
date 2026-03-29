@@ -8,10 +8,14 @@ public class UI_Time : MonoBehaviour
     private void Start()
     {
         UpdateTime(TimeEvents.CurrentTime);
+    }
+
+    private void OnEnable()
+    {
         TimeEvents.OnMinuteChanged += UpdateTime;
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         TimeEvents.OnMinuteChanged -= UpdateTime;
     }

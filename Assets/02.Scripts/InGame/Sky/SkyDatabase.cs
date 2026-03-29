@@ -12,12 +12,15 @@ public class SkyDatabase : ScriptableObject
         public SkyKeyframeSO Keyframe;
     }
 
-    [SerializeField] private Entry[] _entries;
+    [SerializeField] 
+    private Entry[] _entries;
 
     [Header("Global Fog")]
-    [Range(0f, 1f)] public float FogIntensity;
+    [Range(0f, 1f)] 
+    public float FogIntensity;
+    [Range(0f, 1f)] 
+    public float FogFill;
     public float FogPosition;
-    [Range(0f, 1f)] public float FogFill;
 
     private Dictionary<ESkyType, SkyKeyframeSO> _lookup;
 

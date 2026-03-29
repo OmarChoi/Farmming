@@ -14,10 +14,14 @@ public class SkyboxController : MonoBehaviour
     [SerializeField] private Material _skyboxTemplate;
     [SerializeField] private SkyDatabase _skyDatabase;
 
+    private const float GIUpdateThreshold = 0.05f;
+
     private Material _originalSkybox;
     private Material _runtimeSkyboxMaterial;
     private Cubemap _templateMainCubemap;
     private Cubemap _templateBlendCubemap;
+    private float _lastGIBlendValue = -1f;
+    private SkyKeyframeSO _lastGIFromSegment;
 
     #region Lifecycle
 
@@ -74,6 +78,8 @@ public class SkyboxController : MonoBehaviour
     #region Skybox Update
 
     // 현재 시간에 해당하는 세그먼트를 찾아 Skybox와 Fog 파라미터를 블렌딩한다
+    // SetTexture/SetFloat : Skybox 시각적 블렌딩
+    // GI Update : 간접광 재계산
     private void UpdateSkybox(GameTime time)
     {
         if (!EnsureRuntimeMaterial() || _timeSettings == null || _skyDatabase == null) return;
@@ -95,7 +101,14 @@ public class SkyboxController : MonoBehaviour
         _runtimeSkyboxMaterial.SetFloat(FogPositionId, _skyDatabase.FogPosition);
         _runtimeSkyboxMaterial.SetFloat(FogFillId, _skyDatabase.FogFill);
 
-        DynamicGI.UpdateEnvironment();
+        // 세그먼트가 바뀌었거나 블렌드 값이 충분히 변했을 때만 GI 갱신 (비용이 높은 연산)
+        bool segmentChanged = _lastGIFromSegment != from;
+        if (segmentChanged || _lastGIBlendValue < 0f || skyboxProgress - _lastGIBlendValue >= GIUpdateThreshold)
+        {
+            _lastGIFromSegment = from;
+            _lastGIBlendValue = skyboxProgress;
+            DynamicGI.UpdateEnvironment();
+        }
     }
 
     // 런타임 머터리얼이 없으면 템플릿 기반으로 생성하고 RenderSettings에 할당한다
