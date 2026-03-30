@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -21,27 +22,51 @@ public class PlayerBuildingAbility : PlayerAbility
     [SerializeField] private KeyCode _cancelKey = KeyCode.Escape;
 
     private PlayerTerrainAbility _terrainAbility;
+    private PlayerInventoryAbility _inventoryAbility;
     private bool _swapped;
     private BuildState _state = BuildState.None;
     private BuildingGhost _ghost;
     private Vector3Int _prevGridPos;
     private bool _isLoadingPrefab;
     private bool _isBuilding;
+    private bool _hasResourcesCached;
+    private bool _hasResourcesDirty = true;
 
     protected override void Awake()
     {
         base.Awake();
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
+        _inventoryAbility = _owner.GetAbility<PlayerInventoryAbility>();
     }
 
     private void OnEnable()
     {
         _buildingManager.OnBuildingSelected += OnBuildingSelectedFromUi;
+        if (_inventoryAbility != null)
+        {
+            _inventoryAbility.OnSlotChanged += OnInventoryChanged;
+        }
     }
 
     private void OnDisable()
     {
         _buildingManager.OnBuildingSelected -= OnBuildingSelectedFromUi;
+        if (_inventoryAbility != null)
+        {
+            _inventoryAbility.OnSlotChanged -= OnInventoryChanged;
+        }
+
+        // UI_BuildingList의 OnClosed 구독 해제
+        if (UIController.Instance != null)
+        {
+            var ui = UIController.Instance.GetInstance<UI_BuildingList>();
+            if (ui != null) ui.OnClosed -= OnBuildingListClosed;
+        }
+    }
+
+    private void OnInventoryChanged(int slotIndex)
+    {
+        _hasResourcesDirty = true;
     }
 
     private void Update()
@@ -86,6 +111,7 @@ public class PlayerBuildingAbility : PlayerAbility
         if (_buildingData == buildingData) return;
 
         _buildingData = buildingData;
+        _hasResourcesDirty = true;
 
         if (_state == BuildState.Previewing)
         {
@@ -96,8 +122,17 @@ public class PlayerBuildingAbility : PlayerAbility
     private void OpenBuildingSelectionUi()
     {
         if (UIController.Instance == null) return;
-        // todo. 마우스 잠금 처리
-        UIController.Instance.OpenAsync<UI_BuildingList>().Forget();
+        _owner.EnterUIMode();
+        UIController.Instance.OpenAsync<UI_BuildingList>(ui =>
+        {
+            ui.OnClosed -= OnBuildingListClosed;
+            ui.OnClosed += OnBuildingListClosed;
+        }).Forget();
+    }
+
+    private void OnBuildingListClosed()
+    {
+        _owner.ExitUIMode();
     }
 
     private void OnBuildingSelectedFromUi(BuildingDataSO buildingData)
@@ -160,6 +195,7 @@ public class PlayerBuildingAbility : PlayerAbility
             _swapped = false;
             _ghost.SetVisible(true);
             RefreshGhostInitial();
+            UIController.Instance?.OpenAsync<UI_BuildInfo>().Forget();
             return;
         }
 
@@ -177,6 +213,9 @@ public class PlayerBuildingAbility : PlayerAbility
         _ghost = new BuildingGhost();
         _ghost.Spawn(prefab, _ghostMaterial, _ghostValidColor, _ghostInvalidColor);
         RefreshGhostInitial();
+
+        // 건물 정보 패널 표시
+        UIController.Instance?.OpenAsync<UI_BuildInfo>().Forget();
     }
 
     private void RefreshGhostInitial()
@@ -197,6 +236,8 @@ public class PlayerBuildingAbility : PlayerAbility
     {
         _ghost?.SetVisible(false);
         _state = BuildState.None;
+        _buildingManager.ClearSelection();
+        UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
 
     private void DestroyGhost()
@@ -204,6 +245,8 @@ public class PlayerBuildingAbility : PlayerAbility
         _ghost?.Destroy();
         _ghost = null;
         _state = BuildState.None;
+        _buildingManager.ClearSelection();
+        UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
 
     private async UniTaskVoid TryConfirmAsync()
@@ -215,6 +258,10 @@ public class PlayerBuildingAbility : PlayerAbility
         BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
 
         if (!preview.CanPlace) return;
+
+        // 자원 검증 + 소모를 원자적으로 처리
+        if (!TryConsumeResources(_buildingData)) return;
+        _hasResourcesDirty = true;
 
         _isBuilding = true;
         var request = new BuildingRequest
@@ -239,7 +286,14 @@ public class PlayerBuildingAbility : PlayerAbility
         BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
 
         _ghost.UpdateTransform(preview.SpawnPosition, preview.Rotation);
-        _ghost.SetValid(preview.CanPlace);
+
+        if (_hasResourcesDirty)
+        {
+            _hasResourcesCached = HasResources(_buildingData);
+            _hasResourcesDirty = false;
+        }
+
+        _ghost.SetValid(preview.CanPlace && _hasResourcesCached);
     }
 
     private void ToggleSwap()
@@ -254,5 +308,32 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell == null) return;
 
         _buildingManager.TryRemove(cell.GridPosition);
+    }
+
+    // 건설에 필요한 모든 자원이 인벤토리에 충분한지 확인
+    private bool HasResources(BuildingDataSO data)
+    {
+        if (_inventoryAbility == null) return false;
+        IReadOnlyList<BuildingCostEntry> costs = data.Costs;
+        foreach (BuildingCostEntry cost in costs)
+        {
+            if (cost.Item == null) continue;
+            if (_inventoryAbility.GetItemCount(cost.Item) < cost.Amount) return false;
+        }
+        return true;
+    }
+
+    // 모든 자원 보유를 먼저 검증한 뒤, 통과 시 한 번에 차감
+    private bool TryConsumeResources(BuildingDataSO data)
+    {
+        if (!HasResources(data)) return false;
+
+        IReadOnlyList<BuildingCostEntry> costs = data.Costs;
+        foreach (BuildingCostEntry cost in costs)
+        {
+            if (cost.Item == null) continue;
+            _inventoryAbility.RemoveItem(cost.Item, cost.Amount);
+        }
+        return true;
     }
 }

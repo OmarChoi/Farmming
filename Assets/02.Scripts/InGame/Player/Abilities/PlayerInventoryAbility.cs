@@ -86,6 +86,8 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
     public void PlaceSplit(int sourceIndex, int targetIndex, ItemDataSO item, int amount)
         => _inventory.PlaceSplit(sourceIndex, targetIndex, item, amount);
     public void RemoveAt(int index, int amount = 1) => _inventory.RemoveAt(index, amount);
+    public int GetItemCount(ItemDataSO item) => _inventory.GetItemCount(item);
+    public bool RemoveItem(ItemDataSO item, int amount) => _inventory.RemoveItem(item, amount);
 
     public void ExportTo(PlayerSaveData saveData)
     {
