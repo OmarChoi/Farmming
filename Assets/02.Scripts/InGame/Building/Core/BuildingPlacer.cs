@@ -2,6 +2,11 @@ using UnityEngine;
 
 public static class BuildingPlacer
 {
+    private static int GetWidthOffset(int width)
+    {
+        return width % 2 == 0 ? 1 - (width / 2) : -(width / 2);
+    }
+
     public static int GetDirection(Vector3 playerForward)
     {
         if (Mathf.Abs(playerForward.x) > Mathf.Abs(playerForward.z))
@@ -32,7 +37,7 @@ public static class BuildingPlacer
         {
             Width = width,
             Depth = depth,
-            WidthOffset = -(width - 1) / 2,
+            WidthOffset = GetWidthOffset(width),
             Direction = direction,
             Forward = forward,
             Right = new Vector2Int(forward.y, -forward.x)

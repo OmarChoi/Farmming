@@ -27,6 +27,7 @@ public class PlayerBuildingAbility : PlayerAbility
     private BuildState _state = BuildState.None;
     private BuildingGhost _ghost;
     private Vector3Int _prevGridPos;
+    private int _prevDirection = -1;
     private bool _isLoadingPrefab;
     private bool _isBuilding;
     private bool _hasResourcesCached;
@@ -177,10 +178,12 @@ public class PlayerBuildingAbility : PlayerAbility
         }
 
         _ghost.SetVisible(true);
+        int direction = BuildingPlacer.GetDirection(_owner.transform.forward);
 
-        if (cell.GridPosition != _prevGridPos)
+        if (cell.GridPosition != _prevGridPos || direction != _prevDirection)
         {
             _prevGridPos = cell.GridPosition;
+            _prevDirection = direction;
             RefreshGhost();
         }
     }
@@ -225,6 +228,7 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell != null)
         {
             _prevGridPos = cell.GridPosition;
+            _prevDirection = BuildingPlacer.GetDirection(_owner.transform.forward);
             RefreshGhost();
         }
         else
@@ -237,6 +241,7 @@ public class PlayerBuildingAbility : PlayerAbility
     {
         _ghost?.SetVisible(false);
         _state = BuildState.None;
+        _prevDirection = -1;
         _buildingManager.ClearSelection();
         UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
@@ -246,6 +251,7 @@ public class PlayerBuildingAbility : PlayerAbility
         _ghost?.Destroy();
         _ghost = null;
         _state = BuildState.None;
+        _prevDirection = -1;
         _buildingManager.ClearSelection();
         UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
