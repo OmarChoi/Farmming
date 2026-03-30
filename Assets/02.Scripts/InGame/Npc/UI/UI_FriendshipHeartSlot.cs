@@ -15,19 +15,11 @@ public class UI_FriendshipHeartSlot : MonoBehaviour
     {
         if (_heartImage == null) return;
 
-        switch (state)
+        _heartImage.sprite = state switch
         {
-            case EHeartFillState.Full:
-                _heartImage.sprite = _fullSprite;
-                break;
-
-            case EHeartFillState.Half:
-                _heartImage.sprite = _halfSprite;
-                break;
-
-            default:
-                _heartImage.sprite = _emptySprite;
-                break;
-        }
+            EHeartFillState.Full => _fullSprite,
+            EHeartFillState.Half => _halfSprite,
+            _ => _emptySprite
+        };
     }
 }
