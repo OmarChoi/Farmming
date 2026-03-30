@@ -53,6 +53,10 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         _currentHelper.OnActionStarted += OnHelperActionStarted;
         _currentHelper.OnActionEnded += OnHelperActionEnded;
         _currentHelper.Summon(_owner);
+
+        _currentHelper.PhotonView?.RPC(
+            nameof(HelperController.RPC_Summon), RpcTarget.Others,
+            _owner.PhotonView.ViewID);
     }
 
     public void Unsummon()
