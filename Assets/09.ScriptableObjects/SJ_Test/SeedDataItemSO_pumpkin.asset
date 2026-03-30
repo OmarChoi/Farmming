@@ -12,12 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f9b4bc397b335448f324b7b63bf7b2, type: 3}
   m_Name: SeedDataItemSO_pumpkin
   m_EditorClassIdentifier: Assembly-CSharp::SeedItemDataSO
-  _id: 0
-  _displayName: SeedPumpkinItem
+  _id: 1
+  _displayName: "\uD638\uBC15\uC528"
   _icon: {fileID: 21300000, guid: 3153ffa0623ece44299c60940fdd9bf6, type: 3}
   _type: 4
   _maxStack: 99
-  _buyCost: 0
-  _sellCost: 0
-  _displayExplanation: 
-  _seedConfig: {fileID: 11400000, guid: 73b0aea11e8e83d47b1dc033cbccb11c, type: 2}
+  _buyCost: 400
+  _sellCost: 200
+  _displayExplanation: "\uB9E4\uB048\uD558\uACE0 \uB2E8\uB2E8\uD55C \uD638\uBC15\uC528\uB2E4."
+  _seedGrowthStage:
+  - SeedStageName: "\uD638\uBC15\uC528\uC557"
+    RequireDays: 1
+    SeedStageItem: {fileID: 7950812289842149317, guid: 74efea64226cef548925368d45b4283d, type: 3}
+    GrowthTiming: 0
+  - SeedStageName: "\uD638\uBC15\uC0C8\uC2F9"
+    RequireDays: 1
+    SeedStageItem: {fileID: 1094525414510450014, guid: e9db715e47074704896b44fd7cf0c552, type: 3}
+    GrowthTiming: 0
+  - SeedStageName: "\uAC70\uB300\uD55C \uD638\uBC15"
+    RequireDays: 1
+    SeedStageItem: {fileID: 223150648236008772, guid: 9011151debd63ab41a176837be80d362, type: 3}
+    GrowthTiming: 0
+  _harvestAmountMin: 1
+  _harvestAmountMax: 5
+  _harvestItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
+  _seedGrade: 0
