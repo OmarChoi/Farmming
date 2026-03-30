@@ -72,13 +72,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         StartSow(farmTile, selectedSeed);
 
-        if (_owner.PhotonView != null && PhotonNetwork.IsConnected)
-        {
-            var pos = cell.GridPosition;
-            _owner.PhotonView.RPC(
-                nameof(RPC_PlantSeed), RpcTarget.Others,
-                pos.x, pos.y, pos.z, selectedSeed.SeedId);
-        }
+        var pos = cell.GridPosition;
+        _owner.PhotonView.RpcSafe(
+            nameof(RPC_PlantSeed), RpcTarget.Others,
+            pos.x, pos.y, pos.z, selectedSeed.SeedId);
     }
 
     private void StartSow(FarmTile farmTile, SeedConfig seed)

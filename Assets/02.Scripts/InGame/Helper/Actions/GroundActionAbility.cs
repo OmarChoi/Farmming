@@ -49,13 +49,10 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         bool dug = TerrainGridManager.Instance.TryDig(cell.GridPosition, _toolLevel);
         if (dug)
         {
-            if (PhotonNetwork.IsConnected)
-            {
-                var pos = cell.GridPosition;
-                _owner.PhotonView?.RPC(
-                    nameof(RPC_Dig), RpcTarget.Others,
-                    pos.x, pos.y, pos.z, _toolLevel);
-            }
+            var pos = cell.GridPosition;
+            _owner.PhotonView.RpcSafe(
+                nameof(RPC_Dig), RpcTarget.Others,
+                pos.x, pos.y, pos.z, _toolLevel);
 
             PlayerInventoryAbility inventory = GetInventory();
             if (inventory != null && _dirtItem != null)
@@ -101,10 +98,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        if (PhotonNetwork.IsConnected)
-            _owner.PhotonView?.RPC(
-                nameof(RPC_PlaceBlock), RpcTarget.Others,
-                targetPos.x, targetPos.y, targetPos.z, tileType, _generateDirtAmount);
+        _owner.PhotonView.RpcSafe(
+            nameof(RPC_PlaceBlock), RpcTarget.Others,
+            targetPos.x, targetPos.y, targetPos.z, tileType, _generateDirtAmount);
 
         inventory.RemoveAt(dirtSlotIndex, _generateDirtAmount);
 
