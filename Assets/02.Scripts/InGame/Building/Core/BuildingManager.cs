@@ -210,11 +210,12 @@ public class BuildingManager : MonoBehaviour
 
         // Depth 방향 중앙 오프셋 계산 (Width는 이미 중앙 정렬)
         float depthCenter = (footprint.Depth - 1) * 0.5f;
+        float widthCenter = footprint.WidthOffset + (footprint.Width - 1) * 0.5f;
         float cellSize = _gridManager.CellSize;
         Vector3 centerOffset = new Vector3(
-            footprint.Forward.x * depthCenter * cellSize,
+            (footprint.Forward.x * depthCenter + footprint.Right.x * widthCenter) * cellSize,
             0f,
-            footprint.Forward.y * depthCenter * cellSize
+            (footprint.Forward.y * depthCenter + footprint.Right.y * widthCenter) * cellSize
         );
 
         return _gridManager.GridToWorld(elevated) + centerOffset;
