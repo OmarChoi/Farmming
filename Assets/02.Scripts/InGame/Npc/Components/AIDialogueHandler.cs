@@ -1,7 +1,7 @@
+using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 using System.IO;
-using UnityEngine;
 
 public class AIDialogueHandler : IDialogueHandler
 {

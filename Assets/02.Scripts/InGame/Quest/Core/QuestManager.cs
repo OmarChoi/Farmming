@@ -1,6 +1,6 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class QuestManager : MonoBehaviour
 {
@@ -204,22 +204,28 @@ public class QuestManager : MonoBehaviour
         return true;
     }
 
-    private void GiveReward(QuestRewardData reward)
+    private void GiveReward(QuestRewardData rewardData)
     {
-        if (reward == null) return;
+        if (rewardData == null || rewardData.Rewards == null) return;
 
-        switch (reward.RewardType)
+        foreach (QuestRewardEntry reward in rewardData.Rewards)
         {
-            case EQuestRewardType.Gold:
-                CurrencyManager.Instance?.AddGold(reward.Amount);
-                break;
+            if (reward == null || !reward.IsValid()) continue;
 
-            case EQuestRewardType.Item:
-                if (reward.RewardItem != null)
-                {
+            switch (reward.RewardType)
+            {
+                case EQuestRewardType.Gold:
+                    CurrencyManager.Instance?.AddGold(reward.Amount);
+                    break;
+
+                case EQuestRewardType.Item:
                     _playerInventory?.AddItem(reward.RewardItem, reward.Amount);
-                }
-                break;
+                    break;
+
+                case EQuestRewardType.Friendship:
+                    NpcFriendshipManager.Instance?.AddFriendship(reward.TargetNpcId, reward.Amount, ENpcFriendshipReason.QuestReward);
+                    break;
+            }
         }
     }
 

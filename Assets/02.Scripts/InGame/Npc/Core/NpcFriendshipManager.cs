@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 public class NpcFriendshipManager : MonoBehaviour
@@ -11,6 +12,8 @@ public class NpcFriendshipManager : MonoBehaviour
 
     private readonly Dictionary<string, int> _friendshipByNpcId = new();
     private readonly HashSet<string> _greetedNpcIdsToday = new();
+
+    public event Action<string, int, int, ENpcFriendshipReason> OnFriendshipChanged;
 
     public int MaxFriendship => _friendshipSettings.MaxFriendship;
     public int DefaultFriendship => _friendshipSettings.DefaultFriendship;
@@ -79,14 +82,18 @@ public class NpcFriendshipManager : MonoBehaviour
             : DefaultFriendship;
     }
 
-    public void AddFriendship(string npcId, int amount)
+    public void AddFriendship(string npcId, int amount, ENpcFriendshipReason reason = ENpcFriendshipReason.Event)
     {
-        if (string.IsNullOrEmpty(npcId)) return;
+        if (string.IsNullOrEmpty(npcId) || amount == 0) return;
 
-        int current = GetFriendship(npcId);
-        _friendshipByNpcId[npcId] = ClampFriendship(current + amount);
+        int oldValue = GetFriendship(npcId);
+        int newValue = ClampFriendship(oldValue + amount);
+
+        _friendshipByNpcId[npcId] = newValue;
+        OnFriendshipChanged?.Invoke(npcId, oldValue, newValue, reason);
+
 #if UNITY_EDITOR
-        Debug.Log($"NPC {npcId} 친밀도 추가 {amount} 총 {_friendshipByNpcId[npcId]}");
+        Debug.Log($"NPC {npcId} 친밀도 변화 {amount} / {oldValue} -> {newValue} / reason = {reason}");
 #endif
     }
 
@@ -95,7 +102,7 @@ public class NpcFriendshipManager : MonoBehaviour
         if (string.IsNullOrEmpty(npcId) || _greetedNpcIdsToday.Contains(npcId)) return false;
 
         _greetedNpcIdsToday.Add(npcId);
-        AddFriendship(npcId, _friendshipSettings.DailyGreetingReward);
+        AddFriendship(npcId, _friendshipSettings.DailyGreetingReward, ENpcFriendshipReason.Greeting);
         return true;
     }
 
@@ -115,8 +122,7 @@ public class NpcFriendshipManager : MonoBehaviour
     // 외부에서 비정상적인 값이 들어왔을 경우를 대비한 방어 코드입니다.
     private int ClampFriendship(int friendship)
     {
-        int friendshipValue = Mathf.Clamp(friendship, 0, _friendshipSettings.MaxFriendship);
-        return friendshipValue;
+        return Mathf.Clamp(friendship, 0, _friendshipSettings.MaxFriendship);
     }
 
     private void OnValidate()
