@@ -35,7 +35,7 @@ public class UI_BuildingList : UIBase
     private CursorLockMode _prevLockMode;
     private bool _prevCursorVisible;
     private const float MaxDeltaMagnitude = 50f;
-    private static readonly Vector2 _initialDirection = new Vector2(1f, 1f);
+    private static readonly Vector2 InitialDirection = new Vector2(1f, 1f);
 
     protected override void OnOpen() => BindData();
     protected override void OnClose() => ResetVisuals();
@@ -89,7 +89,7 @@ public class UI_BuildingList : UIBase
         Cursor.visible = false;
 
         // (1, 1) 방향 슬롯이 초기 선택되도록 설정
-        _mouseDelta = _initialDirection;
+        _mouseDelta = InitialDirection;
         _hoveredIndex = -1;
         UpdatePreview(-1);
     }
