@@ -185,8 +185,9 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void TryInteractPrimary()
     {
-        TerrainCell cell = _terrainAbility.GetFrontCell();
+        TerrainCell cell = _terrainAbility.GetFrontCell(out bool isBelowFallback);
         if (cell == null) return;
+        if (isBelowFallback) return; // 아래 셀은 파기 대상 아님
 
         _currentHelper.InteractPrimary(cell);
     }
