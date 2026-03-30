@@ -90,19 +90,8 @@ public class UI_QuestBoardSlot : MonoBehaviour
         }
         else
         {
-            switch (quest.Reward.RewardType)
-            {
-                case (EQuestRewardType.Gold):
-                    _rewardText = $"퀘스트 보상: {quest.Reward.Amount} 골드";
-                    _questRewardText.text = _wrapper.WrapText(_rewardText, _questRewardText);
-                    break;
-
-                case (EQuestRewardType.Item):
-                    string itemName = quest.Reward.RewardItem != null ? quest.Reward.RewardItem.DisplayName : "아이템";
-                    _rewardText = $"퀘스트 보상: {itemName} {quest.Reward.Amount}개";
-                    _questRewardText.text = _wrapper.WrapText(_rewardText, _questRewardText);
-                    break;
-            }
+            _rewardText = QuestRewardTextFormatter.BuildQuestReward(quest.Reward);
+            _questRewardText.text = _wrapper.WrapText(_rewardText, _questRewardText);
         }
         RefreshButtonState();
     }

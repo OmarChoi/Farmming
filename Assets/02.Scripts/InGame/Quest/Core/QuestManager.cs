@@ -1,6 +1,6 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class QuestManager : MonoBehaviour
 {
@@ -17,6 +17,9 @@ public class QuestManager : MonoBehaviour
     private readonly HashSet<string> _completedMainQuestIds = new();
     private readonly HashSet<string> _completedSubQuestIds = new();
     private readonly Dictionary<string, int> _dailyQuestCompletedDays = new();
+
+    private Dictionary<EQuestRewardType, IQuestRewardHandler> _rewardHandlers;
+
     public IReadOnlyDictionary<string, QuestRuntimeData> ActiveQuests => _activeQuests;
     public List<QuestRuntimeData> GetActiveQuestList()
     {
@@ -40,6 +43,12 @@ public class QuestManager : MonoBehaviour
         }
 
         Instance = this;
+        _rewardHandlers = new Dictionary<EQuestRewardType, IQuestRewardHandler>
+        {
+            { EQuestRewardType.Gold, new QuestGoldRewardHandler() },
+            { EQuestRewardType.Item, new QuestItemRewardHandler(_playerInventory) },
+            { EQuestRewardType.Friendship, new QuestFriendshipRewardHandler() }
+        };
     }
 
     private void OnEnable()
@@ -204,22 +213,18 @@ public class QuestManager : MonoBehaviour
         return true;
     }
 
-    private void GiveReward(QuestRewardData reward)
+    private void GiveReward(QuestRewardData rewardData)
     {
-        if (reward == null) return;
+        if (rewardData == null || rewardData.Rewards == null) return;
 
-        switch (reward.RewardType)
+        foreach (var reward in rewardData.Rewards)
         {
-            case EQuestRewardType.Gold:
-                CurrencyManager.Instance?.AddGold(reward.Amount);
-                break;
+            if (reward == null || !reward.IsValid()) continue;
 
-            case EQuestRewardType.Item:
-                if (reward.RewardItem != null)
-                {
-                    _playerInventory?.AddItem(reward.RewardItem, reward.Amount);
-                }
-                break;
+            if (_rewardHandlers.TryGetValue(reward.RewardType, out var handler))
+            {
+                handler.HandleReward(reward);
+            }
         }
     }
 

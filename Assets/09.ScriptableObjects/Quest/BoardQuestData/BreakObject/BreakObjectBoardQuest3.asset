@@ -21,8 +21,10 @@ MonoBehaviour:
   QuestCategory: 2
   ObjectiveType: 0
   TargetId: NormalRock
-  RequiredAmount: 3
+  RequiredAmount: 1
   Reward:
-    RewardType: 1
-    RewardItem: {fileID: 11400000, guid: 2b2b3478def7edd4aae00ccd5b1dad58, type: 2}
-    Amount: 2
+    Rewards:
+    - RewardType: 2
+      RewardItem: {fileID: 0}
+      Amount: 50
+      TargetNpcId: Shopper
