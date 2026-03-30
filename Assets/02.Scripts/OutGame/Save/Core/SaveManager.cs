@@ -30,7 +30,14 @@ public class SaveManager : MonoBehaviour
     public void RegisterPlayer(string playerId, PlayerController player)
     {
         _players[playerId] = player;
+
+        bool isNewPlayer = _loadedData == null
+            || !_loadedData.Players.Exists(p => p.PlayerId == playerId);
+
         TryRestorePlayer(playerId, player);
+
+        if (isNewPlayer && PhotonNetwork.IsMasterClient)
+            SaveAsync(RoomManager.Instance.SelectedSlot).Forget();
     }
 
     private void TryRestorePlayer(string playerId, PlayerController player)
