@@ -29,6 +29,11 @@ public class UI_BuildingList : UIBase
 
     private int _hoveredIndex = -1;
     private int _activeCount;
+    private Vector2 _mouseDelta;
+    private CursorLockMode _prevLockMode;
+    private bool _prevCursorVisible;
+    private const float MaxDeltaMagnitude = 50f;
+    private static readonly Vector2 _initialDirection = new Vector2(1f, 1f);
 
     protected override void OnOpen() => BindData();
     protected override void OnClose() => ResetVisuals();
@@ -75,11 +80,19 @@ public class UI_BuildingList : UIBase
             }
         }
 
+        // 커서 잠금
+        _prevLockMode = Cursor.lockState;
+        _prevCursorVisible = Cursor.visible;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        // (1, 1) 방향 슬롯이 초기 선택되도록 설정
+        _mouseDelta = _initialDirection;
         _hoveredIndex = -1;
         UpdatePreview(-1);
     }
 
-    // 슬롯 색상 초기화
+    // 슬롯 색상 초기화 + 커서 복원
     private void ResetVisuals()
     {
         for (int i = 0; i < _slots.Count; i++)
@@ -87,7 +100,12 @@ public class UI_BuildingList : UIBase
             _slots[i].SetColor(_normalColor);
         }
 
+        // 커서 상태 복원
+        Cursor.lockState = _prevLockMode;
+        Cursor.visible = _prevCursorVisible;
+
         _hoveredIndex = -1;
+        _mouseDelta = Vector2.zero;
         UpdatePreview(-1);
     }
 
@@ -113,24 +131,15 @@ public class UI_BuildingList : UIBase
         }
     }
 
-    // 마우스 위치 기반 호버 슬롯 판정
+    // 마우스 방향 기반 호버 슬롯 판정 (커서 잠금 상태에서 delta 누적으로 방향 판정)
     private void UpdateHover()
     {
         _hoveredIndex = -1;
-        // todo. 마우스 (0, 0)에 고정 후 방향에 따른 Slot 선택 구현
-        
-        RectTransformUtility.ScreenPointToLocalPointInRectangle
-        (
-            (RectTransform)transform,
-            Input.mousePosition,
-            null,
-            out Vector2 local
-        );
 
-        float distSqr = local.sqrMagnitude;
-        if (distSqr < _innerRadius * _innerRadius || distSqr > _outerRadius * _outerRadius) return;
+        _mouseDelta += new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+        _mouseDelta = Vector2.ClampMagnitude(_mouseDelta, MaxDeltaMagnitude);
 
-        float angle = Mathf.Atan2(local.y, local.x) * Mathf.Rad2Deg;
+        float angle = Mathf.Atan2(_mouseDelta.y, _mouseDelta.x) * Mathf.Rad2Deg;
         float normalized = (90f - angle + 360f) % 360f;
         float angleStep = 360f / _activeCount;
 
