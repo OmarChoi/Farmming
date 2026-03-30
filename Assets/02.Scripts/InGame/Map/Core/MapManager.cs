@@ -25,14 +25,14 @@ public class MapManager : MonoBehaviour
         Instance = this;
     }
 
-    /// Generate village terrain (new game only, then use SaveManager to load).
-    /// player가 null이 아니면 맵 중앙 최상단 위에 자동 배치.
-    /// 반환값: 스폰 월드 좌표.
+    // player가 null이 아니면 맵 중앙 최상단 위에 자동 배치.
+    // 반환값: 스폰 월드 좌표.
     public Vector3 GenerateVillage(Transform player = null)
     {
         int seed = System.Environment.TickCount;
         var result = _villageConfig.CreateGenerator().Generate(_villageConfig, seed);
         _gridManager.LoadFromData(result.GridData);
+        _gridManager.SetMaxHeight(_villageConfig.MaxHeight);
         CurrentMap = EMapType.Village;
 
         if (player != null)
@@ -41,7 +41,7 @@ public class MapManager : MonoBehaviour
         return _gridManager.GridToWorld(result.SpawnPoint);
     }
 
-    /// Enter dungeon floor (1-based). Generates fresh terrain each time.
+    // 던전 입장
     public void EnterDungeon(int floor, Transform player = null)
     {
         int configIndex = floor - 1;
@@ -55,6 +55,7 @@ public class MapManager : MonoBehaviour
         int seed = System.Environment.TickCount;
         var result = config.CreateGenerator().Generate(config, seed);
         _gridManager.LoadFromData(result.GridData);
+        _gridManager.SetMaxHeight(config.MaxHeight);
 
         CurrentMap = floor switch
         {
@@ -67,9 +68,16 @@ public class MapManager : MonoBehaviour
             PlacePlayer(player, result.SpawnPoint);
     }
 
-    /// Exit dungeon. Call SaveManager.LoadAsync() after this to restore village.
     public void ExitDungeon()
     {
+        CurrentMap = EMapType.Village;
+    }
+
+    // 세이브 데이터로 마을 복원 시 호출. MaxHeight도 함께 설정.
+    public void ImportVillageSaveData(TerrainSaveData saveData)
+    {
+        _gridManager.ImportSaveData(saveData);
+        _gridManager.SetMaxHeight(_villageConfig.MaxHeight);
         CurrentMap = EMapType.Village;
     }
 

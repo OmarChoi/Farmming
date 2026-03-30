@@ -154,7 +154,7 @@ public class SaveManager : MonoBehaviour
             return;
         }
 
-        _terrainGridManager.ImportSaveData(_loadedData.Terrain);
+        _mapManager.ImportVillageSaveData(_loadedData.Terrain);
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
     }
 
