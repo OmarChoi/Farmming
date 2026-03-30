@@ -22,12 +22,11 @@ public class PlayerBuildingAbility : PlayerAbility
     private BuildingManager _buildingManager;
     private PlayerTerrainAbility _terrainAbility;
     private PlayerInventoryAbility _inventoryAbility;
-    private bool _swapped;
+    private int _rotationQuarterTurns;
     private BuildState _state = BuildState.None;
     private BuildingGhost _ghost;
     private string _ghostBuildingId;
     private Vector3Int _prevGridPos;
-    private int _prevDirection = -1;
     private int _previewRequestVersion;
     private bool _isLoadingPrefab;
     private bool _isBuilding;
@@ -157,7 +156,7 @@ public class PlayerBuildingAbility : PlayerAbility
         // Swap toggle
         if (Input.GetKeyDown(_rotateKey))
         {
-            ToggleSwap();
+            RotatePreviewClockwise();
             RefreshGhost();
         }
 
@@ -177,12 +176,9 @@ public class PlayerBuildingAbility : PlayerAbility
         }
 
         _ghost.SetVisible(true);
-        int direction = BuildingPlacer.GetDirection(_owner.transform.forward);
-
-        if (cell.GridPosition != _prevGridPos || direction != _prevDirection)
+        if (cell.GridPosition != _prevGridPos || _hasResourcesDirty)
         {
             _prevGridPos = cell.GridPosition;
-            _prevDirection = direction;
             RefreshGhost();
         }
     }
@@ -196,7 +192,7 @@ public class PlayerBuildingAbility : PlayerAbility
         if (_ghost?.Instance != null && _ghostBuildingId == requestedBuilding.BuildingId)
         {
             _state = BuildState.Previewing;
-            _swapped = false;
+            _rotationQuarterTurns = BuildingPlacer.GetDirection(_owner.transform.forward);
             _ghost.SetVisible(true);
             RefreshGhostInitial();
             UIController.Instance?.OpenAsync<UI_BuildInfo>().Forget();
@@ -223,7 +219,7 @@ public class PlayerBuildingAbility : PlayerAbility
         if (prefab == null || _state != BuildState.None) return;
 
         _state = BuildState.Previewing;
-        _swapped = false;
+        _rotationQuarterTurns = BuildingPlacer.GetDirection(_owner.transform.forward);
         _ghost = new BuildingGhost();
         _ghost.Spawn(prefab, _ghostMaterial, _ghostValidColor, _ghostInvalidColor);
         _ghostBuildingId = requestedBuilding.BuildingId;
@@ -239,7 +235,6 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell != null)
         {
             _prevGridPos = cell.GridPosition;
-            _prevDirection = BuildingPlacer.GetDirection(_owner.transform.forward);
             RefreshGhost();
         }
         else
@@ -254,7 +249,6 @@ public class PlayerBuildingAbility : PlayerAbility
         _isLoadingPrefab = false;
         _ghost?.SetVisible(false);
         _state = BuildState.None;
-        _prevDirection = -1;
         _buildingManager.ClearSelection();
         UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
@@ -267,7 +261,6 @@ public class PlayerBuildingAbility : PlayerAbility
         _ghost = null;
         _ghostBuildingId = null;
         _state = BuildState.None;
-        _prevDirection = -1;
         if (clearSelection)
         {
             _buildingManager.ClearSelection();
@@ -280,8 +273,8 @@ public class PlayerBuildingAbility : PlayerAbility
         TerrainCell cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
-        int direction = BuildingPlacer.GetDirection(_owner.transform.forward);
-        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
+        int direction = _rotationQuarterTurns;
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, swapped: false);
 
         if (!preview.CanPlace) return;
 
@@ -295,7 +288,7 @@ public class PlayerBuildingAbility : PlayerAbility
             Data = _buildingData,
             AnchorPos = cell.GridPosition,
             Direction = direction,
-            Swapped = _swapped
+            Swapped = false
         };
         await _buildingManager.TryBuild(request);
         _isBuilding = false;
@@ -308,8 +301,8 @@ public class PlayerBuildingAbility : PlayerAbility
         TerrainCell cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
-        int direction = BuildingPlacer.GetDirection(_owner.transform.forward);
-        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, _swapped);
+        int direction = _rotationQuarterTurns;
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, swapped: false);
 
         _ghost.UpdateTransform(preview.SpawnPosition, preview.Rotation);
 
@@ -322,10 +315,10 @@ public class PlayerBuildingAbility : PlayerAbility
         _ghost.SetValid(preview.CanPlace && _hasResourcesCached);
     }
 
-    private void ToggleSwap()
+    private void RotatePreviewClockwise()
     {
         if (_buildingData == null) return;
-        _swapped = !_swapped;
+        _rotationQuarterTurns = (_rotationQuarterTurns + 1) % 4;
     }
 
     private void TryRemove()
