@@ -1,13 +1,11 @@
-using UnityEngine;
 using DG.Tweening;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class UI_FriendshipBar : MonoBehaviour
 {
     [Header("하트 슬롯")]
     [SerializeField] private UI_FriendshipHeartSlot[] _slots;
-
-    [Header("친밀도 설정")]
-    [SerializeField] private int _halfStepValue = 50;
 
     [Header("연출")]
     [SerializeField] private bool _usePunchAnimation = true;
@@ -20,9 +18,6 @@ public class UI_FriendshipBar : MonoBehaviour
 
     [Header("fallback 설정")]
     [SerializeField] private int _fallbackMaxFriendship = 1000;
-
-    [Header("하트 슬롯 설정")]
-    [SerializeField] private int _halfStepsPerHeart = 2;
 
     private int _currentFriendship = -1;
     private string _currentNpcId;
@@ -71,37 +66,32 @@ public class UI_FriendshipBar : MonoBehaviour
             return;
         }
 
-        int oldHalfSteps = _currentFriendship / _halfStepValue;
-        int newHalfSteps = Mathf.Clamp(targetFriendship, 0, NpcFriendshipManager.Instance.MaxFriendship) / _halfStepValue;
+        int oldValue = _currentFriendship;
+        int newValue = targetFriendship;
 
         _currentFriendship = targetFriendship;
         ApplyToSlots(targetFriendship);
 
-        if (_usePunchAnimation && newHalfSteps != oldHalfSteps)
+        if (_usePunchAnimation && NpcFriendshipManager.Instance != null)
         {
-            PlayChangedSlotAnimation(oldHalfSteps, newHalfSteps);
+            var changedSlots = NpcFriendshipManager.Instance.GetChangedHeartSlotIndices(oldValue, newValue, _slots.Length);
+
+            PlayChangedSlotAnimation(changedSlots);
         }
     }
 
     private void ApplyToSlots(int friendship)
     {
         if (_slots == null || _slots.Length == 0) return;
+        if (NpcFriendshipManager.Instance == null) return;
 
-        int maxFriendship = NpcFriendshipManager.Instance != null
-            ? NpcFriendshipManager.Instance.MaxFriendship
-            : _fallbackMaxFriendship;
-
-        friendship = Mathf.Clamp(friendship, 0, maxFriendship);
-
-        int totalHalfSteps = friendship / _halfStepValue;
+        var steps = NpcFriendshipManager.Instance.GetHeartSteps(friendship, _slots.Length);
 
         for (int i = 0; i < _slots.Length; i++)
         {
             if (_slots[i] == null) continue;
 
-            int slotHalfStep = Mathf.Clamp(totalHalfSteps - (i * _halfStepsPerHeart), 0, _halfStepsPerHeart);
-
-            EHeartFillState state = slotHalfStep switch
+            EHeartFillState state = steps[i] switch
             {
                 2 => EHeartFillState.Full,
                 1 => EHeartFillState.Half,
@@ -112,22 +102,28 @@ public class UI_FriendshipBar : MonoBehaviour
         }
     }
 
-    private void PlayChangedSlotAnimation(int oldHalfSteps, int newHalfSteps)
+    private void ApplyEmpty()
+    {
+        for (int i = 0; i < _slots.Length; i++)
+        {
+            if (_slots[i] == null) continue;
+            _slots[i].SetState(EHeartFillState.Empty);
+        }
+    }
+
+    private void PlayChangedSlotAnimation(List<int> slotIndices)
     {
         if (_slots == null || _slots.Length == 0) return;
 
-        int min = Mathf.Min(oldHalfSteps, newHalfSteps);
-        int max = Mathf.Max(oldHalfSteps, newHalfSteps);
-
-        for (int halfStep = min; halfStep < max; halfStep++)
+        foreach (var slotIndex in slotIndices)
         {
-            int slotIndex = halfStep / 2;
             if (slotIndex < 0 || slotIndex >= _slots.Length) continue;
             if (_slots[slotIndex] == null) continue;
 
             Transform target = _slots[slotIndex].transform;
             target.DOKill();
             target.localScale = Vector3.one;
+
             target.DOPunchScale(Vector3.one * _punchScale, _punchDuration, _punchVibrato, _punchElasticity);
         }
     }

@@ -129,4 +129,58 @@ public class NpcFriendshipManager : MonoBehaviour
     {
         _friendshipSettings?.Validate();
     }
+
+    public int[] GetHeartSteps(int friendship, int slotCount)
+    {
+        int halfStepValue = _friendshipSettings.HalfStepValue;
+        int halfStepsPerHeart = _friendshipSettings.HalfStepsPerHeart;
+
+        friendship = ClampFriendship(friendship);
+
+        int totalHalfSteps = friendship / halfStepValue;
+
+        int[] result = new int[slotCount];
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            int slotHalfStep = Mathf.Clamp(
+                totalHalfSteps - (i * halfStepsPerHeart),
+                0,
+                halfStepsPerHeart
+            );
+
+            result[i] = slotHalfStep;
+        }
+
+        return result;
+    }
+
+    public List<int> GetChangedHeartSlotIndices(int oldFriendship, int newFriendship, int slotCount)
+    {
+        int halfStepValue = _friendshipSettings.HalfStepValue;
+        int halfStepsPerHeart = _friendshipSettings.HalfStepsPerHeart;
+
+        int oldHalfSteps = ClampFriendship(oldFriendship) / halfStepValue;
+        int newHalfSteps = ClampFriendship(newFriendship) / halfStepValue;
+
+        int min = Mathf.Min(oldHalfSteps, newHalfSteps);
+        int max = Mathf.Max(oldHalfSteps, newHalfSteps);
+
+        List<int> result = new();
+
+        for (int halfStep = min; halfStep < max; halfStep++)
+        {
+            int slotIndex = halfStep / halfStepsPerHeart;
+
+            if (slotIndex >= 0 && slotIndex < slotCount)
+            {
+                if (!result.Contains(slotIndex))
+                {
+                    result.Add(slotIndex);
+                }
+            }
+        }
+
+        return result;
+    }
 }
