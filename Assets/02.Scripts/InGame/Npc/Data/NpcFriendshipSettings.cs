@@ -12,6 +12,9 @@ public class NpcFriendshipSettings
     public int TrustedThreshold = 800;
     public int BestThreshold = 950;
 
+    public int HalfStepValue = 50;
+    public int HalfStepsPerHeart = 2;
+
     public int DailyGreetingReward = 20;
 
     public void Validate()
