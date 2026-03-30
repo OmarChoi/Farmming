@@ -1559,6 +1559,11 @@ GameObject:
   - component: {fileID: 8906750751923336578}
   - component: {fileID: -7327984567084549702}
   - component: {fileID: 4904571678502138745}
+  - component: {fileID: 1091081259506374530}
+  - component: {fileID: 3078655061680541520}
+  - component: {fileID: 1012907082310678824}
+  - component: {fileID: 8890283815802751499}
+  - component: {fileID: 8484499773403390359}
   m_Layer: 7
   m_Name: WoodCuttingHelper
   m_TagString: Untagged
@@ -1597,6 +1602,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HelperController
   _data: {fileID: 11400000, guid: 2c22928b9528db74faea2e263f10b0b2, type: 2}
+  _rotationEuler: {x: 0, y: 180, z: 0}
 --- !u!143 &8906750751923336578
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1661,49 +1667,13 @@ MonoBehaviour:
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
   m_UseLocal: 1
---- !u!1 &7649335919829065423
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3360712140434801594}
-  - component: {fileID: 8017924024679781129}
-  - component: {fileID: 7609944182922762100}
-  - component: {fileID: 3400183621274649238}
-  - component: {fileID: 1912861716771095794}
-  - component: {fileID: 6053756098560208431}
-  m_Layer: 7
-  m_Name: Ability
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3360712140434801594
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7649335919829065423}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6742385779365880687}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8017924024679781129
+--- !u!114 &1091081259506374530
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7649335919829065423}
+  m_GameObject: {fileID: 7031329684245050430}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 19018a3b2f2d20d4e8d12747c1437f48, type: 3}
@@ -1726,25 +1696,25 @@ MonoBehaviour:
   _jumpCheckMask:
     serializedVersion: 2
     m_Bits: 183
---- !u!114 &7609944182922762100
+--- !u!114 &3078655061680541520
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7649335919829065423}
+  m_GameObject: {fileID: 7031329684245050430}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 40ed055f08a53d645a375abf45fdb88b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HelperAnimationAbility
---- !u!114 &3400183621274649238
+--- !u!114 &1012907082310678824
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7649335919829065423}
+  m_GameObject: {fileID: 7031329684245050430}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4e056744dda82645b0b0c749521f921, type: 3}
@@ -1754,25 +1724,25 @@ MonoBehaviour:
   _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
   _idleTransition: 0.5
---- !u!114 &1912861716771095794
+--- !u!114 &8890283815802751499
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7649335919829065423}
+  m_GameObject: {fileID: 7031329684245050430}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
---- !u!114 &6053756098560208431
+--- !u!114 &8484499773403390359
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7649335919829065423}
+  m_GameObject: {fileID: 7031329684245050430}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 029c6d3a7809ac74eb59252ac5d10493, type: 3}
@@ -1791,6 +1761,37 @@ MonoBehaviour:
   _jumpCount: 1
   _rayOriginHeight: 3
   _rayDistance: 5
+--- !u!1 &7649335919829065423
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3360712140434801594}
+  m_Layer: 7
+  m_Name: Ability
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3360712140434801594
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7649335919829065423}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6742385779365880687}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8161925722641029871
 GameObject:
   m_ObjectHideFlags: 0

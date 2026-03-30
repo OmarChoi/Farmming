@@ -96,110 +96,6 @@ Transform:
   - {fileID: 3078775404032945761}
   m_Father: {fileID: 3738890586547760994}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1560332179249728770
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6987654492603332719}
-  - component: {fileID: 725066959064058448}
-  - component: {fileID: 7793466558248727200}
-  - component: {fileID: 8688318908214569227}
-  - component: {fileID: 6222580525243984954}
-  m_Layer: 7
-  m_Name: Ability
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6987654492603332719
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4522027000630529926}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &725066959064058448
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19018a3b2f2d20d4e8d12747c1437f48, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperFollowAbility
-  _moveSpeed: 4
-  _stopDistance: 2.5
-  _slowDownDistance: 3
-  _teleportDistance: 8
-  _teleportHeightDiff: 1.8
-  _smoothTime: 0.2
-  _teleportDelay: 1
-  _runSpeedThreshold: 0.5
-  _unequipJumpForce: 5
-  _unequipBackForce: 3
-  _launchRotationSpeed: 10
-  _autoJumpForce: 8
-  _autoJumpCheckDist: 2
-  _autoJumpMaxHeight: 2.2
-  _jumpCheckMask:
-    serializedVersion: 2
-    m_Bits: 183
---- !u!114 &7793466558248727200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40ed055f08a53d645a375abf45fdb88b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperAnimationAbility
---- !u!114 &8688318908214569227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
---- !u!114 &6222580525243984954
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04a0587144341a0409935052177bb5ef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GroundActionAbility
-  _dirtItem: {fileID: 11400000, guid: 496a91325591fb746b65ab955ba01fe0, type: 2}
-  _toolLevel: 1
-  _getDirtAmount: 1
-  _generateDirtAmount: 1
 --- !u!1 &1720176448544815771
 GameObject:
   m_ObjectHideFlags: 0
@@ -918,6 +814,10 @@ GameObject:
   - component: {fileID: 7720903764975020300}
   - component: {fileID: 6760225959364747185}
   - component: {fileID: -1401757805281251085}
+  - component: {fileID: 6755529316979807770}
+  - component: {fileID: 11937006228506086}
+  - component: {fileID: 871120140780161131}
+  - component: {fileID: 4305468134012487607}
   m_Layer: 7
   m_Name: GroundHelper
   m_TagString: Untagged
@@ -940,7 +840,6 @@ Transform:
   m_Children:
   - {fileID: 2982257461117071358}
   - {fileID: 8348114062204314817}
-  - {fileID: 6987654492603332719}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &350823004175790314
@@ -956,6 +855,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HelperController
   _data: {fileID: 11400000, guid: b9c6732dbda3f2549a52885ef28b9a34, type: 2}
+  _rotationEuler: {x: 0, y: 180, z: 0}
 --- !u!143 &7720903764975020300
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1020,6 +920,75 @@ MonoBehaviour:
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 1
   m_UseLocal: 1
+--- !u!114 &6755529316979807770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19018a3b2f2d20d4e8d12747c1437f48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperFollowAbility
+  _moveSpeed: 4
+  _stopDistance: 2.5
+  _slowDownDistance: 3
+  _teleportDistance: 8
+  _teleportHeightDiff: 1.8
+  _smoothTime: 0.2
+  _teleportDelay: 1
+  _runSpeedThreshold: 0.5
+  _unequipJumpForce: 5
+  _unequipBackForce: 3
+  _launchRotationSpeed: 10
+  _autoJumpForce: 8
+  _autoJumpCheckDist: 2
+  _autoJumpMaxHeight: 2.2
+  _jumpCheckMask:
+    serializedVersion: 2
+    m_Bits: 183
+--- !u!114 &11937006228506086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40ed055f08a53d645a375abf45fdb88b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperAnimationAbility
+--- !u!114 &871120140780161131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
+--- !u!114 &4305468134012487607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04a0587144341a0409935052177bb5ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GroundActionAbility
+  _dirtItem: {fileID: 11400000, guid: 496a91325591fb746b65ab955ba01fe0, type: 2}
+  _toolLevel: 1
+  _getDirtAmount: 1
+  _generateDirtAmount: 1
 --- !u!1 &5410132598804558874
 GameObject:
   m_ObjectHideFlags: 0
