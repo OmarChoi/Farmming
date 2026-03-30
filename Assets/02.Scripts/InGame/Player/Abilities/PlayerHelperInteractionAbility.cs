@@ -68,9 +68,10 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             _backHelper = helper;
             _backHelper.Summon(_owner);
 
-            _backHelper.PhotonView?.RPC(
-                nameof(HelperController.RPC_Summon), RpcTarget.Others,
-                _owner.PhotonView.ViewID);
+            if (PhotonNetwork.IsConnected)
+                _backHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Summon), RpcTarget.Others,
+                    _owner.PhotonView.ViewID);
         }
         else
         {
@@ -87,9 +88,10 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             _currentHelper.OnActionEnded += OnHelperActionEnded;
             _currentHelper.Summon(_owner);
 
-            _currentHelper.PhotonView?.RPC(
-                nameof(HelperController.RPC_Summon), RpcTarget.Others,
-                _owner.PhotonView.ViewID);
+            if (PhotonNetwork.IsConnected)
+                _currentHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Summon), RpcTarget.Others,
+                    _owner.PhotonView.ViewID);
         }
     }
 
@@ -153,14 +155,16 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             if (_currentHelper.State == EHelperState.Equipped)
             {
                 _currentHelper.Unequip();
-                _currentHelper.PhotonView?.RPC(
-                    nameof(HelperController.RPC_Unequip), RpcTarget.Others);
+                if (PhotonNetwork.IsConnected)
+                    _currentHelper.PhotonView?.RPC(
+                        nameof(HelperController.RPC_Unequip), RpcTarget.Others);
             }
             else
             {
                 _currentHelper.Equip(_equipSlot);
-                _currentHelper.PhotonView?.RPC(
-                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+                if (PhotonNetwork.IsConnected)
+                    _currentHelper.PhotonView?.RPC(
+                        nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
             }
             return;
         }
@@ -171,14 +175,16 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             if (_backHelper.State == EHelperState.Equipped)
             {
                 _backHelper.Unequip();
-                _backHelper.PhotonView?.RPC(
-                    nameof(HelperController.RPC_Unequip), RpcTarget.Others);
+                if (PhotonNetwork.IsConnected)
+                    _backHelper.PhotonView?.RPC(
+                        nameof(HelperController.RPC_Unequip), RpcTarget.Others);
             }
             else
             {
                 _backHelper.Equip(slot);
-                _backHelper.PhotonView?.RPC(
-                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+                if (PhotonNetwork.IsConnected)
+                    _backHelper.PhotonView?.RPC(
+                        nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
             }
         }
     }
