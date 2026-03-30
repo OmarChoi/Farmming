@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using UnityEngine;
 
 public class SaveManager : MonoBehaviour
@@ -66,6 +67,12 @@ public class SaveManager : MonoBehaviour
 
     public async UniTask SaveAsync(int slot = 0)
     {
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+        {
+            Debug.LogWarning("저장은 마스터 클라이언트만 실행할 수 있습니다.");
+            return;
+        }
+
         var data = new SaveData();
 
         if (_mapManager == null || _mapManager.IsVillage)

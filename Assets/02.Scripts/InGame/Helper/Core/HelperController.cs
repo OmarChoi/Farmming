@@ -87,6 +87,7 @@ public class HelperController : MonoBehaviour
         transform.SetParent(null);
         transform.position = FollowTarget.position + FollowTarget.right * SummonOffset;
         gameObject.SetActive(true);
+        GetAbility<HelperInteractionAbility>()?.Init();
     }
 
     public void Equip(Transform equipSlot)
@@ -146,10 +147,22 @@ public class HelperController : MonoBehaviour
         GetAbility<HelperInteractionAbility>()?.InteractSecondary(cell);
     }
 
+    #region PUN2 RPC — 원격 상태 동기화 수신부
+
     [PunRPC]
-    internal void RPC_PlayAnimation(int anim)
+    internal void RPC_Summon(int ownerViewId)
     {
-        GetAbility<HelperAnimationAbility>()?.PlayLocal((EHelperAnim)anim);
+        var ownerView = PhotonView.Find(ownerViewId);
+        if (ownerView == null) return;
+
+        var playerController = ownerView.GetComponent<PlayerController>();
+        if (playerController == null) return;
+
+        PlayerOwner = playerController;
+        FollowTarget = playerController.transform;
+        State = EHelperState.Summoned;
+        transform.SetParent(null);
+        gameObject.SetActive(true);
     }
 
     [PunRPC]
@@ -175,4 +188,30 @@ public class HelperController : MonoBehaviour
         transform.SetParent(null);
         SetTransformSync(true);
     }
+
+    [PunRPC]
+    internal void RPC_PlayAnimation(int anim)
+    {
+        GetAbility<HelperAnimationAbility>()?.PlayLocal((EHelperAnim)anim);
+    }
+
+    [PunRPC]
+    internal void RPC_InteractPrimary(int gridX, int gridY, int gridZ)
+    {
+        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null) return;
+
+        GetAbility<HelperInteractionAbility>()?.InteractPrimaryLocal(cell);
+    }
+
+    [PunRPC]
+    internal void RPC_InteractSecondary(int gridX, int gridY, int gridZ)
+    {
+        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null) return;
+
+        GetAbility<HelperInteractionAbility>()?.InteractSecondaryLocal(cell);
+    }
+
+    #endregion
 }

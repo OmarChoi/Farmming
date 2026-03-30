@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class HelperAnimationAbility : HelperAbility
@@ -7,8 +8,9 @@ public class HelperAnimationAbility : HelperAbility
     private Animator _animator;
     private EHelperAnim _currentAnim;
 
-    private void Start()
+    protected override void Awake()
     {
+        base.Awake();
         _animator = _owner.GetComponentInChildren<Animator>();
     }
 
@@ -19,7 +21,7 @@ public class HelperAnimationAbility : HelperAbility
         _animator.SetInteger(AnimHash, (int)anim);
 
         if (_owner.IsMine && _owner.PhotonView != null)
-            _owner.PhotonView.RPC(nameof(HelperController.RPC_PlayAnimation), Photon.Pun.RpcTarget.Others, (int)anim);
+            _owner.PhotonView.RPC(nameof(HelperController.RPC_PlayAnimation), RpcTarget.Others, (int)anim);
     }
 
     public void PlayLocal(EHelperAnim anim)
