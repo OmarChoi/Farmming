@@ -24,7 +24,7 @@ public class HelperController : MonoBehaviour
     public HelperEnergy Energy { get; private set; }
 
     public PhotonView PhotonView { get; private set; }
-    public bool IsMine => PhotonView == null || PhotonView.IsMine;
+    public bool IsMine => PhotonView == null || !PhotonNetwork.IsConnected || PhotonView.IsMine;
 
     private readonly Dictionary<Type, HelperAbility> _abilityCache = new();
     private PhotonTransformView _transformView;
