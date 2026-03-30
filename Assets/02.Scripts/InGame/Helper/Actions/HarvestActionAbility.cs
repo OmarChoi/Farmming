@@ -36,7 +36,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Harvest);
 
-        SeedConfig seed = farmTile.PlantedSeed;
+        SeedItemDataSO seed = farmTile.PlantedSeed;
 
         int harvestAmount = UnityEngine.Random.Range(seed.HarvestAmountMin, seed.HarvestAmountMax+1);
 
@@ -46,9 +46,9 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             inventory.AddItem(seed.HarvestItem, harvestAmount);
         }
 
-        if(seed.SeedIcon != null)
+        if(seed.Icon != null)
         {
-            _harvestItem?.Raise(seed.SeedIcon, seed.SeedName, harvestAmount);
+            _harvestItem?.Raise(seed.Icon, seed.DisplayName, harvestAmount);
         }
 
         farmTile.Interact();

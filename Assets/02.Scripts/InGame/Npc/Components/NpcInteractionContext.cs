@@ -6,6 +6,7 @@ public class NpcInteractionContext
     public Transform Interactor { get; }
     public NpcInteractionComponent InteractionComponent { get; }
     public string NpcName => Npc.Data.NpcName;
+    public string NpcId => Npc.Data.NpcId;
 
     public NpcInteractionContext(
         NpcController npc,

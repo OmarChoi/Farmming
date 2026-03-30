@@ -28,16 +28,9 @@ public class UI_QuestCompletePopup : MonoBehaviour
         if (quest == null || quest.QuestData == null || quest.QuestData.Reward == null) return;
 
         _completePopup.SetActive(true);
-        var reward = quest.QuestData.Reward;
-        switch (reward.RewardType)
-        {
-            case (EQuestRewardType.Gold):
-                _completeRewardText.text = $"퀘스트 보상: {reward.Amount} 골드";
-                break;
-            case (EQuestRewardType.Item):
-                _completeRewardText.text = $"퀘스트 보상: {reward.RewardItem.DisplayName} {reward.Amount}개";
-                break;
-        }
+
+        string rewardText = QuestRewardTextFormatter.BuildQuestReward(quest.QuestData.Reward);
+        _completeRewardText.text = rewardText;
     }
 
     public void HideCompletePopup()
