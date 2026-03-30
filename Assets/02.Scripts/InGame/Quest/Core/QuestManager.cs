@@ -17,6 +17,9 @@ public class QuestManager : MonoBehaviour
     private readonly HashSet<string> _completedMainQuestIds = new();
     private readonly HashSet<string> _completedSubQuestIds = new();
     private readonly Dictionary<string, int> _dailyQuestCompletedDays = new();
+
+    private Dictionary<EQuestRewardType, IQuestRewardHandler> _rewardHandlers;
+
     public IReadOnlyDictionary<string, QuestRuntimeData> ActiveQuests => _activeQuests;
     public List<QuestRuntimeData> GetActiveQuestList()
     {
@@ -40,6 +43,12 @@ public class QuestManager : MonoBehaviour
         }
 
         Instance = this;
+        _rewardHandlers = new Dictionary<EQuestRewardType, IQuestRewardHandler>
+        {
+            { EQuestRewardType.Gold, new QuestGoldRewardHandler() },
+            { EQuestRewardType.Item, new QuestItemRewardHandler(_playerInventory) },
+            { EQuestRewardType.Friendship, new QuestFriendshipRewardHandler() }
+        };
     }
 
     private void OnEnable()
@@ -208,23 +217,13 @@ public class QuestManager : MonoBehaviour
     {
         if (rewardData == null || rewardData.Rewards == null) return;
 
-        foreach (QuestRewardEntry reward in rewardData.Rewards)
+        foreach (var reward in rewardData.Rewards)
         {
             if (reward == null || !reward.IsValid()) continue;
 
-            switch (reward.RewardType)
+            if (_rewardHandlers.TryGetValue(reward.RewardType, out var handler))
             {
-                case EQuestRewardType.Gold:
-                    CurrencyManager.Instance?.AddGold(reward.Amount);
-                    break;
-
-                case EQuestRewardType.Item:
-                    _playerInventory?.AddItem(reward.RewardItem, reward.Amount);
-                    break;
-
-                case EQuestRewardType.Friendship:
-                    NpcFriendshipManager.Instance?.AddFriendship(reward.TargetNpcId, reward.Amount, ENpcFriendshipReason.QuestReward);
-                    break;
+                handler.HandleReward(reward);
             }
         }
     }
