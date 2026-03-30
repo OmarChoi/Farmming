@@ -60,61 +60,6 @@ public class TerrainCell : MonoBehaviour
             _farmTile.gameObject.SetActive(isFarmLand);
     }
 
-    public bool TryDig(int toolLevel)
-    {
-        // 위에 블록이 있으면 그 블록을 대신 파되, 그 위에도 블록이 있으면 아무것도 안 캠
-        var abovePos = GridPosition + Vector3Int.up;
-        var aboveCell = TerrainGridManager.Instance.GetCell(abovePos);
-        if (aboveCell != null && aboveCell.Data.CellType == ECellType.Dirt)
-        {
-            var aboveAbovePos = abovePos + Vector3Int.up;
-            var aboveAboveCell = TerrainGridManager.Instance.GetCell(aboveAbovePos);
-            if (aboveAboveCell != null && aboveAboveCell.Data.CellType == ECellType.Dirt)
-                return false;
-
-            return aboveCell.DigSelf(toolLevel);
-        }
-
-        return DigSelf(toolLevel);
-    }
-
-    private bool DigSelf(int toolLevel)
-    {
-        if (_data.ObjectType != EGridObjectType.None) return false;
-        if (!_data.CanDig(toolLevel)) return false;
-
-        // 아래 셀을 풀블록으로 전환
-        var belowPos = GridPosition + Vector3Int.down;
-        var belowCell = TerrainGridManager.Instance.GetCell(belowPos);
-        if (belowCell != null && belowCell.Data.CellType == ECellType.Dirt)
-        {
-            belowCell.Data.SetTop(true);
-            belowCell.Refresh();
-        }
-        TerrainGridManager.Instance.RemoveCell(GridPosition);
-
-        return true;
-    }
-
-    public bool TryPlaceBlock(int dirtLevel = 1)
-    {
-        if (_data.CellType != ECellType.Empty) return false;
-
-        _data.PlaceBlock(dirtLevel);
-        _data.SetTop(true);
-        Refresh();
-
-        var belowPos = GridPosition + Vector3Int.down;
-        var belowCell = TerrainGridManager.Instance.GetCell(belowPos);
-        if (belowCell != null && belowCell.Data.IsTop)
-        {
-            belowCell.Data.SetTop(false);
-            belowCell.Refresh();
-        }
-
-        return true;
-    }
-
     public bool TryConvertToFarm()
     {
         if (_farmTile == null) return false;
