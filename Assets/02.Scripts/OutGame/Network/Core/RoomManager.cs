@@ -98,6 +98,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
     }
 
