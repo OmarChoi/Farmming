@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8f9b4bc397b335448f324b7b63bf7b2, type: 3}
+  m_Name: SeedDataItemSO_BurstBloom
+  m_EditorClassIdentifier: Assembly-CSharp::SeedItemDataSO
+  _id: 2
+  _displayName: "\uD3ED\uB82C\uD654"
+  _icon: {fileID: 21300000, guid: b005e8ad21f59b14fa0b593d9d2de45e, type: 3}
+  _type: 4
+  _maxStack: 99
+  _buyCost: 800
+  _sellCost: 400
+  _displayExplanation: "\uD65C\uB825\uC744 \uC8FC\uB294 \uC5F4\uB9E4\uC528\uC557\uC774\uB2E4."
+  _seedGrowthStage:
+  - SeedStageName: "\uD3ED\uB82C\uD654\uC528\uC557"
+    RequireDays: 1
+    SeedStageItem: {fileID: 8552441574447915811, guid: a329d78a3914bb844ae157058048f94f, type: 3}
+    GrowthTiming: 0
+  - SeedStageName: "\uD3ED\uB82C\uD654\uC0C8\uC2F9"
+    RequireDays: 1
+    SeedStageItem: {fileID: 536829151349115394, guid: 8f75e0d943b1d6248bcefe3017e03111, type: 3}
+    GrowthTiming: 0
+  - SeedStageName: "\uD3ED\uB82C\uD654\uAF43"
+    RequireDays: 1
+    SeedStageItem: {fileID: 505800861091268314, guid: 4acba0a114d710f46a4fa914a9edc453, type: 3}
+    GrowthTiming: 0
+  - SeedStageName: "\uD3ED\uB82C\uD654\uC5F4\uB9E4"
+    RequireDays: 1
+    SeedStageItem: {fileID: 3917720546276447741, guid: e582708ce05c18345a422e3c91ced759, type: 3}
+    GrowthTiming: 0
+  _harvestAmountMin: 1
+  _harvestAmountMax: 5
+  _harvestItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
+  _seedGrade: 0
