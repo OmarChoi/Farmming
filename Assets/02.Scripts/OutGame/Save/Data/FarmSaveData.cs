@@ -4,7 +4,7 @@ using System;
 public class FarmSaveData
 {
     public EFarmTileStateType FarmState;
-    public string SeedId;
+    public int SeedId;
     public int CropStageIndex;
     public int CropElapsedDays;
     public bool CropIsGrowing;

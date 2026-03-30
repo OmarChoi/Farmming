@@ -3,7 +3,7 @@ using UnityEngine.Tilemaps;
 
 public class CropGrowth : MonoBehaviour
 {
-    private SeedConfig _seedConfig;
+    private SeedItemDataSO _seedConfig;
     private int _currentStageIndex = 0;
     private int _elapsedDays = 0;
     private bool _isGrowing = false;
@@ -11,6 +11,7 @@ public class CropGrowth : MonoBehaviour
     private GameObject _currentCropObject;
 
     private FarmTile _tile;
+
     private PlayerInventoryAbility _inventoryAbility;
 
     public bool HasStarted => _hasStarted;
@@ -37,7 +38,7 @@ public class CropGrowth : MonoBehaviour
         Debug.Log("수확물 인벤토리 연동");
     }
 
-    public void ShowFirstStage(SeedConfig seedConfig)
+    public void ShowFirstStage(SeedItemDataSO seedConfig)
     {
         _seedConfig = seedConfig;
         _currentStageIndex = 0;
@@ -49,7 +50,7 @@ public class CropGrowth : MonoBehaviour
     }
 
     // 물을 줬을 때 외부에서 호출
-    public void StartGrowth(SeedConfig seedConfig)
+    public void StartGrowth(SeedItemDataSO seedConfig)
     {
         _seedConfig = seedConfig;
         _isGrowing = true;
@@ -144,13 +145,10 @@ public class CropGrowth : MonoBehaviour
         farmData.CropHasStarted = _hasStarted;
     }
 
-    public void ImportFrom(FarmSaveData farmData, SeedConfig seed)
+    public void ImportFrom(FarmSaveData farmData, SeedItemDataSO seed)
     {
-        Debug.Log($"[Load] CropGrowth.ImportFrom - CropHasStarted: {farmData.CropHasStarted}, StageIndex: {farmData.CropStageIndex}, IsGrowing: {farmData.CropIsGrowing}");
-
         if (!farmData.CropHasStarted)
         {
-            Debug.Log("[Load] CropHasStarted가 false - 스킵");
             return;
         }
 
@@ -160,13 +158,9 @@ public class CropGrowth : MonoBehaviour
         _isGrowing = farmData.CropIsGrowing;
         _hasStarted = farmData.CropHasStarted;
 
-        Debug.Log($"[Load] 상태 복원 완료 - StageIndex: {_currentStageIndex}, StageCount: {_seedConfig.SeedGrowthStage.Count}, _tile null?: {_tile == null}");
-
         if (_currentStageIndex >= 0 && _currentStageIndex < _seedConfig.SeedGrowthStage.Count)
         {
-            Debug.Log($"[Load] ApplyStagePrefab 호출 - CropSpawnPoint null?: {_tile?.CropSpawnPoint == null}");
             ApplyStagePrefab();
-            Debug.Log($"[Load] 프리팹 생성 완료 - _currentCropObject null?: {_currentCropObject == null}");
         }
         else
         {

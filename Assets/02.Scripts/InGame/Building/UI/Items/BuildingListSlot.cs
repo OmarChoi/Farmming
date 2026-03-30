@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [Serializable]
-public class BuildingSlot : MonoBehaviour
+public class BuildingListSlot : MonoBehaviour
 {
     [SerializeField] private Image _sliceImage;
     [SerializeField] private Image _iconImage;

@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class FarmHelperActionAbility : HelperAbility, IHelperAction
 {
-    [SerializeField] private SeedConfig _currentSeed;
+    [SerializeField] private SeedItemDataSO _currentSeed;
 
-    public void SetSeed(SeedConfig seed) => _currentSeed = seed;
+    public void SetSeed(SeedItemDataSO seed) => _currentSeed = seed;
 
     public void InteractPrimary(TerrainCell cell)
     {

@@ -64,6 +64,8 @@ public class InteractService : MonoBehaviour
     public void StartGreeting(NpcInteractionContext context)
     {
         if (context == null || context.Npc == null) return;
+
+        NpcFriendshipManager.Instance.TryRewardDailyGreeting(context.NpcId);
         _scriptedHandler.StartDialogue(context, true);
     }
 

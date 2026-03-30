@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9026246651717788652}
   - component: {fileID: 2930089380795897997}
+  - component: {fileID: 6495501564526730550}
   m_Layer: 0
   m_Name: TimeSystem
   m_TagString: Untagged
@@ -45,3 +46,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TimeSystem
   _timeSettings: {fileID: 11400000, guid: 32a7545f3266cc94a8852b9a7e1b3a65, type: 2}
+--- !u!114 &6495501564526730550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1297318230509913425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4aa31f520f99dd048bd94488cbd775b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyboxController
+  _timeSettings: {fileID: 11400000, guid: 32a7545f3266cc94a8852b9a7e1b3a65, type: 2}
+  _skyboxTemplate: {fileID: 2100000, guid: e855645ee87064940b33c7cb22a6cd2c, type: 2}
+  _skyDatabase: {fileID: 11400000, guid: cc0e57470567cfa41a8c43d922008210, type: 2}

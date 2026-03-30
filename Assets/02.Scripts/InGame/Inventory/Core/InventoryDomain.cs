@@ -153,6 +153,39 @@ public class InventoryDomain
         OnSlotChanged?.Invoke(sourceIndex);
     }
 
+    public int GetItemCount(ItemDataSO item)
+    {
+        int total = 0;
+        foreach (InventorySlot slot in _slots)
+        {
+            if (!slot.IsEmpty && slot.Item == item)
+            {
+                total += slot.Count;
+            }
+        }
+        return total;
+    }
+
+    public bool RemoveItem(ItemDataSO item, int amount)
+    {
+        if (GetItemCount(item) < amount) return false;
+
+        int remaining = amount;
+        for (var i = 0; i < _slots.Count && remaining > 0; i++)
+        {
+            InventorySlot slot = _slots[i];
+            if (slot.IsEmpty || slot.Item != item) continue;
+
+            int toRemove = Math.Min(remaining, slot.Count);
+            slot.Remove(toRemove);
+            remaining -= toRemove;
+            OnSlotChanged?.Invoke(i);
+        }
+
+        TryShrink();
+        return true;
+    }
+
     public void RemoveAt(int index, int amount = 1)
     {
         if (index < 0 || index >= _slots.Count) return;
