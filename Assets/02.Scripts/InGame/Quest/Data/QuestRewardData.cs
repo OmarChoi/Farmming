@@ -1,10 +1,8 @@
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 
 [Serializable]
 public class QuestRewardData
 {
-    public EQuestRewardType RewardType;
-    public ItemDataSO RewardItem;
-    public int Amount;
+    public List<QuestRewardEntry> Rewards = new();
 }

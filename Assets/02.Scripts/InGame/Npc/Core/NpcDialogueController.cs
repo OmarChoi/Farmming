@@ -3,6 +3,7 @@ using UnityEngine;
 public class NpcDialogueController : MonoBehaviour
 {
     [SerializeField] private UI_NpcDialogue _uiDialogue;
+    [SerializeField] private UI_FriendshipBar _uiFriendshipBar;
     [SerializeField] private InteractService _interactionService;
 
     private NpcController _currentNpc;
@@ -21,10 +22,28 @@ public class NpcDialogueController : MonoBehaviour
         {
             _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
         }
-
+        if (_uiFriendshipBar == null)
+        {
+            _uiFriendshipBar = FindFirstObjectByType<UI_FriendshipBar>();
+        }
         if (_interactionService == null)
         {
             _interactionService = FindFirstObjectByType<InteractService>();
+        }
+    }
+    private void OnEnable()
+    {
+        if (NpcFriendshipManager.Instance != null)
+        {
+            NpcFriendshipManager.Instance.OnFriendshipChanged += HandleFriendshipChanged;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (NpcFriendshipManager.Instance != null)
+        {
+            NpcFriendshipManager.Instance.OnFriendshipChanged -= HandleFriendshipChanged;
         }
     }
 
@@ -45,6 +64,11 @@ public class NpcDialogueController : MonoBehaviour
         _uiDialogue.HideButtons();
         _uiDialogue.ClearDialogueText();
 
+        if (_uiFriendshipBar != null)
+        {
+            _uiFriendshipBar.BindNpc(npc.Data.NpcId, true);
+        }
+
         StartGreeting();
     }
 
@@ -57,7 +81,22 @@ public class NpcDialogueController : MonoBehaviour
         _currentLineIndex = 0;
         _dialogueState = EDialogueUiState.None;
 
+        if (_uiFriendshipBar != null)
+        {
+            _uiFriendshipBar.Clear();
+        }
+
         _uiDialogue.Close();
+    }
+
+    private void HandleFriendshipChanged(string npcId, int oldValue, int newValue, ENpcFriendshipReason reason)
+    {
+        if (_currentNpc?.Data?.NpcId != npcId || _uiFriendshipBar == null)
+        {
+            return;
+        }
+
+        _uiFriendshipBar.RefreshAnimated(newValue);
     }
 
     public void PrepareForDeepTalk()
