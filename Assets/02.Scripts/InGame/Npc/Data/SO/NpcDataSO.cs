@@ -7,6 +7,16 @@ public class NpcDataSO : ScriptableObject
     public string NpcId;
     public string NpcName;
 
+    [Header("AI 대화 가능 여부")]
+    public bool CanUseAiDialogue = true;
+
+    [Header("AI 대화 성격 정보")]
+    public string NpcMbti;
+    public string NpcPersonality;
+    public string Age;
+    public string Job;
+    public string WayOfTone;
+
     [Header("프리팹")]
     public GameObject Prefab;
 
@@ -16,7 +26,7 @@ public class NpcDataSO : ScriptableObject
     public float JumpDuration;
     public float JumpHeight;
     
-    [Header("대화")]
+    [Header("로컬 대화")]
     public NpcDialogueSO[] GreetDialogues;
     public NpcDialogueSO[] TalkDialogues;
 

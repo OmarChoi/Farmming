@@ -15,13 +15,18 @@ MonoBehaviour:
   HelperId: 555
   HelperName: "\uC218\uD655 \uACE1\uB8E1"
   HelperIcon: {fileID: 21300000, guid: 9b0e8b1c27f164f4c9c0cea9a5887a3d, type: 3}
-  Prefab: {fileID: 350823004175790314, guid: 3abb3b32b287a404993301434e500ce2, type: 3}
+  Prefab: {fileID: 350823004175790314, guid: 1c8d89a9e58b0ca46b8b719413e66fb6, type: 3}
   MaxEnergy: 100
   EnergyRecoveryPerSecond: 5
   GatherDamage: 10
+  StaminaCost: 5
   MaxLevel: 10
   BaseEnergyCost: 10
   EnergyReducePerLevel: 1
   NormalRange: 1
   EpicRange: 2
   LegendaryRange: 3
+  _leftClickIcon: {fileID: 21300000, guid: 12681ae5bc70f864681174434d53be00, type: 3}
+  _rightClickIcon: {fileID: 0}
+  _leftClickExplanation: "\uC218\uD655"
+  _rightClickExplanation: 

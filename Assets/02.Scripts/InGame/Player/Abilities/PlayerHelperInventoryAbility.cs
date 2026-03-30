@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
@@ -11,13 +12,16 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     [SerializeField] private List<HelperDataSO> _helperDataList = new();
 
     private PlayerHelperInteractionAbility _helperInteractionAbility;
-    private readonly List<HelperController> _helperInstances = new();
+    private HelperController _activeHelper;
+    private readonly Dictionary<string, HelperSaveData> _savedStates = new();
     private int _currentIndex;
     private int _summonedIndex = -1;
 
     public int CurrentIndex => _currentIndex;
     public int Count => _helperDataList.Count;
     public int SummonedIndex => _summonedIndex;
+
+    public HelperDataSO SummonedData => SummonedIndex >= 0 && SummonedIndex < _helperDataList.Count ? _helperDataList[SummonedIndex]: null;
 
     public static event Action<PlayerHelperInventoryAbility> OnLocalPlayerReady;
 
@@ -39,25 +43,12 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         base.Awake();
         _helperInteractionAbility = _owner.GetAbility<PlayerHelperInteractionAbility>();
-        InitHelperInstances();
     }
 
     private void Start()
     {
         if (!_owner.IsMine) return;
         OnLocalPlayerReady?.Invoke(this);
-    }
-
-    private void InitHelperInstances()
-    {
-        foreach (var data in _helperDataList)
-        {
-            if (data == null || data.Prefab == null) continue;
-
-            var instance = Instantiate(data.Prefab);
-            instance.gameObject.SetActive(false);
-            _helperInstances.Add(instance);
-        }
     }
 
     private void Update()
@@ -85,38 +76,86 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         if (_summonedIndex == _currentIndex)
         {
+            SaveActiveHelperState();
             _helperInteractionAbility.Unsummon();
+            _activeHelper = null;
             _summonedIndex = -1;
         }
         else
         {
-            _helperInteractionAbility.Summon(_helperInstances[_currentIndex]);
+            if (_activeHelper != null)
+            {
+                SaveActiveHelperState();
+                _helperInteractionAbility.Unsummon();
+                _activeHelper = null;
+            }
+
+            var data = _helperDataList[_currentIndex];
+            Vector3 spawnPos = _owner.transform.position + _owner.transform.right * 1.5f;
+
+            HelperController helper;
+            if (PhotonNetwork.IsConnected)
+            {
+                var go = PhotonNetwork.Instantiate(data.Prefab.name, spawnPos, Quaternion.identity);
+                helper = go.GetComponent<HelperController>();
+            }
+            else
+            {
+                helper = Instantiate(data.Prefab, spawnPos, Quaternion.identity);
+            }
+
+            RestoreHelperState(helper);
+            _activeHelper = helper;
+            _helperInteractionAbility.Summon(helper);
             _summonedIndex = _currentIndex;
         }
         OnSummonChanged?.Invoke(_summonedIndex);
     }
 
-    public HelperController AddHelper(HelperDataSO data)
+    private void SaveActiveHelperState()
+    {
+        if (_activeHelper == null) return;
+        _savedStates[_activeHelper.HelperId] = new HelperSaveData
+        {
+            HelperId = _activeHelper.HelperId,
+            Level = _activeHelper.Level.CurrentLevel,
+            Grade = (int)_activeHelper.Grade.CurrentGrade
+        };
+    }
+
+    private void RestoreHelperState(HelperController helper)
+    {
+        if (_savedStates.TryGetValue(helper.HelperId, out var state))
+            helper.LoadState(state);
+    }
+
+    public void AddHelper(HelperDataSO data)
     {
         _helperDataList.Add(data);
-        var instance = Instantiate(data.Prefab);
-        instance.gameObject.SetActive(false);
-        _helperInstances.Add(instance);
-        return instance;
     }
 
     public void ExportTo(PlayerSaveData saveData)
     {
+        SaveActiveHelperState();
+
         saveData.Helpers = new List<HelperSaveData>();
-        for (int i = 0; i < _helperInstances.Count; i++)
+        foreach (var data in _helperDataList)
         {
-            var helper = _helperInstances[i];
-            saveData.Helpers.Add(new HelperSaveData
+            if (data == null) continue;
+
+            if (_savedStates.TryGetValue(data.HelperId, out var state))
             {
-                HelperId = helper.HelperId,
-                Level = helper.Level.CurrentLevel,
-                Grade = (int)helper.Grade.CurrentGrade
-            });
+                saveData.Helpers.Add(state);
+            }
+            else
+            {
+                saveData.Helpers.Add(new HelperSaveData
+                {
+                    HelperId = data.HelperId,
+                    Level = 1,
+                    Grade = 0
+                });
+            }
         }
     }
 
@@ -127,18 +166,14 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             HelperDataSO so = _helperDatabase.GetById(data.HelperId);
             if (so == null) continue;
 
-            // 이미 보유 중이면 스탯만 복원
-            var existing = _helperInstances.Find(h => h.Data.HelperId == data.HelperId);
-            if (existing != null)
-            {
-                existing.LoadState(data);
-                continue;
-            }
+            _savedStates[data.HelperId] = data;
 
-            // 없으면 새로 추가 후 스탯 복원
-            var newHelper = AddHelper(so);
-            newHelper.LoadState(data);
+            if (_helperDataList.Find(d => d.HelperId == data.HelperId) == null)
+                _helperDataList.Add(so);
         }
+
+        if (_activeHelper != null)
+            RestoreHelperState(_activeHelper);
 
         OnSelectionChanged?.Invoke(0);
     }

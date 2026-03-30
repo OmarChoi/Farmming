@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class PlayerHelperInteractionAbility : PlayerAbility
@@ -12,6 +13,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     public HelperController CurrentHelper => _currentHelper;
     public HelperController BackHelper => _backHelper;
+    public Transform EquipSlot => _equipSlot;
 
     protected override void Awake()
     {
@@ -21,7 +23,14 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void OnDestroy()
     {
-        Unsummon();
+        if (_currentHelper != null)
+        {
+            _currentHelper.OnActionStarted -= OnHelperActionStarted;
+            _currentHelper.OnActionEnded -= OnHelperActionEnded;
+            _currentHelper = null;
+        }
+
+        _backHelper = null;
     }
 
     private void Update()
@@ -58,10 +67,13 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
             _backHelper = helper;
             _backHelper.Summon(_owner);
+
+            _backHelper.PhotonView?.RPC(
+                nameof(HelperController.RPC_Summon), RpcTarget.Others,
+                _owner.PhotonView.ViewID);
         }
         else
         {
-
             if (_backHelper != null && _backHelper.State != EHelperState.Equipped)
             {
                 return;
@@ -74,6 +86,10 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             _currentHelper.OnActionStarted += OnHelperActionStarted;
             _currentHelper.OnActionEnded += OnHelperActionEnded;
             _currentHelper.Summon(_owner);
+
+            _currentHelper.PhotonView?.RPC(
+                nameof(HelperController.RPC_Summon), RpcTarget.Others,
+                _owner.PhotonView.ViewID);
         }
     }
 
@@ -99,7 +115,11 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (_currentHelper.State == EHelperState.Equipped)
             _currentHelper.Unequip();
 
-        _currentHelper.gameObject.SetActive(false);
+        if (PhotonNetwork.IsConnected)
+            PhotonNetwork.Destroy(_currentHelper.gameObject);
+        else
+            Destroy(_currentHelper.gameObject);
+
         _currentHelper = null;
     }
 
@@ -131,25 +151,43 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (_currentHelper != null)
         {
             if (_currentHelper.State == EHelperState.Equipped)
+            {
                 _currentHelper.Unequip();
+                _currentHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Unequip), RpcTarget.Others);
+            }
             else
+            {
                 _currentHelper.Equip(_equipSlot);
+                _currentHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+            }
             return;
         }
 
         if (_backHelper != null)
         {
+            Transform slot = _backEquipSlot != null ? _backEquipSlot : _equipSlot;
             if (_backHelper.State == EHelperState.Equipped)
+            {
                 _backHelper.Unequip();
+                _backHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Unequip), RpcTarget.Others);
+            }
             else
-                _backHelper.Equip(_backEquipSlot != null ? _backEquipSlot : _equipSlot);
+            {
+                _backHelper.Equip(slot);
+                _backHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+            }
         }
     }
 
     private void TryInteractPrimary()
     {
-        TerrainCell cell = _terrainAbility.GetFrontCell();
+        TerrainCell cell = _terrainAbility.GetFrontCell(out bool isBelowFallback);
         if (cell == null) return;
+        if (isBelowFallback) return; // 아래 셀은 파기 대상 아님
 
         _currentHelper.InteractPrimary(cell);
     }

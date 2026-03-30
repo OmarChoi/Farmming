@@ -1,10 +1,14 @@
 using UnityEngine;
-using UnityEngine.Rendering.VirtualTexturing;
 
 public class InteractService : MonoBehaviour
 {
+    [Header("컨트롤러")]
     [SerializeField] private NpcDialogueController _dialogueController;
-    private DialogueHandlerSelector _handlerSelector;
+    [SerializeField] private AiDialogueController _aiDialogueController;
+    [SerializeField] private ShopController _shopController;
+
+    private IDialogueHandler _scriptedHandler;
+    private IDialogueHandler _aiHandler;
 
     private void Awake()
     {
@@ -12,69 +16,98 @@ public class InteractService : MonoBehaviour
         {
             _dialogueController = FindFirstObjectByType<NpcDialogueController>();
         }
-        // var aiController = FindFirstObjectByType<AIChatController>();
+        if (_aiDialogueController == null)
+        {
+            _aiDialogueController = FindFirstObjectByType<AiDialogueController>();
+        }
+        if (_shopController == null)
+        {
+            _shopController = FindFirstObjectByType<ShopController>();
+        }
 
-        var scripted = new ScriptedDialogueHandler(_dialogueController);
-        var ai = new ScriptedDialogueHandler(_dialogueController);
-        // var ai = new AIDialogueHandler(aiController); ai는 추후 이런 식으로 변경할 예정입니다.
-
-        _handlerSelector = new DialogueHandlerSelector(ai, scripted);
+        _scriptedHandler = new ScriptedDialogueHandler(_dialogueController);
+        _aiHandler = new AIDialogueHandler(_aiDialogueController);
     }
 
     public void Execute(ENpcInteractionType type, NpcInteractionContext context)
     {
+        if (context == null || context.Npc == null) return;
+
         switch (type)
         {
             case ENpcInteractionType.Talk:
-                ExecuteNormalTalk(context);
+                _scriptedHandler.StartDialogue(context, false);
+                break;
+
+            case ENpcInteractionType.DeepTalk:
+                StartDeepTalk(context);
                 break;
 
             case ENpcInteractionType.Trade:
-                ExecuteTrade(context);
+                OpenTrade(context);
+                break;
+
+            case ENpcInteractionType.Upgrade:
+                ExecuteUpgrade(context);
+                break;
+
+            case ENpcInteractionType.Quest:
+                ExecuteQuest(context);
                 break;
 
             case ENpcInteractionType.EndTalk:
-                ExecuteEndTalk(context);
+                EndInteraction(context);
                 break;
         }
     }
 
-    public void ExecuteStartTalk(NpcInteractionContext context)
+    public void StartGreeting(NpcInteractionContext context)
     {
-        var handler = _handlerSelector.Resolve();
-        handler.StartDialogue(context, true);
+        if (context == null || context.Npc == null) return;
+        _scriptedHandler.StartDialogue(context, true);
     }
 
-    public void ExecuteNormalTalk(NpcInteractionContext context)
+    private void StartDeepTalk(NpcInteractionContext context)
     {
-        var handler = _handlerSelector.Resolve();
-        handler.StartDialogue(context, false);
+        if (!HasInteractionOption(context, ENpcInteractionType.DeepTalk)) return;
+
+        _dialogueController.PrepareForDeepTalk();
+        _aiHandler.StartDialogue(context, true);
     }
 
-    private void ExecuteTrade(NpcInteractionContext context)
+    private void OpenTrade(NpcInteractionContext context)
     {
-        if (context.Npc.Shop == null)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("연결된 상점 데이터가 없습니다.");
-#endif
-            return;
-        }
+        if (_shopController == null || context.Npc.Shop == null) return;
 
-        ShopController shopController = Object.FindFirstObjectByType<ShopController>();
-        if (shopController == null)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("ShopController를 찾지 못했습니다.");
-#endif
-            return;
-        }
-        shopController.OpenShop(context.Npc.Shop, context);
         _dialogueController.Close();
+        _shopController.OpenShop(context.Npc.Shop, context);
     }
 
-    private void ExecuteEndTalk(NpcInteractionContext context)
+    private void EndInteraction(NpcInteractionContext context)
     {
-        context.InteractionComponent.EndInteraction();
+        context.InteractionComponent?.EndInteraction();
+    }
+
+    private bool HasInteractionOption(NpcInteractionContext context, ENpcInteractionType type)
+    {
+        var options = context.Npc.InteractionOptions;
+        if (options == null) return false;
+
+        foreach (var option in options)
+        {
+            if (option.Type == type) return true;
+        }
+
+        return false;
+    }
+
+    private void ExecuteUpgrade(NpcInteractionContext context)
+    {
+        // todo.업그레이드 기능 연결
+    }
+
+    private void ExecuteQuest(NpcInteractionContext context)
+    {
+        // todo.npc 전용 퀘스트 연결
     }
 }

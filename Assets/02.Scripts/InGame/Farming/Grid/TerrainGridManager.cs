@@ -20,12 +20,16 @@ public class TerrainGridManager : MonoBehaviour
     [SerializeField] private SeedDatabase _seedDatabase;
     [SerializeField] private BuildingDatabase _buildingDatabase;
 
+    public SeedDatabase SeedDatabase => _seedDatabase;
     public BuildingDatabase BuildingDatabase => _buildingDatabase;
 
     private TerrainGridData _gridData;
     private readonly Dictionary<Vector3Int, TerrainCell> _cells = new();
+    private int _maxHeight = int.MaxValue;
 
     public float CellSize => _cellSize;
+
+    public void SetMaxHeight(int maxHeight) => _maxHeight = maxHeight;
 
     private void Awake()
     {
@@ -127,6 +131,65 @@ public class TerrainGridManager : MonoBehaviour
 
         _gridData.SetCell(gridPos, data);
         SpawnCell(gridPos, data);
+    }
+
+    /// 블록 설치. 위에 쌓거나 빈 자리에 설치. 아래 셀의 IsTop도 갱신.
+    public bool TryPlaceBlock(Vector3Int gridPos, ETileType tileType, int dirtLevel = 1)
+    {
+        if (gridPos.y >= _maxHeight) return false;
+
+        var existing = GetCell(gridPos);
+        if (existing != null && existing.Data.CellType != ECellType.Empty)
+            return false;
+
+        SetCell(gridPos, new TerrainCellData(ECellType.Dirt, tileType, dirtLevel, EGridObjectType.None, 0, false, isTop: true));
+
+        var belowCell = GetCell(gridPos + Vector3Int.down);
+        if (belowCell != null && belowCell.Data.IsTop)
+        {
+            belowCell.Data.SetTop(false);
+            belowCell.Refresh();
+        }
+
+        return true;
+    }
+
+    /// 땅 파기. 위에 블록이 있으면 위 블록을 파고, 그 위에도 있으면 실패.
+    public bool TryDig(Vector3Int gridPos, int toolLevel)
+    {
+        var cell = GetCell(gridPos);
+        if (cell == null) return false;
+
+        var abovePos = gridPos + Vector3Int.up;
+        var aboveCell = GetCell(abovePos);
+        if (aboveCell != null && aboveCell.Data.CellType == ECellType.Dirt)
+        {
+            var aboveAboveCell = GetCell(abovePos + Vector3Int.up);
+            if (aboveAboveCell != null && aboveAboveCell.Data.CellType == ECellType.Dirt)
+                return false;
+
+            return DigCell(abovePos, toolLevel);
+        }
+
+        return DigCell(gridPos, toolLevel);
+    }
+
+    private bool DigCell(Vector3Int gridPos, int toolLevel)
+    {
+        var cell = GetCell(gridPos);
+        if (cell == null) return false;
+        if (cell.Data.ObjectType != EGridObjectType.None) return false;
+        if (!cell.Data.CanDig(toolLevel)) return false;
+
+        var belowCell = GetCell(gridPos + Vector3Int.down);
+        if (belowCell != null && belowCell.Data.CellType == ECellType.Dirt)
+        {
+            belowCell.Data.SetTop(true);
+            belowCell.Refresh();
+        }
+
+        RemoveCell(gridPos);
+        return true;
     }
 
     /// 셀 삭제. 에디터와 런타임 모두 사용.

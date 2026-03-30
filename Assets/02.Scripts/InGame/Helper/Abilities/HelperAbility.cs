@@ -6,6 +6,6 @@ public abstract class HelperAbility : MonoBehaviour
 
     protected virtual void Awake()
     {
-        _owner = GetComponentInParent<HelperController>();
+        _owner = GetComponent<HelperController>();
     }
 }
