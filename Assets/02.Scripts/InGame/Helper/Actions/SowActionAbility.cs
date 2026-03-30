@@ -1,4 +1,5 @@
 using System.Collections;
+using Photon.Pun;
 using UnityEngine;
 
 // 파종 곡룡: FarmDry에서 씨앗 주기
@@ -15,6 +16,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private bool _isActing = false;
     private FarmTile _currentFarmTile;
     private SeedConfig _currentSeed;
+    private Vector3Int _currentCellPos;
 
     protected override void Awake()
     {
@@ -72,6 +74,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _isActing = true;
         _currentFarmTile = farmTile;
         _currentSeed = selectedSeed;
+        _currentCellPos = cell.GridPosition;
 
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Sow);
@@ -113,7 +116,16 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private IEnumerator PlantAfterDelay(FarmTile farmTile, SeedConfig seed)
     {
         yield return new WaitForSeconds(_sowDelay);
-        farmTile?.PlantSeed(seed);
+        if (farmTile == null) yield break;
+
+        farmTile.PlantSeed(seed);
+
+        if (_owner.PhotonView != null && PhotonNetwork.IsConnected)
+        {
+            _owner.PhotonView.RPC(
+                nameof(HelperController.RPC_PlantSeed), RpcTarget.Others,
+                _currentCellPos.x, _currentCellPos.y, _currentCellPos.z, seed.SeedId);
+        }
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)

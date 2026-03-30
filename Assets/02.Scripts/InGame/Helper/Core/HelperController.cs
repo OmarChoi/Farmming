@@ -213,5 +213,17 @@ public class HelperController : MonoBehaviour
         GetAbility<HelperInteractionAbility>()?.InteractSecondaryLocal(cell);
     }
 
+    [PunRPC]
+    internal void RPC_PlantSeed(int gridX, int gridY, int gridZ, string seedId)
+    {
+        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell?.FarmTile == null) return;
+
+        var seed = TerrainGridManager.Instance.SeedDatabase?.GetById(seedId);
+        if (seed == null) return;
+
+        cell.FarmTile.PlantSeed(seed);
+    }
+
     #endregion
 }
