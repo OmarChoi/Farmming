@@ -73,23 +73,6 @@ public class UI_QuestJournalSlot : MonoBehaviour
                 break;
         }
 
-        if (quest.Reward == null)
-        {
-            _questRewardText.text = "";
-        }
-        else
-        {
-            switch (quest.Reward.RewardType)
-            {
-                case EQuestRewardType.Gold:
-                    _questRewardText.text = $"퀘스트 보상: {quest.Reward.Amount} 골드";
-                    break;
-
-                case EQuestRewardType.Item:
-                    string itemName = quest.Reward.RewardItem != null ? quest.Reward.RewardItem.DisplayName : "아이템";
-                    _questRewardText.text = $"퀘스트 보상: {itemName} {quest.Reward.Amount}개";
-                    break;
-            }
-        }
+        _questRewardText.text = QuestRewardTextFormatter.BuildQuestReward(quest.Reward);
     }
 }

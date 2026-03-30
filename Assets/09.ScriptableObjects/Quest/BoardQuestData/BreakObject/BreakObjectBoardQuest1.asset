@@ -20,8 +20,14 @@ MonoBehaviour:
   QuestCategory: 2
   ObjectiveType: 0
   TargetId: NormalTree
-  RequiredAmount: 3
+  RequiredAmount: 1
   Reward:
-    RewardType: 0
-    RewardItem: {fileID: 0}
-    Amount: 600
+    Rewards:
+    - RewardType: 0
+      RewardItem: {fileID: 0}
+      Amount: 200
+      TargetNpcId: 
+    - RewardType: 1
+      RewardItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
+      Amount: 1
+      TargetNpcId: 
