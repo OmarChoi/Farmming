@@ -91,10 +91,10 @@ public class NpcDialogueController : MonoBehaviour
 
     private void HandleFriendshipChanged(string npcId, int oldValue, int newValue, ENpcFriendshipReason reason)
     {
-        if (_currentNpc == null) return;
-        if (_currentNpc.Data == null) return;
-        if (_currentNpc.Data.NpcId != npcId) return;
-        if (_uiFriendshipBar == null) return;
+        if (_currentNpc?.Data?.NpcId != npcId || _uiFriendshipBar == null)
+        {
+            return;
+        }
 
         _uiFriendshipBar.RefreshAnimated(newValue);
     }
