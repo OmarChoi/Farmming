@@ -33,6 +33,7 @@ public class MapManager : MonoBehaviour
         int seed = System.Environment.TickCount;
         var result = _villageConfig.CreateGenerator().Generate(_villageConfig, seed);
         _gridManager.LoadFromData(result.GridData);
+        _gridManager.SetMaxHeight(_villageConfig.MaxHeight);
         CurrentMap = EMapType.Village;
 
         if (player != null)
@@ -55,6 +56,7 @@ public class MapManager : MonoBehaviour
         int seed = System.Environment.TickCount;
         var result = config.CreateGenerator().Generate(config, seed);
         _gridManager.LoadFromData(result.GridData);
+        _gridManager.SetMaxHeight(config.MaxHeight);
 
         CurrentMap = floor switch
         {
@@ -70,6 +72,14 @@ public class MapManager : MonoBehaviour
     /// Exit dungeon. Call SaveManager.LoadAsync() after this to restore village.
     public void ExitDungeon()
     {
+        CurrentMap = EMapType.Village;
+    }
+
+    /// 세이브 데이터로 마을 복원 시 호출. MaxHeight도 함께 설정.
+    public void ImportVillageSaveData(TerrainSaveData saveData)
+    {
+        _gridManager.ImportSaveData(saveData);
+        _gridManager.SetMaxHeight(_villageConfig.MaxHeight);
         CurrentMap = EMapType.Village;
     }
 
