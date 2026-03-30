@@ -1,9 +1,10 @@
 
 public enum ENpcInteractionType
 {
-    Talk,
-    Trade,
-    Upgrade,
-    Quest,
-    EndTalk
+    Talk = 0,
+    DeepTalk = 1,
+    Trade = 2,
+    Upgrade = 3,
+    Quest = 4,
+    EndTalk = 5
 }

@@ -45,19 +45,13 @@ public class QuestManager : MonoBehaviour
     private void OnEnable()
     {
         GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
-        if (TestTimeManager.Instance != null)
-        {
-            TestTimeManager.Instance.OnDayChanged += HandleDayChanged;
-        }
+        TimeEvents.OnDayChanged += HandleDayChanged;
     }
 
     private void OnDisable()
     {
         GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
-        if (TestTimeManager.Instance != null)
-        {
-            TestTimeManager.Instance.OnDayChanged -= HandleDayChanged;
-        }
+        TimeEvents.OnDayChanged -= HandleDayChanged;
     }
 
     public void SetDailyQuestBoardData(QuestBoardDataSO boardData)
@@ -110,7 +104,7 @@ public class QuestManager : MonoBehaviour
                 return !_completedSubQuestIds.Contains(questData.QuestId);
 
             case EQuestCategory.Daily:
-                int currentDay = TestTimeManager.Instance.CurrentDay;
+                int currentDay = TimeEvents.CurrentDay;
 
                 if (_dailyQuestCompletedDays.TryGetValue(questData.QuestId, out int completedDay))
                 {
@@ -190,7 +184,7 @@ public class QuestManager : MonoBehaviour
                 break;
 
             case EQuestCategory.Daily:
-                _dailyQuestCompletedDays[questId] = TestTimeManager.Instance.CurrentDay;
+                _dailyQuestCompletedDays[questId] = TimeEvents.CurrentDay;
                 break;
         }
 

@@ -6,6 +6,7 @@ using UnityEngine;
 public class HelperController : MonoBehaviour
 {
     [SerializeField] private HelperDataSO _data;
+    [SerializeField] private Vector3 _rotationEuler = new Vector3(0f, 180f, 0f);
 
     public HelperDataSO Data => _data;
     public string HelperId => _data.HelperId;
@@ -30,6 +31,9 @@ public class HelperController : MonoBehaviour
 
     private const float SummonOffset = 1.5f;
 
+    private Vector3 _originalScale;
+    private float _equippedSmallScale = 0.55f;
+
     private void Awake()
     {
         PhotonView = GetComponent<PhotonView>();
@@ -41,6 +45,8 @@ public class HelperController : MonoBehaviour
 
         Energy.OnExhausted += OnEnergyExhausted;
         Energy.OnRecovered += OnEnergyRecovered;
+
+        _originalScale = transform.localScale;
     }
 
     private void OnDestroy()
@@ -97,6 +103,14 @@ public class HelperController : MonoBehaviour
         transform.SetParent(equipSlot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+
+        IEquipOverride equipOverride = GetComponentInChildren<IEquipOverride>();
+        if (equipOverride != null)
+        {
+            transform.localRotation = Quaternion.Euler(equipOverride.GetEquipRotation());
+            transform.localScale = _originalScale * equipOverride.GetEquipScale();
+        }
+
         GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
     }
 
@@ -104,6 +118,7 @@ public class HelperController : MonoBehaviour
     {
         State = EHelperState.Summoned;
         transform.SetParent(null);
+        transform.localScale = _originalScale;
         transform.position = FollowTarget.position;
         SetTransformSync(true);
 

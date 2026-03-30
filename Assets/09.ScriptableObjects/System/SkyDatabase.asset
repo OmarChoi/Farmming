@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ef9da5488b1a644390c8832495b8b93, type: 3}
+  m_Name: SkyDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::SkyDatabase
+  _entries:
+  - Type: 0
+    Keyframe: {fileID: 11400000, guid: 2c121178975d1254e898625761efee58, type: 2}
+  - Type: 1
+    Keyframe: {fileID: 11400000, guid: fb05b3a16f6b3a84b8b7d5d6251c98cb, type: 2}
+  - Type: 2
+    Keyframe: {fileID: 11400000, guid: 04c2d127e4ad5c446b8158c7ce488d95, type: 2}
+  - Type: 3
+    Keyframe: {fileID: 11400000, guid: dd169528169e78941bea6ca03e97cf0e, type: 2}
+  FogFill: 1
