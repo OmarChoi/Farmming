@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class UI_BuildInfo : UIBase
 {
+    private const float DefaultSize = 200;
+    private const float HeightPerCostItem = 200;
+    private RectTransform _panelTransform;
+    
     [Header("건물 정보")]
     [SerializeField] private TextMeshProUGUI _nameLabel;
     [SerializeField] private TextMeshProUGUI _constructionDaysLabel;
@@ -15,6 +19,11 @@ public class UI_BuildInfo : UIBase
 
     private readonly List<BuildCostItemSlot> _costSlots = new List<BuildCostItemSlot>();
 
+    private void Awake()
+    {
+        _panelTransform = GetComponent<RectTransform>();
+    }
+    
     protected override void OnOpen()
     {
         BindData();
@@ -34,7 +43,7 @@ public class UI_BuildInfo : UIBase
         // 기본 정보 표시
         _nameLabel.text = data.DisplayName;
         _descriptionLabel.text = data.Description;
-        _constructionDaysLabel.text = data.ConstructionDays > 0 ? $"{data.ConstructionDays}일" : "즉시 완성";
+        _constructionDaysLabel.text = data.ConstructionDays > 0 ? $"건설 일수 : {data.ConstructionDays}일" : "즉시 완성";
 
         // 건설 비용 슬롯 갱신
         RefreshCostSlots(data.Costs);
@@ -45,6 +54,9 @@ public class UI_BuildInfo : UIBase
     {
         // 부족한 슬롯 생성 (풀링)
         // todo. Pooling 기반의 Slot 생성 방식으로 수정
+        int nCostItem = costs.Count;
+        float newHeight = DefaultSize + Mathf.Ceil(nCostItem / 2f) * HeightPerCostItem;
+        _panelTransform.sizeDelta = new Vector2(_panelTransform.sizeDelta.x, newHeight);
         while (_costSlots.Count < costs.Count)
         {
             BuildCostItemSlot itemSlot = Instantiate(_costItemSlotPrefab, _costSlotParent);
