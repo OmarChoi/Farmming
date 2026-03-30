@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 public class SeedSelectAbility : HelperAbility
 {
-    public event Action<SeedConfig> OnSeedSelected;
+    public event Action<SeedItemDataSO> OnSeedSelected;
 
-    private List<SeedConfig> _availableSeeds = new();
+    private List<SeedItemDataSO> _availableSeeds = new();
     private int _selectedIndex = -1;
     private PlayerInventoryAbility _inventory;
 
-    public SeedConfig SelectedSeed => _selectedIndex >= 0 && _selectedIndex < _availableSeeds.Count ? _availableSeeds[_selectedIndex] : null;
+    public SeedItemDataSO SelectedSeed => _selectedIndex >= 0 && _selectedIndex < _availableSeeds.Count ? _availableSeeds[_selectedIndex] : null;
 
     private void Start()
     {
@@ -93,7 +93,7 @@ public class SeedSelectAbility : HelperAbility
 
             if (slot.Item.Type == EItemType.Seed && slot.Item is SeedItemDataSO seedItem)
             {
-                _availableSeeds.Add(seedItem.SeedConfig);
+                _availableSeeds.Add(seedItem);
             }
         }
 
