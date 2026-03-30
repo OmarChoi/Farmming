@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class GroundActionAbility : HelperAbility, IHelperAction
@@ -48,12 +49,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         bool dug = cell.TryDig(_toolLevel);
         if (dug)
         {
+            var pos = cell.GridPosition;
+            _owner.PhotonView?.RPC(
+                nameof(RPC_Dig), RpcTarget.Others,
+                pos.x, pos.y, pos.z);
+
             PlayerInventoryAbility inventory = GetInventory();
             if (inventory != null && _dirtItem != null)
             {
                 inventory.AddItem(_dirtItem, _getDirtAmount);
             }
-
         }
 
         _owner.EndAction();
@@ -84,8 +89,13 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _animAbility?.Play(EHelperAnim.Eat);
 
         Vector3Int targetPos = GetPlacePosition(cell);
+        int tileType = (int)cell.Data.TileType;
 
-        TerrainGridManager.Instance.SetCell(targetPos, new TerrainCellData(ECellType.Dirt, cell.Data.TileType, _generateDirtAmount, EGridObjectType.None,0,false,isTop: true));
+        TerrainGridManager.Instance.SetCell(targetPos, new TerrainCellData(ECellType.Dirt, cell.Data.TileType, _generateDirtAmount, EGridObjectType.None, 0, false, isTop: true));
+
+        _owner.PhotonView?.RPC(
+            nameof(RPC_PlaceBlock), RpcTarget.Others,
+            targetPos.x, targetPos.y, targetPos.z, tileType, _generateDirtAmount);
 
         inventory.RemoveAt(dirtSlotIndex, _generateDirtAmount);
 
@@ -126,5 +136,21 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     private void OnDisable()
     {
         _owner?.EndAction();
+    }
+
+    [PunRPC]
+    internal void RPC_Dig(int gridX, int gridY, int gridZ)
+    {
+        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null) return;
+
+        cell.TryDig(_toolLevel);
+    }
+
+    [PunRPC]
+    internal void RPC_PlaceBlock(int gridX, int gridY, int gridZ, int tileType, int dirtLevel)
+    {
+        var pos = new Vector3Int(gridX, gridY, gridZ);
+        TerrainGridManager.Instance?.SetCell(pos, new TerrainCellData(ECellType.Dirt, (ETileType)tileType, dirtLevel, EGridObjectType.None, 0, false, isTop: true));
     }
 }

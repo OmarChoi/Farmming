@@ -15,10 +15,23 @@ public class PlayerTerrainAbility : PlayerAbility
         _gridManager = TerrainGridManager.Instance;
     }
 
-    /// 플레이어 앞에 있는 셀을 반환. 없으면 null.
+    /// 플레이어 앞에 있는 셀을 반환. 없으면 아래 셀을 탐색. 둘 다 없으면 null.
     public TerrainCell GetFrontCell()
     {
-        return _gridManager.GetCell(_lastGridPos);
+        return GetFrontCell(out _);
+    }
+
+    /// isBelowFallback: 앞 자리에 셀이 없어서 아래 셀을 반환했으면 true
+    public TerrainCell GetFrontCell(out bool isBelowFallback)
+    {
+        isBelowFallback = false;
+        var cell = _gridManager.GetCell(_lastGridPos);
+        if (cell != null) return cell;
+
+        var belowPos = _lastGridPos + Vector3Int.down;
+        var belowCell = _gridManager.GetCell(belowPos);
+        if (belowCell != null) isBelowFallback = true;
+        return belowCell;
     }
 
     private void Update()

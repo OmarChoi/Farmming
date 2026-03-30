@@ -62,9 +62,25 @@ public class TerrainCell : MonoBehaviour
 
     public bool TryDig(int toolLevel)
     {
-        if (!_data.CanDig(toolLevel)) return false;
+        // 위에 블록이 있으면 그 블록을 대신 파되, 그 위에도 블록이 있으면 아무것도 안 캠
+        var abovePos = GridPosition + Vector3Int.up;
+        var aboveCell = TerrainGridManager.Instance.GetCell(abovePos);
+        if (aboveCell != null && aboveCell.Data.CellType == ECellType.Dirt)
+        {
+            var aboveAbovePos = abovePos + Vector3Int.up;
+            var aboveAboveCell = TerrainGridManager.Instance.GetCell(aboveAbovePos);
+            if (aboveAboveCell != null && aboveAboveCell.Data.CellType == ECellType.Dirt)
+                return false;
 
-        //_data.Dig();
+            return aboveCell.DigSelf(toolLevel);
+        }
+
+        return DigSelf(toolLevel);
+    }
+
+    private bool DigSelf(int toolLevel)
+    {
+        if (!_data.CanDig(toolLevel)) return false;
 
         // 아래 셀을 풀블록으로 전환
         var belowPos = GridPosition + Vector3Int.down;
