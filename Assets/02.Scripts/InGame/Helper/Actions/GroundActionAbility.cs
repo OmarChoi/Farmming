@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class GroundActionAbility : HelperAbility, IHelperAction
@@ -45,15 +46,19 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
         _animAbility?.Play(EHelperAnim.Eat);
 
-        bool dug = cell.TryDig(_toolLevel);
+        bool dug = TerrainGridManager.Instance.TryDig(cell.GridPosition, _toolLevel);
         if (dug)
         {
+            var pos = cell.GridPosition;
+            _owner.PhotonView?.RPC(
+                nameof(RPC_Dig), RpcTarget.Others,
+                pos.x, pos.y, pos.z, _toolLevel);
+
             PlayerInventoryAbility inventory = GetInventory();
             if (inventory != null && _dirtItem != null)
             {
                 inventory.AddItem(_dirtItem, _getDirtAmount);
             }
-
         }
 
         _owner.EndAction();
@@ -84,8 +89,18 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _animAbility?.Play(EHelperAnim.Eat);
 
         Vector3Int targetPos = GetPlacePosition(cell);
+        int tileType = (int)cell.Data.TileType;
 
-        TerrainGridManager.Instance.SetCell(targetPos, new TerrainCellData(ECellType.Dirt, cell.Data.TileType, _generateDirtAmount, EGridObjectType.None,0,false,isTop: true));
+        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetPos, cell.Data.TileType, _generateDirtAmount);
+        if (!placed)
+        {
+            _owner.EndAction();
+            return;
+        }
+
+        _owner.PhotonView?.RPC(
+            nameof(RPC_PlaceBlock), RpcTarget.Others,
+            targetPos.x, targetPos.y, targetPos.z, tileType, _generateDirtAmount);
 
         inventory.RemoveAt(dirtSlotIndex, _generateDirtAmount);
 
@@ -126,5 +141,18 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     private void OnDisable()
     {
         _owner?.EndAction();
+    }
+
+    [PunRPC]
+    internal void RPC_Dig(int gridX, int gridY, int gridZ, int toolLevel)
+    {
+        TerrainGridManager.Instance?.TryDig(new Vector3Int(gridX, gridY, gridZ), toolLevel);
+    }
+
+    [PunRPC]
+    internal void RPC_PlaceBlock(int gridX, int gridY, int gridZ, int tileType, int dirtLevel)
+    {
+        var pos = new Vector3Int(gridX, gridY, gridZ);
+        TerrainGridManager.Instance?.TryPlaceBlock(pos, (ETileType)tileType, dirtLevel);
     }
 }

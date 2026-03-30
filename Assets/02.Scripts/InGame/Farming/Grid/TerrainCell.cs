@@ -60,44 +60,6 @@ public class TerrainCell : MonoBehaviour
             _farmTile.gameObject.SetActive(isFarmLand);
     }
 
-    public bool TryDig(int toolLevel)
-    {
-        if (!_data.CanDig(toolLevel)) return false;
-
-        //_data.Dig();
-
-        // 아래 셀을 풀블록으로 전환
-        var belowPos = GridPosition + Vector3Int.down;
-        var belowCell = TerrainGridManager.Instance.GetCell(belowPos);
-        if (belowCell != null && belowCell.Data.CellType == ECellType.Dirt)
-        {
-            belowCell.Data.SetTop(true);
-            belowCell.Refresh();
-        }
-        TerrainGridManager.Instance.RemoveCell(GridPosition);
-
-        return true;
-    }
-
-    public bool TryPlaceBlock(int dirtLevel = 1)
-    {
-        if (_data.CellType != ECellType.Empty) return false;
-
-        _data.PlaceBlock(dirtLevel);
-        _data.SetTop(true);
-        Refresh();
-
-        var belowPos = GridPosition + Vector3Int.down;
-        var belowCell = TerrainGridManager.Instance.GetCell(belowPos);
-        if (belowCell != null && belowCell.Data.IsTop)
-        {
-            belowCell.Data.SetTop(false);
-            belowCell.Refresh();
-        }
-
-        return true;
-    }
-
     public bool TryConvertToFarm()
     {
         if (_farmTile == null) return false;
