@@ -99,7 +99,17 @@ public class PlayerBuildingAbility : PlayerAbility
     private void OpenBuildingSelectionUi()
     {
         if (UIController.Instance == null) return;
-        UIController.Instance.OpenAsync<UI_BuildingList>().Forget();
+        _owner.EnterUIMode();
+        UIController.Instance.OpenAsync<UI_BuildingList>(ui =>
+        {
+            ui.OnClosed -= OnBuildingListClosed;
+            ui.OnClosed += OnBuildingListClosed;
+        }).Forget();
+    }
+
+    private void OnBuildingListClosed()
+    {
+        _owner.ExitUIMode();
     }
 
     private void OnBuildingSelectedFromUi(BuildingDataSO buildingData)

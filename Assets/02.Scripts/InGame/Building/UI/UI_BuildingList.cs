@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using TMPro;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 
 public class UI_BuildingList : UIBase
 {
+    public event Action OnClosed;
     [Header("Slots")]
     [SerializeField] private List<BuildingListSlot> _slots = new List<BuildingListSlot>();
 
@@ -107,6 +109,8 @@ public class UI_BuildingList : UIBase
         _hoveredIndex = -1;
         _mouseDelta = Vector2.zero;
         UpdatePreview(-1);
+
+        OnClosed?.Invoke();
     }
 
     // 매 프레임 호버 판정 및 입력 처리
