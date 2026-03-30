@@ -87,6 +87,12 @@ public class UIController : MonoBehaviour
         }
     }
 
+    public T GetInstance<T>() where T : UIBase
+    {
+        string key = typeof(T).Name;
+        return _instances.TryGetValue(key, out UIBase ui) ? ui as T : null;
+    }
+
     public void OnClickUI<T>() where T : UIBase
     {
         if (!_instances.TryGetValue(typeof(T).Name, out UIBase ui) || !ui.IsOpen) return;
