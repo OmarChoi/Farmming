@@ -190,10 +190,6 @@ public class FarmTile : MonoBehaviour
                 PlantSeed(seed);
                 _cropGrowth?.ImportFrom(saveData.Farm, seed);
             }
-            else
-            {
-                Debug.LogWarning($"[Load] SeedDB에서 Id '{saveData.Farm.SeedId}'를 찾을 수 없습니다!");
-            }
         }
     }
 
