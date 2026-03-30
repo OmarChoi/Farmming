@@ -6,8 +6,7 @@ public class PlayerBuildingAbility : PlayerAbility
 {
     private enum BuildState { None, Previewing }
 
-    [Header("참조")]
-    [SerializeField] private BuildingDataSO _buildingData;
+    private BuildingDataSO _buildingData;
 
     [Header("Ghost 설정")]
     [SerializeField] private Material _ghostMaterial;
@@ -26,8 +25,10 @@ public class PlayerBuildingAbility : PlayerAbility
     private bool _swapped;
     private BuildState _state = BuildState.None;
     private BuildingGhost _ghost;
+    private string _ghostBuildingId;
     private Vector3Int _prevGridPos;
     private int _prevDirection = -1;
+    private int _previewRequestVersion;
     private bool _isLoadingPrefab;
     private bool _isBuilding;
     private bool _hasResourcesCached;
@@ -112,12 +113,13 @@ public class PlayerBuildingAbility : PlayerAbility
     {
         if (_buildingData == buildingData) return;
 
+        _previewRequestVersion++;
         _buildingData = buildingData;
         _hasResourcesDirty = true;
 
-        if (_state == BuildState.Previewing)
+        if (_ghost?.Instance != null && _ghostBuildingId != _buildingData?.BuildingId)
         {
-            DestroyGhost();
+            DestroyGhost(clearSelection: false);
         }
     }
 
@@ -140,9 +142,6 @@ public class PlayerBuildingAbility : PlayerAbility
     private void OnBuildingSelectedFromUi(BuildingDataSO buildingData)
     {
         SetBuildingData(buildingData);
-
-        if (_isLoadingPrefab) return;
-
         EnterPreviewAsync().Forget();
     }
 
@@ -190,10 +189,11 @@ public class PlayerBuildingAbility : PlayerAbility
 
     private async UniTaskVoid EnterPreviewAsync()
     {
-        if (_buildingData == null) return;
+        BuildingDataSO requestedBuilding = _buildingData;
+        if (requestedBuilding == null) return;
 
         // 기존 Ghost가 있으면 재사용
-        if (_ghost?.Instance != null)
+        if (_ghost?.Instance != null && _ghostBuildingId == requestedBuilding.BuildingId)
         {
             _state = BuildState.Previewing;
             _swapped = false;
@@ -203,11 +203,21 @@ public class PlayerBuildingAbility : PlayerAbility
             return;
         }
 
-        string prefabKey = AssetKey.Building.GetKey(_buildingData.BuildingId);
+        string prefabKey = AssetKey.Building.GetKey(requestedBuilding.BuildingId);
         if (string.IsNullOrEmpty(prefabKey)) return;
 
+        int requestVersion = ++_previewRequestVersion;
         _isLoadingPrefab = true;
         var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
+        if (requestVersion != _previewRequestVersion || requestedBuilding != _buildingData || !isActiveAndEnabled)
+        {
+            if (requestVersion == _previewRequestVersion)
+            {
+                _isLoadingPrefab = false;
+            }
+            return;
+        }
+
         _isLoadingPrefab = false;
 
         if (prefab == null || _state != BuildState.None) return;
@@ -216,6 +226,7 @@ public class PlayerBuildingAbility : PlayerAbility
         _swapped = false;
         _ghost = new BuildingGhost();
         _ghost.Spawn(prefab, _ghostMaterial, _ghostValidColor, _ghostInvalidColor);
+        _ghostBuildingId = requestedBuilding.BuildingId;
         RefreshGhostInitial();
 
         // 건물 정보 패널 표시
@@ -239,6 +250,8 @@ public class PlayerBuildingAbility : PlayerAbility
 
     private void CancelPreview()
     {
+        _previewRequestVersion++;
+        _isLoadingPrefab = false;
         _ghost?.SetVisible(false);
         _state = BuildState.None;
         _prevDirection = -1;
@@ -246,13 +259,19 @@ public class PlayerBuildingAbility : PlayerAbility
         UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
 
-    private void DestroyGhost()
+    private void DestroyGhost(bool clearSelection = true)
     {
+        _previewRequestVersion++;
+        _isLoadingPrefab = false;
         _ghost?.Destroy();
         _ghost = null;
+        _ghostBuildingId = null;
         _state = BuildState.None;
         _prevDirection = -1;
-        _buildingManager.ClearSelection();
+        if (clearSelection)
+        {
+            _buildingManager.ClearSelection();
+        }
         UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
 
