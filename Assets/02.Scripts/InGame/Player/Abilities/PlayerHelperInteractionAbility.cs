@@ -5,11 +5,14 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 {
     [SerializeField] private KeyCode _equipKey = KeyCode.F;
     [SerializeField] private Transform _equipSlot;
+    [SerializeField] private Transform _backEquipSlot;
 
     private PlayerTerrainAbility _terrainAbility;
     private HelperController _currentHelper;
+    private HelperController _backHelper;
 
     public HelperController CurrentHelper => _currentHelper;
+    public HelperController BackHelper => _backHelper;
     public Transform EquipSlot => _equipSlot;
 
     protected override void Awake()
@@ -35,7 +38,8 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (Input.GetKeyDown(_equipKey))
             ToggleEquip();
 
-        if (_currentHelper != null && _currentHelper.State == EHelperState.Equipped)
+        HelperController activeHelper = _currentHelper;
+        if (activeHelper != null && activeHelper.State == EHelperState.Equipped)
         {
             if (Input.GetMouseButtonDown(0))
                 TryInteractPrimary();
@@ -46,21 +50,54 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     public void Summon(HelperController helper)
     {
-        if (_currentHelper != null)
-            Unsummon();
+        bool isLightHelper = helper.GetAbility<LightActionAbility>() != null;
 
-        _currentHelper = helper;
-        _currentHelper.OnActionStarted += OnHelperActionStarted;
-        _currentHelper.OnActionEnded += OnHelperActionEnded;
-        _currentHelper.Summon(_owner);
+        if (isLightHelper)
+        {
+            if (_currentHelper != null)
+            {
+                return;
+            }
 
-        _currentHelper.PhotonView?.RPC(
-            nameof(HelperController.RPC_Summon), RpcTarget.Others,
-            _owner.PhotonView.ViewID);
+            if (_backHelper != null)
+                UnsummonBack();
+
+            _backHelper = helper;
+            _backHelper.Summon(_owner);
+
+            _backHelper.PhotonView?.RPC(
+                nameof(HelperController.RPC_Summon), RpcTarget.Others,
+                _owner.PhotonView.ViewID);
+        }
+        else
+        {
+            if (_backHelper != null && _backHelper.State != EHelperState.Equipped)
+            {
+                return;
+            }
+
+            if (_currentHelper != null)
+                Unsummon();
+
+            _currentHelper = helper;
+            _currentHelper.OnActionStarted += OnHelperActionStarted;
+            _currentHelper.OnActionEnded += OnHelperActionEnded;
+            _currentHelper.Summon(_owner);
+
+            _currentHelper.PhotonView?.RPC(
+                nameof(HelperController.RPC_Summon), RpcTarget.Others,
+                _owner.PhotonView.ViewID);
+        }
     }
 
     public void Unsummon()
     {
+        if (_currentHelper == null && _backHelper != null)
+        {
+            UnsummonBack();
+            return;
+        }
+
         if (_currentHelper == null) return;
 
         _currentHelper.OnActionStarted -= OnHelperActionStarted;
@@ -83,6 +120,17 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         _currentHelper = null;
     }
 
+    public void UnsummonBack()
+    {
+        if (_backHelper == null) return;
+
+        if (_backHelper.State == EHelperState.Equipped)
+            _backHelper.Unequip();
+
+        _backHelper.gameObject.SetActive(false);
+        _backHelper = null;
+    }
+
     private void OnHelperActionStarted()
     {
         _owner.AllowCameraRotation = true;
@@ -97,19 +145,38 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void ToggleEquip()
     {
-        if (_currentHelper == null) return;
-
-        if (_currentHelper.State == EHelperState.Equipped)
+        if (_currentHelper != null)
         {
-            _currentHelper.Unequip();
-            _currentHelper.PhotonView?.RPC(
-                nameof(HelperController.RPC_Unequip), RpcTarget.Others);
+            if (_currentHelper.State == EHelperState.Equipped)
+            {
+                _currentHelper.Unequip();
+                _currentHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Unequip), RpcTarget.Others);
+            }
+            else
+            {
+                _currentHelper.Equip(_equipSlot);
+                _currentHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+            }
+            return;
         }
-        else
+
+        if (_backHelper != null)
         {
-            _currentHelper.Equip(_equipSlot);
-            _currentHelper.PhotonView?.RPC(
-                nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+            Transform slot = _backEquipSlot != null ? _backEquipSlot : _equipSlot;
+            if (_backHelper.State == EHelperState.Equipped)
+            {
+                _backHelper.Unequip();
+                _backHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Unequip), RpcTarget.Others);
+            }
+            else
+            {
+                _backHelper.Equip(slot);
+                _backHelper.PhotonView?.RPC(
+                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+            }
         }
     }
 

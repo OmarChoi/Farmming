@@ -31,17 +31,14 @@ public class BuildingManager : MonoBehaviour
 
     private void Start()
     {
-        DayNightCycle.Instance.OnMorningStart += AdvanceDay;
+        TimeEvents.OnDayStarted += AdvanceDay;
     }
 
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
 
-        if (DayNightCycle.Instance != null)
-        {
-            DayNightCycle.Instance.OnMorningStart -= AdvanceDay;
-        }
+        TimeEvents.OnDayStarted -= AdvanceDay;
     }
     #endregion
 

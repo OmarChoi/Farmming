@@ -21,6 +21,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     public int Count => _helperDataList.Count;
     public int SummonedIndex => _summonedIndex;
 
+    public HelperDataSO SummonedData => SummonedIndex >= 0 && SummonedIndex < _helperDataList.Count ? _helperDataList[SummonedIndex]: null;
+
     public static event Action<PlayerHelperInventoryAbility> OnLocalPlayerReady;
 
     public event Action<int> OnSelectionChanged;
