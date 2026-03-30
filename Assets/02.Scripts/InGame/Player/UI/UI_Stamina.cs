@@ -1,19 +1,27 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UI_Stamina : MonoBehaviour
 {
     [SerializeField] private Image _fillImage;
+    [SerializeField] private Color _warningColor = Color.red;
+    [SerializeField, Range(0f, 1f)] private float _warningThreshold = 0.3f;
+    [SerializeField] private float _tweenDuration = 0.3f;
 
     private PlayerStamina _stamina;
+    private Color _defaultColor;
+    private Tweener _fillTween;
 
     private void Awake()
     {
+        _defaultColor = _fillImage.color;
         PlayerStaminaAbility.OnLocalPlayerReady += Bind;
     }
 
     private void OnDestroy()
     {
+        _fillTween?.Kill();
         PlayerStaminaAbility.OnLocalPlayerReady -= Bind;
         Unbind();
     }
@@ -50,6 +58,11 @@ public class UI_Stamina : MonoBehaviour
             return;
         }
 
-        _fillImage.fillAmount = current / _stamina.Max;
+        float ratio = current / _stamina.Max;
+
+        _fillTween?.Kill();
+        _fillTween = _fillImage.DOFillAmount(ratio, _tweenDuration).SetEase(Ease.OutCubic);
+
+        _fillImage.color = ratio <= _warningThreshold ? _warningColor : _defaultColor;
     }
 }
