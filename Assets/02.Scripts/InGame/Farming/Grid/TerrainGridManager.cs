@@ -130,6 +130,25 @@ public class TerrainGridManager : MonoBehaviour
         SpawnCell(gridPos, data);
     }
 
+    /// 블록 설치. 위에 쌓거나 빈 자리에 설치. 아래 셀의 IsTop도 갱신.
+    public bool TryPlaceBlock(Vector3Int gridPos, ETileType tileType, int dirtLevel = 1)
+    {
+        var existing = GetCell(gridPos);
+        if (existing != null && existing.Data.CellType != ECellType.Empty)
+            return false;
+
+        SetCell(gridPos, new TerrainCellData(ECellType.Dirt, tileType, dirtLevel, EGridObjectType.None, 0, false, isTop: true));
+
+        var belowCell = GetCell(gridPos + Vector3Int.down);
+        if (belowCell != null && belowCell.Data.IsTop)
+        {
+            belowCell.Data.SetTop(false);
+            belowCell.Refresh();
+        }
+
+        return true;
+    }
+
     /// 셀 삭제. 에디터와 런타임 모두 사용.
     public void RemoveCell(Vector3Int gridPos)
     {

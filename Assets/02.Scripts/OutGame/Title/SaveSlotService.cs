@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 public class SaveSlotService
@@ -41,5 +42,16 @@ public class SaveSlotService
             if (!_slotStates[i]) return i;
         }
         return -1;
+    }
+
+    public async UniTask<List<string>> GetPlayerIdsAsync(int slot)
+    {
+        var data = await _repository.LoadAsync(slot);
+        if (data == null) return new List<string>();
+
+        var ids = new List<string>();
+        foreach (var p in data.Players)
+            ids.Add(p.PlayerId);
+        return ids;
     }
 }

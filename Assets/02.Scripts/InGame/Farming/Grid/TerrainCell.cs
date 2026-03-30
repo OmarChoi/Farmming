@@ -80,6 +80,7 @@ public class TerrainCell : MonoBehaviour
 
     private bool DigSelf(int toolLevel)
     {
+        if (_data.ObjectType != EGridObjectType.None) return false;
         if (!_data.CanDig(toolLevel)) return false;
 
         // 아래 셀을 풀블록으로 전환

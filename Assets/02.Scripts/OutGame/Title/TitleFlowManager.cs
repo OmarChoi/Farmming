@@ -58,10 +58,12 @@ public class TitleFlowManager : MonoBehaviour
     }
 
     /// 기존 세이브 로드: 해당 슬롯 → 접속 → 방 생성 (isFirstVisit = false)
-    public void LoadExistingGame(int slot)
+    public async void LoadExistingGame(int slot)
     {
         OnPanelChanged?.Invoke(ETitlePanel.Connecting);
         RoomManager.Instance.SelectedSlot = slot;
+
+        var visitedPlayerIds = await SlotService.GetPlayerIdsAsync(slot);
 
         NetworkManager.Instance.Connect(
             onConnected: () =>
@@ -73,7 +75,8 @@ public class TitleFlowManager : MonoBehaviour
                         OnPanelChanged?.Invoke(ETitlePanel.Room);
                     },
                     onFailed: () => OnPanelChanged?.Invoke(ETitlePanel.Lobby),
-                    isFirstVisit: false
+                    isFirstVisit: false,
+                    visitedPlayerIds: visitedPlayerIds
                 );
             },
             onFailed: () => OnPanelChanged?.Invoke(ETitlePanel.Lobby)

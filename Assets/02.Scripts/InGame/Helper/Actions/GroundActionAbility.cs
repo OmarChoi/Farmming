@@ -91,7 +91,12 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         Vector3Int targetPos = GetPlacePosition(cell);
         int tileType = (int)cell.Data.TileType;
 
-        TerrainGridManager.Instance.SetCell(targetPos, new TerrainCellData(ECellType.Dirt, cell.Data.TileType, _generateDirtAmount, EGridObjectType.None, 0, false, isTop: true));
+        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetPos, cell.Data.TileType, _generateDirtAmount);
+        if (!placed)
+        {
+            _owner.EndAction();
+            return;
+        }
 
         _owner.PhotonView?.RPC(
             nameof(RPC_PlaceBlock), RpcTarget.Others,
@@ -151,6 +156,6 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     internal void RPC_PlaceBlock(int gridX, int gridY, int gridZ, int tileType, int dirtLevel)
     {
         var pos = new Vector3Int(gridX, gridY, gridZ);
-        TerrainGridManager.Instance?.SetCell(pos, new TerrainCellData(ECellType.Dirt, (ETileType)tileType, dirtLevel, EGridObjectType.None, 0, false, isTop: true));
+        TerrainGridManager.Instance?.TryPlaceBlock(pos, (ETileType)tileType, dirtLevel);
     }
 }
