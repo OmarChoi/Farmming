@@ -24,10 +24,13 @@ public class HelperInteractionAbility : HelperAbility
         _action.InteractPrimary(cell);
         _owner.Energy.TryConsume(_owner.Level.GetEnergyCost());
 
-        var pos = cell.GridPosition;
-        _owner.PhotonView?.RPC(
-            nameof(RPC_InteractPrimary), RpcTarget.Others,
-            pos.x, pos.y, pos.z);
+        if (PhotonNetwork.IsConnected)
+        {
+            var pos = cell.GridPosition;
+            _owner.PhotonView?.RPC(
+                nameof(RPC_InteractPrimary), RpcTarget.Others,
+                pos.x, pos.y, pos.z);
+        }
     }
 
     public void InteractSecondary(TerrainCell cell)
@@ -37,10 +40,13 @@ public class HelperInteractionAbility : HelperAbility
         _action.InteractSecondary(cell);
         _owner.Energy.TryConsume(_owner.Level.GetEnergyCost());
 
-        var pos = cell.GridPosition;
-        _owner.PhotonView?.RPC(
-            nameof(RPC_InteractSecondary), RpcTarget.Others,
-            pos.x, pos.y, pos.z);
+        if (PhotonNetwork.IsConnected)
+        {
+            var pos = cell.GridPosition;
+            _owner.PhotonView?.RPC(
+                nameof(RPC_InteractSecondary), RpcTarget.Others,
+                pos.x, pos.y, pos.z);
+        }
     }
 
     public void InteractPrimaryLocal(TerrainCell cell)

@@ -16,7 +16,7 @@ public class HelperAnimationAbility : HelperAbility
 
     public void Play(EHelperAnim anim)
     {
-        if (TrySetAnimation(anim) && _owner.IsMine && _owner.PhotonView != null)
+        if (TrySetAnimation(anim) && _owner.IsMine && PhotonNetwork.IsConnected && _owner.PhotonView != null)
             _owner.PhotonView.RPC(nameof(RPC_PlayAnimation), RpcTarget.Others, (int)anim);
     }
 
