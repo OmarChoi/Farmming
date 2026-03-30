@@ -44,7 +44,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
         _owner.BeginAction();
 
-        _animAbility?.Play(EHelperAnim.Eat);
+        _animAbility?.Play(EHelperAnim.EatGround);
 
         bool dug = TerrainGridManager.Instance.TryDig(cell.GridPosition, _toolLevel);
         if (dug)
@@ -86,7 +86,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
         _owner.BeginAction();
 
-        _animAbility?.Play(EHelperAnim.Eat);
+        _animAbility?.Play(EHelperAnim.EatGround);
 
         Vector3Int targetPos = GetPlacePosition(cell);
         int tileType = (int)cell.Data.TileType;

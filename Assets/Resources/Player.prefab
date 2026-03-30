@@ -155,7 +155,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHelperAbility
   _equipKey: 102
   _equipSlot: {fileID: 5631609105930910836}
-  _backEquipSlot: {fileID: 0}
+  _backEquipSlot: {fileID: 8812800663262423533}
 --- !u!114 &2716549386606580851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,6 +273,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7565645210666648505}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8451655442543986734
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8812800663262423533}
+  m_Layer: 6
+  m_Name: Back Equip Slot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8812800663262423533
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8451655442543986734}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.50019956, y: -0.49979976, z: -0.5001992, w: -0.49980128}
+  m_LocalPosition: {x: 0.788, y: -0.604, z: -0.02000002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6057849244531561679}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9063863777396371556
 GameObject:
@@ -910,6 +941,9 @@ PrefabInstance:
     - {fileID: 5866666021909216657, guid: 3eecabbe01143694b8602161a902615f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -7836229474298620029, guid: 3eecabbe01143694b8602161a902615f, type: 3}
+      insertIndex: 0
+      addedObject: {fileID: 8812800663262423533}
     - targetCorrespondingSourceObject: {fileID: 3436036755398836469, guid: 3eecabbe01143694b8602161a902615f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5631609105930910836}
@@ -1015,6 +1049,11 @@ MonoBehaviour:
   currentMouth: {fileID: 0}
   currentEyebrow: {fileID: 0}
   currentCheek: {fileID: 0}
+--- !u!4 &6057849244531561679 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -7836229474298620029, guid: 3eecabbe01143694b8602161a902615f, type: 3}
+  m_PrefabInstance: {fileID: 5139120670093869900}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7565645210666648505 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3436036755398836469, guid: 3eecabbe01143694b8602161a902615f, type: 3}
