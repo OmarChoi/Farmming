@@ -68,7 +68,7 @@ public class HelperInteractionAbility : HelperAbility
         var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
         if (cell == null) return;
 
-        _action?.InteractPrimary(cell);
+        InteractPrimaryLocal(cell);
     }
 
     [PunRPC]
@@ -77,6 +77,6 @@ public class HelperInteractionAbility : HelperAbility
         var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
         if (cell == null) return;
 
-        _action?.InteractSecondary(cell);
+        InteractSecondaryLocal(cell);
     }
 }

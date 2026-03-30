@@ -16,24 +16,27 @@ public class HelperAnimationAbility : HelperAbility
 
     public void Play(EHelperAnim anim)
     {
-        if (_currentAnim == anim) return;
-        _currentAnim = anim;
-        _animator.SetInteger(AnimHash, (int)anim);
-
-        if (_owner.IsMine && _owner.PhotonView != null)
+        if (TrySetAnimation(anim) && _owner.IsMine && _owner.PhotonView != null)
             _owner.PhotonView.RPC(nameof(RPC_PlayAnimation), RpcTarget.Others, (int)anim);
     }
 
     public void PlayLocal(EHelperAnim anim)
     {
-        if (_currentAnim == anim) return;
-        _currentAnim = anim;
-        _animator.SetInteger(AnimHash, (int)anim);
+        TrySetAnimation(anim);
     }
 
     [PunRPC]
     internal void RPC_PlayAnimation(int anim)
     {
         PlayLocal((EHelperAnim)anim);
+    }
+
+    private bool TrySetAnimation(EHelperAnim anim)
+    {
+        if (_currentAnim == anim) return false;
+
+        _currentAnim = anim;
+        _animator.SetInteger(AnimHash, (int)anim);
+        return true;
     }
 }
