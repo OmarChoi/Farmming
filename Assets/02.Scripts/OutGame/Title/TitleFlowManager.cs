@@ -58,7 +58,7 @@ public class TitleFlowManager : MonoBehaviour
     }
 
     /// 기존 세이브 로드: 해당 슬롯 → 접속 → 방 생성 (isFirstVisit = false)
-    public async void LoadExistingGame(int slot)
+    public async UniTaskVoid LoadExistingGame(int slot)
     {
         OnPanelChanged?.Invoke(ETitlePanel.Connecting);
         RoomManager.Instance.SelectedSlot = slot;

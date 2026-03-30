@@ -46,13 +46,13 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
         _animAbility?.Play(EHelperAnim.Eat);
 
-        bool dug = cell.TryDig(_toolLevel);
+        bool dug = TerrainGridManager.Instance.TryDig(cell.GridPosition, _toolLevel);
         if (dug)
         {
             var pos = cell.GridPosition;
             _owner.PhotonView?.RPC(
                 nameof(RPC_Dig), RpcTarget.Others,
-                pos.x, pos.y, pos.z);
+                pos.x, pos.y, pos.z, _toolLevel);
 
             PlayerInventoryAbility inventory = GetInventory();
             if (inventory != null && _dirtItem != null)
@@ -144,12 +144,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     }
 
     [PunRPC]
-    internal void RPC_Dig(int gridX, int gridY, int gridZ)
+    internal void RPC_Dig(int gridX, int gridY, int gridZ, int toolLevel)
     {
-        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
-        if (cell == null) return;
-
-        cell.TryDig(_toolLevel);
+        TerrainGridManager.Instance?.TryDig(new Vector3Int(gridX, gridY, gridZ), toolLevel);
     }
 
     [PunRPC]
