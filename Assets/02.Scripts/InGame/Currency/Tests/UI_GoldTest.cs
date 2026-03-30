@@ -16,8 +16,6 @@ public class UI_GoldTest : MonoBehaviour
 
         CurrencyManager.Instance.OnGoldChanged += UpdateGoldText;
 
-        _addButton.onClick.AddListener(() => CurrencyManager.Instance.AddGold(_addAmount));
-        _spendButton.onClick.AddListener(() => CurrencyManager.Instance.TrySpendGold(_spendAmount));
     }
 
     private void OnDestroy()
