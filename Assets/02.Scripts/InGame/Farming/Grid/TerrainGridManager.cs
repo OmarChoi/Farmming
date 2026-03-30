@@ -20,6 +20,7 @@ public class TerrainGridManager : MonoBehaviour
     [SerializeField] private SeedDatabase _seedDatabase;
     [SerializeField] private BuildingDatabase _buildingDatabase;
 
+    public SeedDatabase SeedDatabase => _seedDatabase;
     public BuildingDatabase BuildingDatabase => _buildingDatabase;
 
     private TerrainGridData _gridData;

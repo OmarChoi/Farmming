@@ -1,4 +1,5 @@
 using System.Collections;
+using Photon.Pun;
 using UnityEngine;
 
 // 파종 곡룡: FarmDry에서 씨앗 주기
@@ -69,9 +70,22 @@ public class SowActionAbility : HelperAbility, IHelperAction
         SeedConfig selectedSeed = _seedSelector?.SelectedSeed;
         if(selectedSeed == null) return;
 
+        StartSow(farmTile, selectedSeed);
+
+        if (_owner.PhotonView != null && PhotonNetwork.IsConnected)
+        {
+            var pos = cell.GridPosition;
+            _owner.PhotonView.RPC(
+                nameof(RPC_PlantSeed), RpcTarget.Others,
+                pos.x, pos.y, pos.z, selectedSeed.SeedId);
+        }
+    }
+
+    private void StartSow(FarmTile farmTile, SeedConfig seed)
+    {
         _isActing = true;
         _currentFarmTile = farmTile;
-        _currentSeed = selectedSeed;
+        _currentSeed = seed;
 
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Sow);
@@ -113,7 +127,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private IEnumerator PlantAfterDelay(FarmTile farmTile, SeedConfig seed)
     {
         yield return new WaitForSeconds(_sowDelay);
-        farmTile?.PlantSeed(seed);
+        if (farmTile == null) yield break;
+
+        farmTile.PlantSeed(seed);
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)
@@ -136,5 +152,20 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _currentFarmTile = null;
         _currentSeed = null;
         _owner?.EndAction();
+    }
+
+    [PunRPC]
+    internal void RPC_PlantSeed(int gridX, int gridY, int gridZ, string seedId)
+    {
+        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null) return;
+
+        var seed = TerrainGridManager.Instance.SeedDatabase?.GetById(seedId);
+        if (seed == null) return;
+
+        FarmTile farmTile = GetFarmTile(cell);
+        if (farmTile == null) return;
+
+        StartSow(farmTile, seed);
     }
 }
