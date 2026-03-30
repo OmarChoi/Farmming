@@ -18,11 +18,13 @@ public static class AssetKey
 
     public static class Building
     {
-        public const string MarketStall = "MarketStall";
+        private const string MarketStall = "MarketStall";
+        private const string Smithy = "Smithy";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
         {
-            MarketStall
+            MarketStall,
+            Smithy
         };
 
         public static string GetKey(string buildingId)
