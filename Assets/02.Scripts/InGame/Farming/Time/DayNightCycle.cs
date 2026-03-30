@@ -1,7 +1,8 @@
 using System;
+using Photon.Pun;
 using UnityEngine;
 
-public class DayNightCycle : MonoBehaviour
+public class DayNightCycle : MonoBehaviourPun
 {
     public static DayNightCycle Instance;
 
@@ -19,36 +20,59 @@ public class DayNightCycle : MonoBehaviour
             return;
         }
         Instance = this;
-        
     }
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.N))
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
         {
-            if(!IsNight)
+            if(Input.GetKeyDown(KeyCode.N))
             {
-                StartNight();
-            }
-            else
-            {
-                StartMorning();
+                if(!IsNight)
+                {
+                    ApplyNight();
+
+                    if (PhotonNetwork.IsConnected)
+                        photonView.RPC(nameof(RPC_StartNight), RpcTarget.Others);
+                }
+                else
+                {
+                    ApplyMorning();
+
+                    if (PhotonNetwork.IsConnected)
+                        photonView.RPC(nameof(RPC_StartMorning), RpcTarget.Others, CurrentDay);
+                }
             }
         }
     }
 
-    private void StartNight()
+    private void ApplyNight()
     {
         IsNight = true;
         Debug.Log($"{CurrentDay}일차 밤 시작");
         OnNightStart?.Invoke();
     }
 
-    private void StartMorning()
+    private void ApplyMorning()
     {
         IsNight = false;
         CurrentDay++;
         Debug.Log($"{CurrentDay}일차 아침 시작");
+        OnMorningStart?.Invoke();
+    }
+
+    [PunRPC]
+    private void RPC_StartNight()
+    {
+        ApplyNight();
+    }
+
+    [PunRPC]
+    private void RPC_StartMorning(int day)
+    {
+        CurrentDay = day;
+        IsNight = false;
+        Debug.Log($"{CurrentDay}일차 아침 시작 (동기화)");
         OnMorningStart?.Invoke();
     }
 }
