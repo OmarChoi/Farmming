@@ -16,7 +16,6 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private bool _isActing = false;
     private FarmTile _currentFarmTile;
     private SeedConfig _currentSeed;
-    private Vector3Int _currentCellPos;
 
     protected override void Awake()
     {
@@ -71,10 +70,32 @@ public class SowActionAbility : HelperAbility, IHelperAction
         SeedConfig selectedSeed = _seedSelector?.SelectedSeed;
         if(selectedSeed == null) return;
 
+        StartSow(farmTile, selectedSeed);
+
+        if (_owner.PhotonView != null && PhotonNetwork.IsConnected)
+        {
+            var pos = cell.GridPosition;
+            _owner.PhotonView.RPC(
+                nameof(HelperController.RPC_PlantSeed), RpcTarget.Others,
+                pos.x, pos.y, pos.z, selectedSeed.SeedId);
+        }
+    }
+
+    public void SowRemote(TerrainCell cell, SeedConfig seed)
+    {
+        if (_isActing) return;
+
+        FarmTile farmTile = GetFarmTile(cell);
+        if (farmTile == null) return;
+
+        StartSow(farmTile, seed);
+    }
+
+    private void StartSow(FarmTile farmTile, SeedConfig seed)
+    {
         _isActing = true;
         _currentFarmTile = farmTile;
-        _currentSeed = selectedSeed;
-        _currentCellPos = cell.GridPosition;
+        _currentSeed = seed;
 
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Sow);
@@ -119,13 +140,6 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (farmTile == null) yield break;
 
         farmTile.PlantSeed(seed);
-
-        if (_owner.PhotonView != null && PhotonNetwork.IsConnected)
-        {
-            _owner.PhotonView.RPC(
-                nameof(HelperController.RPC_PlantSeed), RpcTarget.Others,
-                _currentCellPos.x, _currentCellPos.y, _currentCellPos.z, seed.SeedId);
-        }
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)
