@@ -37,19 +37,22 @@ public class RoomManager : MonoBehaviourPunCallbacks
         Instance = this;
     }
 
-    public void CreateRoom(Action onJoined, Action onFailed = null, bool isFirstVisit = true)
+    public void CreateRoom(Action onJoined, Action onFailed = null, bool isFirstVisit = true,
+        List<string> visitedPlayerIds = null)
     {
         _onJoinedCallback = onJoined;
         _onFailedCallback = onFailed;
         RoomId = GenerateRoomId();
         IsFirstVisit = isFirstVisit;
 
+        string vp = visitedPlayerIds != null ? string.Join(",", visitedPlayerIds) : "";
+
         var options = new RoomOptions
         {
             MaxPlayers = 4,
             IsVisible = true,
             IsOpen = false,
-            CustomRoomProperties = new ExitGames.Client.Photon.Hashtable { { VISITED_KEY, "" } },
+            CustomRoomProperties = new ExitGames.Client.Photon.Hashtable { { VISITED_KEY, vp } },
             CustomRoomPropertiesForLobby = new[] { VISITED_KEY }
         };
 
