@@ -25,8 +25,11 @@ public class TerrainGridManager : MonoBehaviour
 
     private TerrainGridData _gridData;
     private readonly Dictionary<Vector3Int, TerrainCell> _cells = new();
+    private int _maxHeight = int.MaxValue;
 
     public float CellSize => _cellSize;
+
+    public void SetMaxHeight(int maxHeight) => _maxHeight = maxHeight;
 
     private void Awake()
     {
@@ -133,6 +136,8 @@ public class TerrainGridManager : MonoBehaviour
     /// 블록 설치. 위에 쌓거나 빈 자리에 설치. 아래 셀의 IsTop도 갱신.
     public bool TryPlaceBlock(Vector3Int gridPos, ETileType tileType, int dirtLevel = 1)
     {
+        if (gridPos.y >= _maxHeight) return false;
+
         var existing = GetCell(gridPos);
         if (existing != null && existing.Data.CellType != ECellType.Empty)
             return false;
