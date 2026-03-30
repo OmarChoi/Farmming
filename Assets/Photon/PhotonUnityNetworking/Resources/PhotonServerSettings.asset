@@ -50,6 +50,15 @@ MonoBehaviour:
   - RPC_SyncCustomize
   - RPC_RequestSaveData
   - RPC_RespondSaveData
+  - RPC_PlayAnimation
+  - RPC_Equip
+  - RPC_Unequip
+  - RPC_InteractPrimary
+  - RPC_InteractSecondary
+  - RPC_Summon
+  - RPC_StartMorning
+  - RPC_StartNight
+  - RPC_PlantSeed
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

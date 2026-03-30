@@ -33,14 +33,16 @@ public class HelperFollowAbility : HelperAbility
     private Vector3 _launchVelocity;
     private Quaternion _launchTargetRotation;
 
-    private void Start()
+    protected override void Awake()
     {
+        base.Awake();
         _cc = _owner.GetComponent<CharacterController>();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
     private void Update()
     {
+        if (!_owner.IsMine) return;
         if (_owner.State != EHelperState.Summoned) return;
         if (_owner.FollowTarget == null) return;
 
