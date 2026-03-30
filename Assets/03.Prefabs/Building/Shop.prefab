@@ -105,7 +105,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bb0ab032ef54d34eaa5dafb0830ecdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultBuilding
-  _npcSpawnPoint: {fileID: 6523910426269313122}
 --- !u!114 &1326319481979180853
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129,6 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6523910426269313122}
+  - component: {fileID: 6751938520666829074}
   m_Layer: 0
   m_Name: NpcPosition
   m_TagString: Untagged
@@ -151,3 +151,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2733302261439990771}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6751938520666829074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8945769715672933444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
+  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
+  _locationType: 1
+  _locationKey: Shopper_Shop
+  _point: {fileID: 6523910426269313122}

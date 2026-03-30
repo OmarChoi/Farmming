@@ -50,6 +50,7 @@ GameObject:
   - component: {fileID: 1445132337226200713}
   - component: {fileID: 4168066349458401290}
   - component: {fileID: 7513555976057043112}
+  - component: {fileID: 4508421513288246365}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -177,6 +178,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 936c6983fad88044d9c76e1791302207, type: 2}
   - {fileID: 11400000, guid: a3c3d2b2383ca574ca74489e706053ff, type: 2}
   - {fileID: 11400000, guid: b9c6732dbda3f2549a52885ef28b9a34, type: 2}
+  - {fileID: 11400000, guid: c463d6805f77917438cb2d5a547b8a3f, type: 2}
 --- !u!114 &1445132337226200713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,6 +223,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCustomizeAbility
   _partSwapper: {fileID: 941056664359031014}
+--- !u!114 &4508421513288246365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98542f6cd3967664a91388e9c0df1818, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBuildingAbility
+  _buildingData: {fileID: 11400000, guid: ae9f03c977b21f24890ba4cc7f20b724, type: 2}
+  _ghostMaterial: {fileID: 2100000, guid: d6f88503848ba7b4cbb3a970646aefc7, type: 2}
+  _ghostValidColor: {r: 0, g: 1, b: 0, a: 0.5}
+  _ghostInvalidColor: {r: 1, g: 0, b: 0, a: 0.5}
+  _placeKey: 98
+  _removeKey: 118
+  _rotateKey: 114
+  _cancelKey: 27
 --- !u!1 &4055360776355550448
 GameObject:
   m_ObjectHideFlags: 0

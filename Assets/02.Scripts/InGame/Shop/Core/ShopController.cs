@@ -8,20 +8,17 @@ public class ShopController : MonoBehaviour
     [SerializeField] private Shop _testShop;
 
     [Header("요구 컴포넌트")]
-    [SerializeField] private PlayerInventoryAbility _playerInventory;
     [SerializeField] private UI_Inventory _uiInventory;
     [SerializeField] private UI_Shop _uiShop;
 
+    private PlayerInventoryAbility _playerInventory;
     private TradeService _tradeService;
     private NpcInteractionContext _currentContext;
 
     private void Start()
     {
-        if (_playerInventory == null || _uiShop == null)
+        if (_uiShop == null)
         {
-#if UNITY_EDITOR
-            Debug.LogError("ShopController 참조가 비어 있습니다.");
-#endif
             enabled = false;
             return;
         }
@@ -31,14 +28,15 @@ public class ShopController : MonoBehaviour
         _uiInventory.Init(_tradeService);
         _uiShop.Close();
     }
-
     private void OnEnable()
     {
+        PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
         _uiShop.OnCloseRequested += CloseShop;
     }
 
     private void OnDisable()
     {
+        PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
         _uiShop.OnCloseRequested -= CloseShop;
     }
 
@@ -65,5 +63,12 @@ public class ShopController : MonoBehaviour
 
         _currentContext?.InteractionComponent?.EndInteraction();
         _currentContext = null;
+    }
+    
+    
+    private void OnPlayerReady(PlayerInventoryAbility ability)
+    {
+        Debug.Log("PlayerInventoryAbility 확인");
+        _playerInventory = ability;
     }
 }
