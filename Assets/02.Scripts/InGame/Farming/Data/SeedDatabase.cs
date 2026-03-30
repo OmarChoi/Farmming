@@ -4,13 +4,13 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "SeedDatabase", menuName = "Scriptable Objects/Seed")]
 public class SeedDatabase : ScriptableObject
 {
-    [SerializeField] List<SeedConfig> _seeds;
-    private Dictionary<string, SeedConfig> _seedDictionary;
+    [SerializeField] private List<SeedItemDataSO> _seeds;
+    private Dictionary<int, SeedItemDataSO> _seedDictionary;
 
-    public SeedConfig GetById(string seedId)
+    public SeedItemDataSO GetById(int seedId)
     {
         EnsureDictionary();
-        _seedDictionary.TryGetValue(seedId, out SeedConfig seed);
+        _seedDictionary.TryGetValue(seedId, out SeedItemDataSO seed);
         return seed;
     }
 
@@ -18,12 +18,12 @@ public class SeedDatabase : ScriptableObject
     {
         if (_seedDictionary != null && _seedDictionary.Count > 0) return;
 
-        _seedDictionary = new Dictionary<string, SeedConfig>();
+        _seedDictionary = new Dictionary<int, SeedItemDataSO>();
         foreach (var seed in _seeds)
         {
-            if (seed != null && !string.IsNullOrEmpty(seed.SeedId))
+            if (seed != null && seed.Id > 0)
             {
-                _seedDictionary[seed.SeedId] = seed;
+                _seedDictionary[seed.Id] = seed;
             }
         }
     }

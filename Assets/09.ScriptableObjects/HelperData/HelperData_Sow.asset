@@ -15,7 +15,7 @@ MonoBehaviour:
   HelperId: 333
   HelperName: "\uACBD\uC791/\uD30C\uC885 \uACE1\uB8E1"
   HelperIcon: {fileID: 21300000, guid: 3f65c4f5537ad0e42b32e83fb6e33062, type: 3}
-  Prefab: {fileID: 350823004175790314, guid: 44961d74ee293c34ab9dfa7876a02582, type: 3}
+  Prefab: {fileID: 350823004175790314, guid: d9857392163d00940a23e898bfbaf850, type: 3}
   MaxEnergy: 100
   EnergyRecoveryPerSecond: 5
   GatherDamage: 10
@@ -26,3 +26,7 @@ MonoBehaviour:
   NormalRange: 1
   EpicRange: 2
   LegendaryRange: 3
+  _leftClickIcon: {fileID: 21300000, guid: 12681ae5bc70f864681174434d53be00, type: 3}
+  _rightClickIcon: {fileID: 21300000, guid: 7fb397a705dff8445a260ee2cb130988, type: 3}
+  _leftClickExplanation: "\uACBD\uC791"
+  _rightClickExplanation: "\uC528\uC557 \uC2EC\uAE30"

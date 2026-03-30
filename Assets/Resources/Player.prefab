@@ -154,6 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHelperAbility
   _equipKey: 102
   _equipSlot: {fileID: 5631609105930910836}
+  _backEquipSlot: {fileID: 0}
 --- !u!114 &2716549386606580851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175,6 +176,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e86140031d337c54b869bad6142d873b, type: 2}
   - {fileID: 11400000, guid: 936c6983fad88044d9c76e1791302207, type: 2}
   - {fileID: 11400000, guid: a3c3d2b2383ca574ca74489e706053ff, type: 2}
+  - {fileID: 11400000, guid: b9c6732dbda3f2549a52885ef28b9a34, type: 2}
 --- !u!114 &1445132337226200713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -421,9 +423,6 @@ MonoBehaviour:
   - Type: 1
     SynchronizeType: 2
     Name: Move
-  - Type: 9
-    SynchronizeType: 0
-    Name: Jump
   - Type: 4
     SynchronizeType: 1
     Name: Grounded

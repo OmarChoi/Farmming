@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using UnityEngine;
 
 public class SaveManager : MonoBehaviour
@@ -29,7 +30,14 @@ public class SaveManager : MonoBehaviour
     public void RegisterPlayer(string playerId, PlayerController player)
     {
         _players[playerId] = player;
+
+        bool isNewPlayer = _loadedData == null
+            || !_loadedData.Players.Exists(p => p.PlayerId == playerId);
+
         TryRestorePlayer(playerId, player);
+
+        if (isNewPlayer && PhotonNetwork.IsMasterClient)
+            SaveAsync(RoomManager.Instance.SelectedSlot).Forget();
     }
 
     private void TryRestorePlayer(string playerId, PlayerController player)
@@ -66,6 +74,12 @@ public class SaveManager : MonoBehaviour
 
     public async UniTask SaveAsync(int slot = 0)
     {
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+        {
+            Debug.LogWarning("저장은 마스터 클라이언트만 실행할 수 있습니다.");
+            return;
+        }
+
         var data = new SaveData();
 
         if (_mapManager == null || _mapManager.IsVillage)
@@ -140,7 +154,7 @@ public class SaveManager : MonoBehaviour
             return;
         }
 
-        _terrainGridManager.ImportSaveData(_loadedData.Terrain);
+        _mapManager.ImportVillageSaveData(_loadedData.Terrain);
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
     }
 

@@ -28,7 +28,7 @@ public class HelperSeedBubbleUI : MonoBehaviour
         }
     }
 
-    private void RefreshUI(SeedConfig seed)
+    private void RefreshUI(SeedItemDataSO seed)
     {
         if (seed == null)
         {
@@ -37,7 +37,7 @@ public class HelperSeedBubbleUI : MonoBehaviour
         }
 
         _bubbleRoot.SetActive(true);
-        _seedIcon.sprite = seed.SeedIcon;
-        _seedNameText.text = seed.SeedName;
+        _seedIcon.sprite = seed.Icon;
+        _seedNameText.text = seed.DisplayName;
     }
 }
