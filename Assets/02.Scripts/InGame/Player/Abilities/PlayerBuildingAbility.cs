@@ -7,7 +7,6 @@ public class PlayerBuildingAbility : PlayerAbility
     private enum BuildState { None, Previewing }
 
     [Header("참조")]
-    [SerializeField] private BuildingManager _buildingManager;
     [SerializeField] private BuildingDataSO _buildingData;
 
     [Header("Ghost 설정")]
@@ -21,6 +20,7 @@ public class PlayerBuildingAbility : PlayerAbility
     [SerializeField] private KeyCode _rotateKey = KeyCode.R;
     [SerializeField] private KeyCode _cancelKey = KeyCode.Escape;
 
+    private BuildingManager _buildingManager;
     private PlayerTerrainAbility _terrainAbility;
     private PlayerInventoryAbility _inventoryAbility;
     private bool _swapped;
@@ -35,6 +35,7 @@ public class PlayerBuildingAbility : PlayerAbility
     protected override void Awake()
     {
         base.Awake();
+        _buildingManager = BuildingManager.Instance;
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
         _inventoryAbility = _owner.GetAbility<PlayerInventoryAbility>();
     }
