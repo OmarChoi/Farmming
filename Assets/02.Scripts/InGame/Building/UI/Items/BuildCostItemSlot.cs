@@ -18,6 +18,6 @@ public class BuildCostItemSlot : MonoBehaviour
 
         _icon.enabled = true;
         _icon.sprite = cost.Item.Icon;
-        _amountLabel.text = $"{cost.Amount.ToString()}개";
+        _amountLabel.text = $"{cost.Amount}개";
     }
 }

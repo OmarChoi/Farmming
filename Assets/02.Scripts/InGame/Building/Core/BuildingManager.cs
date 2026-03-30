@@ -56,6 +56,11 @@ public class BuildingManager : MonoBehaviour
         OnBuildingSelected?.Invoke(data);
     }
 
+    public void ClearSelection()
+    {
+        SelectedBuilding = null;
+    }
+
     public bool IsOccupied(Vector3Int gridPos) => _occupiedCells.ContainsKey(gridPos);
 
     public bool IsConstructionComplete(Vector3Int anyPos)

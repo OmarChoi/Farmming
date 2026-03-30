@@ -6,6 +6,10 @@ public class UI_BuildInfo : UIBase
 {
     private const float DefaultSize = 200;
     private const float HeightPerCostItem = 200;
+    private const int CostColumns = 2;
+    private const string ConstructionDaysFormat = "건설 일수 : {0}일";
+    private const string InstantBuildText = "즉시 완성";
+    
     private RectTransform _panelTransform;
     
     [Header("건물 정보")]
@@ -43,7 +47,7 @@ public class UI_BuildInfo : UIBase
         // 기본 정보 표시
         _nameLabel.text = data.DisplayName;
         _descriptionLabel.text = data.Description;
-        _constructionDaysLabel.text = data.ConstructionDays > 0 ? $"건설 일수 : {data.ConstructionDays}일" : "즉시 완성";
+        _constructionDaysLabel.text = data.ConstructionDays > 0 ? string.Format(ConstructionDaysFormat, data.ConstructionDays) : InstantBuildText;
 
         // 건설 비용 슬롯 갱신
         RefreshCostSlots(data.Costs);
@@ -55,7 +59,7 @@ public class UI_BuildInfo : UIBase
         // 부족한 슬롯 생성 (풀링)
         // todo. Pooling 기반의 Slot 생성 방식으로 수정
         int nCostItem = costs.Count;
-        float newHeight = DefaultSize + Mathf.Ceil(nCostItem / 2f) * HeightPerCostItem;
+        float newHeight = DefaultSize + Mathf.Ceil((float)nCostItem / CostColumns) * HeightPerCostItem;
         _panelTransform.sizeDelta = new Vector2(_panelTransform.sizeDelta.x, newHeight);
         while (_costSlots.Count < costs.Count)
         {
