@@ -76,19 +76,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
         {
             var pos = cell.GridPosition;
             _owner.PhotonView.RPC(
-                nameof(HelperController.RPC_PlantSeed), RpcTarget.Others,
+                nameof(RPC_PlantSeed), RpcTarget.Others,
                 pos.x, pos.y, pos.z, selectedSeed.SeedId);
         }
-    }
-
-    public void SowRemote(TerrainCell cell, SeedConfig seed)
-    {
-        if (_isActing) return;
-
-        FarmTile farmTile = GetFarmTile(cell);
-        if (farmTile == null) return;
-
-        StartSow(farmTile, seed);
     }
 
     private void StartSow(FarmTile farmTile, SeedConfig seed)
@@ -162,5 +152,20 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _currentFarmTile = null;
         _currentSeed = null;
         _owner?.EndAction();
+    }
+
+    [PunRPC]
+    internal void RPC_PlantSeed(int gridX, int gridY, int gridZ, string seedId)
+    {
+        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null) return;
+
+        var seed = TerrainGridManager.Instance.SeedDatabase?.GetById(seedId);
+        if (seed == null) return;
+
+        FarmTile farmTile = GetFarmTile(cell);
+        if (farmTile == null) return;
+
+        StartSow(farmTile, seed);
     }
 }

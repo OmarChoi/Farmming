@@ -11,7 +11,7 @@ public class HelperAnimationAbility : HelperAbility
     protected override void Awake()
     {
         base.Awake();
-        _animator = _owner.GetComponentInChildren<Animator>();
+        _animator = GetComponentInChildren<Animator>();
     }
 
     public void Play(EHelperAnim anim)
@@ -21,7 +21,7 @@ public class HelperAnimationAbility : HelperAbility
         _animator.SetInteger(AnimHash, (int)anim);
 
         if (_owner.IsMine && _owner.PhotonView != null)
-            _owner.PhotonView.RPC(nameof(HelperController.RPC_PlayAnimation), RpcTarget.Others, (int)anim);
+            _owner.PhotonView.RPC(nameof(RPC_PlayAnimation), RpcTarget.Others, (int)anim);
     }
 
     public void PlayLocal(EHelperAnim anim)
@@ -29,5 +29,11 @@ public class HelperAnimationAbility : HelperAbility
         if (_currentAnim == anim) return;
         _currentAnim = anim;
         _animator.SetInteger(AnimHash, (int)anim);
+    }
+
+    [PunRPC]
+    internal void RPC_PlayAnimation(int anim)
+    {
+        PlayLocal((EHelperAnim)anim);
     }
 }

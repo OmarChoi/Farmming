@@ -96,107 +96,6 @@ Transform:
   - {fileID: 3078775404032945761}
   m_Father: {fileID: 3738890586547760994}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1560332179249728770
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6987654492603332719}
-  - component: {fileID: 725066959064058448}
-  - component: {fileID: 7793466558248727200}
-  - component: {fileID: 8688318908214569227}
-  - component: {fileID: 8692038826377127620}
-  m_Layer: 7
-  m_Name: Ability
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6987654492603332719
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4522027000630529926}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &725066959064058448
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19018a3b2f2d20d4e8d12747c1437f48, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperFollowAbility
-  _moveSpeed: 4
-  _stopDistance: 2.5
-  _slowDownDistance: 3
-  _teleportDistance: 8
-  _teleportHeightDiff: 1.8
-  _smoothTime: 0.2
-  _teleportDelay: 1
-  _runSpeedThreshold: 0.5
-  _unequipJumpForce: 5
-  _unequipBackForce: 3
-  _launchRotationSpeed: 10
-  _autoJumpForce: 8
-  _autoJumpCheckDist: 2
-  _autoJumpMaxHeight: 2.2
-  _jumpCheckMask:
-    serializedVersion: 2
-    m_Bits: 183
---- !u!114 &7793466558248727200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40ed055f08a53d645a375abf45fdb88b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperAnimationAbility
---- !u!114 &8688318908214569227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
---- !u!114 &8692038826377127620
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0d245c2b4f4e2143b2b7f1f4f2b908c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HarvestActionAbility
-  _harvestItem: {fileID: 11400000, guid: d59ceafad712dd942b7c164fbf7b3d4b, type: 2}
 --- !u!1 &1720176448544815771
 GameObject:
   m_ObjectHideFlags: 0
@@ -915,6 +814,10 @@ GameObject:
   - component: {fileID: 7720903764975020300}
   - component: {fileID: -2048077283713062989}
   - component: {fileID: 913829386507720170}
+  - component: {fileID: 4726720181118924674}
+  - component: {fileID: 6695980083485624287}
+  - component: {fileID: 7565693385116759200}
+  - component: {fileID: 7847188916598362213}
   m_Layer: 7
   m_Name: HarvestHelper
   m_TagString: Untagged
@@ -937,7 +840,6 @@ Transform:
   m_Children:
   - {fileID: 2982257461117071358}
   - {fileID: 8348114062204314817}
-  - {fileID: 6987654492603332719}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &350823004175790314
@@ -953,6 +855,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HelperController
   _data: {fileID: 11400000, guid: e86140031d337c54b869bad6142d873b, type: 2}
+  _rotationEuler: {x: 0, y: 180, z: 0}
 --- !u!143 &7720903764975020300
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1017,6 +920,72 @@ MonoBehaviour:
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 1
   m_UseLocal: 1
+--- !u!114 &4726720181118924674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19018a3b2f2d20d4e8d12747c1437f48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperFollowAbility
+  _moveSpeed: 4
+  _stopDistance: 2.5
+  _slowDownDistance: 3
+  _teleportDistance: 8
+  _teleportHeightDiff: 1.8
+  _smoothTime: 0.2
+  _teleportDelay: 1
+  _runSpeedThreshold: 0.5
+  _unequipJumpForce: 5
+  _unequipBackForce: 3
+  _launchRotationSpeed: 10
+  _autoJumpForce: 8
+  _autoJumpCheckDist: 2
+  _autoJumpMaxHeight: 2.2
+  _jumpCheckMask:
+    serializedVersion: 2
+    m_Bits: 183
+--- !u!114 &6695980083485624287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40ed055f08a53d645a375abf45fdb88b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperAnimationAbility
+--- !u!114 &7565693385116759200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
+--- !u!114 &7847188916598362213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0d245c2b4f4e2143b2b7f1f4f2b908c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HarvestActionAbility
+  _harvestItem: {fileID: 11400000, guid: d59ceafad712dd942b7c164fbf7b3d4b, type: 2}
 --- !u!1 &5410132598804558874
 GameObject:
   m_ObjectHideFlags: 0

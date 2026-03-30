@@ -96,146 +96,6 @@ Transform:
   - {fileID: 3078775404032945761}
   m_Father: {fileID: 3738890586547760994}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1560332179249728770
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6987654492603332719}
-  - component: {fileID: 725066959064058448}
-  - component: {fileID: 7793466558248727200}
-  - component: {fileID: 8688318908214569227}
-  - component: {fileID: 8728040160907436363}
-  - component: {fileID: 8280080583904739288}
-  - component: {fileID: 6773023280158505973}
-  m_Layer: 7
-  m_Name: Ability
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6987654492603332719
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4522027000630529926}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &725066959064058448
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19018a3b2f2d20d4e8d12747c1437f48, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperFollowAbility
-  _moveSpeed: 4
-  _stopDistance: 2.5
-  _slowDownDistance: 3
-  _teleportDistance: 8
-  _teleportHeightDiff: 1.8
-  _smoothTime: 0.2
-  _teleportDelay: 1
-  _runSpeedThreshold: 0.5
-  _unequipJumpForce: 5
-  _unequipBackForce: 3
-  _launchRotationSpeed: 10
-  _autoJumpForce: 8
-  _autoJumpCheckDist: 2
-  _autoJumpMaxHeight: 2.2
-  _jumpCheckMask:
-    serializedVersion: 2
-    m_Bits: 183
---- !u!114 &7793466558248727200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40ed055f08a53d645a375abf45fdb88b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperAnimationAbility
---- !u!114 &8688318908214569227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
---- !u!114 &8728040160907436363
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1405e9da27717cd4182800ce50773291, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SeedSelectAbility
---- !u!114 &8280080583904739288
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6163ff57f54caf489fb02b88bc692d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SowActionAbility
-  _mouthPoint: {fileID: 1982235181728634582}
-  _seedVfxPrefab: {fileID: 3796885633913593696, guid: b4c4fb9801e93434d809d1505d55675f, type: 3}
-  _sowDelay: 0.5
---- !u!114 &6773023280158505973
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560332179249728770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f479b95750c23340b1b80cb86149074, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CultivateAbility
-  _effectDustPrefab: {fileID: 6268602327854917636, guid: d4622163da72bb44abd45d989c2b814b, type: 3}
-  _effectSpawnPoint: {fileID: 364843284196904168}
-  _jumpHeight: 2
-  _jumpDuration: 0.5
-  _returnDuration: 0.5
-  _endEffect: 0.2
-  _cultivateDuration: 0.5
-  _rejumpHeight: 0.5
-  _jumpCount: 1
-  _rayOriginHeight: 3
-  _rayDistance: 5
 --- !u!1 &1720176448544815771
 GameObject:
   m_ObjectHideFlags: 0
@@ -954,6 +814,12 @@ GameObject:
   - component: {fileID: 7720903764975020300}
   - component: {fileID: 4386465326626947911}
   - component: {fileID: 890204412049252585}
+  - component: {fileID: 7917925723890733391}
+  - component: {fileID: 3454221505346035552}
+  - component: {fileID: 1978401633485236864}
+  - component: {fileID: 6342578164553478334}
+  - component: {fileID: 8272496360717157254}
+  - component: {fileID: 4642191277865818875}
   m_Layer: 7
   m_Name: SowHelper
   m_TagString: Untagged
@@ -975,7 +841,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2982257461117071358}
-  - {fileID: 6987654492603332719}
   - {fileID: 1982235181728634582}
   - {fileID: 364843284196904168}
   m_Father: {fileID: 0}
@@ -993,6 +858,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HelperController
   _data: {fileID: 11400000, guid: 936c6983fad88044d9c76e1791302207, type: 2}
+  _rotationEuler: {x: 0, y: 180, z: 0}
 --- !u!143 &7720903764975020300
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1057,6 +923,109 @@ MonoBehaviour:
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
   m_UseLocal: 1
+--- !u!114 &7917925723890733391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19018a3b2f2d20d4e8d12747c1437f48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperFollowAbility
+  _moveSpeed: 4
+  _stopDistance: 2.5
+  _slowDownDistance: 3
+  _teleportDistance: 8
+  _teleportHeightDiff: 1.8
+  _smoothTime: 0.2
+  _teleportDelay: 1
+  _runSpeedThreshold: 0.5
+  _unequipJumpForce: 5
+  _unequipBackForce: 3
+  _launchRotationSpeed: 10
+  _autoJumpForce: 8
+  _autoJumpCheckDist: 2
+  _autoJumpMaxHeight: 2.2
+  _jumpCheckMask:
+    serializedVersion: 2
+    m_Bits: 183
+--- !u!114 &3454221505346035552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40ed055f08a53d645a375abf45fdb88b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperAnimationAbility
+--- !u!114 &1978401633485236864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c437acc011ee87d40bba36ba9fba4f5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HelperInteractionAbility
+--- !u!114 &6342578164553478334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1405e9da27717cd4182800ce50773291, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SeedSelectAbility
+--- !u!114 &8272496360717157254
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6163ff57f54caf489fb02b88bc692d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SowActionAbility
+  _mouthPoint: {fileID: 1982235181728634582}
+  _seedVfxPrefab: {fileID: 3796885633913593696, guid: b4c4fb9801e93434d809d1505d55675f, type: 3}
+  _sowDelay: 0.5
+--- !u!114 &4642191277865818875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f479b95750c23340b1b80cb86149074, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CultivateAbility
+  _effectDustPrefab: {fileID: 6268602327854917636, guid: d4622163da72bb44abd45d989c2b814b, type: 3}
+  _effectSpawnPoint: {fileID: 364843284196904168}
+  _jumpHeight: 2
+  _jumpDuration: 0.5
+  _returnDuration: 0.5
+  _endEffect: 0.2
+  _cultivateDuration: 0.5
+  _rejumpHeight: 0.5
+  _jumpCount: 1
+  _rayOriginHeight: 3
+  _rayDistance: 5
 --- !u!1 &5410132598804558874
 GameObject:
   m_ObjectHideFlags: 0

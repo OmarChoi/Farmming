@@ -9,7 +9,7 @@ public class HelperInteractionAbility : HelperAbility
     protected override void Awake()
     {
         base.Awake();
-        _action = _owner.GetComponentInChildren<IHelperAction>();
+        _action = GetComponentInChildren<IHelperAction>();
     }
 
     public void Init()
@@ -26,7 +26,7 @@ public class HelperInteractionAbility : HelperAbility
 
         var pos = cell.GridPosition;
         _owner.PhotonView?.RPC(
-            nameof(HelperController.RPC_InteractPrimary), RpcTarget.Others,
+            nameof(RPC_InteractPrimary), RpcTarget.Others,
             pos.x, pos.y, pos.z);
     }
 
@@ -39,7 +39,7 @@ public class HelperInteractionAbility : HelperAbility
 
         var pos = cell.GridPosition;
         _owner.PhotonView?.RPC(
-            nameof(HelperController.RPC_InteractSecondary), RpcTarget.Others,
+            nameof(RPC_InteractSecondary), RpcTarget.Others,
             pos.x, pos.y, pos.z);
     }
 
@@ -60,5 +60,23 @@ public class HelperInteractionAbility : HelperAbility
         if (_action == null) return false;
         if (_playerStamina != null && !_playerStamina.TryConsume(_owner.Data.StaminaCost)) return false;
         return true;
+    }
+
+    [PunRPC]
+    internal void RPC_InteractPrimary(int gridX, int gridY, int gridZ)
+    {
+        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null) return;
+
+        _action?.InteractPrimary(cell);
+    }
+
+    [PunRPC]
+    internal void RPC_InteractSecondary(int gridX, int gridY, int gridZ)
+    {
+        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null) return;
+
+        _action?.InteractSecondary(cell);
     }
 }

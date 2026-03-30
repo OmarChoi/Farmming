@@ -78,7 +78,7 @@ public class HelperController : MonoBehaviour
         if (_abilityCache.TryGetValue(type, out var cached))
             return cached as T;
 
-        var ability = GetComponentInChildren<T>();
+        var ability = GetComponent<T>();
         if (ability != null)
             _abilityCache[type] = ability;
 
@@ -178,6 +178,7 @@ public class HelperController : MonoBehaviour
         State = EHelperState.Summoned;
         transform.SetParent(null);
         gameObject.SetActive(true);
+        GetAbility<HelperInteractionAbility>()?.Init();
     }
 
     [PunRPC]
@@ -202,46 +203,6 @@ public class HelperController : MonoBehaviour
         State = EHelperState.Summoned;
         transform.SetParent(null);
         SetTransformSync(true);
-    }
-
-    [PunRPC]
-    internal void RPC_PlayAnimation(int anim)
-    {
-        GetAbility<HelperAnimationAbility>()?.PlayLocal((EHelperAnim)anim);
-    }
-
-    [PunRPC]
-    internal void RPC_InteractPrimary(int gridX, int gridY, int gridZ)
-    {
-        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
-        if (cell == null) return;
-
-        GetAbility<HelperInteractionAbility>()?.InteractPrimaryLocal(cell);
-    }
-
-    [PunRPC]
-    internal void RPC_InteractSecondary(int gridX, int gridY, int gridZ)
-    {
-        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
-        if (cell == null) return;
-
-        GetAbility<HelperInteractionAbility>()?.InteractSecondaryLocal(cell);
-    }
-
-    [PunRPC]
-    internal void RPC_PlantSeed(int gridX, int gridY, int gridZ, string seedId)
-    {
-        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
-        if (cell == null) return;
-
-        var seed = TerrainGridManager.Instance.SeedDatabase?.GetById(seedId);
-        if (seed == null) return;
-
-        var sowAbility = GetAbility<SowActionAbility>();
-        if (sowAbility != null)
-            sowAbility.SowRemote(cell, seed);
-        else
-            cell.FarmTile?.PlantSeed(seed);
     }
 
     #endregion
