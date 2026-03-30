@@ -25,7 +25,7 @@ public class HelperInteractionAbility : HelperAbility
         _owner.Energy.TryConsume(_owner.Level.GetEnergyCost());
 
         var pos = cell.GridPosition;
-        _owner.PhotonView?.RPC(
+        _owner.PhotonView.RpcSafe(
             nameof(RPC_InteractPrimary), RpcTarget.Others,
             pos.x, pos.y, pos.z);
     }
@@ -38,7 +38,7 @@ public class HelperInteractionAbility : HelperAbility
         _owner.Energy.TryConsume(_owner.Level.GetEnergyCost());
 
         var pos = cell.GridPosition;
-        _owner.PhotonView?.RPC(
+        _owner.PhotonView.RpcSafe(
             nameof(RPC_InteractSecondary), RpcTarget.Others,
             pos.x, pos.y, pos.z);
     }

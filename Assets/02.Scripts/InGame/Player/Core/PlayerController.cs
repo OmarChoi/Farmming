@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     public PlayerStatSO StatSo => _statSo;
 
     public PhotonView PhotonView { get; private set; }
-    public bool IsMine => PhotonView == null || PhotonView.IsMine;
+    public bool IsMine => PhotonView == null || !PhotonNetwork.IsConnected || PhotonView.IsMine;
     public string PlayerId { get; private set; }
     public bool IsUIOpen { get; private set; }
     public bool CanMove => !IsUIOpen && !IsActionLocked;

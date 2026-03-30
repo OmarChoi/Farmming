@@ -50,7 +50,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (dug)
         {
             var pos = cell.GridPosition;
-            _owner.PhotonView?.RPC(
+            _owner.PhotonView.RpcSafe(
                 nameof(RPC_Dig), RpcTarget.Others,
                 pos.x, pos.y, pos.z, _toolLevel);
 
@@ -98,7 +98,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        _owner.PhotonView?.RPC(
+        _owner.PhotonView.RpcSafe(
             nameof(RPC_PlaceBlock), RpcTarget.Others,
             targetPos.x, targetPos.y, targetPos.z, tileType, _generateDirtAmount);
 
