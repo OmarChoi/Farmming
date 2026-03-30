@@ -99,7 +99,6 @@ public class PlayerBuildingAbility : PlayerAbility
     private void OpenBuildingSelectionUi()
     {
         if (UIController.Instance == null) return;
-        // todo. 마우스 잠금 처리
         UIController.Instance.OpenAsync<UI_BuildingList>().Forget();
     }
 
