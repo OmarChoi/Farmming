@@ -7,7 +7,7 @@ public class TestMapGenerator : MonoBehaviour
     [SerializeField] private Transform _player;
 
     [Header("Generate")]
-    [SerializeField] private KeyCode _generateVillageKey = KeyCode.F1;
+    [SerializeField] private KeyCode _generateVillageKey = KeyCode.F5;
     [SerializeField] private MapNavMeshController _mapNavMeshController;
 
     private void Update()
