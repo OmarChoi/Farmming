@@ -386,6 +386,22 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     }
 
     #region Sync
+    // NavMesh 빌드 완료 후 호출. 완성된 건물의 NPC를 일괄 스폰.
+    public void SpawnBuildingNpcs()
+    {
+        foreach (KeyValuePair<Vector3Int, BuildingSaveData> kvp in _buildings)
+        {
+            if (kvp.Value.RemainingDays > 0) continue;
+            if (!_buildingInstances.TryGetValue(kvp.Key, out BaseBuilding instance) || instance == null) continue;
+
+            BuildingNpcSpawner spawner = instance.GetComponent<BuildingNpcSpawner>();
+            if (spawner != null && spawner.HasValidData)
+            {
+                spawner.SpawnNpc();
+            }
+        }
+    }
+
     public List<BuildingSaveData> ExportBuildings()
     {
         return new List<BuildingSaveData>(_buildings.Values);
@@ -414,11 +430,6 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             {
                 built.RemainingDays = saveData.RemainingDays;
                 RefreshBuildingInstance(anchor, built);
-
-                if (saveData.RemainingDays <= 0)
-                {
-                    HandleConstructionCompleted(anchor);
-                }
             }
         }
     }
