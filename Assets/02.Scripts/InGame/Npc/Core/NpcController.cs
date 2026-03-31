@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
@@ -93,7 +94,7 @@ public class NpcController : MonoBehaviour
         return true;
     }
 
-    public async void StartInteraction(Transform interactor)
+    public void StartInteraction(Transform interactor)
     {
         _isInteracting = true;
         _currentInteractor = interactor;
@@ -107,22 +108,22 @@ public class NpcController : MonoBehaviour
         }
 
         // 마스터 또는 오프라인: 직접 실행
-        _movement.Stop();
-
-        if (interactor != null)
-        {
-            await _movement.FaceTargetAsync(interactor.position);
-        }
-
-        PlayGreetAll();
+        Vector3 targetPos = interactor != null ? interactor.position : transform.position;
+        StartInteractionAsync(targetPos).Forget();
     }
 
     [PunRPC]
-    private async void RPC_StartInteraction(Vector3 interactorPosition)
+    private void RPC_StartInteraction(Vector3 interactorPosition)
     {
         _isInteracting = true;
+        StartInteractionAsync(interactorPosition).Forget();
+    }
+
+    private async UniTaskVoid StartInteractionAsync(Vector3 interactorPosition)
+    {
         _movement.Stop();
-        await _movement.FaceTargetAsync(interactorPosition);
+        await _movement.FaceTargetAsync(interactorPosition)
+            .AttachExternalCancellation(this.GetCancellationTokenOnDestroy());
         PlayGreetAll();
     }
 

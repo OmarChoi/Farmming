@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 
+[RequireComponent(typeof(PhotonView))]
 public class BuildingManager : MonoBehaviourPunCallbacks
 {
     public static BuildingManager Instance { get; private set; }
