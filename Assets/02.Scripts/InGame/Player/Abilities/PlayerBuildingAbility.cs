@@ -4,7 +4,11 @@ using UnityEngine;
 
 public class PlayerBuildingAbility : PlayerAbility
 {
-    private enum BuildState { None, Previewing }
+    private enum BuildState
+    {
+        None,
+        Previewing
+    }
 
     // ── Inspector 설정 ──────────────────────────────────
     [Header("Ghost 설정")]
@@ -74,6 +78,7 @@ public class PlayerBuildingAbility : PlayerAbility
     private void OnInventoryChanged(int slotIndex)
     {
         _hasResourcesDirty = true;
+        RefreshBuildInfoUI();
     }
 
     private void Update()
@@ -99,7 +104,7 @@ public class PlayerBuildingAbility : PlayerAbility
             TryRemove();
             return;
         }
-        
+
         if (Input.GetKeyDown(_placeKey))
         {
             if (UIController.Instance != null)
@@ -199,7 +204,7 @@ public class PlayerBuildingAbility : PlayerAbility
             _rotationQuarterTurns = BuildingPlacer.GetDirection(_owner.transform.forward);
             _ghost.SetVisible(true);
             RefreshGhostInitial();
-            UIController.Instance?.OpenAsync<UI_BuildInfo>().Forget();
+            OpenBuildInfoUI();
             return;
         }
 
@@ -219,7 +224,7 @@ public class PlayerBuildingAbility : PlayerAbility
         RefreshGhostInitial();
 
         // 건물 정보 패널 표시
-        UIController.Instance?.OpenAsync<UI_BuildInfo>().Forget();
+        OpenBuildInfoUI();
     }
 
     private void RefreshGhostInitial()
@@ -321,6 +326,34 @@ public class PlayerBuildingAbility : PlayerAbility
         {
             _inventoryAbility.AddItem(costItem.Item, costItem.Amount);
         }
+    }
+
+    private void OpenBuildInfoUI()
+    {
+        UIController.Instance?.OpenAsync<UI_BuildInfo>(ui =>
+        {
+            ui.SetOwnedCounts(BuildOwnedCounts(_buildingData));
+        }).Forget();
+    }
+
+    private void RefreshBuildInfoUI()
+    {
+        if (_buildingData == null || UIController.Instance == null) return;
+        var ui = UIController.Instance.GetInstance<UI_BuildInfo>();
+        if (ui == null) return;
+        ui.SetOwnedCounts(BuildOwnedCounts(_buildingData));
+    }
+
+    private int[] BuildOwnedCounts(BuildingDataSO data)
+    {
+        IReadOnlyList<BuildingCostEntry> costs = data.Costs;
+        var counts = new int[costs.Count];
+        for (int i = 0; i < costs.Count; i++)
+        {
+            if (costs[i].Item == null) continue;
+            counts[i] = _inventoryAbility.GetItemCount(costs[i].Item);
+        }
+        return counts;
     }
 
     // 건설에 필요한 모든 자원이 인벤토리에 충분한지 확인

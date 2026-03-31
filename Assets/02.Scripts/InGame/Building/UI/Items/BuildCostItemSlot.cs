@@ -7,7 +7,7 @@ public class BuildCostItemSlot : MonoBehaviour
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _amountLabel;
 
-    public void Refresh(BuildingCostEntry cost)
+    public void Refresh(BuildingCostEntry cost, int ownedCount)
     {
         if (cost.Item == null)
         {
@@ -18,6 +18,6 @@ public class BuildCostItemSlot : MonoBehaviour
 
         _icon.enabled = true;
         _icon.sprite = cost.Item.Icon;
-        _amountLabel.text = $"{cost.Amount}개";
+        _amountLabel.text = $"{ownedCount}/{cost.Amount}";
     }
 }
