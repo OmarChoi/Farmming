@@ -19,10 +19,10 @@ public static class BuildingPlacer
         }
     }
 
-    public static BuildingFootprint GetFootprint(BuildingDataSO data, int direction, bool swapped)
+    public static BuildingFootprint GetFootprint(BuildingDataSO data, int direction)
     {
-        int width = swapped ? data.Depth : data.Width;
-        int depth = swapped ? data.Width : data.Depth;
+        int width = data.Width;
+        int depth = data.Depth;
 
         Vector2Int forward = direction switch
         {
