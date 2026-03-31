@@ -341,6 +341,7 @@ public class PlayerBuildingAbility : PlayerAbility
         if (_buildingData == null || UIController.Instance == null) return;
         var ui = UIController.Instance.GetInstance<UI_BuildInfo>();
         if (ui == null) return;
+        if (!ui.IsOpen) return;
         ui.SetOwnedCounts(BuildOwnedCounts(_buildingData));
     }
 
