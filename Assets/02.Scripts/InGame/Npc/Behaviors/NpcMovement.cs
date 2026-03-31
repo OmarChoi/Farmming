@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using System.Collections;
 using System.Threading;
 using UnityEngine;
@@ -11,12 +12,13 @@ public class NpcMovement : MonoBehaviour
     private NpcAnimatorController _anim;
 
     private Coroutine _rotateCoroutine;
+    private bool _isOwner;
 
     [Header("이동 옵션")]
     [SerializeField] private float _walkDistance = 18f;
     private float _walkSpeed = 2f;
     private float _runSpeed = 4f;
-    public float MoveSpeed => Mathf.Clamp01(_agent.desiredVelocity.magnitude / _runSpeed);
+    public float MoveSpeed => _agent.enabled ? Mathf.Clamp01(_agent.desiredVelocity.magnitude / _runSpeed) : 0f;
 
     [Header("회전 옵션")]
     [SerializeField] private float _rotationSpeed = 240f;  // 초당 돌 각도입니다. (360f = 초당 360도)
@@ -36,8 +38,19 @@ public class NpcMovement : MonoBehaviour
         _agent.speed = _walkSpeed;
     }
 
+    public void SetOwner(bool isOwner)
+    {
+        _isOwner = isOwner;
+        if (!_isOwner)
+        {
+            _agent.enabled = false;
+        }
+    }
+
     private void Update()
     {
+        if (!_isOwner) return;
+
         _anim?.SetMove(MoveSpeed);
 
         if (_agent.isOnOffMeshLink && !_isJumping)
