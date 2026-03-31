@@ -692,7 +692,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 238974922611429690, guid: 14b2d9b09a6ea9542a759e094b34d4e2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 280298706054551381, guid: 14b2d9b09a6ea9542a759e094b34d4e2, type: 3}
       propertyPath: m_AnchorMax.y
@@ -1274,7 +1274,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3937531a7f44b64491e9d3bac1f8164, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NavMeshLinkBuilder
-  _gridManager: {fileID: 0}
+  _gridManager: {fileID: 798923366}
   _navMeshSurface: {fileID: 1506982701}
   _linkRoot: {fileID: 574139959}
   _maxJumpUpStep: 1
