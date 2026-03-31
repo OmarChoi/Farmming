@@ -18,6 +18,7 @@ public class LightActionAbility : HelperAbility,IEquipOverride
     [SerializeField] private float _summonedIntensity = 2f;
 
     [SerializeField] private float _playerHeadOffset = 5f;
+    [SerializeField] private float _equippedCenterOffset = -1.4f;
     [SerializeField] private float _equippedRange = 20f;
     [SerializeField] private float _equippedIntensity = 100f;
 
@@ -87,15 +88,16 @@ public class LightActionAbility : HelperAbility,IEquipOverride
                     break;
 
             case EHelperState.Equipped:
-                Vector3 playerHeadPos = GetPlayerHeadPos();
-                Vector3 equippedPos = playerHeadPos + Vector3.up * _playerHeadOffset;
+                float headHeight = _characterController != null ? _characterController.height : _defaultHeadHeight;
+                Vector3 equippedPos = Vector3.up * (headHeight + _playerHeadOffset) + Vector3.forward * _equippedCenterOffset;
+
                 if (instant)
                 {
-                    SetLightWorld(equippedPos, _equippedRange, _equippedIntensity);
+                    SetLight(equippedPos, _equippedRange, _equippedIntensity);
                 }
                 else
                 {
-                    _transitionCoroutine = StartCoroutine(TransitionLightWorld_Coroutine(equippedPos, _equippedRange, _equippedIntensity));
+                    _transitionCoroutine = StartCoroutine(TransitionLight_Coroutine(equippedPos, _equippedRange, _equippedIntensity));
                 }
                 break;
 
@@ -119,33 +121,6 @@ public class LightActionAbility : HelperAbility,IEquipOverride
         _light.transform.localPosition = localPos;
         _light.range = range;
         _light.intensity = intensity;
-    }
-
-    private void SetLightWorld(Vector3 worldPos, float range, float intensity)
-    {
-        if (_light == null)
-        {
-            return;
-        }
-        _light.enabled = true;
-        _light.transform.position = worldPos;
-        _light.range = range;
-        _light.intensity = intensity;
-    }
-
-    private Vector3 GetPlayerHeadPos()
-    {
-        if (_owner.PlayerOwner == null)
-        {
-            return _owner.transform.position + Vector3.up * _defaultHeadHeight;
-        }
-
-        if (_characterController != null)
-        {
-            return _owner.PlayerOwner.transform.position + Vector3.up * _characterController.height;
-        }
-
-        return _owner.PlayerOwner.transform.position + Vector3.up * _defaultHeadHeight;
     }
 
     private IEnumerator TransitionLight_Coroutine(Vector3 targetLocalPos, float targetRange, float targetIntensity)
@@ -175,34 +150,5 @@ public class LightActionAbility : HelperAbility,IEquipOverride
         }
 
         SetLight(targetLocalPos, targetRange, targetIntensity);
-    }
-
-    private IEnumerator TransitionLightWorld_Coroutine(Vector3 targetWorldPos, float targetRange, float targetIntensity)
-    {
-        if (_light == null)
-        {
-            yield break;
-        }
-
-        _light.enabled = true;
-
-        Vector3 startPos = _light.transform.position;
-        float startRange = _light.range;
-        float startIntensity = _light.intensity;
-
-        float elapsed = 0f;
-        while (elapsed < 1f)
-        {
-            elapsed += Time.deltaTime * _transitionSpeed;
-            float time = Mathf.SmoothStep(0f, 1f, elapsed);
-
-            _light.transform.position = Vector3.Lerp(startPos, targetWorldPos, time);
-            _light.range = Mathf.Lerp(startRange, targetRange, time);
-            _light.intensity = Mathf.Lerp(startIntensity, targetIntensity, time);
-
-            yield return null;
-        }
-
-        SetLightWorld(targetWorldPos, targetRange, targetIntensity);
     }
 }
