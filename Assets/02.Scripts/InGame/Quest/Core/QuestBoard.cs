@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class QuestBoard : MonoBehaviour
 {
@@ -38,10 +39,10 @@ public class QuestBoard : MonoBehaviour
 
     public void Interact()
     {
-        OpenQuestBoard();
+        OpenQuestBoard().Forget();
     }
 
-    public async void OpenQuestBoard()
+    public async UniTaskVoid OpenQuestBoard()
     {
         if (QuestManager.Instance == null) return;
 
