@@ -11,6 +11,7 @@ public class UI_BuildInfo : UIBase
     private const string InstantBuildText = "즉시 완성";
     
     private RectTransform _panelTransform;
+    private int[] _ownedCounts;
     
     [Header("건물 정보")]
     [SerializeField] private TextMeshProUGUI _nameLabel;
@@ -36,6 +37,13 @@ public class UI_BuildInfo : UIBase
     protected override void OnClose()
     {
         ClearCostSlots();
+        _ownedCounts = null;
+    }
+
+    public void SetOwnedCounts(int[] ownedCounts)
+    {
+        _ownedCounts = ownedCounts;
+        RefreshCostSlots(BuildingManager.Instance?.SelectedBuilding?.Costs);
     }
 
     // Manager에서 선택된 건물 데이터를 읽어 UI에 바인딩
@@ -71,7 +79,8 @@ public class UI_BuildInfo : UIBase
         {
             if (i < costs.Count)
             {
-                _costSlots[i].Refresh(costs[i]);
+                int owned = (_ownedCounts != null && i < _ownedCounts.Length) ? _ownedCounts[i] : 0;
+                _costSlots[i].Refresh(costs[i], owned);
                 _costSlots[i].gameObject.SetActive(true);
             }
             else
