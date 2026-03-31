@@ -163,13 +163,14 @@ public class BuildingManager : MonoBehaviour
     }
 
     // 건물 철거
-    public bool TryRemove(Vector3Int anyPos)
+    public bool TryRemove(Vector3Int anyPos, out BuildingDataSO buildingData)
     {
+        buildingData = null;
         // 1. 점유 셀에서 앵커 역추적, SaveData에서 건물 정보 조회
         if (!_occupiedCells.TryGetValue(anyPos, out Vector3Int anchor)) return false;
         if (!_buildings.TryGetValue(anchor, out BuildingSaveData saveData)) return false;
 
-        BuildingDataSO buildingData = _buildingDatabase.GetById(saveData.BuildingId);
+        buildingData = _buildingDatabase.GetById(saveData.BuildingId);
         if (buildingData == null) return false;
 
         // 2. Footprint 복원 후 전체 점유 셀 역산

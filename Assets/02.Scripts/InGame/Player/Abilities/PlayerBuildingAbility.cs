@@ -6,8 +6,7 @@ public class PlayerBuildingAbility : PlayerAbility
 {
     private enum BuildState { None, Previewing }
 
-    private BuildingDataSO _buildingData;
-
+    // ── Inspector 설정 ──────────────────────────────────
     [Header("Ghost 설정")]
     [SerializeField] private Material _ghostMaterial;
     [SerializeField] private Color _ghostValidColor = new Color(0f, 1f, 0f, 0.5f);
@@ -19,17 +18,23 @@ public class PlayerBuildingAbility : PlayerAbility
     [SerializeField] private KeyCode _rotateKey = KeyCode.R;
     [SerializeField] private KeyCode _cancelKey = KeyCode.Escape;
 
+    // ── 외부 참조 ───────────────────────────────────────
     private BuildingManager _buildingManager;
     private PlayerTerrainAbility _terrainAbility;
     private PlayerInventoryAbility _inventoryAbility;
-    private int _rotationQuarterTurns;
+
+    // ── 건설 상태 ───────────────────────────────────────
     private BuildState _state = BuildState.None;
+    private BuildingDataSO _buildingData;
+    private int _rotationQuarterTurns;
+    private bool _isBuilding;
+
+    // ── Ghost(미리보기 모델) 관련 ────────────────────────
     private BuildingGhost _ghost;
     private string _ghostBuildingId;
     private Vector3Int _prevGridPos;
-    private int _previewRequestVersion;
-    private bool _isLoadingPrefab;
-    private bool _isBuilding;
+
+    // ── 건설 자원 캐시 ──────────────────────────────────
     private bool _hasResourcesCached;
     private bool _hasResourcesDirty = true;
 
@@ -95,7 +100,7 @@ public class PlayerBuildingAbility : PlayerAbility
             return;
         }
         
-        if (Input.GetKeyDown(_placeKey) && !_isLoadingPrefab)
+        if (Input.GetKeyDown(_placeKey))
         {
             if (UIController.Instance != null)
             {
@@ -112,7 +117,6 @@ public class PlayerBuildingAbility : PlayerAbility
     {
         if (_buildingData == buildingData) return;
 
-        _previewRequestVersion++;
         _buildingData = buildingData;
         _hasResourcesDirty = true;
 
@@ -153,7 +157,7 @@ public class PlayerBuildingAbility : PlayerAbility
             return;
         }
 
-        // Swap toggle
+        // Rotate Preview
         if (Input.GetKeyDown(_rotateKey))
         {
             RotatePreviewClockwise();
@@ -202,21 +206,10 @@ public class PlayerBuildingAbility : PlayerAbility
         string prefabKey = AssetKey.Building.GetKey(requestedBuilding.BuildingId);
         if (string.IsNullOrEmpty(prefabKey)) return;
 
-        int requestVersion = ++_previewRequestVersion;
-        _isLoadingPrefab = true;
         var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
-        if (requestVersion != _previewRequestVersion || requestedBuilding != _buildingData || !isActiveAndEnabled)
-        {
-            if (requestVersion == _previewRequestVersion)
-            {
-                _isLoadingPrefab = false;
-            }
-            return;
-        }
+        if (requestedBuilding != _buildingData || !isActiveAndEnabled || _state != BuildState.None) return;
 
-        _isLoadingPrefab = false;
-
-        if (prefab == null || _state != BuildState.None) return;
+        if (prefab == null) return;
 
         _state = BuildState.Previewing;
         _rotationQuarterTurns = BuildingPlacer.GetDirection(_owner.transform.forward);
@@ -245,8 +238,6 @@ public class PlayerBuildingAbility : PlayerAbility
 
     private void CancelPreview()
     {
-        _previewRequestVersion++;
-        _isLoadingPrefab = false;
         _ghost?.SetVisible(false);
         _state = BuildState.None;
         _buildingManager.ClearSelection();
@@ -255,8 +246,6 @@ public class PlayerBuildingAbility : PlayerAbility
 
     private void DestroyGhost(bool clearSelection = true)
     {
-        _previewRequestVersion++;
-        _isLoadingPrefab = false;
         _ghost?.Destroy();
         _ghost = null;
         _ghostBuildingId = null;
@@ -326,7 +315,12 @@ public class PlayerBuildingAbility : PlayerAbility
         var cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
-        _buildingManager.TryRemove(cell.GridPosition);
+        if (!_buildingManager.TryRemove(cell.GridPosition, out BuildingDataSO buildingData)) return;
+        if (buildingData == null) return;
+        foreach (BuildingCostEntry costItem in buildingData.Costs)
+        {
+            _inventoryAbility.AddItem(costItem.Item, costItem.Amount);
+        }
     }
 
     // 건설에 필요한 모든 자원이 인벤토리에 충분한지 확인
