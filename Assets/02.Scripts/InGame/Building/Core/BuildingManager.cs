@@ -100,14 +100,14 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         photonView.RpcSafe(nameof(RPC_RequestBuild), RpcTarget.MasterClient,
             request.Data.BuildingId,
             request.AnchorPos.x, request.AnchorPos.y, request.AnchorPos.z,
-            request.Direction, request.Swapped);
+            request.Direction);
     }
 
     public void RequestRemove(Vector3Int anyPos)
     {
         if (!PhotonNetwork.IsConnected)
         {
-            TryRemove(anyPos);
+            TryRemove(anyPos, out var buildData);
             return;
         }
 
@@ -116,7 +116,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void RPC_RequestBuild(string buildingId, int ax, int ay, int az, int direction, bool swapped)
+    private void RPC_RequestBuild(string buildingId, int ax, int ay, int az, int direction)
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
@@ -124,15 +124,15 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         if (data == null) return;
 
         var anchorPos = new Vector3Int(ax, ay, az);
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction, swapped);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction);
         if (!CanPlace(anchorPos, footprint, out _)) return;
 
         photonView.RpcSafe(nameof(RPC_ExecuteBuild), RpcTarget.All,
-            buildingId, ax, ay, az, direction, swapped);
+            buildingId, ax, ay, az, direction);
     }
 
     [PunRPC]
-    private void RPC_ExecuteBuild(string buildingId, int ax, int ay, int az, int direction, bool swapped)
+    private void RPC_ExecuteBuild(string buildingId, int ax, int ay, int az, int direction)
     {
         BuildingDataSO data = _buildingDatabase.GetById(buildingId);
         if (data == null) return;
@@ -141,8 +141,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         {
             Data = data,
             AnchorPos = new Vector3Int(ax, ay, az),
-            Direction = direction,
-            Swapped = swapped
+            Direction = direction
         };
         TryBuild(request).Forget();
     }
@@ -163,7 +162,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     private void RPC_ExecuteRemove(int ax, int ay, int az)
     {
         var anchor = new Vector3Int(ax, ay, az);
-        TryRemove(anchor);
+        TryRemove(anchor, out var buildData);
     }
     #endregion
 
@@ -377,16 +376,17 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             {
                 Data = data,
                 AnchorPos = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ),
-                Direction = saveData.Direction,
-                Swapped = saveData.Swapped
+                Direction = saveData.Direction
             };
             await TryBuild(request);
 
             var anchor = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ);
-            if (_buildings.TryGetValue(anchor, out BuildingSaveData built))
+            if (!_buildings.TryGetValue(anchor, out BuildingSaveData built)) continue;
+            
+            built.RemainingDays = saveData.RemainingDays;
+            if (_buildingInstances.TryGetValue(anchor, out var baseBuildingInstance))
             {
-                built.RemainingDays = saveData.RemainingDays;
-                RefreshBuildingInstance(anchor, built);
+                baseBuildingInstance.Initialize(data,  built);   
             }
         }
     }
