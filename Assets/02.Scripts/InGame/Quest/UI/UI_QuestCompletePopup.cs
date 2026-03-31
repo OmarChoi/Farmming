@@ -7,7 +7,7 @@ public class UI_QuestCompletePopup : MonoBehaviour
     [SerializeField] private GameObject _completePopup;
     [SerializeField] private TextMeshProUGUI _completeRewardText;
 
-    private void OnEnable()
+    private void Start()
     {
         if (QuestManager.Instance != null)
         {
@@ -26,7 +26,6 @@ public class UI_QuestCompletePopup : MonoBehaviour
     private void ShowCompletePopup(QuestRuntimeData quest)
     {
         if (quest == null || quest.QuestData == null || quest.QuestData.Reward == null) return;
-
         _completePopup.SetActive(true);
 
         string rewardText = QuestRewardTextFormatter.BuildQuestReward(quest.QuestData.Reward);
