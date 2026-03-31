@@ -61,6 +61,13 @@ MonoBehaviour:
   - RPC_PlantSeed
   - RPC_Dig
   - RPC_PlaceBlock
+  - RPC_ExecuteBuild
+  - RPC_ExecuteRemove
+  - RPC_RequestBuild
+  - RPC_RequestRemove
+  - RPC_EndInteraction
+  - RPC_PlayNpcGreet
+  - RPC_StartInteraction
   - RPC_RequestSkipToNextDay
   - RPC_SyncTime
   DisableAutoOpenWizard: 1

@@ -276,16 +276,13 @@ public class PlayerBuildingAbility : PlayerAbility
         if (!TryConsumeResources(_buildingData)) return;
         _hasResourcesDirty = true;
 
-        _isBuilding = true;
         var request = new BuildingRequest
         {
             Data = _buildingData,
             AnchorPos = cell.GridPosition,
             Direction = direction
         };
-        await _buildingManager.TryBuild(request);
-        _isBuilding = false;
-        if (_state != BuildState.Previewing) return;
+        _buildingManager.RequestBuild(request);
         DestroyGhost();
     }
 
