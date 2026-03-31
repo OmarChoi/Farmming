@@ -27,7 +27,8 @@ public class PlayerBuildingAbility : PlayerAbility
     private BuildState _state = BuildState.None;
     private BuildingGhost _ghost;
     private Vector3Int _prevGridPos;
-    private bool _isLoadingPrefab;    private bool _isBuilding;
+    private bool _isLoadingPrefab;   
+    private bool _isBuilding;
     private bool _hasResourcesCached;
     private bool _hasResourcesDirty = true;
 
