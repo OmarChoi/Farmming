@@ -1,16 +1,20 @@
+using Photon.Pun;
 using UnityEngine;
 
-public class TimeSystem : MonoBehaviour
+public class TimeSystem : MonoBehaviourPunCallbacks
 {
     [SerializeField] private TimeSettingSO _timeSettings;
 
     private GameClock _clock;
     private float _accumulatedGameMinutes;
 
-    public int CurrentDay => _clock?.CurrentDay ?? 0;
-    public GameTime CurrentTime => _clock?.CurrentTime ?? default;
-    public bool IsDayTime => _clock is { IsDayTime: true };
-    public int ElapsedDays => _clock?.ElapsedDays ?? 0;
+    private const float SyncInterval = 10f;
+    private float _syncTimer;
+
+    private int CurrentDay => _clock?.CurrentDay ?? 0;
+    private GameTime CurrentTime => _clock?.CurrentTime ?? default;
+    private bool IsDayTime => _clock is { IsDayTime: true };
+    private int ElapsedDays => _clock?.ElapsedDays ?? 0;
 
     private void Awake()
     {
@@ -20,6 +24,15 @@ public class TimeSystem : MonoBehaviour
     private void Update()
     {
         Tick(Time.deltaTime);
+
+        // Master Client 시간으로 동기화
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        _syncTimer += Time.deltaTime;
+        if (!(_syncTimer >= SyncInterval)) return;
+
+        _syncTimer = 0f;
+        SyncToRemote();
     }
 
     public void Initialize(TimeSettingSO timeSettings)
@@ -30,25 +43,68 @@ public class TimeSystem : MonoBehaviour
 
     public void SkipToNextDay()
     {
-        if (_clock == null || _timeSettings == null) return;
-
-        int previousDay = _clock.CurrentDay;
-        bool wasDayTime = _clock.IsDayTime;
-
-        _clock.SetTime(previousDay + 1, _timeSettings.WakeUpTime);
-        _accumulatedGameMinutes = 0f;
-        SyncState();
-
-        TimeEvents.InvokeDayChanged(_clock.CurrentDay);
-
-        if (wasDayTime)
+        if (!PhotonNetwork.IsMasterClient)
         {
-            TimeEvents.InvokeDayEnded();
+            photonView.RPC(nameof(RPC_RequestSkipToNextDay), RpcTarget.MasterClient);
+            return;
         }
-        TimeEvents.InvokeDayStarted();
+
+        ExecuteSkipToNextDay();
     }
 
-    public void Tick(float deltaTime)
+    [PunRPC]
+    private void RPC_RequestSkipToNextDay()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        ExecuteSkipToNextDay();
+    }
+
+    private void ExecuteSkipToNextDay()
+    {
+        if (_clock == null || _timeSettings == null) return;
+
+        _clock.SetTime(_clock.CurrentDay + 1, _timeSettings.WakeUpTime);
+        _accumulatedGameMinutes = 0f;
+        SyncState();
+        SyncToRemote();
+    }
+
+    [PunRPC]
+    private void RPC_SyncTime(int day, int hour, int minute, bool isDayTime, int elapsedDays)
+    {
+        if (PhotonNetwork.IsMasterClient) return;
+
+        if (_clock == null)
+        {
+            if (!TryCreateClock())
+            {
+                Debug.LogError("TimeSystem: TryCreateClock() failed");
+                return;
+            }
+        }
+
+        _clock.SetTime(day, new GameTime(hour, minute));
+        _accumulatedGameMinutes = 0f;
+        SyncState();
+    }
+
+    private void SyncToRemote()
+    {
+        if (!PhotonNetwork.InRoom) return;
+
+        photonView.RPC
+        (
+            nameof(RPC_SyncTime),
+            RpcTarget.Others,
+            CurrentDay,
+            CurrentTime.Hour,
+            CurrentTime.Minute,
+            IsDayTime,
+            ElapsedDays
+        );
+    }
+
+    private void Tick(float deltaTime)
     {
         if (!TryCreateClock()) return;
         if (_timeSettings.GameMinutesPerSecond <= 0f) return;
@@ -86,31 +142,30 @@ public class TimeSystem : MonoBehaviour
 
     private void SyncState()
     {
+        int previousDay = TimeEvents.CurrentDay;
+        bool wasDayTime = TimeEvents.IsDayTime;
+
         TimeEvents.UpdateState(CurrentDay, CurrentTime, IsDayTime, ElapsedDays);
+
+        if (previousDay != CurrentDay)
+        {
+            TimeEvents.InvokeDayChanged(CurrentDay);
+        }
+
+        if (!wasDayTime && IsDayTime)
+        {
+            TimeEvents.InvokeDayStarted();
+        }
+        else if (wasDayTime && !IsDayTime)
+        {
+            TimeEvents.InvokeDayEnded();
+        }
     }
 
     private void AdvanceOneMinute()
     {
-        bool wasDayTime = _clock.IsDayTime;
-        int previousDay = _clock.CurrentDay;
-
         _clock.AdvanceMinutes(1);
         SyncState();
-
         TimeEvents.InvokeMinuteChanged(_clock.CurrentTime);
-
-        if (previousDay != _clock.CurrentDay)
-        {
-            TimeEvents.InvokeDayChanged(_clock.CurrentDay);
-        }
-
-        if (!wasDayTime && _clock.IsDayTime)
-        {
-            TimeEvents.InvokeDayStarted();
-        }
-        else if (wasDayTime && !_clock.IsDayTime)
-        {
-            TimeEvents.InvokeDayEnded();
-        }
     }
 }
