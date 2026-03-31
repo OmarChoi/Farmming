@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public abstract class BaseBuilding : MonoBehaviour
@@ -24,10 +25,14 @@ public abstract class BaseBuilding : MonoBehaviour
 
     public void HandleConstructionCompleted()
     {
-        BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
-        if (spawner != null && spawner.HasValidData)
+        // NPC 생성은 마스터에서만 실행 (멀티 시 마스터가 NPC를 관리)
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
         {
-            spawner.SpawnNpc();
+            BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
+            if (spawner != null && spawner.HasValidData)
+            {
+                spawner.SpawnNpc();
+            }
         }
 
         OnConstructionCompleted();

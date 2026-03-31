@@ -61,6 +61,10 @@ MonoBehaviour:
   - RPC_PlantSeed
   - RPC_Dig
   - RPC_PlaceBlock
+  - RPC_ExecuteBuild
+  - RPC_ExecuteRemove
+  - RPC_RequestBuild
+  - RPC_RequestRemove
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

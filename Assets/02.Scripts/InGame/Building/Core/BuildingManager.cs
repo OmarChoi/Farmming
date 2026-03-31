@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using UnityEngine;
 
-public class BuildingManager : MonoBehaviour
+public class BuildingManager : MonoBehaviourPunCallbacks
 {
     public static BuildingManager Instance { get; private set; }
 
@@ -111,6 +112,86 @@ public class BuildingManager : MonoBehaviour
         };
     }
 
+    #endregion
+
+    #region Network Request
+    // PlayerBuildingAbility가 호출하는 진입점. 로컬/멀티 자동 분기.
+    public void RequestBuild(BuildingRequest request)
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            TryBuild(request).Forget();
+            return;
+        }
+
+        photonView.RpcSafe(nameof(RPC_RequestBuild), RpcTarget.MasterClient,
+            request.Data.BuildingId,
+            request.AnchorPos.x, request.AnchorPos.y, request.AnchorPos.z,
+            request.Direction, request.Swapped);
+    }
+
+    public void RequestRemove(Vector3Int anyPos)
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            TryRemove(anyPos);
+            return;
+        }
+
+        photonView.RpcSafe(nameof(RPC_RequestRemove), RpcTarget.MasterClient,
+            anyPos.x, anyPos.y, anyPos.z);
+    }
+
+    [PunRPC]
+    private void RPC_RequestBuild(string buildingId, int ax, int ay, int az, int direction, bool swapped)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        BuildingDataSO data = _buildingDatabase.GetById(buildingId);
+        if (data == null) return;
+
+        var anchorPos = new Vector3Int(ax, ay, az);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction, swapped);
+        if (!CanPlace(anchorPos, footprint, out _)) return;
+
+        photonView.RpcSafe(nameof(RPC_ExecuteBuild), RpcTarget.All,
+            buildingId, ax, ay, az, direction, swapped);
+    }
+
+    [PunRPC]
+    private void RPC_ExecuteBuild(string buildingId, int ax, int ay, int az, int direction, bool swapped)
+    {
+        BuildingDataSO data = _buildingDatabase.GetById(buildingId);
+        if (data == null) return;
+
+        var request = new BuildingRequest
+        {
+            Data = data,
+            AnchorPos = new Vector3Int(ax, ay, az),
+            Direction = direction,
+            Swapped = swapped
+        };
+        TryBuild(request).Forget();
+    }
+
+    [PunRPC]
+    private void RPC_RequestRemove(int x, int y, int z)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        var pos = new Vector3Int(x, y, z);
+        if (!_occupiedCells.TryGetValue(pos, out Vector3Int anchor)) return;
+
+        photonView.RpcSafe(nameof(RPC_ExecuteRemove), RpcTarget.All,
+            anchor.x, anchor.y, anchor.z);
+    }
+
+    [PunRPC]
+    private void RPC_ExecuteRemove(int ax, int ay, int az)
+    {
+        var anchor = new Vector3Int(ax, ay, az);
+        TryRemove(anchor);
+    }
     #endregion
 
     #region Build Object
@@ -303,4 +384,43 @@ public class BuildingManager : MonoBehaviour
         Transform instanceRoot = buildingInstance.transform;
         Destroy(instanceRoot.gameObject);
     }
+
+    #region Sync
+    public List<BuildingSaveData> ExportBuildings()
+    {
+        return new List<BuildingSaveData>(_buildings.Values);
+    }
+
+    public async UniTask ImportBuildings(List<BuildingSaveData> list)
+    {
+        if (list == null) return;
+
+        foreach (BuildingSaveData saveData in list)
+        {
+            BuildingDataSO data = _buildingDatabase.GetById(saveData.BuildingId);
+            if (data == null) continue;
+
+            var request = new BuildingRequest
+            {
+                Data = data,
+                AnchorPos = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ),
+                Direction = saveData.Direction,
+                Swapped = saveData.Swapped
+            };
+            await TryBuild(request);
+
+            var anchor = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ);
+            if (_buildings.TryGetValue(anchor, out BuildingSaveData built))
+            {
+                built.RemainingDays = saveData.RemainingDays;
+                RefreshBuildingInstance(anchor, built);
+
+                if (saveData.RemainingDays <= 0)
+                {
+                    HandleConstructionCompleted(anchor);
+                }
+            }
+        }
+    }
+    #endregion
 }
