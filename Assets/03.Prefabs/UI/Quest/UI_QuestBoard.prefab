@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7914263743751996677}
   - component: {fileID: 8756048684795418913}
   - component: {fileID: 6932864931455968642}
+  - component: {fileID: 3627703164234962857}
   m_Layer: 5
   m_Name: QuestBoard
   m_TagString: Untagged
@@ -77,6 +78,26 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3627703164234962857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1008439382094838529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25781a8586d08e8409e21997307c891d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI_PopupDoTween
+  _root: {fileID: 1008439382094838529}
+  _panel: {fileID: 7914263743751996677}
+  _openStartScale: 0.85
+  _openOvershootScale: 1.08
+  _openDuration: 0.2
+  _closePunchScale: 1.05
+  _closeEndScale: 0
+  _closeDuration: 0.16
 --- !u!1 &2696921477230506660
 GameObject:
   m_ObjectHideFlags: 0
@@ -129,6 +150,7 @@ MonoBehaviour:
   _slotParent: {fileID: 2494872736038331030}
   _slotPrefab: {fileID: 5738592401809550899, guid: 83ebd34af3679cd4ca8547117cbfbbf2, type: 3}
   _questBoardRoot: {fileID: 1008439382094838529}
+  _popupDoTween: {fileID: 3627703164234962857}
   _exitButton: {fileID: 6057089020018107640}
 --- !u!1 &2839678294414940436
 GameObject:
@@ -449,16 +471,4 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6608808691945752259}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 7985939927810980449}
-        m_TargetAssemblyTypeName: UI_QuestBoard, Assembly-CSharp
-        m_MethodName: OnClickCloseButton
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
