@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -42,7 +43,15 @@ public class NpcSpawnManager : MonoBehaviour
     public void Despawn(NpcController controller)
     {
         if (controller == null) return;
-        Destroy(controller.gameObject);
+
+        if (PhotonNetwork.IsConnected && controller.PhotonView != null)
+        {
+            PhotonNetwork.Destroy(controller.gameObject);
+        }
+        else
+        {
+            Destroy(controller.gameObject);
+        }
     }
 
     private bool ValidateRequest(NpcSpawnRequest request)
@@ -74,7 +83,15 @@ public class NpcSpawnManager : MonoBehaviour
         GameObject prefab = request.Prefab != null ? request.Prefab : _defaultNpcPrefab;
         Vector3 finalPos = ResolveSpawnPosition(request.RequestedPosition);
 
-        GameObject npcObj = Instantiate(prefab, finalPos, request.Rotation, request.Parent);
+        GameObject npcObj;
+        if (PhotonNetwork.IsConnected)
+        {
+            npcObj = PhotonNetwork.Instantiate(prefab.name, finalPos, request.Rotation);
+        }
+        else
+        {
+            npcObj = Instantiate(prefab, finalPos, request.Rotation, request.Parent);
+        }
 
         if (!npcObj.TryGetComponent(out NpcController controller))
         {
