@@ -22,6 +22,9 @@ public class HelperDataSO : ScriptableObject
     public int EpicRange = 2;
     public int LegendaryRange = 3;
 
+    public int NormalMaxExp = 500;
+    public int EpicMaxExp = 1000;
+
     [SerializeField] private Sprite _leftClickIcon;
     [SerializeField] private Sprite _rightClickIcon;
     [SerializeField] private string _leftClickExplanation;
