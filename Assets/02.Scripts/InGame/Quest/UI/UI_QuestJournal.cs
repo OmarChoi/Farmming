@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class UI_QuestJournal : MonoBehaviour
 {
@@ -41,7 +42,7 @@ public class UI_QuestJournal : MonoBehaviour
         return _uiQuestJournalRoot != null && _uiQuestJournalRoot.activeSelf;
     }
 
-    public async void Open()
+    public async UniTask OpenAsync()
     {
         RefreshQuestList();
 
@@ -56,7 +57,7 @@ public class UI_QuestJournal : MonoBehaviour
         CreateOrRefreshSlots();
     }
 
-    public async void Close()
+    public async UniTask CloseAsync()
     {
         if (_popupDoTween != null)
         {

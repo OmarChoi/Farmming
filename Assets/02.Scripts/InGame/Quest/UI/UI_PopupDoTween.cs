@@ -28,7 +28,6 @@ public class UI_PopupDoTween : MonoBehaviour
 
     public async UniTask PlayOpenAsync()
     {
-        Debug.Log("팝업시작 호출");
         KillTween();
 
         if (_root != null)
@@ -51,7 +50,6 @@ public class UI_PopupDoTween : MonoBehaviour
 
     public async UniTask PlayCloseAsync()
     {
-        Debug.Log("팝업종료 호출");
         KillTween();
 
         if (_panel == null)

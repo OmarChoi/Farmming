@@ -11,7 +11,7 @@ public class UI_QuestCompletePopup : MonoBehaviour
     [Header("팝업 트윈")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
 
-    private void Start()
+    private void OnEnable()
     {
         if (QuestManager.Instance != null)
         {
