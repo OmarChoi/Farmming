@@ -151,14 +151,7 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         if (previousDay != CurrentDay)
         {
             TimeEvents.InvokeDayChanged(CurrentDay);
-        }
-
-        if (!wasDayTime && IsDayTime)
-        {
             TimeEvents.InvokeDayStarted();
-        }
-        else if (wasDayTime && !IsDayTime)
-        {
             TimeEvents.InvokeDayEnded();
         }
     }
