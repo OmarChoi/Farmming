@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class NpcScheduleManager : MonoBehaviour
@@ -45,6 +46,8 @@ public class NpcScheduleManager : MonoBehaviour
 
     private void UpdateNpcSchedules(GameTime currentTime)
     {
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+
         foreach (var npc in _npcs)
         {
             if (npc.TryGetNextScheduleEntry(currentTime, out var entry))
@@ -57,6 +60,8 @@ public class NpcScheduleManager : MonoBehaviour
     // 하루가 지나면 스케줄을 리셋합니다.
     private void HandleDayChanged(int day)
     {
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+
         foreach (var npc in _npcs)
         {
             npc.ResetScheduleForNewDay();

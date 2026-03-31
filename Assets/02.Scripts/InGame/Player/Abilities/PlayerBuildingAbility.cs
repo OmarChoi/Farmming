@@ -27,7 +27,7 @@ public class PlayerBuildingAbility : PlayerAbility
     private BuildState _state = BuildState.None;
     private BuildingGhost _ghost;
     private Vector3Int _prevGridPos;
-    private bool _isLoadingPrefab;
+    private bool _isLoadingPrefab;   
     private bool _isBuilding;
     private bool _hasResourcesCached;
     private bool _hasResourcesDirty = true;
@@ -264,7 +264,6 @@ public class PlayerBuildingAbility : PlayerAbility
         if (!TryConsumeResources(_buildingData)) return;
         _hasResourcesDirty = true;
 
-        _isBuilding = true;
         var request = new BuildingRequest
         {
             Data = _buildingData,
@@ -272,9 +271,7 @@ public class PlayerBuildingAbility : PlayerAbility
             Direction = direction,
             Swapped = _swapped
         };
-        await _buildingManager.TryBuild(request);
-        _isBuilding = false;
-        if (_state != BuildState.Previewing) return;
+        _buildingManager.RequestBuild(request);
         DestroyGhost();
     }
 
@@ -308,7 +305,7 @@ public class PlayerBuildingAbility : PlayerAbility
         var cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
-        _buildingManager.TryRemove(cell.GridPosition);
+        _buildingManager.RequestRemove(cell.GridPosition);
     }
 
     // 건설에 필요한 모든 자원이 인벤토리에 충분한지 확인

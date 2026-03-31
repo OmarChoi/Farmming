@@ -256,8 +256,10 @@ public class TerrainGridManager : MonoBehaviour
                 CellType = kvp.Value.Data.CellType,
                 TileType = kvp.Value.Data.TileType,
                 DirtLevel = kvp.Value.Data.DirtLevel,
-                ObjectType = kvp.Value.Data.ObjectType,
-                ObjectLevel = kvp.Value.Data.ObjectLevel,
+                ObjectType = kvp.Value.Data.ObjectType == EGridObjectType.Building
+                    ? EGridObjectType.None : kvp.Value.Data.ObjectType,
+                ObjectLevel = kvp.Value.Data.ObjectType == EGridObjectType.Building
+                    ? 0 : kvp.Value.Data.ObjectLevel,
                 IsIndestructible = kvp.Value.Data.IsIndestructible,
                 IsTop = kvp.Value.Data.IsTop
             };
