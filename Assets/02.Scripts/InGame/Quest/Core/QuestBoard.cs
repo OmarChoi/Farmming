@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class QuestBoard : MonoBehaviour
 {
@@ -38,10 +39,10 @@ public class QuestBoard : MonoBehaviour
 
     public void Interact()
     {
-        OpenQuestBoard();
+        OpenQuestBoard().Forget();
     }
 
-    public void OpenQuestBoard()
+    public async UniTaskVoid OpenQuestBoard()
     {
         if (QuestManager.Instance == null) return;
 
@@ -55,13 +56,13 @@ public class QuestBoard : MonoBehaviour
             return;
         }
 
-        _uiQuestBoard.Open(new List<QuestDataSO>(todayQuests));
+        await _uiQuestBoard.OpenAsync(new List<QuestDataSO>(todayQuests));
         _playerController?.SetCursorLock(false);
     }
 
-    public void CloseQuestBoard()
+    public async void CloseQuestBoard()
     {
-        _uiQuestBoard.Close();
+        await _uiQuestBoard.CloseAsync();
         _playerController?.SetCursorLock(true);
     }
 }

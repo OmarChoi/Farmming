@@ -30,19 +30,19 @@ public class QuestJournalController : MonoBehaviour
         }
     }
 
-    public void OpenQuestJournal()
+    public async void OpenQuestJournal()
     {
         if (_uiQuestJournal == null) return;
 
-        _uiQuestJournal.Open();
+        await _uiQuestJournal.OpenAsync();
         _playerController?.SetCursorLock(false);
     }
 
-    public void CloseQuestJournal()
+    public async void CloseQuestJournal()
     {
         if (_uiQuestJournal == null) return;
 
-        _uiQuestJournal.Close();
+        await _uiQuestJournal.CloseAsync();
         _playerController?.SetCursorLock(true);
     }
 }
