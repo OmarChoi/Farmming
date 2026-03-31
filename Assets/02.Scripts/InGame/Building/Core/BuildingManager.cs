@@ -35,16 +35,9 @@ public class BuildingManager : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
-    {
-        TimeEvents.OnDayStarted += AdvanceDay;
-    }
-
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
-
-        TimeEvents.OnDayStarted -= AdvanceDay;
     }
     #endregion
 
@@ -68,27 +61,6 @@ public class BuildingManager : MonoBehaviour
         if (!_occupiedCells.TryGetValue(anyPos, out var anchor)) return false;
         if (!_buildings.TryGetValue(anchor, out var saveData)) return false;
         return saveData.RemainingDays <= 0;
-    }
-    #endregion
-
-    #region Construction Progress
-    // 아침마다 호출. 건설 중인 건물의 남은 일수 차감.
-    private void AdvanceDay()
-    {
-        foreach (KeyValuePair<Vector3Int, BuildingSaveData> kvp in _buildings)
-        {
-            if (kvp.Value.RemainingDays <= 0) continue;
-
-            int previousRemainingDays = kvp.Value.RemainingDays;
-            kvp.Value.RemainingDays--;
-            RefreshBuildingInstance(kvp.Key, kvp.Value);
-            // todo. RemainingDays에 따른 건설 진행률 표시
-
-            if (previousRemainingDays > 0 && kvp.Value.RemainingDays <= 0)
-            {
-                HandleConstructionCompleted(kvp.Key);
-            }
-        }
     }
     #endregion
 
@@ -152,11 +124,6 @@ public class BuildingManager : MonoBehaviour
                 var go = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f), transform);
                 InitializeBuildingInstance(anchor, go, request.Data, saveData);
             }
-        }
-
-        if (saveData.RemainingDays <= 0)
-        {
-            HandleConstructionCompleted(anchor);
         }
 
         return true;
@@ -283,18 +250,6 @@ public class BuildingManager : MonoBehaviour
 
         buildingInstance.Initialize(buildingData, saveData);
         _buildingInstances[anchor] = buildingInstance;
-    }
-
-    private void RefreshBuildingInstance(Vector3Int anchor, BuildingSaveData saveData)
-    {
-        if (!_buildingInstances.TryGetValue(anchor, out BaseBuilding buildingInstance)) return;
-        buildingInstance.SetConstructionState(saveData);
-    }
-
-    private void HandleConstructionCompleted(Vector3Int anchor)
-    {
-        if (!_buildingInstances.TryGetValue(anchor, out BaseBuilding buildingInstance) || buildingInstance == null) return;
-        buildingInstance.HandleConstructionCompleted();
     }
 
     private void DestroyBuildingInstance(Vector3Int anchor)

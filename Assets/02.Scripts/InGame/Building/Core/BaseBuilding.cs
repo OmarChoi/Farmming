@@ -11,15 +11,37 @@ public abstract class BaseBuilding : MonoBehaviour
     public void Initialize(BuildingDataSO buildingData, BuildingSaveData saveData)
     {
         BuildingData = buildingData;
-        SetConstructionState(saveData);
+        SaveData = saveData;
+        ConstructionProgress = CalculateConstructionProgress();
+
+        TimeEvents.OnDayStarted += AdvanceDay;
+
         OnBuildingInitialized();
+        OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
+
+        if (IsConstructionComplete)
+        {
+            HandleConstructionCompleted();
+        }
     }
 
-    public void SetConstructionState(BuildingSaveData saveData)
+    private void OnDestroy()
     {
-        SaveData = CloneSaveData(saveData);
+        TimeEvents.OnDayStarted -= AdvanceDay;
+    }
+
+    private void AdvanceDay()
+    {
+        if (SaveData == null || SaveData.RemainingDays <= 0) return;
+
+        SaveData.RemainingDays--;
         ConstructionProgress = CalculateConstructionProgress();
         OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
+
+        if (SaveData.RemainingDays <= 0)
+        {
+            HandleConstructionCompleted();
+        }
     }
 
     public void HandleConstructionCompleted()
@@ -44,21 +66,5 @@ public abstract class BaseBuilding : MonoBehaviour
         if (BuildingData == null || BuildingData.ConstructionDays <= 0) return 1f;
         if (SaveData == null) return 1f;
         return Mathf.Clamp01(1f - (float)SaveData.RemainingDays / BuildingData.ConstructionDays);
-    }
-
-    private static BuildingSaveData CloneSaveData(BuildingSaveData source)
-    {
-        if (source == null) return null;
-
-        return new BuildingSaveData
-        {
-            BuildingId = source.BuildingId,
-            AnchorX = source.AnchorX,
-            AnchorY = source.AnchorY,
-            AnchorZ = source.AnchorZ,
-            Direction = source.Direction,
-            Swapped = source.Swapped,
-            RemainingDays = source.RemainingDays
-        };
     }
 }
