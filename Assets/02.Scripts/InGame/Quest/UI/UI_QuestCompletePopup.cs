@@ -1,6 +1,6 @@
-using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 public class UI_QuestCompletePopup : MonoBehaviour
 {
@@ -17,6 +17,10 @@ public class UI_QuestCompletePopup : MonoBehaviour
         {
             QuestManager.Instance.OnQuestCompleted += ShowCompletePopup;
         }
+        else
+        {
+            QuestManager.OnQuestManagerReady += SubscribeWhenReady;
+        }
     }
 
     private void OnDisable()
@@ -25,6 +29,14 @@ public class UI_QuestCompletePopup : MonoBehaviour
         {
             QuestManager.Instance.OnQuestCompleted -= ShowCompletePopup;
         }
+
+        QuestManager.OnQuestManagerReady -= SubscribeWhenReady;
+    }
+
+    private void SubscribeWhenReady()
+    {
+        QuestManager.Instance.OnQuestCompleted += ShowCompletePopup;
+        QuestManager.OnQuestManagerReady -= SubscribeWhenReady;
     }
 
     private async void ShowCompletePopup(QuestRuntimeData quest)
