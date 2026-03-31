@@ -8,7 +8,7 @@ public class UI_QuestBoard : MonoBehaviour
     [Header("컴포넌트 옵션")]
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_QuestBoardSlot _slotPrefab;
-    [SerializeField] private GameObject _uiQuestBoardRoot;
+    [SerializeField] private GameObject _questBoardRoot;
 
     [Header("닫기 버튼")]
     [SerializeField] private Button _exitButton;
@@ -27,6 +27,11 @@ public class UI_QuestBoard : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        _questBoardRoot.SetActive(false);
+    }
+
     public void Open(List<QuestDataSO> quests)
     {
         _currentQuests.Clear();
@@ -36,13 +41,13 @@ public class UI_QuestBoard : MonoBehaviour
             _currentQuests.AddRange(quests);
         }
 
-        _uiQuestBoardRoot.SetActive(true);
+        _questBoardRoot.SetActive(true);
         CreateOrRefreshSlots();
     }
 
     public void Close()
     {
-        _uiQuestBoardRoot.SetActive(false);
+        _questBoardRoot.SetActive(false);
         _currentQuests.Clear();
     }
 
