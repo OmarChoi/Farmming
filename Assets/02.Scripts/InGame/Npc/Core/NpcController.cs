@@ -1,8 +1,12 @@
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class NpcController : MonoBehaviour
 {
+    public PhotonView PhotonView { get; private set; }
+    public bool IsMine => PhotonView == null || !PhotonNetwork.IsConnected || PhotonView.IsMine;
+
     [Header("Npc 컴포넌트")]
     [SerializeField] private Animator _animator;
     [SerializeField] private NpcMovement _movement;
@@ -15,7 +19,7 @@ public class NpcController : MonoBehaviour
     [Header("상점 옵션")]
     [SerializeField] private Shop _shop;
 
-    private NpcDataSO _npcData;
+    [SerializeField] private NpcDataSO _npcData;
     private Transform _currentInteractor;
 
     private int _timeOffset;
@@ -36,9 +40,12 @@ public class NpcController : MonoBehaviour
 
     private void Awake()
     {
+        PhotonView = GetComponent<PhotonView>();
         if (_animator == null) _animator = GetComponent<Animator>();
         if (_movement == null) _movement = GetComponent<NpcMovement>();
         if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
+
+        _movement?.SetOwner(IsMine);
     }
 
     public void Initialize(NpcDataSO data)
@@ -91,12 +98,46 @@ public class NpcController : MonoBehaviour
         _isInteracting = true;
         _currentInteractor = interactor;
 
+        if (PhotonNetwork.IsConnected && !PhotonView.IsMine)
+        {
+            // 클라이언트: 마스터에게 상호작용 요청 RPC 전송
+            Vector3 interactorPos = interactor != null ? interactor.position : transform.position;
+            PhotonView.RPC(nameof(RPC_StartInteraction), RpcTarget.MasterClient, interactorPos);
+            return;
+        }
+
+        // 마스터 또는 오프라인: 직접 실행
         _movement.Stop();
 
         if (interactor != null)
         {
             await _movement.FaceTargetAsync(interactor.position);
         }
+
+        PlayGreetAll();
+    }
+
+    [PunRPC]
+    private async void RPC_StartInteraction(Vector3 interactorPosition)
+    {
+        _isInteracting = true;
+        _movement.Stop();
+        await _movement.FaceTargetAsync(interactorPosition);
+        PlayGreetAll();
+    }
+
+    private void PlayGreetAll()
+    {
+        _anim?.PlayGreet();
+        if (PhotonNetwork.IsConnected && PhotonView.IsMine)
+        {
+            PhotonView.RPC(nameof(RPC_PlayNpcGreet), RpcTarget.Others);
+        }
+    }
+
+    [PunRPC]
+    private void RPC_PlayNpcGreet()
+    {
         _anim?.PlayGreet();
     }
 
@@ -105,6 +146,21 @@ public class NpcController : MonoBehaviour
         _isInteracting = false;
         _currentInteractor = null;
 
+        if (PhotonNetwork.IsConnected && !PhotonView.IsMine)
+        {
+            // 클라이언트: 마스터에게 상호작용 종료 RPC 전송
+            PhotonView.RPC(nameof(RPC_EndInteraction), RpcTarget.MasterClient);
+            return;
+        }
+
+        ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
+    }
+
+    [PunRPC]
+    private void RPC_EndInteraction()
+    {
+        _isInteracting = false;
+        _currentInteractor = null;
         ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
     }
 
