@@ -403,7 +403,6 @@ GameObject:
   - component: {fileID: 143565387}
   - component: {fileID: 143565386}
   - component: {fileID: 143565385}
-  - component: {fileID: 143565384}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -411,18 +410,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &143565384
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 143565383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 631631db7255a7c4b92c102d36cfbe73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnLoad
 --- !u!114 &143565385
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1859,7 +1846,6 @@ GameObject:
   - component: {fileID: 695722600}
   - component: {fileID: 695722599}
   - component: {fileID: 695722598}
-  - component: {fileID: 695722597}
   m_Layer: 0
   m_Name: FollowCamera
   m_TagString: Untagged
@@ -1867,18 +1853,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &695722597
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 695722596}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 631631db7255a7c4b92c102d36cfbe73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnLoad
 --- !u!114 &695722598
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2484,7 +2458,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapSyncManager
   _terrainGridManager: {fileID: 798923366}
-  _mapNavMeshController: {fileID: 1726496944}
 --- !u!4 &944314971
 Transform:
   m_ObjectHideFlags: 0

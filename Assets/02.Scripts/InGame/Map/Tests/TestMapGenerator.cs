@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,15 +16,48 @@ public class TestMapGenerator : MonoBehaviour
     {
         if (Input.GetKeyDown(_generateVillageKey))
         {
+            if (_mapManager.IsDungeon)
+            {
+                ReturnToVillage();
+                return;
+            }
+
             _mapManager.GenerateVillage(_player);
             Debug.Log($"Village generated. Player: {_player.position}");
-
             _mapNavMeshController.BuildInitialNavMesh();
         }
 
         if (Input.GetKeyDown(KeyCode.F6))
         {
-            SceneManager.LoadScene(SceneName.Dungeon1);
+            // 멀?? 마스?�만 ?�전 진입 가??            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+            EnterDungeon().Forget();
         }
+    }
+
+    private async UniTaskVoid EnterDungeon()
+    {
+        // ?�???�료 ?????�환
+        if (SaveManager.Instance != null)
+        {
+            int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+            await SaveManager.Instance.SaveAsync(slot);
+        }
+
+        if (PhotonNetwork.IsConnected)
+            PhotonNetwork.LoadLevel(SceneName.Dungeon1);
+        else
+            SceneManager.LoadScene(SceneName.Dungeon1);
+    }
+
+    private void ReturnToVillage()
+    {
+        // 멀?? 마스?�만 마을 복�? 가??        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+
+        GameSceneInit.ReturningFromDungeon = true;
+
+        if (PhotonNetwork.IsConnected)
+            PhotonNetwork.LoadLevel(SceneName.Game);
+        else
+            SceneManager.LoadScene(SceneName.Game);
     }
 }

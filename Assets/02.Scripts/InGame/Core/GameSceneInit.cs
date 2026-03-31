@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameSceneInit : MonoBehaviour
 {
+    public static bool ReturningFromDungeon{ get; set; }
+
     [SerializeField] private string _playerPrefabName = "Player";
     [SerializeField] private MapManager _mapManager;
     [SerializeField] private MapNavMeshController _mapNavMeshController;
@@ -22,8 +24,9 @@ public class GameSceneInit : MonoBehaviour
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            if (RoomManager.Instance.IsFirstVisit)
+            if (RoomManager.Instance.IsFirstVisit && !ReturningFromDungeon)
             {
+                Debug.Log("______________________________처음");
                 Vector3 spawnPos = _mapManager.GenerateVillage();
                 _mapNavMeshController.BuildInitialNavMesh();
                 SpawnPlayer(spawnPos);
@@ -31,11 +34,13 @@ public class GameSceneInit : MonoBehaviour
             }
             else
             {
+                Debug.Log("______________________________아님");
                 LoadAndSpawnMaster().Forget();
             }
         }
         else
         {
+            PhotonNetwork.AutomaticallySyncScene = true;
             // 클라이언트: 맵 동기화 완료 후 스폰
             WaitForMapAndSpawn().Forget();
         }
@@ -98,6 +103,13 @@ public class GameSceneInit : MonoBehaviour
 
     private void InitLocalGame()
     {
+        if (ReturningFromDungeon)
+        {
+            ReturningFromDungeon = false;
+            LoadLocalVillage().Forget();
+            return;
+        }
+
         var existing = FindAnyObjectByType<PlayerController>();
 
         Vector3 spawnPos = _mapManager.GenerateVillage(existing != null ? existing.transform : null);
@@ -105,6 +117,24 @@ public class GameSceneInit : MonoBehaviour
 
         if (existing != null && CustomizeData.Instance != null)
             existing.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
+    }
+
+    private async UniTaskVoid LoadLocalVillage()
+    {
+        int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+        await SaveManager.Instance.LoadAsync(slot);
+
+        _mapNavMeshController.BuildInitialNavMesh();
+
+        if (BuildingManager.Instance != null)
+            BuildingManager.Instance.SpawnBuildingNpcs();
+
+        var existing = FindAnyObjectByType<PlayerController>();
+        if (existing != null)
+        {
+            string playerId = existing.PlayerId;
+            SaveManager.Instance.RegisterPlayer(playerId, existing);
+        }
     }
 
     private async UniTaskVoid LoadAndSpawnMaster()
@@ -121,7 +151,10 @@ public class GameSceneInit : MonoBehaviour
         if (BuildingManager.Instance != null)
             BuildingManager.Instance.SpawnBuildingNpcs();
 
-        SpawnPlayer(Vector3.zero);
+        if (!ReturningFromDungeon)
+        {
+            SpawnPlayer(Vector3.zero);
+        }
 
         // 5. 한 프레임 대기 → Start() 실행 보장
         await UniTask.Yield();

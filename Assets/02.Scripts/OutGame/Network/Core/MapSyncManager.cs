@@ -12,7 +12,6 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     public static MapSyncManager Instance { get; private set; }
 
     [SerializeField] private TerrainGridManager _terrainGridManager;
-    [SerializeField] private MapNavMeshController _mapNavMeshController;
 
     private const int CHUNK_SIZE = 4096;
     private const int SEND_INTERVAL_MS = 50;
