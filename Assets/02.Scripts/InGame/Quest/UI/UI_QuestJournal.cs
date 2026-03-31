@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
-using System;
 using System.Collections.Generic;
 
 public class UI_QuestJournal : MonoBehaviour
@@ -9,6 +7,9 @@ public class UI_QuestJournal : MonoBehaviour
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_QuestJournalSlot _slotPrefab;
     [SerializeField] private GameObject _uiQuestJournalRoot;
+
+    [Header("팝업 트윈")]
+    [SerializeField] private UI_PopupDoTween _popupDoTween;
 
     private readonly List<UI_QuestJournalSlot> _slots = new();
     private readonly List<QuestRuntimeData> _currentQuests = new();
@@ -40,16 +41,31 @@ public class UI_QuestJournal : MonoBehaviour
         return _uiQuestJournalRoot != null && _uiQuestJournalRoot.activeSelf;
     }
 
-    public void Open()
+    public async void Open()
     {
         RefreshQuestList();
-        _uiQuestJournalRoot.SetActive(true);
+
+        if (_popupDoTween != null)
+        {
+            await _popupDoTween.PlayOpenAsync();
+        }
+        else if (_uiQuestJournalRoot != null)
+        {
+            _uiQuestJournalRoot.SetActive(true);
+        }
         CreateOrRefreshSlots();
     }
 
-    public void Close()
+    public async void Close()
     {
-        _uiQuestJournalRoot.SetActive(false);
+        if (_popupDoTween != null)
+        {
+            await _popupDoTween.PlayCloseAsync();
+        }
+        else if (_uiQuestJournalRoot != null)
+        {
+            _uiQuestJournalRoot.SetActive(false);
+        }
         _currentQuests.Clear();
     }
 
