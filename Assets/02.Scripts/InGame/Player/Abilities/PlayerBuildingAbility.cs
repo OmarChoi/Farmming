@@ -268,7 +268,7 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell == null) return;
 
         int direction = _rotationQuarterTurns;
-        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, swapped: false);
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction);
 
         if (!preview.CanPlace) return;
 
@@ -281,8 +281,7 @@ public class PlayerBuildingAbility : PlayerAbility
         {
             Data = _buildingData,
             AnchorPos = cell.GridPosition,
-            Direction = direction,
-            Swapped = false
+            Direction = direction
         };
         await _buildingManager.TryBuild(request);
         _isBuilding = false;
@@ -296,7 +295,7 @@ public class PlayerBuildingAbility : PlayerAbility
         if (cell == null) return;
 
         int direction = _rotationQuarterTurns;
-        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction, swapped: false);
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction);
 
         _ghost.UpdateTransform(preview.SpawnPosition, preview.Rotation);
 

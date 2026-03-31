@@ -66,14 +66,14 @@ public class BuildingManager : MonoBehaviour
 
     #region Ghost Preview
 
-    public BuildingPreviewInfo GetPreviewInfo(Vector3Int anchorPos, BuildingDataSO data, int direction, bool swapped)
+    public BuildingPreviewInfo GetPreviewInfo(Vector3Int anchorPos, BuildingDataSO data, int direction)
     {
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction, swapped);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction);
         bool canPlace = CanPlace(anchorPos, footprint, out int baseY);
 
         var adjustedAnchor = new Vector3Int(anchorPos.x, baseY >= 0 ? baseY : anchorPos.y, anchorPos.z);
         Vector3 spawnPos = CalculateSpawnPos(adjustedAnchor, footprint);
-        float yRot = footprint.Direction * 90f + (swapped ? 90f : 0f);
+        float yRot = footprint.Direction * 90f;
 
         return new BuildingPreviewInfo
         {
@@ -90,7 +90,7 @@ public class BuildingManager : MonoBehaviour
     public async UniTask<bool> TryBuild(BuildingRequest request)
     {
         // 1. Footprint 산출 및 배치 가능 여부 검증
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(request.Data, request.Direction, request.Swapped);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(request.Data, request.Direction);
         if (!CanPlace(request.AnchorPos, footprint, out int baseY)) return false;
 
         // 2. 앵커 좌표 확정 및 SaveData 등록
@@ -103,7 +103,6 @@ public class BuildingManager : MonoBehaviour
             AnchorY = baseY,
             AnchorZ = request.AnchorPos.z,
             Direction = request.Direction,
-            Swapped = request.Swapped,
             RemainingDays = request.Data.ConstructionDays
         };
 
@@ -119,7 +118,7 @@ public class BuildingManager : MonoBehaviour
             var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
             if (prefab != null)
             {
-                float yRot = footprint.Direction * 90f + (request.Swapped ? 90f : 0f);
+                float yRot = footprint.Direction * 90f;
                 Vector3 spawnPos = CalculateSpawnPos(anchor, footprint);
                 var go = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f), transform);
                 InitializeBuildingInstance(anchor, go, request.Data, saveData);
@@ -141,7 +140,7 @@ public class BuildingManager : MonoBehaviour
         if (buildingData == null) return false;
 
         // 2. Footprint 복원 후 전체 점유 셀 역산
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(buildingData, saveData.Direction, saveData.Swapped);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(buildingData, saveData.Direction);
 
         // 3. 프리팹 파괴
         DestroyBuildingInstance(anchor);
