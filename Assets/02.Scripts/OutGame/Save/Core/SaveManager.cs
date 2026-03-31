@@ -14,6 +14,7 @@ public class SaveManager : MonoBehaviour
     private ISaveRepository _repository;
     private SaveData _loadedData;
     private const float RemoteSaveTimeout = 5f;
+    private bool _isSaving;
 
     private void Awake()
     {
@@ -74,75 +75,93 @@ public class SaveManager : MonoBehaviour
 
     public async UniTask SaveAsync(int slot = 0)
     {
+        if (_isSaving)
+        {
+            Debug.LogWarning("이미 저장 중입니다.");
+            return;
+        }
+
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
         {
             Debug.LogWarning("저장은 마스터 클라이언트만 실행할 수 있습니다.");
             return;
         }
 
-        var data = new SaveData();
+        _isSaving = true;
 
-        if (_mapManager == null || _mapManager.IsVillage)
-            data.Terrain = _terrainGridManager.ExportSaveData();
-
-        _receivedSaveData.Clear();
-        _expectedResponses = 0;
-
-        foreach (var kvp in _players)
+        try
         {
-            var player = kvp.Value;
-            if (player.IsMine)
+            var data = new SaveData();
+
+            if (_mapManager == null || _mapManager.IsVillage)
+                data.Terrain = _terrainGridManager.ExportSaveData();
+
+            if (BuildingManager.Instance != null)
+                data.Buildings = BuildingManager.Instance.ExportBuildings();
+
+            _receivedSaveData.Clear();
+            _expectedResponses = 0;
+
+            foreach (var kvp in _players)
             {
-                data.Players.Add(player.ExportSaveData(kvp.Key));
+                var player = kvp.Value;
+                if (player.IsMine)
+                {
+                    data.Players.Add(player.ExportSaveData(kvp.Key));
+                }
+                else if (player.PhotonView != null)
+                {
+                    _expectedResponses++;
+                    player.PhotonView.RPC(
+                        nameof(PlayerController.RPC_RequestSaveData),
+                        player.PhotonView.Owner);
+                }
             }
-            else if (player.PhotonView != null)
+
+            // 원격 플레이어 응답 대기 (최대 5초)
+            if (_expectedResponses > 0)
             {
-                _expectedResponses++;
-                player.PhotonView.RPC(
-                    nameof(PlayerController.RPC_RequestSaveData),
-                    player.PhotonView.Owner);
+                float timeout = Time.time + RemoteSaveTimeout;
+                await UniTask.WaitUntil(() =>
+                    _receivedSaveData.Count >= _expectedResponses || Time.time > timeout);
             }
-        }
 
-        // 원격 플레이어 응답 대기 (최대 5초)
-        if (_expectedResponses > 0)
-        {
-            float timeout = Time.time + RemoteSaveTimeout;
-            await UniTask.WaitUntil(() =>
-                _receivedSaveData.Count >= _expectedResponses || Time.time > timeout);
-        }
+            data.Players.AddRange(_receivedSaveData);
+            _receivedSaveData.Clear();
 
-        data.Players.AddRange(_receivedSaveData);
-        _receivedSaveData.Clear();
-
-        // 오프라인 플레이어: _loadedData에 있지만 현재 접속 중이 아닌 플레이어 보존
-        if (_loadedData != null)
-        {
-            var onlineIds = new HashSet<string>();
-            foreach (var p in data.Players)
-                onlineIds.Add(p.PlayerId);
-
-            foreach (var saved in _loadedData.Players)
+            // 오프라인 플레이어: _loadedData에 있지만 현재 접속 중이 아닌 플레이어 보존
+            if (_loadedData != null)
             {
-                if (!onlineIds.Contains(saved.PlayerId))
-                    data.Players.Add(saved);
+                var onlineIds = new HashSet<string>();
+                foreach (var p in data.Players)
+                    onlineIds.Add(p.PlayerId);
+
+                foreach (var saved in _loadedData.Players)
+                {
+                    if (!onlineIds.Contains(saved.PlayerId))
+                        data.Players.Add(saved);
+                }
             }
+
+            _loadedData = data;
+
+            await _repository.SaveAsync(data, slot);
+
+            // 방 커스텀 프로퍼티에 방문 플레이어 목록 갱신
+            if (RoomManager.Instance != null)
+            {
+                var ids = new List<string>();
+                foreach (var p in data.Players)
+                    ids.Add(p.PlayerId);
+                RoomManager.Instance.UpdateVisitedPlayers(ids);
+            }
+
+            Debug.Log($"저장 완료 (슬롯 {slot}, 플레이어 {data.Players.Count}명)");
         }
-
-        _loadedData = data;
-
-        await _repository.SaveAsync(data, slot);
-
-        // 방 커스텀 프로퍼티에 방문 플레이어 목록 갱신
-        if (RoomManager.Instance != null)
+        finally
         {
-            var ids = new List<string>();
-            foreach (var p in data.Players)
-                ids.Add(p.PlayerId);
-            RoomManager.Instance.UpdateVisitedPlayers(ids);
+            _isSaving = false;
         }
-
-        Debug.Log($"저장 완료 (슬롯 {slot}, 플레이어 {data.Players.Count}명)");
     }
 
     public async UniTask LoadAsync(int slot = 0)
@@ -155,6 +174,10 @@ public class SaveManager : MonoBehaviour
         }
 
         _mapManager.ImportVillageSaveData(_loadedData.Terrain);
+
+        if (BuildingManager.Instance != null && _loadedData.Buildings != null)
+            await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
+
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
     }
 
