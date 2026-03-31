@@ -65,6 +65,7 @@ public class TimeSystem : MonoBehaviourPunCallbacks
 
         _clock.SetTime(_clock.CurrentDay + 1, _timeSettings.WakeUpTime);
         _accumulatedGameMinutes = 0f;
+        TimeEvents.InvokeDayStarted();
         SyncState();
         SyncToRemote();
     }
