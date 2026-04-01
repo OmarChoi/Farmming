@@ -70,8 +70,6 @@ public class UI_Shop : MonoBehaviour
     public void Close()
     {
         PlayCloseAnimation();
-        _uiShopRoot.SetActive(false);
-        _currentShopData = null;
     }
 
     private void PlayOpenAnimation()
@@ -89,6 +87,7 @@ public class UI_Shop : MonoBehaviour
         if (_shopRect == null)
         {
             _uiShopRoot.SetActive(false);
+            _currentShopData = null;
             return;
         }
 
@@ -100,6 +99,7 @@ public class UI_Shop : MonoBehaviour
             {
                 _uiShopRoot.SetActive(false);
                 _shopRect.anchoredPosition = _shopOriginPosition;
+                _currentShopData = null;
             });
     }
 
