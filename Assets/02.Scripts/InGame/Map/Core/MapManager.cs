@@ -41,8 +41,8 @@ public class MapManager : MonoBehaviour
         return _gridManager.GridToWorld(result.SpawnPoint);
     }
 
-    // 던전 입장
-    public void EnterDungeon(int floor, Transform player = null)
+    // 던전 입장 (seed를 공유하면 동일한 맵 생성)
+    public void EnterDungeon(int floor, int seed, Transform player = null)
     {
         int configIndex = floor - 1;
         if (configIndex < 0 || configIndex >= _dungeonConfigs.Length)
@@ -52,7 +52,6 @@ public class MapManager : MonoBehaviour
         }
 
         var config = _dungeonConfigs[configIndex];
-        int seed = System.Environment.TickCount;
         var result = config.CreateGenerator().Generate(config, seed);
         _gridManager.LoadFromData(result.GridData);
         _gridManager.SetMaxHeight(config.MaxHeight);

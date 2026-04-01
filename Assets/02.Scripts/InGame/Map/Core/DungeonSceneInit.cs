@@ -6,7 +6,7 @@ public class DungeonSceneInit : MonoBehaviour
 {
     [SerializeField] private int _floor = 1;
 
-    private const float MapSyncTimeoutSeconds = 10f;
+    private const float SeedSyncTimeoutSeconds = 10f;
 
     private void Start()
     {
@@ -19,56 +19,68 @@ public class DungeonSceneInit : MonoBehaviour
     private void InitNetworkDungeon()
     {
         if (PhotonNetwork.IsMasterClient)
-            InitMasterDungeon().Forget();
+            InitMasterDungeon();
         else
-            WaitForMapSync().Forget();
+            WaitForSeedAndGenerate().Forget();
     }
 
-    private async UniTaskVoid InitMasterDungeon()
+    private void InitMasterDungeon()
     {
+        int seed = System.Environment.TickCount;
+
         // 1. 마스터가 던전 맵 생성
-        MapManager.Instance.EnterDungeon(_floor);
+        MapManager.Instance.EnterDungeon(_floor, seed);
 
         // 2. 플레이어 배치
         PlaceAllPlayers();
 
-        // 4. 한 프레임 대기 후 클라이언트에 맵 전송
-        await UniTask.Yield();
-
+        // 3. 시드만 전송 (전체 맵 데이터 대신)
         if (MapSyncManager.Instance != null)
-            MapSyncManager.Instance.BroadcastMap();
+            MapSyncManager.Instance.BroadcastDungeonSeed(_floor, seed);
     }
 
-    private async UniTaskVoid WaitForMapSync()
+    private async UniTaskVoid WaitForSeedAndGenerate()
     {
         if (MapSyncManager.Instance == null) return;
 
         bool synced = false;
-        MapSyncManager.Instance.OnMapSynced += () => synced = true;
-        MapSyncManager.Instance.RequestMapFromMaster();
+        int receivedFloor = 0;
+        int receivedSeed = 0;
 
-        float timeout = Time.time + MapSyncTimeoutSeconds;
+        MapSyncManager.Instance.OnDungeonSeedReceived += (floor, seed) =>
+        {
+            receivedFloor = floor;
+            receivedSeed = seed;
+            synced = true;
+        };
+
+        // 마스터에게 시드 요청 (브로드캐스트 누락 대비)
+        MapSyncManager.Instance.RequestDungeonSeed();
+
+        float timeout = Time.time + SeedSyncTimeoutSeconds;
         await UniTask.WaitUntil(() => synced || Time.time > timeout);
 
         if (!synced)
         {
-            Debug.LogWarning("[DungeonSceneInit] 맵 동기화 타임아웃");
+            Debug.LogWarning("[DungeonSceneInit] 던전 시드 수신 타임아웃");
             return;
         }
 
-        // 클라이언트는 NavMesh 빌드 안 함 (마스터에서 NPC AI 실행)
+        // 동일한 시드로 로컬에서 맵 생성
+        MapManager.Instance.EnterDungeon(receivedFloor, receivedSeed);
+
         PlaceAllPlayers();
     }
 
     private void InitLocalDungeon()
     {
+        int seed = System.Environment.TickCount;
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
 
         if (players.Length > 0)
-            MapManager.Instance.EnterDungeon(_floor, players[0].transform);
+            MapManager.Instance.EnterDungeon(_floor, seed, players[0].transform);
         else
-            MapManager.Instance.EnterDungeon(_floor);
-
+            MapManager.Instance.EnterDungeon(_floor, seed);
     }
 
     private void PlaceAllPlayers()
@@ -76,7 +88,6 @@ public class DungeonSceneInit : MonoBehaviour
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
         if (players.Length == 0) return;
 
-        // 맵 중앙 스폰 위치 계산
         Vector3 spawnPos = FindSpawnPosition();
 
         foreach (var player in players)
