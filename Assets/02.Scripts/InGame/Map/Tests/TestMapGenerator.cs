@@ -35,7 +35,6 @@ public class TestMapGenerator : MonoBehaviour
 
     private async UniTaskVoid EnterDungeon()
     {
-        // ?�???�료 ?????�환
         if (SaveManager.Instance != null)
         {
             int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
