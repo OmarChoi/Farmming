@@ -59,4 +59,17 @@ public class HelperEnergy
         Current = Max;
         OnRecovered?.Invoke();
     }
+
+    // savedEnergy < 0 이면 최대치로 초기화
+    // elapsedSeconds: 소환 해제 후 경과 시간 → 그 동안의 자동회복 반영
+    public void Load(float savedEnergy, float elapsedSeconds = 0f)
+    {
+        if (savedEnergy < 0f)
+        {
+            Current = Max;
+            return;
+        }
+
+        Current = Mathf.Min(savedEnergy + _data.EnergyRecoveryPerSecond * elapsedSeconds, Max);
+    }
 }

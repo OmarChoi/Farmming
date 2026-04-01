@@ -139,6 +139,11 @@ public class HelperController : MonoBehaviour
         Level.CurrentLevel = data.Level;
         Grade.CurrentGrade = (EHelperGrade)data.Grade;
         Experience.Load(data.Experience);
+
+        float elapsed = data.EnergySavedAt > 0f
+            ? UnityEngine.Time.realtimeSinceStartup - data.EnergySavedAt
+            : 0f;
+        Energy.Load(data.Energy, elapsed);
     }
 
     public void BeginAction()
