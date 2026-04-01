@@ -219,6 +219,28 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         photonView.RPC(nameof(RPC_DungeonSeed), info.Sender, _dungeonFloor, _dungeonSeed);
     }
 
+    // === 던전 입장 요청 (클라이언트 → 마스터) ===
+
+    public event Action<int> OnDungeonEntryRequested; // floor
+
+    /// 클라이언트가 마스터에게 던전 입장을 요청
+    public void RequestDungeonEntry(int floor)
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            OnDungeonEntryRequested?.Invoke(floor);
+            return;
+        }
+        photonView.RPC(nameof(RPC_RequestDungeonEntry), RpcTarget.MasterClient, floor);
+    }
+
+    [PunRPC]
+    private void RPC_RequestDungeonEntry(int floor)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        OnDungeonEntryRequested?.Invoke(floor);
+    }
+
     // === 마을 맵 동기화 ===
 
     /// 클라이언트가 GameScene에 도착한 후 마스터에게 맵 요청

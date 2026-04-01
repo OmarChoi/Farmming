@@ -6,10 +6,19 @@ public class DungeonSceneInit : MonoBehaviour
 {
     [SerializeField] private int _floor = 1;
 
+    /// 포탈에서 선택한 층 (null이면 SerializeField 사용)
+    public static int? FloorOverride { get; set; }
+
     private const float SeedSyncTimeoutSeconds = 10f;
 
     private void Start()
     {
+        if (FloorOverride.HasValue)
+        {
+            _floor = FloorOverride.Value;
+            FloorOverride = null;
+        }
+
         if (PhotonNetwork.IsConnected)
             InitNetworkDungeon();
         else

@@ -5,8 +5,10 @@ using UnityEngine;
 public class DungeonMapConfig : MapConfig
 {
     [Header("Dungeon")]
+    public string DungeonName = "던전";
     public float TimeLimitSeconds = 180f;
     public int EntryCost = 100;
+    public DungeonMaterialRequirement[] EntryRequirements;
 
     [Header("Multiple Tile Types")]
     public TileWeightEntry[] TileWeights;
@@ -28,4 +30,11 @@ public class TileWeightEntry
     public ETileType TileType;
     [Range(0f, 1f)]
     public float Weight = 1f;
+}
+
+[Serializable]
+public class DungeonMaterialRequirement
+{
+    public ItemDataSO Item;
+    public int Amount = 1;
 }
