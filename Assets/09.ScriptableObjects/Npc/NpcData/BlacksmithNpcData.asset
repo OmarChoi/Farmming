@@ -28,8 +28,14 @@ MonoBehaviour:
   RunSpeed: 3
   JumpDuration: 1
   JumpHeight: 1.2
-  GreetDialogues: []
-  TalkDialogues: []
+  GreetDialogues:
+  - {fileID: 11400000, guid: a78c2bf62f5e6db4c800d18480d34288, type: 2}
+  - {fileID: 11400000, guid: 239a7872bcb0cc8478e8b8444ad1c627, type: 2}
+  - {fileID: 11400000, guid: c99b88ed8d561284dbe06fcb1606a4fd, type: 2}
+  TalkDialogues:
+  - {fileID: 11400000, guid: 1dc1c40c696f4e04faa9ed6768d463a1, type: 2}
+  - {fileID: 11400000, guid: e1d41f44cc15a97418bfe41edbc09993, type: 2}
+  - {fileID: 11400000, guid: c2f4ca4ef11f94f45958fe6137932098, type: 2}
   UseRandomTimeOffset: 1
   MinTimeOffset: 0
   MaxTimeOffset: 10
