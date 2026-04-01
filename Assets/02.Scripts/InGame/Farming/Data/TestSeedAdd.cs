@@ -5,7 +5,7 @@ public class TestSeedAdd : MonoBehaviour
     [SerializeField] private ItemDataSO _seedItem;
     [SerializeField] private int _amount = 10;
 
-    private PlayerInventoryAbility _inventory;
+    [SerializeField] private PlayerInventoryAbility _inventory;
 
     private void Start()
     {

@@ -5,6 +5,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 {
     [SerializeField] private GatheringObjectSO _gatheringData;
     [SerializeField] private Transform _modelRoot;
+    [SerializeField] private int _gatherExperience = 10;
 
     private int _currentHealth;
     private TerrainCell _rootCell;
@@ -84,7 +85,8 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
         {
             inventory.AddItem(entry.Item, entry.GetRandomQuantity());
         }
-        
+
+        info.HelperExperience?.Add(_gatherExperience);
         _rootCell.DestroyObject();
     }
 }
