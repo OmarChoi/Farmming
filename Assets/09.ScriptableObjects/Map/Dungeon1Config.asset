@@ -26,8 +26,14 @@ MonoBehaviour:
   - Type: 2
     Level: 1
     SpawnChance: 0.08
+  DungeonName: "\uC815\uAE00"
   TimeLimitSeconds: 180
   EntryCost: 100
+  EntryRequirements:
+  - Item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
+    Amount: 1
+  - Item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+    Amount: 1
   TileWeights: []
   IsCave: 0
   CaveFillPercent: 0.45
