@@ -22,6 +22,7 @@ public class HelperController : MonoBehaviour
     public HelperLevel Level { get; private set; }
     public HelperGrade Grade { get; private set; }
     public HelperEnergy Energy { get; private set; }
+    public HelperExperience Experience { get; private set; }
 
     public PhotonView PhotonView { get; private set; }
     public bool IsMine => PhotonView == null || !PhotonNetwork.IsConnected || PhotonView.IsMine;
@@ -42,6 +43,7 @@ public class HelperController : MonoBehaviour
         Level = new HelperLevel(_data);
         Grade = new HelperGrade(_data);
         Energy = new HelperEnergy(_data);
+        Experience = new HelperExperience(_data, Grade);
 
         Energy.OnExhausted += OnEnergyExhausted;
         Energy.OnRecovered += OnEnergyRecovered;
@@ -136,6 +138,12 @@ public class HelperController : MonoBehaviour
     {
         Level.CurrentLevel = data.Level;
         Grade.CurrentGrade = (EHelperGrade)data.Grade;
+        Experience.Load(data.Experience);
+
+        float elapsed = data.EnergySavedAt > 0
+            ? (float)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - data.EnergySavedAt)
+            : 0f;
+        Energy.Load(data.Energy, elapsed);
     }
 
     public void BeginAction()
