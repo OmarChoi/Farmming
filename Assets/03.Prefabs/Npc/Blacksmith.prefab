@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 5838006647972469418}
   - component: {fileID: 5316030158967195761}
   - component: {fileID: 919438771620180480}
-  - component: {fileID: 7734502852426753408}
   - component: {fileID: 8631433124512019319}
   - component: {fileID: 6185204389369995894}
   - component: {fileID: 7962615064345203387}
@@ -171,7 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3f49665a75b68c4a841e27f836dee64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcController
-  _animator: {fileID: 0}
+  _animator: {fileID: 7962615064345203387}
   _movement: {fileID: 5316030158967195761}
   _anim: {fileID: 6185204389369995894}
   _npcSchedule: {fileID: 11400000, guid: 2f46065fdfc1f6d43991f36df077740f, type: 2}
@@ -184,21 +183,8 @@ MonoBehaviour:
     _buttonName: "\uC5C5\uADF8\uB808\uC774\uB4DC"
   - _type: 5
     _buttonName: "\uB300\uD654 \uC885\uB8CC"
-  _shop: {fileID: 7734502852426753408}
+  _shop: {fileID: 0}
   _npcData: {fileID: 11400000, guid: e557f1a4feae2354d9069b8a1bc1679c, type: 2}
---- !u!114 &7734502852426753408
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7840605641264675590}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e6289c5937948946a5b8cf03dbdaf9b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Shop
-  _shopData: {fileID: 11400000, guid: a32ba4f7d36718b4899c40bbdfc30245, type: 2}
 --- !u!114 &8631433124512019319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,7 +210,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4995beb57a49e44088a8cb941c942a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcAnimatorController
-  _animator: {fileID: 0}
+  _animator: {fileID: 7962615064345203387}
   _moveFloatName: Move
   _greetTriggerName: Greet
   _talkTriggerName: Talk
