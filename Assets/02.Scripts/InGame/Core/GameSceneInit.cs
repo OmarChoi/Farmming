@@ -60,6 +60,11 @@ public class GameSceneInit : MonoBehaviour
 
         if (!synced) return;
 
+        // 던전 복귀 시 기존 DontDestroyOnLoad 플레이어가 있으면 중복 스폰 방지
+        var existing = FindAnyObjectByType<PlayerController>();
+        if (existing != null && existing.IsMine)
+            return;
+
         var pos = FindSpawnPosition();
         SpawnPlayer(pos);
     }
@@ -141,6 +146,10 @@ public class GameSceneInit : MonoBehaviour
     {
         int slot = RoomManager.Instance.SelectedSlot;
 
+        // 클라이언트가 로드 완료 전에 맵을 요청하는 것을 방지
+        if (MapSyncManager.Instance != null)
+            MapSyncManager.Instance.HoldRequests();
+
         // 1. 맵·지형 데이터 로드 → _loadedData 보관
         await SaveManager.Instance.LoadAsync(slot);
 
@@ -151,15 +160,35 @@ public class GameSceneInit : MonoBehaviour
         if (BuildingManager.Instance != null)
             BuildingManager.Instance.SpawnBuildingNpcs();
 
-        if (!ReturningFromDungeon)
+        if (ReturningFromDungeon)
+        {
+            // 기존 DontDestroyOnLoad 플레이어를 재등록 → 저장된 위치 복원
+            RestoreExistingPlayers();
+            ReturningFromDungeon = false;
+        }
+        else
         {
             SpawnPlayer(Vector3.zero);
         }
 
-        // 5. 한 프레임 대기 → Start() 실행 보장
+        // 4. 한 프레임 대기 → Start() 실행 보장
         await UniTask.Yield();
+
+        // 5. 맵 로드 완료 → 클라이언트에 전송
+        if (MapSyncManager.Instance != null)
+            MapSyncManager.Instance.BroadcastMap();
 
         // 6. 클라이언트 입장 허용
         RoomManager.Instance.OpenRoom();
+    }
+
+    private void RestoreExistingPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.RegisterPlayer(player.PlayerId, player);
+        }
     }
 }

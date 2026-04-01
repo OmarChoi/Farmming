@@ -29,14 +29,13 @@ public class TestMapGenerator : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.F6))
         {
-            // 멀?? 마스?�만 ?�전 진입 가??            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
             EnterDungeon().Forget();
         }
     }
 
     private async UniTaskVoid EnterDungeon()
     {
-        // ?�???�료 ?????�환
+        // ?�???�료 ?????�환
         if (SaveManager.Instance != null)
         {
             int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
@@ -51,7 +50,6 @@ public class TestMapGenerator : MonoBehaviour
 
     private void ReturnToVillage()
     {
-        // 멀?? 마스?�만 마을 복�? 가??        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
 
         GameSceneInit.ReturningFromDungeon = true;
 
