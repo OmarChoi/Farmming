@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 7734502852426753408}
   - component: {fileID: 8631433124512019319}
   - component: {fileID: 6185204389369995894}
+  - component: {fileID: 7962615064345203387}
   m_Layer: 7
   m_Name: Blacksmith
   m_TagString: Untagged
@@ -170,10 +171,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3f49665a75b68c4a841e27f836dee64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcController
-  _animator: {fileID: 3297523064272239033}
+  _animator: {fileID: 0}
   _movement: {fileID: 5316030158967195761}
   _anim: {fileID: 6185204389369995894}
-  _npcSchedule: {fileID: 11400000, guid: daa31087eb231f046a2e96e5e9962561, type: 2}
+  _npcSchedule: {fileID: 11400000, guid: 2f46065fdfc1f6d43991f36df077740f, type: 2}
   _interactionOptions:
   - _type: 0
     _buttonName: "\uB300\uD654"
@@ -184,7 +185,7 @@ MonoBehaviour:
   - _type: 5
     _buttonName: "\uB300\uD654 \uC885\uB8CC"
   _shop: {fileID: 7734502852426753408}
-  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
+  _npcData: {fileID: 11400000, guid: e557f1a4feae2354d9069b8a1bc1679c, type: 2}
 --- !u!114 &7734502852426753408
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -223,10 +224,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4995beb57a49e44088a8cb941c942a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcAnimatorController
-  _animator: {fileID: 3297523064272239033}
+  _animator: {fileID: 0}
   _moveFloatName: Move
   _greetTriggerName: Greet
   _talkTriggerName: Talk
+--- !u!95 &7962615064345203387
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7840605641264675590}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 3eecabbe01143694b8602161a902615f, type: 3}
+  m_Controller: {fileID: 9100000, guid: a70b3633361bd244287115d468057e83, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &9074993436437498080
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -287,16 +310,12 @@ PrefabInstance:
       propertyPath: m_WarningMessage
       value: 
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5779241693987565913, guid: 3cf6319663ca49b4f86d6b19d330640b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3cf6319663ca49b4f86d6b19d330640b, type: 3}
---- !u!95 &3297523064272239033 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5779241693987565913, guid: 3cf6319663ca49b4f86d6b19d330640b, type: 3}
-  m_PrefabInstance: {fileID: 9074993436437498080}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4901661165559042022 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4176781542005311238, guid: 3cf6319663ca49b4f86d6b19d330640b, type: 3}
