@@ -49,6 +49,13 @@ public class HelperExperience
     public void Load(int savedExp)
     {
         CurrentExp = Math.Min(savedExp, MaxExp);
+
+        OnExpChanged?.Invoke(CurrentExp, MaxExp);
+
+        if (IsReadyToUpgrade)
+        {
+            OnReadyToUpgrade?.Invoke();
+        }
     }
 
     // 대장간에서 등급업 완료 후 호출
