@@ -10,7 +10,7 @@ public class QuestManager : MonoBehaviour
     [SerializeField] private PlayerInventoryAbility _playerInventory;
 
     [Header("일일 퀘스트 개수")]
-    [SerializeField] private int _dailyQuestCounts = 2;
+    [SerializeField] private int _dailyQuestCounts = 3;
     private QuestBoardDataSO _dailyQuestBoardData;
 
     private readonly Dictionary<string, QuestRuntimeData> _activeQuests = new();
@@ -34,6 +34,8 @@ public class QuestManager : MonoBehaviour
     public event Action<QuestRuntimeData> OnQuestCompleted;
     public event Action<string> OnQuestRemoved;
 
+    public static event Action OnQuestManagerReady;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -49,6 +51,7 @@ public class QuestManager : MonoBehaviour
             { EQuestRewardType.Item, new QuestItemRewardHandler(_playerInventory) },
             { EQuestRewardType.Friendship, new QuestFriendshipRewardHandler() }
         };
+        OnQuestManagerReady?.Invoke();
     }
 
     private void OnEnable()

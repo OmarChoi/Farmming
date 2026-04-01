@@ -2,13 +2,17 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class UI_QuestBoard : MonoBehaviour
 {
     [Header("컴포넌트 옵션")]
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_QuestBoardSlot _slotPrefab;
-    [SerializeField] private GameObject _uiQuestBoardRoot;
+    [SerializeField] private GameObject _questBoardRoot;
+
+    [Header("팝업 트윈")]
+    [SerializeField] private UI_PopupDoTween _popupDoTween;
 
     [Header("닫기 버튼")]
     [SerializeField] private Button _exitButton;
@@ -27,7 +31,15 @@ public class UI_QuestBoard : MonoBehaviour
         }
     }
 
-    public void Open(List<QuestDataSO> quests)
+    private void Start()
+    {
+        if (_questBoardRoot != null)
+        {
+            _questBoardRoot.SetActive(false);
+        }
+    }
+
+    public async UniTask OpenAsync(List<QuestDataSO> quests)
     {
         _currentQuests.Clear();
 
@@ -36,13 +48,29 @@ public class UI_QuestBoard : MonoBehaviour
             _currentQuests.AddRange(quests);
         }
 
-        _uiQuestBoardRoot.SetActive(true);
         CreateOrRefreshSlots();
+
+        if (_popupDoTween != null)
+        {
+            await _popupDoTween.PlayOpenAsync();
+        }
+        else if (_questBoardRoot != null)
+        {
+            _questBoardRoot.SetActive(true);
+        }
     }
 
-    public void Close()
+    public async UniTask CloseAsync()
     {
-        _uiQuestBoardRoot.SetActive(false);
+        if (_popupDoTween != null)
+        {
+            await _popupDoTween.PlayCloseAsync();
+        }
+        else if (_questBoardRoot != null)
+        {
+            _questBoardRoot.SetActive(false);
+        }
+
         _currentQuests.Clear();
     }
 
@@ -73,8 +101,7 @@ public class UI_QuestBoard : MonoBehaviour
 
     public void OnQuestSlotClicked(QuestDataSO questData)
     {
-        if (questData == null) return;
-        if (QuestManager.Instance == null) return;
+        if (questData == null || QuestManager.Instance == null) return;
         if (string.IsNullOrEmpty(questData.QuestId)) return;
 
         QuestManager questManager = QuestManager.Instance;
