@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonMapConfig
   Width: 75
   Height: 75
-  BaseHeight: 3
-  MaxHeight: 8
-  NoiseScale: 0.04
-  TileNoiseScale: 0.08
-  DefaultTileType: 1
+  BaseHeight: 2
+  MaxHeight: 18
+  NoiseScale: 0.02
+  TileNoiseScale: 0.04
+  DefaultTileType: 3
   Resources:
   - Type: 1
     Level: 2
@@ -30,6 +30,6 @@ MonoBehaviour:
   EntryCost: 100
   TileWeights: []
   IsCave: 1
-  CaveFillPercent: 0.45
+  CaveFillPercent: 0.413
   CaveSmoothIterations: 5
-  WallTileType: 3
+  WallTileType: 4
