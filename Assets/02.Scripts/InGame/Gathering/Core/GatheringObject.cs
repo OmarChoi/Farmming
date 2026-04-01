@@ -8,6 +8,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
     [SerializeField] private int _gatherExperience = 10;
 
     private int _currentHealth;
+    private TerrainCell _rootCell;
     private GameObject _modelInstance;
 
     public static event Action<GatheringObject> OnGatheringCompleted;
@@ -32,6 +33,12 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
             return;
         }
 
+        _rootCell = GetComponentInParent<TerrainCell>();
+        if (_rootCell == null)
+        {
+            Debug.LogError("Terrain Cell이 할당되지 않았습니다.");
+            return;
+        }
         _currentHealth = _gatheringData.MaxHealth;
         SpawnModel();
         Init();
@@ -80,6 +87,6 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
         }
 
         info.HelperExperience?.Add(_gatherExperience);
-        Destroy(gameObject);
+        _rootCell.DestroyObject();
     }
 }

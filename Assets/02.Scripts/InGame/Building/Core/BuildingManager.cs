@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using UnityEngine;
 
-public class BuildingManager : MonoBehaviour
+[RequireComponent(typeof(PhotonView))]
+public class BuildingManager : MonoBehaviourPunCallbacks
 {
     public static BuildingManager Instance { get; private set; }
 
@@ -35,16 +37,9 @@ public class BuildingManager : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
-    {
-        TimeEvents.OnDayStarted += AdvanceDay;
-    }
-
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
-
-        TimeEvents.OnDayStarted -= AdvanceDay;
     }
     #endregion
 
@@ -71,37 +66,16 @@ public class BuildingManager : MonoBehaviour
     }
     #endregion
 
-    #region Construction Progress
-    // 아침마다 호출. 건설 중인 건물의 남은 일수 차감.
-    private void AdvanceDay()
-    {
-        foreach (KeyValuePair<Vector3Int, BuildingSaveData> kvp in _buildings)
-        {
-            if (kvp.Value.RemainingDays <= 0) continue;
-
-            int previousRemainingDays = kvp.Value.RemainingDays;
-            kvp.Value.RemainingDays--;
-            RefreshBuildingInstance(kvp.Key, kvp.Value);
-            // todo. RemainingDays에 따른 건설 진행률 표시
-
-            if (previousRemainingDays > 0 && kvp.Value.RemainingDays <= 0)
-            {
-                HandleConstructionCompleted(kvp.Key);
-            }
-        }
-    }
-    #endregion
-
     #region Ghost Preview
 
-    public BuildingPreviewInfo GetPreviewInfo(Vector3Int anchorPos, BuildingDataSO data, int direction, bool swapped)
+    public BuildingPreviewInfo GetPreviewInfo(Vector3Int anchorPos, BuildingDataSO data, int direction)
     {
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction, swapped);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction);
         bool canPlace = CanPlace(anchorPos, footprint, out int baseY);
 
         var adjustedAnchor = new Vector3Int(anchorPos.x, baseY >= 0 ? baseY : anchorPos.y, anchorPos.z);
         Vector3 spawnPos = CalculateSpawnPos(adjustedAnchor, footprint);
-        float yRot = footprint.Direction * 90f + (swapped ? 90f : 0f);
+        float yRot = footprint.Direction * 90f;
 
         return new BuildingPreviewInfo
         {
@@ -113,12 +87,91 @@ public class BuildingManager : MonoBehaviour
 
     #endregion
 
+    #region Network Request
+    // PlayerBuildingAbility가 호출하는 진입점. 로컬/멀티 자동 분기.
+    public void RequestBuild(BuildingRequest request)
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            TryBuild(request).Forget();
+            return;
+        }
+
+        photonView.RpcSafe(nameof(RPC_RequestBuild), RpcTarget.MasterClient,
+            request.Data.BuildingId,
+            request.AnchorPos.x, request.AnchorPos.y, request.AnchorPos.z,
+            request.Direction);
+    }
+
+    public void RequestRemove(Vector3Int anyPos)
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            TryRemove(anyPos, out var buildData);
+            return;
+        }
+
+        photonView.RpcSafe(nameof(RPC_RequestRemove), RpcTarget.MasterClient,
+            anyPos.x, anyPos.y, anyPos.z);
+    }
+
+    [PunRPC]
+    private void RPC_RequestBuild(string buildingId, int ax, int ay, int az, int direction)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        BuildingDataSO data = _buildingDatabase.GetById(buildingId);
+        if (data == null) return;
+
+        var anchorPos = new Vector3Int(ax, ay, az);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction);
+        if (!CanPlace(anchorPos, footprint, out _)) return;
+
+        photonView.RpcSafe(nameof(RPC_ExecuteBuild), RpcTarget.All,
+            buildingId, ax, ay, az, direction);
+    }
+
+    [PunRPC]
+    private void RPC_ExecuteBuild(string buildingId, int ax, int ay, int az, int direction)
+    {
+        BuildingDataSO data = _buildingDatabase.GetById(buildingId);
+        if (data == null) return;
+
+        var request = new BuildingRequest
+        {
+            Data = data,
+            AnchorPos = new Vector3Int(ax, ay, az),
+            Direction = direction
+        };
+        TryBuild(request).Forget();
+    }
+
+    [PunRPC]
+    private void RPC_RequestRemove(int x, int y, int z)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        var pos = new Vector3Int(x, y, z);
+        if (!_occupiedCells.TryGetValue(pos, out Vector3Int anchor)) return;
+
+        photonView.RpcSafe(nameof(RPC_ExecuteRemove), RpcTarget.All,
+            anchor.x, anchor.y, anchor.z);
+    }
+
+    [PunRPC]
+    private void RPC_ExecuteRemove(int ax, int ay, int az)
+    {
+        var anchor = new Vector3Int(ax, ay, az);
+        TryRemove(anchor, out var buildData);
+    }
+    #endregion
+
     #region Build Object
     // 건물 배치
     public async UniTask<bool> TryBuild(BuildingRequest request)
     {
         // 1. Footprint 산출 및 배치 가능 여부 검증
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(request.Data, request.Direction, request.Swapped);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(request.Data, request.Direction);
         if (!CanPlace(request.AnchorPos, footprint, out int baseY)) return false;
 
         // 2. 앵커 좌표 확정 및 SaveData 등록
@@ -131,7 +184,6 @@ public class BuildingManager : MonoBehaviour
             AnchorY = baseY,
             AnchorZ = request.AnchorPos.z,
             Direction = request.Direction,
-            Swapped = request.Swapped,
             RemainingDays = request.Data.ConstructionDays
         };
 
@@ -147,33 +199,29 @@ public class BuildingManager : MonoBehaviour
             var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
             if (prefab != null)
             {
-                float yRot = footprint.Direction * 90f + (request.Swapped ? 90f : 0f);
+                float yRot = footprint.Direction * 90f;
                 Vector3 spawnPos = CalculateSpawnPos(anchor, footprint);
                 var go = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f), transform);
                 InitializeBuildingInstance(anchor, go, request.Data, saveData);
             }
         }
 
-        if (saveData.RemainingDays <= 0)
-        {
-            HandleConstructionCompleted(anchor);
-        }
-
         return true;
     }
 
     // 건물 철거
-    public bool TryRemove(Vector3Int anyPos)
+    public bool TryRemove(Vector3Int anyPos, out BuildingDataSO buildingData)
     {
+        buildingData = null;
         // 1. 점유 셀에서 앵커 역추적, SaveData에서 건물 정보 조회
         if (!_occupiedCells.TryGetValue(anyPos, out Vector3Int anchor)) return false;
         if (!_buildings.TryGetValue(anchor, out BuildingSaveData saveData)) return false;
 
-        BuildingDataSO buildingData = _buildingDatabase.GetById(saveData.BuildingId);
+        buildingData = _buildingDatabase.GetById(saveData.BuildingId);
         if (buildingData == null) return false;
 
         // 2. Footprint 복원 후 전체 점유 셀 역산
-        BuildingFootprint footprint = BuildingPlacer.GetFootprint(buildingData, saveData.Direction, saveData.Swapped);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(buildingData, saveData.Direction);
 
         // 3. 프리팹 파괴
         DestroyBuildingInstance(anchor);
@@ -210,11 +258,12 @@ public class BuildingManager : MonoBehaviour
 
         // Depth 방향 중앙 오프셋 계산 (Width는 이미 중앙 정렬)
         float depthCenter = (footprint.Depth - 1) * 0.5f;
+        float widthCenter = footprint.WidthOffset + (footprint.Width - 1) * 0.5f;
         float cellSize = _gridManager.CellSize;
         Vector3 centerOffset = new Vector3(
-            footprint.Forward.x * depthCenter * cellSize,
+            (footprint.Forward.x * depthCenter + footprint.Right.x * widthCenter) * cellSize,
             0f,
-            footprint.Forward.y * depthCenter * cellSize
+            (footprint.Forward.y * depthCenter + footprint.Right.y * widthCenter) * cellSize
         );
 
         return _gridManager.GridToWorld(elevated) + centerOffset;
@@ -283,18 +332,6 @@ public class BuildingManager : MonoBehaviour
         _buildingInstances[anchor] = buildingInstance;
     }
 
-    private void RefreshBuildingInstance(Vector3Int anchor, BuildingSaveData saveData)
-    {
-        if (!_buildingInstances.TryGetValue(anchor, out BaseBuilding buildingInstance)) return;
-        buildingInstance.SetConstructionState(saveData);
-    }
-
-    private void HandleConstructionCompleted(Vector3Int anchor)
-    {
-        if (!_buildingInstances.TryGetValue(anchor, out BaseBuilding buildingInstance) || buildingInstance == null) return;
-        buildingInstance.HandleConstructionCompleted();
-    }
-
     private void DestroyBuildingInstance(Vector3Int anchor)
     {
         if (!_buildingInstances.Remove(anchor, out BaseBuilding buildingInstance)) return;
@@ -303,4 +340,55 @@ public class BuildingManager : MonoBehaviour
         Transform instanceRoot = buildingInstance.transform;
         Destroy(instanceRoot.gameObject);
     }
+
+    #region Sync
+    // NavMesh 빌드 완료 후 호출. 완성된 건물의 NPC를 일괄 스폰.
+    public void SpawnBuildingNpcs()
+    {
+        foreach (KeyValuePair<Vector3Int, BuildingSaveData> kvp in _buildings)
+        {
+            if (kvp.Value.RemainingDays > 0) continue;
+            if (!_buildingInstances.TryGetValue(kvp.Key, out BaseBuilding instance) || instance == null) continue;
+
+            BuildingNpcSpawner spawner = instance.GetComponent<BuildingNpcSpawner>();
+            if (spawner != null && spawner.HasValidData)
+            {
+                spawner.SpawnNpc();
+            }
+        }
+    }
+
+    public List<BuildingSaveData> ExportBuildings()
+    {
+        return new List<BuildingSaveData>(_buildings.Values);
+    }
+
+    public async UniTask ImportBuildings(List<BuildingSaveData> list)
+    {
+        if (list == null) return;
+
+        foreach (BuildingSaveData saveData in list)
+        {
+            BuildingDataSO data = _buildingDatabase.GetById(saveData.BuildingId);
+            if (data == null) continue;
+
+            var request = new BuildingRequest
+            {
+                Data = data,
+                AnchorPos = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ),
+                Direction = saveData.Direction
+            };
+            await TryBuild(request);
+
+            var anchor = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ);
+            if (!_buildings.TryGetValue(anchor, out BuildingSaveData built)) continue;
+            
+            built.RemainingDays = saveData.RemainingDays;
+            if (_buildingInstances.TryGetValue(anchor, out var baseBuildingInstance))
+            {
+                baseBuildingInstance.Initialize(data,  built);   
+            }
+        }
+    }
+    #endregion
 }

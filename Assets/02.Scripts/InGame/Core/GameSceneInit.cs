@@ -117,13 +117,14 @@ public class GameSceneInit : MonoBehaviour
         // 2. 맵 로드 후 NavMesh 빌드
         _mapNavMeshController.BuildInitialNavMesh();
 
-        // 3. 스폰 → Start()에서 RegisterPlayer → TryRestorePlayer 자동 복원
+        await SaveManager.Instance.LoadBuildingAsync();
+
         SpawnPlayer(Vector3.zero);
 
-        // 4. 한 프레임 대기 → Start() 실행 보장
+        // 5. 한 프레임 대기 → Start() 실행 보장
         await UniTask.Yield();
 
-        // 5. 클라이언트 입장 허용
+        // 6. 클라이언트 입장 허용
         RoomManager.Instance.OpenRoom();
     }
 }

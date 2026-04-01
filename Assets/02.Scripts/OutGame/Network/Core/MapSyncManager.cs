@@ -93,8 +93,14 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
     private byte[] CompressMapData()
     {
-        var saveData = _terrainGridManager.ExportSaveData();
-        string json = JsonUtility.ToJson(saveData);
+        var syncData = new MapSyncData
+        {
+            Terrain = _terrainGridManager.ExportSaveData(),
+            Buildings = BuildingManager.Instance != null
+                ? BuildingManager.Instance.ExportBuildings()
+                : new System.Collections.Generic.List<BuildingSaveData>()
+        };
+        string json = JsonUtility.ToJson(syncData);
         byte[] raw = Encoding.UTF8.GetBytes(json);
 
         using var ms = new MemoryStream();
@@ -146,9 +152,14 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         _pendingChunks.Remove(syncId);
 
         string json = DecompressMapData(compressed);
-        var saveData = JsonUtility.FromJson<TerrainSaveData>(json);
+        var syncData = JsonUtility.FromJson<MapSyncData>(json);
 
-        _terrainGridManager.ImportSaveData(saveData);
+        _terrainGridManager.ImportSaveData(syncData.Terrain);
+            
+        if (syncData.Buildings != null && syncData.Buildings.Count > 0 && BuildingManager.Instance != null)
+        {
+            BuildingManager.Instance.ImportBuildings(syncData.Buildings).Forget();
+        }
 
         Debug.Log($"맵 동기화 완료 (압축 {compressed.Length} bytes)");
         OnMapSynced?.Invoke();
