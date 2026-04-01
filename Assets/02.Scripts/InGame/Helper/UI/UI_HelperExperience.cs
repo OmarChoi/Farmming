@@ -125,7 +125,6 @@ public class UI_HelperExperience : MonoBehaviour
     private void AnimateFill(float targetRatio)
     {
         _fillTween?.Kill();
-        Debug.Log($"AnimateFill target: {targetRatio}");
         _fillTween = _fillImage.DOFillAmount(targetRatio, _tweenDuration).SetEase(Ease.OutCubic);
     }
 }
