@@ -728,37 +728,14 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1297318230509913425, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 230006270}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
---- !u!1 &230006269 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1297318230509913425, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
-  m_PrefabInstance: {fileID: 230006268}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &230006270
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 230006269}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4aa31f520f99dd048bd94488cbd775b9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SkyboxController
-  _timeSettings: {fileID: 11400000, guid: 32a7545f3266cc94a8852b9a7e1b3a65, type: 2}
-  _skyboxTemplate: {fileID: 2100000, guid: e855645ee87064940b33c7cb22a6cd2c, type: 2}
-  _skyDatabase: {fileID: 11400000, guid: cc0e57470567cfa41a8c43d922008210, type: 2}
 --- !u!114 &230006271 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2930089380795897997, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
   m_PrefabInstance: {fileID: 230006268}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 230006269}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 544fd01939d0492e94ac8164086b6854, type: 3}
@@ -1054,6 +1031,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TestSeedAdd
   _seedItem: {fileID: 11400000, guid: 126f95a0ef92a304dbe5201eb77ff2de, type: 2}
   _amount: 10
+  _inventory: {fileID: 0}
 --- !u!4 &316337185
 Transform:
   m_ObjectHideFlags: 0
@@ -2898,7 +2876,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapSyncManager
   _terrainGridManager: {fileID: 200659286}
-  _mapNavMeshController: {fileID: 888629911}
 --- !u!4 &1151594937
 Transform:
   m_ObjectHideFlags: 0
@@ -6352,8 +6329,6 @@ SceneRoots:
   - {fileID: 794116319}
   - {fileID: 1081763466}
   - {fileID: 1774998008}
-  - {fileID: 81038204}
-  - {fileID: 316337185}
   - {fileID: 1960159726}
   - {fileID: 1933832229}
   - {fileID: 888629912}
@@ -6361,5 +6336,7 @@ SceneRoots:
   - {fileID: 677648087}
   - {fileID: 1815349874}
   - {fileID: 5417324}
+  - {fileID: 81038204}
+  - {fileID: 316337185}
   - {fileID: 2026303145}
   - {fileID: 1154523362}

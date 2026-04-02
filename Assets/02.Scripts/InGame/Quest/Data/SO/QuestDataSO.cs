@@ -3,25 +3,31 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "QuestDataSO", menuName = "Scriptable Objects/Quest/QuestDataSO")]
 public class QuestDataSO : ScriptableObject
 {
-    // 퀘스트 ID와 기본 정보입니다.
+    [Header("기본 정보")]
     public string QuestId;
     public string QuestName;
     public string Description;
 
-    // 퀘스트 종류(메인, 서브, 일일)입니다.
+    [Header("퀘스트 종류")]
     public EQuestCategory QuestCategory;
 
-    // 퀘스트의 목적 종류(자원 캐기, 아이템 전달 등)와 관련된 정보입니다.
+    [Header("수락 / 완료 NPC")]
+    public string StartNpcId;       // 이 퀘스트를 주는 NPC입니다.
+    public string CompleteNpcId;    // 이 퀘스트를 완료 처리하는 NPC입니다.
+
+    [Header("목표")]
     public EQuestObjectiveType ObjectiveType;
-    public string TargetId;         // 퀘스트 목표 판정 대상(자원 캐기의 Tree, Rock 등)의 Id입니다.
+    public string TargetObjectId;   // BreakObject용 Id입니다.
+    public string TargetItemId;     // CollectItem와 DeliverItem용 Id입니다.
+    public string TargetNpcId;      // TalkToNpc와 DeliverItem용 Id입니다.
     public int RequiredAmount = 1;
 
-    // 퀘스트 보상 관련 정보입니다.
+    [Header("보상")]
     public QuestRewardData Reward;
 
+    // 실수로 퀘스트 요구치가 0 이하로 지정될 경우, 자동으로 1로 바꿔주어 오류를 방어합니다.
     private void OnValidate()
     {
-        // 실수로 퀘스트 요구치가 0 이하로 지정될 경우, 자동으로 1로 바꿔주어 오류를 방어합니다.
         if (RequiredAmount < 1)
         {
             RequiredAmount = 1;
