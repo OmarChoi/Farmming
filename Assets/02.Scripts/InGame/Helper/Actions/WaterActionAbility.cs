@@ -11,6 +11,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _secondaryEnergyCost = 25f;
     [SerializeField] private float _iceSpawnOffset = 17.5f;
 
+    private static readonly int WaterStateHash = Animator.StringToHash("Water");
+
     private HelperAnimationAbility _animAbility;
     private readonly List<IWaterEffect> _waterEffects = new();
     private readonly List<IWaterEffect> _iceEffects = new();
@@ -35,9 +37,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         if (!_isActing) return;
 
         var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
-        if (stateInfo.IsName("Water") && stateInfo.normalizedTime >= 1f)
+        if (stateInfo.shortNameHash == WaterStateHash && stateInfo.normalizedTime >= 1f)
         {
-            _animAbility?.Play(EHelperAnim.Idle);
             ResetState();
         }
     }
@@ -146,6 +147,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _isActing = false;
         _isSecondary = false;
         _currentCell = null;
+        _animAbility?.Play(EHelperAnim.Idle);
         _owner?.EndAction();
     }
 
