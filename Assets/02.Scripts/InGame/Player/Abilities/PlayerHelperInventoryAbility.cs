@@ -12,22 +12,47 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     [SerializeField] private List<HelperDataSO> _helperDataList = new();
 
     private PlayerHelperInteractionAbility _helperInteractionAbility;
-    private HelperController _activeHelper;
+    private HelperController _activeMainHelper;
+    private HelperController _activeLightHelper;
     private readonly Dictionary<string, HelperSaveData> _savedStates = new();
     private int _currentIndex;
-    private int _summonedIndex = -1;
+    private int _summonedMainIndex = -1;
+    private int _summonedLightIndex = -1;
 
     public int CurrentIndex => _currentIndex;
     public int Count => _helperDataList.Count;
-    public int SummonedIndex => _summonedIndex;
-    public HelperController ActiveHelper => _activeHelper;
+    public int SummonedIndex => _summonedMainIndex >= 0 ? _summonedMainIndex : _summonedLightIndex;
+    public bool IsCurrentIndexSummoned => _currentIndex == _summonedMainIndex || _currentIndex == _summonedLightIndex;
+    public HelperController ActiveHelper => _activeMainHelper != null ? _activeMainHelper : _activeLightHelper;
 
-    public HelperDataSO SummonedData => SummonedIndex >= 0 && SummonedIndex < _helperDataList.Count ? _helperDataList[SummonedIndex]: null;
+    public HelperDataSO SummonedData
+    {
+        get
+        {
+            int idx = SummonedIndex;
+            return idx >= 0 && idx < _helperDataList.Count ? _helperDataList[idx] : null;
+        }
+    }
 
     public static event Action<PlayerHelperInventoryAbility> OnLocalPlayerReady;
 
     public event Action<int> OnSelectionChanged;
     public event Action<int> OnSummonChanged;
+
+    public EHelperGrade GetHelperGrade(HelperDataSO data)
+    {
+        if (data == null) return EHelperGrade.Normal;
+
+        if (_activeMainHelper != null && _activeMainHelper.HelperId == data.HelperId)
+            return _activeMainHelper.Grade.CurrentGrade;
+        if (_activeLightHelper != null && _activeLightHelper.HelperId == data.HelperId)
+            return _activeLightHelper.Grade.CurrentGrade;
+
+        if (_savedStates.TryGetValue(data.HelperId, out var state))
+            return (EHelperGrade)state.Grade;
+
+        return EHelperGrade.Normal;
+    }
 
     public HelperDataSO GetData(int index)
     {
@@ -75,54 +100,120 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void ToggleSummon()
     {
-        if (_summonedIndex == _currentIndex)
+        // 빛곡룡이 Summoned(등에서 해제) 상태이고 일반 helper가 없으면
+        // 빛곡룡을 먼저 소환 해제하고, 현재 인덱스가 같으면 여기서 종료
+        if (_activeLightHelper != null
+            && _activeLightHelper.State == EHelperState.Summoned
+            && _activeMainHelper == null)
         {
-            SaveActiveHelperState();
-            _helperInteractionAbility.Unsummon();
-            _activeHelper = null;
-            _summonedIndex = -1;
-        }
-        else
-        {
-            if (_activeHelper != null)
+            SaveHelperState(_activeLightHelper);
+            _helperInteractionAbility.UnsummonBack();
+            _activeLightHelper = null;
+            _summonedLightIndex = -1;
+
+            // 현재 인덱스가 방금 해제한 빛곡룡이였으면 소환 해제만
+            if (_helperDataList[_currentIndex].Prefab.GetComponent<LightActionAbility>() != null)
             {
-                SaveActiveHelperState();
-                _helperInteractionAbility.Unsummon();
-                _activeHelper = null;
+                OnSummonChanged?.Invoke(SummonedIndex);
+                return;
             }
+        }
 
-            var data = _helperDataList[_currentIndex];
-            Vector3 spawnPos = _owner.transform.position + _owner.transform.right * 1.5f;
+        var data = _helperDataList[_currentIndex];
+        bool isLightHelper = data.Prefab.GetComponent<LightActionAbility>() != null;
 
-            HelperController helper;
-            if (PhotonNetwork.IsConnected)
+        if (isLightHelper)
+        {
+            if (_summonedLightIndex == _currentIndex)
             {
-                var go = PhotonNetwork.Instantiate(data.Prefab.name, spawnPos, Quaternion.identity);
-                helper = go.GetComponent<HelperController>();
+                // 빛곡룡 소환 해제: 일반 helper가 소환 중이면 불가
+                if (_activeMainHelper != null) return;
+
+                SaveHelperState(_activeLightHelper);
+                _helperInteractionAbility.UnsummonBack();
+                _activeLightHelper = null;
+                _summonedLightIndex = -1;
             }
             else
             {
-                helper = Instantiate(data.Prefab, spawnPos, Quaternion.identity);
-            }
+                // 일반 helper가 소환 중이면 먼저 해제 후 빛곡룡 소환
+                if (_activeMainHelper != null)
+                {
+                    SaveHelperState(_activeMainHelper);
+                    _helperInteractionAbility.UnsummonCurrentOnly();
+                    _activeMainHelper = null;
+                    _summonedMainIndex = -1;
+                }
 
-            RestoreHelperState(helper);
-            _activeHelper = helper;
-            _helperInteractionAbility.Summon(helper);
-            _summonedIndex = _currentIndex;
+                // 기존 빛곡룡이 있으면 먼저 해제
+                if (_activeLightHelper != null)
+                {
+                    SaveHelperState(_activeLightHelper);
+                    _helperInteractionAbility.UnsummonBack();
+                    _activeLightHelper = null;
+                }
+
+                HelperController helper = InstantiateHelper(data);
+                RestoreHelperState(helper);
+                _activeLightHelper = helper;
+                _activeLightHelper.OnGradeChanged += () => OnSummonChanged?.Invoke(SummonedIndex);
+                _helperInteractionAbility.Summon(helper);
+                _summonedLightIndex = _currentIndex;
+            }
         }
-        OnSummonChanged?.Invoke(_summonedIndex);
+        else
+        {
+            if (_summonedMainIndex == _currentIndex)
+            {
+                // 일반 helper 소환 해제
+                SaveHelperState(_activeMainHelper);
+                _helperInteractionAbility.UnsummonCurrentOnly();
+                _activeMainHelper = null;
+                _summonedMainIndex = -1;
+            }
+            else
+            {
+                // 기존 일반 helper가 있으면 먼저 해제 (빛곡룡은 건드리지 않음)
+                if (_activeMainHelper != null)
+                {
+                    SaveHelperState(_activeMainHelper);
+                    _helperInteractionAbility.UnsummonCurrentOnly();
+                    _activeMainHelper = null;
+                }
+
+                HelperController helper = InstantiateHelper(data);
+                RestoreHelperState(helper);
+                _activeMainHelper = helper;
+                _activeMainHelper.OnGradeChanged += () => OnSummonChanged?.Invoke(SummonedIndex);
+                _helperInteractionAbility.Summon(helper);
+                _summonedMainIndex = _currentIndex;
+            }
+        }
+
+        OnSummonChanged?.Invoke(SummonedIndex);
     }
 
-    private void SaveActiveHelperState()
+    private HelperController InstantiateHelper(HelperDataSO data)
     {
-        if (_activeHelper == null) return;
-        _savedStates[_activeHelper.HelperId] = new HelperSaveData
+        Vector3 spawnPos = _owner.transform.position + _owner.transform.right * 1.5f;
+        if (PhotonNetwork.IsConnected)
         {
-            HelperId = _activeHelper.HelperId,
-            Level = _activeHelper.Level.CurrentLevel,
-            Grade = (int)_activeHelper.Grade.CurrentGrade,
-            Experience = _activeHelper.Experience.CurrentExp,
-            Energy = _activeHelper.Energy.Current,
+            var go = PhotonNetwork.Instantiate(data.Prefab.name, spawnPos, Quaternion.identity);
+            return go.GetComponent<HelperController>();
+        }
+        return Instantiate(data.Prefab, spawnPos, Quaternion.identity);
+    }
+
+    private void SaveHelperState(HelperController helper)
+    {
+        if (helper == null) return;
+        _savedStates[helper.HelperId] = new HelperSaveData
+        {
+            HelperId = helper.HelperId,
+            Level = helper.Level.CurrentLevel,
+            Grade = (int)helper.Grade.CurrentGrade,
+            Experience = helper.Experience.CurrentExp,
+            Energy = helper.Energy.Current,
             EnergySavedAt = (long)UnityEngine.Time.realtimeSinceStartup
         };
     }
@@ -140,7 +231,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     public void ExportTo(PlayerSaveData saveData)
     {
-        SaveActiveHelperState();
+        SaveHelperState(_activeMainHelper);
+        SaveHelperState(_activeLightHelper);
 
         saveData.Helpers = new List<HelperSaveData>();
         foreach (var data in _helperDataList)
@@ -176,8 +268,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 _helperDataList.Add(so);
         }
 
-        if (_activeHelper != null)
-            RestoreHelperState(_activeHelper);
+        if (_activeMainHelper != null)
+            RestoreHelperState(_activeMainHelper);
+        if (_activeLightHelper != null)
+            RestoreHelperState(_activeLightHelper);
 
         OnSelectionChanged?.Invoke(0);
     }
