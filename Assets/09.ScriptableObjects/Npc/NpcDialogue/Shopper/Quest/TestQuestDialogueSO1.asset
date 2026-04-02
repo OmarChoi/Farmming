@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: TestQuestDialogueSO1
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: TestAcceptDialogue
+  Lines:
+  - Text: "\uD5C8\uC5B4. \uC801\uC801\uD558\uAD6C\uB9CC."
+    NextDialogue: {fileID: 0}
+  - Text: "\uB098\uC640 \uB300\uD654 \uD560 \uC0AC\uB78C \uC5B4\uB514 \uC5C6\uB098?"
+    NextDialogue: {fileID: 0}
