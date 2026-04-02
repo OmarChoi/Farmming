@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class UI_ShopItemSlot : MonoBehaviour, IPointerClickHandler
 {
-    [SerializeField] private Image _icon;
+    [SerializeField] private Image _iconImage;
     [SerializeField] private TextMeshProUGUI _itemNameText;
     [SerializeField] private TextMeshProUGUI _itemCostText;
     [SerializeField] private TextMeshProUGUI _itemExplanationText;
@@ -29,17 +29,17 @@ public class UI_ShopItemSlot : MonoBehaviour, IPointerClickHandler
 
         if (item == null)
         {
-            _icon.enabled = false;
+            _iconImage.enabled = false;
             _itemNameText.text = "";
             _itemCostText.text = "";
             _itemExplanationText.text = "";
             return;
         }
 
-        _icon.enabled = true;
-        _icon.sprite = item.Icon;
+        _iconImage.enabled = true;
+        _iconImage.sprite = item.Icon;
         _itemNameText.text = $"{item.DisplayName}";
-        _itemCostText.text = $"Cost: {item.BuyCost}";
+        _itemCostText.text = $"{item.BuyCost}";
         _itemExplanationText.text = $"{item.DisplayExplanation}";
     }
 

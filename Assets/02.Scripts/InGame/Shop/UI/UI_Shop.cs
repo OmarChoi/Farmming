@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class UI_Shop : MonoBehaviour
 {
@@ -15,12 +16,44 @@ public class UI_Shop : MonoBehaviour
     [Header("닫기 버튼")]
     [SerializeField] private Button _exitButton;
 
+    [Header("슬라이드 애니메이션")]
+    [SerializeField] private float _slideDuration = 0.3f;
+    [SerializeField] private float _slideDistance = 300f;
+
+    private RectTransform _shopRect;
+    private Vector2 _shopOriginPosition;
+    private Tween _slideTween;
+
     private readonly List<UI_ShopItemSlot> _slots = new();
 
     private ShopData _currentShopData;
     private TradeService _tradeService;
 
     public Action OnCloseRequested;
+
+    private void Awake()
+    {
+        if (_uiShopRoot != null)
+        {
+            _shopRect = _uiShopRoot.GetComponent<RectTransform>();
+            _shopOriginPosition = _shopRect.anchoredPosition;
+            _uiShopRoot.SetActive(false);
+        }
+
+        if (_exitButton != null)
+        {
+            _exitButton.onClick.AddListener(OnClickCloseButton);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        _slideTween?.Kill();
+        if (_exitButton != null)
+        {
+            _exitButton.onClick.RemoveListener(OnClickCloseButton);
+        }
+    }
 
     public void Init(TradeService tradeService)
     {
@@ -34,12 +67,43 @@ public class UI_Shop : MonoBehaviour
         _uiShopRoot.SetActive(true);
 
         CreateOrRefreshSlots();
+        PlayOpenAnimation();
     }
 
     public void Close()
     {
-        _uiShopRoot.SetActive(false);
-        _currentShopData = null;
+        PlayCloseAnimation();
+    }
+
+    private void PlayOpenAnimation()
+    {
+        if (_shopRect == null) return;
+
+        _slideTween?.Kill();
+
+        _shopRect.anchoredPosition = _shopOriginPosition + Vector2.left * _slideDistance;
+        _slideTween = _shopRect.DOAnchorPos(_shopOriginPosition, _slideDuration).SetEase(Ease.OutBack).SetLink(_uiShopRoot);
+    }
+
+    private void PlayCloseAnimation()
+    {
+        if (_shopRect == null)
+        {
+            _uiShopRoot.SetActive(false);
+            _currentShopData = null;
+            return;
+        }
+
+        _slideTween?.Kill();
+
+        Vector2 target = _shopOriginPosition + Vector2.left * _slideDistance;
+        _slideTween = _shopRect.DOAnchorPos(target, _slideDuration).SetEase(Ease.InBack).SetLink(_uiShopRoot)
+            .OnComplete(() =>
+            {
+                _uiShopRoot.SetActive(false);
+                _shopRect.anchoredPosition = _shopOriginPosition;
+                _currentShopData = null;
+            });
     }
 
     private void CreateOrRefreshSlots()
