@@ -72,7 +72,9 @@ public class ShopController : MonoBehaviour
     
     private void OnPlayerReady(PlayerInventoryAbility ability)
     {
+#if UNITY_EDITOR
         Debug.Log("PlayerInventoryAbility 확인");
+#endif
         _playerInventory = ability;
         Init();
     }

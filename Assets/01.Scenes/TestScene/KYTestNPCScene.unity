@@ -1899,6 +1899,7 @@ GameObject:
   - component: {fileID: 794116320}
   - component: {fileID: 794116318}
   - component: {fileID: 794116321}
+  - component: {fileID: 794116322}
   m_Layer: 0
   m_Name: QuestManager
   m_TagString: Untagged
@@ -1918,8 +1919,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdfffef51e6eca04f85cc64016ea7918, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestManager
-  _playerInventory: {fileID: 1154523364}
-  _dailyQuestCounts: 3
 --- !u!4 &794116319
 Transform:
   m_ObjectHideFlags: 0
@@ -1961,6 +1960,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestJournalController
   _uiQuestJournal: {fileID: 407518367}
   _playerController: {fileID: 1154523363}
+--- !u!114 &794116322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 794116317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b99931acc502ff544bd186d05e043e18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DailyQuestManager
+  _dailyQuestCounts: 3
 --- !u!1 &840270188
 GameObject:
   m_ObjectHideFlags: 0
