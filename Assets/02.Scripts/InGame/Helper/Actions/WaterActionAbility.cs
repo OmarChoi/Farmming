@@ -58,34 +58,16 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        if (cell == null)
-        {
-            return;
-        }
-        if (_isActing)
-        {
-            return;
-        }
-
+        if (cell == null) return;
+        if (_owner.IsMine && !_isActing) return;
         StartWaterAction(cell, isSecondary: false);
     }
 
     public void InteractSecondary(TerrainCell cell)
     {
-        if (cell == null)
-        {
-            return;
-        }
-        if(_isActing)
-        {
-            return;
-        }
-
-        if(!_owner.Energy.TryConsume(_secondaryEnergyCost))
-        {
-            return;
-        }
-
+        if (cell == null) return;
+        if (_owner.IsMine && !_isActing) return;
+        if(!_owner.Energy.TryConsume(_secondaryEnergyCost)) return;
         StartWaterAction(cell, isSecondary: true);
     }
 

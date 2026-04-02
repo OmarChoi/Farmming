@@ -58,7 +58,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
-        if (_isActing)
+        if (_owner.IsMine && _isActing)
         {
             return;
         }
