@@ -44,7 +44,19 @@ public class UI_QuestJournalSlot : MonoBehaviour
         switch (quest.ObjectiveType)
         {
             case EQuestObjectiveType.BreakObject:
-                _questTargetText.text = $"{quest.TargetId} {quest.RequiredAmount}만큼 캐기";
+                _questTargetText.text = $"{quest.TargetObjectId} {quest.RequiredAmount}만큼 캐기";
+                break;
+
+            case EQuestObjectiveType.CollectItem:
+                _questTargetText.text = $"{quest.TargetItemId} {quest.RequiredAmount}만큼 가져오기";
+                break;
+
+            case EQuestObjectiveType.DeliverItem:
+                _questTargetText.text = $"{quest.TargetNpcId}에게 {quest.TargetItemId} {quest.RequiredAmount}개 가져다주기";
+                break;
+
+            case EQuestObjectiveType.TalkToNpc:
+                _questTargetText.text = $"{quest.TargetNpcId} 찾아가기";
                 break;
 
             default:

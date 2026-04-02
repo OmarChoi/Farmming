@@ -71,7 +71,7 @@ public class UI_QuestBoardSlot : MonoBehaviour
         _questNameText.text = quest.QuestName;
         _descriptionText.text = _wrapper.WrapText(quest.Description, _descriptionText);
 
-        if (string.IsNullOrEmpty(quest.TargetId))
+        if (string.IsNullOrEmpty(quest.TargetObjectId))
         {
             _questTargetText.text = "";
         }
@@ -80,7 +80,19 @@ public class UI_QuestBoardSlot : MonoBehaviour
             switch (quest.ObjectiveType)
             {
                 case EQuestObjectiveType.BreakObject:
-                    _questTargetText.text = $"퀘스트 조건: {quest.TargetId} {quest.RequiredAmount}만큼 캐기";
+                    _questTargetText.text = $"퀘스트 조건: {quest.TargetObjectId} {quest.RequiredAmount}만큼 캐기";
+                    break;
+
+                case EQuestObjectiveType.CollectItem:
+                    _questTargetText.text = $"{quest.TargetItemId} {quest.RequiredAmount}만큼 가져오기";
+                    break;
+
+                case EQuestObjectiveType.DeliverItem:
+                    _questTargetText.text = $"{quest.TargetNpcId}에게 {quest.TargetItemId} {quest.RequiredAmount}개 가져다주기";
+                    break;
+
+                case EQuestObjectiveType.TalkToNpc:
+                    _questTargetText.text = $"{quest.TargetNpcId} 찾아가기";
                     break;
             }
         }

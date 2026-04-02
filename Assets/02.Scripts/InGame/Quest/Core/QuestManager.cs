@@ -21,10 +21,6 @@ public class QuestManager : MonoBehaviour
     private Dictionary<EQuestRewardType, IQuestRewardHandler> _rewardHandlers;
 
     public IReadOnlyDictionary<string, QuestRuntimeData> ActiveQuests => _activeQuests;
-    public List<QuestRuntimeData> GetActiveQuestList()
-    {
-        return new List<QuestRuntimeData>(_activeQuests.Values);
-    }
 
     private readonly List<QuestDataSO> _todayDailyQuests = new();
     public IReadOnlyList<QuestDataSO> TodayDailyQuests => _todayDailyQuests;
@@ -35,6 +31,11 @@ public class QuestManager : MonoBehaviour
     public event Action<string> OnQuestRemoved;
 
     public static event Action OnQuestManagerReady;
+
+    public List<QuestRuntimeData> GetActiveQuestList()
+    {
+        return new List<QuestRuntimeData>(_activeQuests.Values);
+    }
 
     private void Awake()
     {
@@ -75,7 +76,7 @@ public class QuestManager : MonoBehaviour
     private void HandleGatheringCompleted(GatheringObject obj)
     {
         if (obj == null || obj.GatheringData == null) return;
-        AddProgress(EQuestObjectiveType.BreakObject, obj.GatheringData.ObjectName);
+        ReportObjectBroken(obj.GatheringData.ObjectName);
     }
 
     // 현재 진행 중인 퀘스트가 하나라도 있는지 확인합니다.
@@ -139,11 +140,62 @@ public class QuestManager : MonoBehaviour
         return true;
     }
 
-    // 현재 퀘스트의 진행도를 확인하는 메서드입니다.
-    public void AddProgress(EQuestObjectiveType objectiveType, string targetId, int amount = 1)
+    public void ReportObjectBroken(string objectId, int amount = 1)
+    {
+        if (string.IsNullOrEmpty(objectId)) return;
+        TryAddProgress(EQuestObjectiveType.BreakObject, objectId, amount);
+    }
+
+    public void ReportItemCollected(string itemId, int amount = 1)
+    {
+        if (string.IsNullOrEmpty(itemId)) return;
+        TryAddProgress(EQuestObjectiveType.CollectItem, itemId, amount);
+    }
+
+    public void ReportNpcTalked(string npcId)
+    {
+        if (string.IsNullOrEmpty(npcId)) return;
+        TryAddProgress(EQuestObjectiveType.TalkToNpc, npcId, 1);
+    }
+
+    public bool TryDeliverItemToNpc(string npcId)
+    {
+        if (string.IsNullOrEmpty(npcId)) return false;
+        if (_activeQuests.Count == 0) return false;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+            if (quest.QuestData == null) continue;
+
+            QuestDataSO questData = quest.QuestData;
+
+            if (questData.ObjectiveType != EQuestObjectiveType.DeliverItem) continue;
+            if (questData.TargetNpcId != npcId) continue;
+
+            string itemId = questData.TargetItemId;
+            int amount = questData.RequiredAmount;
+
+            if (!TryConsumeItem(itemId, amount))
+            {
+                return false;
+            }
+
+            quest.CurrentAmount = amount;
+            quest.Status = EQuestStatus.CanComplete;
+            OnQuestUpdated?.Invoke(quest);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void TryAddProgress(EQuestObjectiveType objectiveType, string targetId, int amount)
     {
         if (_activeQuests.Count == 0) return;
         if (string.IsNullOrEmpty(targetId)) return;
+        if (amount <= 0) return;
 
         foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
@@ -154,7 +206,7 @@ public class QuestManager : MonoBehaviour
             QuestDataSO questData = quest.QuestData;
 
             if (questData.ObjectiveType != objectiveType) continue;
-            if (questData.TargetId != targetId) continue;
+            if (!IsTargetMatched(questData, objectiveType, targetId)) continue;
 
             quest.CurrentAmount += amount;
 
@@ -166,6 +218,35 @@ public class QuestManager : MonoBehaviour
 
             OnQuestUpdated?.Invoke(quest);
         }
+    }
+
+    private bool IsTargetMatched(QuestDataSO questData, EQuestObjectiveType objectiveType, string targetId)
+    {
+        switch (objectiveType)
+        {
+            case EQuestObjectiveType.BreakObject:
+                return questData.TargetObjectId == targetId;
+
+            case EQuestObjectiveType.CollectItem:
+                return questData.TargetItemId == targetId;
+
+            case EQuestObjectiveType.TalkToNpc:
+                return questData.TargetNpcId == targetId;
+
+            default:
+                return false;
+        }
+    }
+
+    private bool TryConsumeItem(string itemId, int amount)
+    {
+        if (_playerInventory == null) return false;
+        if (string.IsNullOrEmpty(itemId)) return false;
+        if (amount <= 0) return false;
+
+        // todo. 아이템 차감 후 true 반환
+
+        return false;
     }
 
     // 퀘스트를 완료할 수 있는 지 확인하는 메서드입니다.
