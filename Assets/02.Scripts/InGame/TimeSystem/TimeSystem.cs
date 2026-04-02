@@ -181,8 +181,10 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         {
             return prevMinutes < targetMinutes && currentMinutes >= targetMinutes;
         }
-        if (targetMinutes == GameTime.MinutesPerDay) return true;
-        return currentMinutes >= targetMinutes;
+
+        // 날짜가 바뀐 경우:
+        // 이전 날의 남은 이벤트(prevMinutes < targetMinutes) OR 새 날의 이벤트(currentMinutes >= targetMinutes)
+        return prevMinutes < targetMinutes || currentMinutes >= targetMinutes;
     }
 
     private void ExecuteMasterClientEvent(TimeEvents.EventType eventType)
