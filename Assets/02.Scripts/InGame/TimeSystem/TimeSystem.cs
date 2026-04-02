@@ -182,8 +182,11 @@ public class TimeSystem : MonoBehaviourPunCallbacks
             return prevMinutes < targetMinutes && currentMinutes >= targetMinutes;
         }
 
-        // 날짜가 바뀐 경우:
-        // 이전 날의 남은 이벤트(prevMinutes < targetMinutes) OR 새 날의 이벤트(currentMinutes >= targetMinutes)
+        // 날짜가 바뀐 경우, 두 구간을 합쳐서 판정:
+        //   1) prevMinutes < targetMinutes  → 이전 날에 아직 지나지 않은 이벤트 (예: 23:59에서 자정을 넘긴 경우 23:55 이벤트)
+        //   2) currentMinutes >= targetMinutes → 새 날에 이미 도달한 이벤트 (예: SkipToNextDay로 07:00에 도착 시 06:00 이벤트)
+        // 둘 다 false인 경우(prevMinutes >= target AND currentMinutes < target)는
+        // "이전 날에 이미 처리됐고 새 날에는 아직 안 된" 이벤트이므로 정확히 제외됨
         return prevMinutes < targetMinutes || currentMinutes >= targetMinutes;
     }
 
@@ -244,14 +247,14 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.InRoom) return;
 
-        photonView.RPC(nameof(RPC_ExecuteEvent), RpcTarget.Others, eventType);
+        photonView.RPC(nameof(RPC_ExecuteEvent), RpcTarget.Others, (byte)eventType);
     }
 
     [PunRPC]
-    private void RPC_ExecuteEvent(TimeEvents.EventType eventType)
+    private void RPC_ExecuteEvent(byte eventTypeByte)
     {
         if (PhotonNetwork.IsMasterClient) return;
-        ExecuteEvent(eventType);
+        ExecuteEvent((TimeEvents.EventType)eventTypeByte);
     }
     #endregion
 }
