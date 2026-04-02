@@ -43,7 +43,8 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
     {
         if (!AreAllPlayersNearby())
         {
-            _ui.SetDescription("모든 플레이어가 근처에 있어야 합니다.");
+            _ui.SetDescription("모든 플레이어가 근처에 있어야 합니다.",
+                () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction));
             return;
         }
 
@@ -56,7 +57,8 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
             {
                 if (inventory.GetItemCount(req.Item) < req.Amount)
                 {
-                    _ui.SetDescription("재료가 부족합니다.");
+                    _ui.SetDescription("재료가 부족합니다.",
+                        () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction));
                     return;
                 }
             }

@@ -82,9 +82,12 @@ public class UI_DungeonPortal : MonoBehaviour
         });
     }
 
-    public void SetDescription(string message)
+    public void SetDescription(string message, Action onConfirm = null)
     {
-        ShowTextThenButtons(message, null);
+        ShowTextThenButtons(message, () =>
+        {
+            CreateButton("확인", onConfirm);
+        });
     }
 
     public void Close()
