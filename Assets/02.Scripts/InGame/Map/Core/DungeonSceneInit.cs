@@ -5,6 +5,7 @@ using UnityEngine;
 public class DungeonSceneInit : MonoBehaviour
 {
     [SerializeField] private int _floor = 1;
+    [SerializeField] private DungeonEnvironmentController _environmentController;
 
     /// 포탈에서 선택한 층 (null이면 SerializeField 사용)
     public static int? FloorOverride { get; set; }
@@ -39,6 +40,7 @@ public class DungeonSceneInit : MonoBehaviour
 
         // 1. 마스터가 던전 맵 생성
         MapManager.Instance.EnterDungeon(_floor, seed);
+        ApplyEnvironment();
 
         // 2. 플레이어 배치
         PlaceAllPlayers();
@@ -77,6 +79,7 @@ public class DungeonSceneInit : MonoBehaviour
 
         // 동일한 시드로 로컬에서 맵 생성
         MapManager.Instance.EnterDungeon(receivedFloor, receivedSeed);
+        ApplyEnvironment();
 
         PlaceAllPlayers();
     }
@@ -90,6 +93,8 @@ public class DungeonSceneInit : MonoBehaviour
             MapManager.Instance.EnterDungeon(_floor, seed, players[0].transform);
         else
             MapManager.Instance.EnterDungeon(_floor, seed);
+
+        ApplyEnvironment();
     }
 
     private void PlaceAllPlayers()
@@ -133,5 +138,17 @@ public class DungeonSceneInit : MonoBehaviour
         }
 
         return Vector3.zero;
+    }
+
+    private void ApplyEnvironment()
+    {
+        if (_environmentController == null)
+            _environmentController = FindFirstObjectByType<DungeonEnvironmentController>();
+
+        if (_environmentController == null)
+            return;
+
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
+        _environmentController.Apply(config);
     }
 }

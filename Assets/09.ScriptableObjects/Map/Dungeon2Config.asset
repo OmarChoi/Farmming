@@ -15,9 +15,9 @@ MonoBehaviour:
   Width: 75
   Height: 75
   BaseHeight: 2
-  MaxHeight: 18
-  NoiseScale: 0.02
-  TileNoiseScale: 0.04
+  MaxHeight: 25
+  NoiseScale: 0.018
+  TileNoiseScale: 0.035
   DefaultTileType: 3
   Resources:
   - Type: 1
@@ -28,10 +28,11 @@ MonoBehaviour:
     SpawnChance: 0.03
   DungeonName: "\uB3D9\uAD74"
   TimeLimitSeconds: 180
-  EntryCost: 100
+  EntryCost: 0
   EntryRequirements: []
   TileWeights: []
   IsCave: 1
-  CaveFillPercent: 0.413
+  CaveFillPercent: 0.43
   CaveSmoothIterations: 5
   WallTileType: 4
+  EnvironmentProfile: {fileID: 11400000, guid: 61f8828a60a4b704ea92370b9c45315d, type: 2}
