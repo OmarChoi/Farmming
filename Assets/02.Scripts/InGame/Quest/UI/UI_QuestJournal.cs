@@ -45,7 +45,7 @@ public class UI_QuestJournal : MonoBehaviour
     public async UniTask OpenAsync()
     {
         RefreshQuestList();
-
+        CreateOrRefreshSlots();
         if (_popupDoTween != null)
         {
             await _popupDoTween.PlayOpenAsync();
@@ -54,7 +54,6 @@ public class UI_QuestJournal : MonoBehaviour
         {
             _uiQuestJournalRoot.SetActive(true);
         }
-        CreateOrRefreshSlots();
     }
 
     public async UniTask CloseAsync()
