@@ -30,6 +30,18 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
+    private void Update()
+    {
+        if (!_isActing) return;
+
+        var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.IsName("Water") && stateInfo.normalizedTime >= 1f)
+        {
+            _animAbility?.Play(EHelperAnim.Idle);
+            ResetState();
+        }
+    }
+
     private void OnDisable()
     {
         ResetState();
@@ -128,13 +140,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             }
         }
     }
-
-    public void WaterClose()
-    {
-        _animAbility?.Play(EHelperAnim.Idle);
-        ResetState();
-    }
-
+    
     private void ResetState()
     {
         _isActing = false;

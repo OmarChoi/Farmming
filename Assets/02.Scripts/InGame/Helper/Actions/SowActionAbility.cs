@@ -17,11 +17,6 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private FarmTile _currentFarmTile;
     private SeedItemDataSO _currentSeed;
 
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
     private void Start()
     {
         _cultivateAbility = _owner.GetAbility<CultivateAbility>();
