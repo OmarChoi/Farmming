@@ -1,13 +1,17 @@
-﻿public readonly struct GatheringInfo
+using Photon.Realtime;
+
+public readonly struct GatheringInfo
 {
-    public readonly PlayerController Player;
-    public readonly int Damage;
-    public readonly HelperGrade HelperGrade;
+    private readonly HelperController _helperController;
 
     public GatheringInfo(HelperController helperController)
     {
-        Player = helperController.PlayerOwner;
-        Damage = helperController.Data.GatherDamage;
-        HelperGrade = helperController.Grade;
+        _helperController = helperController;
     }
+
+    public PlayerController Player => _helperController.PlayerOwner;
+    public int Damage => _helperController.Data.GatherDamage;
+    public HelperGrade HelperGrade => _helperController.Grade;
+    public HelperExperience HelperExperience => _helperController.Experience;
+
 }

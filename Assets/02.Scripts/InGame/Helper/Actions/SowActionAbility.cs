@@ -9,6 +9,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [SerializeField] private GameObject _seedVfxPrefab;
     [SerializeField] private float _sowDelay = 0.5f;
 
+    [SerializeField] private int _cultivateExperience = 10;
+    [SerializeField] private int _sowExperience = 10;
+
     private CultivateAbility _cultivateAbility;
     private SeedSelectAbility _seedSelector;
     private HelperAnimationAbility _animAbility;
@@ -37,6 +40,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
             _cultivateAbility.JumpAndCultivate(cell, () =>
             {
                 cell.TryConvertToFarm();
+                _owner.Experience.Add(_cultivateExperience);
             });
             return;
         }
@@ -122,6 +126,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (farmTile == null) yield break;
 
         farmTile.PlantSeed(seed);
+        _owner.Experience.Add(_sowExperience);
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)

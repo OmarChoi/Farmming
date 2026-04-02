@@ -39,6 +39,18 @@ public class TypewriterWithWrap : MonoBehaviour
 
         for (int i = 0; i < text.Length; i++)
         {
+            // 리치텍스트 태그는 통째로 추가
+            if (text[i] == '<')
+            {
+                int closeIndex = text.IndexOf('>', i);
+                if (closeIndex != -1)
+                {
+                    _tmp.text += text.Substring(i, closeIndex - i + 1);
+                    i = closeIndex;
+                    continue;
+                }
+            }
+
             _tmp.text += text[i];
             yield return new WaitForSeconds(_typingSpeed);
         }

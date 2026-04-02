@@ -3,5 +3,6 @@ public enum ENpcLocationType
 {
     Home,
     Shop,
-    Wandering
+    Wandering,
+    Smithy
 }

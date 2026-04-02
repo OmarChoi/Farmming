@@ -5,6 +5,7 @@ using UnityEngine;
 public class HarvestActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private HarvestItemSO _harvestItem;
+    [SerializeField] private int _harvestExperience = 10;
     private PlayerInventoryAbility GetInventory()
     {
         return _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
@@ -44,6 +45,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if(inventory != null && seed.HarvestItem !=null)
         {
             inventory.AddItem(seed.HarvestItem, harvestAmount);
+            _owner.Experience.Add(_harvestExperience);
         }
 
         if(seed.Icon != null)

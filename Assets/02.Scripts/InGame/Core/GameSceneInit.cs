@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameSceneInit : MonoBehaviour
 {
+    public static bool ReturningFromDungeon{ get; set; }
+
     [SerializeField] private string _playerPrefabName = "Player";
     [SerializeField] private MapManager _mapManager;
     [SerializeField] private MapNavMeshController _mapNavMeshController;
@@ -22,8 +24,9 @@ public class GameSceneInit : MonoBehaviour
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            if (RoomManager.Instance.IsFirstVisit)
+            if (RoomManager.Instance.IsFirstVisit && !ReturningFromDungeon)
             {
+                Debug.Log("______________________________처음");
                 Vector3 spawnPos = _mapManager.GenerateVillage();
                 _mapNavMeshController.BuildInitialNavMesh();
                 SpawnPlayer(spawnPos);
@@ -31,11 +34,13 @@ public class GameSceneInit : MonoBehaviour
             }
             else
             {
+                Debug.Log("______________________________아님");
                 LoadAndSpawnMaster().Forget();
             }
         }
         else
         {
+            PhotonNetwork.AutomaticallySyncScene = true;
             // 클라이언트: 맵 동기화 완료 후 스폰
             WaitForMapAndSpawn().Forget();
         }
@@ -54,6 +59,11 @@ public class GameSceneInit : MonoBehaviour
         await UniTask.WaitUntil(() => synced || Time.time > timeout);
 
         if (!synced) return;
+
+        // 던전 복귀 시 기존 DontDestroyOnLoad 플레이어가 있으면 중복 스폰 방지
+        var existing = FindAnyObjectByType<PlayerController>();
+        if (existing != null && existing.IsMine)
+            return;
 
         var pos = FindSpawnPosition();
         SpawnPlayer(pos);
@@ -98,6 +108,13 @@ public class GameSceneInit : MonoBehaviour
 
     private void InitLocalGame()
     {
+        if (ReturningFromDungeon)
+        {
+            ReturningFromDungeon = false;
+            LoadLocalVillage().Forget();
+            return;
+        }
+
         var existing = FindAnyObjectByType<PlayerController>();
 
         Vector3 spawnPos = _mapManager.GenerateVillage(existing != null ? existing.transform : null);
@@ -107,9 +124,31 @@ public class GameSceneInit : MonoBehaviour
             existing.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
     }
 
+    private async UniTaskVoid LoadLocalVillage()
+    {
+        int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+        await SaveManager.Instance.LoadAsync(slot);
+
+        _mapNavMeshController.BuildInitialNavMesh();
+
+        if (BuildingManager.Instance != null)
+            BuildingManager.Instance.SpawnBuildingNpcs();
+
+        var existing = FindAnyObjectByType<PlayerController>();
+        if (existing != null)
+        {
+            string playerId = existing.PlayerId;
+            SaveManager.Instance.RegisterPlayer(playerId, existing);
+        }
+    }
+
     private async UniTaskVoid LoadAndSpawnMaster()
     {
         int slot = RoomManager.Instance.SelectedSlot;
+
+        // 클라이언트가 로드 완료 전에 맵을 요청하는 것을 방지
+        if (MapSyncManager.Instance != null)
+            MapSyncManager.Instance.HoldRequests();
 
         // 1. 맵·지형 데이터 로드 → _loadedData 보관
         await SaveManager.Instance.LoadAsync(slot);
@@ -119,12 +158,35 @@ public class GameSceneInit : MonoBehaviour
 
         await SaveManager.Instance.LoadBuildingAsync();
 
-        SpawnPlayer(Vector3.zero);
+        if (ReturningFromDungeon)
+        {
+            // 기존 DontDestroyOnLoad 플레이어를 재등록 → 저장된 위치 복원
+            RestoreExistingPlayers();
+            ReturningFromDungeon = false;
+        }
+        else
+        {
+            SpawnPlayer(Vector3.zero);
+        }
 
-        // 5. 한 프레임 대기 → Start() 실행 보장
+        // 4. 한 프레임 대기 → Start() 실행 보장
         await UniTask.Yield();
+
+        // 5. 맵 로드 완료 → 클라이언트에 전송
+        if (MapSyncManager.Instance != null)
+            MapSyncManager.Instance.BroadcastMap();
 
         // 6. 클라이언트 입장 허용
         RoomManager.Instance.OpenRoom();
+    }
+
+    private void RestoreExistingPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.RegisterPlayer(player.PlayerId, player);
+        }
     }
 }
