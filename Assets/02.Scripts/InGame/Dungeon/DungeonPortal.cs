@@ -31,9 +31,14 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
     {
         var config = _dungeonConfigs[floor - 1];
         var inventory = _playerController.GetAbility<PlayerInventoryAbility>();
+        int currentGold = CurrencyManager.Instance != null
+            ? (int)(double)CurrencyManager.Instance.GetGold()
+            : 0;
 
         _ui.ShowRequirements(
             config.EntryRequirements,
+            config.EntryCost,
+            currentGold,
             item => inventory.GetItemCount(item),
             () => OnConfirmEnter(floor),
             () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction));
@@ -50,19 +55,35 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
 
         var config = _dungeonConfigs[floor - 1];
         var inventory = _playerController.GetAbility<PlayerInventoryAbility>();
+        Action backToSelection = () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction);
 
+        // 골드 체크
+        if (config.EntryCost > 0 && (CurrencyManager.Instance == null || !CurrencyManager.Instance.CanAfford(config.EntryCost)))
+        {
+            _ui.SetDescription("골드가 부족합니다.", backToSelection);
+            return;
+        }
+
+        // 재료 체크
         if (config.EntryRequirements != null && config.EntryRequirements.Length > 0)
         {
             foreach (var req in config.EntryRequirements)
             {
                 if (inventory.GetItemCount(req.Item) < req.Amount)
                 {
-                    _ui.SetDescription("재료가 부족합니다.",
-                        () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction));
+                    _ui.SetDescription("재료가 부족합니다.", backToSelection);
                     return;
                 }
             }
+        }
 
+        // 골드 차감
+        if (config.EntryCost > 0)
+            CurrencyManager.Instance.TrySpendGold(config.EntryCost);
+
+        // 재료 차감
+        if (config.EntryRequirements != null && config.EntryRequirements.Length > 0)
+        {
             foreach (var req in config.EntryRequirements)
                 inventory.RemoveItem(req.Item, req.Amount);
         }
