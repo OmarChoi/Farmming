@@ -123,7 +123,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             Grade = (int)_activeHelper.Grade.CurrentGrade,
             Experience = _activeHelper.Experience.CurrentExp,
             Energy = _activeHelper.Energy.Current,
-            EnergySavedAt = UnityEngine.Time.realtimeSinceStartup
+            EnergySavedAt = (long)UnityEngine.Time.realtimeSinceStartup
         };
     }
 
