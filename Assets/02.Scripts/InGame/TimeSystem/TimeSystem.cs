@@ -133,6 +133,12 @@ public class TimeSystem : MonoBehaviourPunCallbacks
             case TimeEvents.EventType.DayEnd:
                 TimeEvents.InvokeNetDayEnded();
                 break;
+            case TimeEvents.EventType.SunRise:
+                TimeEvents.InvokeNetSunRise();
+                break;
+            case TimeEvents.EventType.SunSet:
+                TimeEvents.InvokeNetSunSet();
+                break;
         }
     }
     
@@ -144,49 +150,39 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
+        int prevDay = CurrentDay;
+        GameTime prevTime = CurrentTime;
+
         ExecuteSkipToNextDay();
         SyncToRemote();
-        
-        ExecuteMasterClientEvent(TimeEvents.EventType.DayEnd);
-        ExecuteMasterClientEvent(TimeEvents.EventType.DayChange);
-        ExecuteMasterClientEvent(TimeEvents.EventType.DayStart);
+
+        CheckDayEvent(prevDay, prevTime);
     }
-    
-    private bool HasPassedTime(GameTime previous, GameTime current, GameTime target)
-    {
-        return previous < target && current >= target;
-    }
-    
+
     private void CheckDayEvent(int prevDay, GameTime prevTime)
     {
-        // 이전 시간과 현재 시간 사이에 DayStart 시간이 존재하면 DayStart 이벤트 호출
-        bool passedDayStart = HasPassedTime(prevTime, _clock.CurrentTime, _timeSettings.DayStartTime);
-        if (passedDayStart)
-        {
-            ExecuteMasterClientEvent(TimeEvents.EventType.DayStart);
-        }
-        
-        // 이전 시간과 날짜가 다르면 DayChanged 이벤트 호출
         bool dayChanged = prevDay != _clock.CurrentDay;
-        bool dayEndsAtMidnight = _timeSettings.DayEndTime.Equals(new GameTime(0, 0));
-        if (dayChanged)
-        {
-            if (dayEndsAtMidnight)
-            {
-                ExecuteMasterClientEvent(TimeEvents.EventType.DayEnd);
-                ExecuteMasterClientEvent(TimeEvents.EventType.DayChange);
-                return;
-            }
 
-            ExecuteMasterClientEvent(TimeEvents.EventType.DayChange);
-        }
+        if (HasCrossed(prevTime, _timeSettings.SunriseTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.SunRise);
+        if (HasCrossed(prevTime, _timeSettings.SunsetTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.SunSet);
+        if (HasCrossed(prevTime, _timeSettings.DayEndTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.DayEnd);
         
-        // 이전 시간과 현재 시간 사이에 DayEnd 시간이 존재하면 DayEnd 이벤트 호출
-        bool passedDayEnd = HasPassedTime(prevTime, _clock.CurrentTime, _timeSettings.DayEndTime);
-        if (passedDayEnd)
+        if (dayChanged) ExecuteMasterClientEvent(TimeEvents.EventType.DayChange);
+        if (HasCrossed(prevTime, _timeSettings.DayStartTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.DayStart);
+    }
+
+    private bool HasCrossed(GameTime prevTime, GameTime targetTime, bool dayChanged)
+    {
+        int prevMinutes = prevTime.TotalMinutes;
+        int currentMinutes = _clock.CurrentTime.TotalMinutes;
+        int targetMinutes = targetTime.TotalMinutes;
+
+        if (!dayChanged)
         {
-            ExecuteMasterClientEvent(TimeEvents.EventType.DayEnd);
+            return prevMinutes < targetMinutes && currentMinutes >= targetMinutes;
         }
+        if (targetMinutes == GameTime.MinutesPerDay) return true;
+        return currentMinutes >= targetMinutes;
     }
 
     private void ExecuteMasterClientEvent(TimeEvents.EventType eventType)
