@@ -14,25 +14,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonMapConfig
   Width: 75
   Height: 75
-  BaseHeight: 2
-  MaxHeight: 25
-  NoiseScale: 0.018
-  TileNoiseScale: 0.035
+  BaseHeight: 3
+  MaxHeight: 15
+  NoiseScale: 0.06
+  TileNoiseScale: 0.08
   DefaultTileType: 3
   Resources:
   - Type: 1
     Level: 2
-    SpawnChance: 0.03
+    SpawnChance: 0.08
   - Type: 2
     Level: 2
-    SpawnChance: 0.03
+    SpawnChance: 0.08
   DungeonName: "\uB3D9\uAD74"
   TimeLimitSeconds: 180
   EntryCost: 0
   EntryRequirements: []
-  TileWeights: []
-  IsCave: 1
+  CliffPrefab: {fileID: 7165573434335360052, guid: 2c6ffc61fc792a940bc44c78a6035fbe, type: 3}
+  TreePrefab: {fileID: 5130300574329225930, guid: f37c37b73bc9fe14ca2c6c535eef3b6a, type: 3}
+  RockPrefab: {fileID: 5182465649738605643, guid: eeceeab84130ea74dbf3e5c77207a4f1, type: 3}
+  TileWeights:
+  - TileType: 3
+    Weight: 0.65
+  - TileType: 4
+    Weight: 0.35
+  IsCave: 0
   CaveFillPercent: 0.43
   CaveSmoothIterations: 5
   WallTileType: 4
-  EnvironmentProfile: {fileID: 11400000, guid: 61f8828a60a4b704ea92370b9c45315d, type: 2}
+  EnvironmentProfile: {fileID: 0}

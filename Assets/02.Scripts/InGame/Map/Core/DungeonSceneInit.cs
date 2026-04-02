@@ -39,8 +39,10 @@ public class DungeonSceneInit : MonoBehaviour
         int seed = System.Environment.TickCount;
 
         // 1. 마스터가 던전 맵 생성
+        ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
         ApplyEnvironment();
+        SpawnCliff();
 
         // 2. 플레이어 배치
         PlaceAllPlayers();
@@ -78,8 +80,10 @@ public class DungeonSceneInit : MonoBehaviour
         }
 
         // 동일한 시드로 로컬에서 맵 생성
+        ApplyObjectPrefabs(receivedFloor);
         MapManager.Instance.EnterDungeon(receivedFloor, receivedSeed);
         ApplyEnvironment();
+        SpawnCliff();
 
         PlaceAllPlayers();
     }
@@ -89,12 +93,15 @@ public class DungeonSceneInit : MonoBehaviour
         int seed = System.Environment.TickCount;
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
 
+        ApplyObjectPrefabs(_floor);
+
         if (players.Length > 0)
             MapManager.Instance.EnterDungeon(_floor, seed, players[0].transform);
         else
             MapManager.Instance.EnterDungeon(_floor, seed);
 
         ApplyEnvironment();
+        SpawnCliff();
     }
 
     private void PlaceAllPlayers()
@@ -138,6 +145,23 @@ public class DungeonSceneInit : MonoBehaviour
         }
 
         return Vector3.zero;
+    }
+
+    private void ApplyObjectPrefabs(int floor)
+    {
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(floor);
+        if (config == null) return;
+
+        MapManager.Instance.GridManager.OverrideObjectPrefabs(config.TreePrefab, config.RockPrefab);
+    }
+
+    private void SpawnCliff()
+    {
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
+        if (config == null || config.CliffPrefab == null)
+            return;
+
+        Instantiate(config.CliffPrefab);
     }
 
     private void ApplyEnvironment()
