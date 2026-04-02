@@ -35,7 +35,10 @@ public class QuestJournalController : MonoBehaviour
         if (_uiQuestJournal == null) return;
 
         await _uiQuestJournal.OpenAsync();
-        _playerController?.SetCursorLock(false);
+        if (_playerController != null)
+        {
+            _playerController?.SetCursorLock(false);
+        }
     }
 
     public async void CloseQuestJournal()
@@ -43,6 +46,9 @@ public class QuestJournalController : MonoBehaviour
         if (_uiQuestJournal == null) return;
 
         await _uiQuestJournal.CloseAsync();
-        _playerController?.SetCursorLock(true);
+        if (_playerController != null)
+        {
+            _playerController?.SetCursorLock(true);
+        }
     }
 }

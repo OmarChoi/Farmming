@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "QuestDataSO", menuName = "Scriptable Objects/Quest/QuestDataSO")]
@@ -22,8 +23,18 @@ public class QuestDataSO : ScriptableObject
     public string TargetNpcId;      // TalkToNpc와 DeliverItem용 Id입니다.
     public int RequiredAmount = 1;
 
+    [Header("선행 조건")]
+    public List<QuestDataSO> PrerequisiteQuests;
+    public int RequiredFriendship;
+
     [Header("보상")]
     public QuestRewardData Reward;
+
+    [Header("NPC 대사")]
+    public NpcDialogueSO AcceptDialogue;
+    public NpcDialogueSO InProgressDialogue;
+    public NpcDialogueSO CompleteDialogue;
+    public NpcDialogueSO NoQuestDialogue;
 
     // 실수로 퀘스트 요구치가 0 이하로 지정될 경우, 자동으로 1로 바꿔주어 오류를 방어합니다.
     private void OnValidate()
