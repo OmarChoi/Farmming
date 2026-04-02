@@ -87,7 +87,6 @@ public class QuestManager : MonoBehaviour
     public QuestRuntimeData GetQuest(string questId)
     {
         if (string.IsNullOrEmpty(questId)) return null;
-
         _activeQuests.TryGetValue(questId, out QuestRuntimeData quest);
         return quest;
     }
@@ -146,14 +145,12 @@ public class QuestManager : MonoBehaviour
 
     public bool TryDeliverItemToNpc(string npcId)
     {
-        if (string.IsNullOrEmpty(npcId)) return false;
-        if (_activeQuests.Count == 0) return false;
+        if (string.IsNullOrEmpty(npcId) || _activeQuests.Count == 0) return false;
 
         foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
-            if (quest == null) continue;
+            if (quest == null || quest.QuestData == null) continue;
             if (quest.Status != EQuestStatus.InProgress) continue;
-            if (quest.QuestData == null) continue;
 
             QuestDataSO questData = quest.QuestData;
 
@@ -185,9 +182,8 @@ public class QuestManager : MonoBehaviour
 
         foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
-            if (quest == null) continue;
+            if (quest == null || quest.QuestData == null) continue;
             if (quest.Status != EQuestStatus.InProgress) continue;
-            if (quest.QuestData == null) continue;
 
             QuestDataSO questData = quest.QuestData;
 
@@ -226,9 +222,7 @@ public class QuestManager : MonoBehaviour
 
     private bool TryConsumeItem(string itemId, int amount)
     {
-        if (_playerInventory == null) return false;
-        if (string.IsNullOrEmpty(itemId)) return false;
-        if (amount <= 0) return false;
+        if (_playerInventory == null || string.IsNullOrEmpty(itemId) || amount <= 0) return false;
 
         // todo. 아이템 차감 후 true 반환
 
@@ -246,8 +240,7 @@ public class QuestManager : MonoBehaviour
     public bool CompleteQuest(string questId)
     {
         QuestRuntimeData quest = GetQuest(questId);
-        if (quest == null) return false;
-        if (quest.Status != EQuestStatus.CanComplete) return false;
+        if (quest == null || quest.Status != EQuestStatus.CanComplete) return false;
 
         GiveReward(quest.QuestData.Reward);
         quest.Status = EQuestStatus.Completed;
@@ -275,8 +268,7 @@ public class QuestManager : MonoBehaviour
     // 완료된 퀘스트를 목록에서 비우는 메서드입니다.
     public bool RemoveQuest(string questId)
     {
-        if (string.IsNullOrEmpty(questId)) return false;
-        if (!_activeQuests.ContainsKey(questId)) return false;
+        if (string.IsNullOrEmpty(questId) || !_activeQuests.ContainsKey(questId)) return false;
 
         _activeQuests.Remove(questId);
         OnQuestRemoved?.Invoke(questId);
@@ -316,5 +308,54 @@ public class QuestManager : MonoBehaviour
                 handler.HandleReward(reward);
             }
         }
+    }
+
+    // 선행 퀘스트 확인용 메서드입니다.
+    public bool IsQuestCompleted(string questId)
+    {
+        if (string.IsNullOrEmpty(questId)) return false;
+
+        if (_completedMainQuestIds.Contains(questId)) return true;
+        if (_completedSubQuestIds.Contains(questId)) return true;
+
+        return false;
+    }
+
+    public QuestRuntimeData GetCompletableQuestByNpc(string npcId)
+    {
+        if (string.IsNullOrEmpty(npcId)) return null;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.CanComplete) continue;
+
+            if (quest.QuestData.CompleteNpcId == npcId)
+            {
+                return quest;
+            }
+        }
+
+        return null;
+    }
+
+    public QuestRuntimeData GetInProgressQuestByNpc(string npcId)
+    {
+        if (string.IsNullOrEmpty(npcId)) return null;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+
+            QuestDataSO data = quest.QuestData;
+
+            if (data.StartNpcId == npcId || data.CompleteNpcId == npcId || data.TargetNpcId == npcId)
+            {
+                return quest;
+            }
+        }
+
+        return null;
     }
 }
