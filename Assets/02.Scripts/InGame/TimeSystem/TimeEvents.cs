@@ -7,6 +7,8 @@ public static class TimeEvents
         DayChange,
         DayStart,
         DayEnd,
+        SunRise,
+        SunSet,
     }
     
     public static int CurrentDay { get; private set; }
@@ -25,6 +27,9 @@ public static class TimeEvents
     // 하루가 끝나는 기준 시간이 됐는지 알리기 위한 이벤트입니다.
     public static event Action OnNetDayEnded;
 
+    public static event Action OnNetSunRise;
+    public static event Action OnNetSunSet;
+
     internal static void UpdateState(int day, GameTime time, bool isDayTime, int elapsedDays)
     {
         CurrentDay = day;
@@ -37,4 +42,6 @@ public static class TimeEvents
     internal static void InvokeNetDayChanged() => OnNetDayChanged?.Invoke();
     internal static void InvokeNetDayStarted() => OnNetDayStarted?.Invoke();
     internal static void InvokeNetDayEnded() => OnNetDayEnded?.Invoke();
+    internal static void InvokeNetSunRise() => OnNetSunRise?.Invoke();
+    internal static void InvokeNetSunSet() => OnNetSunSet?.Invoke();
 }
