@@ -68,8 +68,9 @@ MonoBehaviour:
   - RPC_EndInteraction
   - RPC_PlayNpcGreet
   - RPC_StartInteraction
-  - RPC_RequestSkipToNextDay
-  - RPC_SyncTime
+  - RPC_DungeonSeed
+  - RPC_RequestDungeonSeed
+  - RPC_RequestDungeonEntry
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

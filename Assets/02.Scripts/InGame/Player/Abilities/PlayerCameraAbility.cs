@@ -1,5 +1,6 @@
-using Unity.Cinemachine;
+﻿using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerCameraAbility : PlayerAbility
 {
@@ -19,22 +20,45 @@ public class PlayerCameraAbility : PlayerAbility
     {
         public CameraPreset data;
         public Transform target;
-        public float side; // +1 = 오른쪽, -1 = 왼쪽
+        public float side;
 
         public bool IsActive => data != null;
         public bool HasTarget => target != null;
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void Start()
     {
         _defaultLocalPos = _cameraRoot.localPosition;
         _currentOffset = _defaultLocalPos;
+        BindFollowCamera();
+    }
 
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        BindFollowCamera();
+    }
+
+    private void BindFollowCamera()
+    {
         if (!_owner.IsMine) return;
+        if (_cameraRoot == null) return;
 
         var followCamObj = GameObject.Find("FollowCamera");
-        if (followCamObj != null)
-            followCamObj.GetComponent<CinemachineCamera>().Follow = _cameraRoot;
+        if (followCamObj == null) return;
+
+        var cinemachineCamera = followCamObj.GetComponent<CinemachineCamera>();
+        if (cinemachineCamera != null)
+            cinemachineCamera.Follow = _cameraRoot;
     }
 
     public void SetPreset(CameraPreset preset, Transform target = null)
@@ -83,7 +107,6 @@ public class PlayerCameraAbility : PlayerAbility
         }
     }
 
-    // NPC 대화 등 — 타겟 방향으로 회전 + 측면 이동 + 줌
     private void ApplyTargetPreset()
     {
         float speed = _preset.data.TransitionSpeed;
@@ -92,10 +115,8 @@ public class PlayerCameraAbility : PlayerAbility
         toTarget.y = 0f;
         float rawTargetMx = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
 
-        // Yaw: NPC 방향 + 반대쪽으로 살짝 회전 (둘 다 보이게)
         float yawOffset = _preset.side * _preset.data.RotationOffset.y;
         float targetMx = _mx + Mathf.DeltaAngle(_mx, rawTargetMx - yawOffset);
-        // Pitch: 고정 각도 (음수 = 위에서 아래)
         float targetMy = _preset.data.RotationOffset.x;
 
         _mx = Mathf.Lerp(_mx, targetMx, speed * Time.deltaTime);
@@ -109,7 +130,6 @@ public class PlayerCameraAbility : PlayerAbility
         _cameraRoot.rotation = Quaternion.Euler(-_my, _mx, 0f);
     }
 
-    // 인벤토리 등 — 위치 오프셋 + 회전 오프셋
     private void ApplyLocalPreset()
     {
         float speed = _preset.data.TransitionSpeed;
@@ -123,7 +143,6 @@ public class PlayerCameraAbility : PlayerAbility
         _cameraRoot.rotation = Quaternion.Slerp(_cameraRoot.rotation, targetRot, speed * Time.deltaTime);
     }
 
-    // 지정된 yaw 기준 오프셋을 플레이어 로컬 공간으로 변환하여 적용
     private void ApplyPositionOffset(Vector3 offset, float speed, float yaw)
     {
         Vector3 worldOffset = Quaternion.Euler(0f, yaw, 0f) * offset;
