@@ -72,6 +72,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     public void InteractPrimary(TerrainCell cell)
     {
         if (cell == null) return;
+        // 로컬만 중복 입력 방지, 원격은 소유자가 검증한 RPC이므로 그대로 실행
         if (_owner.IsMine && _isActing) return;
         StartWaterAction(cell, isSecondary: false);
     }
@@ -79,6 +80,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     public void InteractSecondary(TerrainCell cell)
     {
         if (cell == null) return;
+        // 로컬만 중복 입력 방지, 원격은 소유자가 검증한 RPC이므로 그대로 실행
         if (_owner.IsMine && _isActing) return;
         if(!_owner.Energy.TryConsume(_secondaryEnergyCost)) return;
         StartWaterAction(cell, isSecondary: true);
