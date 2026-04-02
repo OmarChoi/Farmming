@@ -42,7 +42,6 @@ public class UI_Shop : MonoBehaviour
 
         if (_exitButton != null)
         {
-            _exitButton.onClick.RemoveListener(OnClickCloseButton);
             _exitButton.onClick.AddListener(OnClickCloseButton);
         }
     }
@@ -50,6 +49,10 @@ public class UI_Shop : MonoBehaviour
     private void OnDestroy()
     {
         _slideTween?.Kill();
+        if (_exitButton != null)
+        {
+            _exitButton.onClick.RemoveListener(OnClickCloseButton);
+        }
     }
 
     public void Init(TradeService tradeService)
