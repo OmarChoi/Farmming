@@ -10,32 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1824961e65738ca4499f7865d6856ab5, type: 3}
-  m_Name: Dungeon1Config
+  m_Name: Dungeon2Config
   m_EditorClassIdentifier: Assembly-CSharp::DungeonMapConfig
   Width: 75
   Height: 75
-  BaseHeight: 3
-  MaxHeight: 8
-  NoiseScale: 0.1
-  TileNoiseScale: 0.08
-  DefaultTileType: 1
+  BaseHeight: 2
+  MaxHeight: 18
+  NoiseScale: 0.02
+  TileNoiseScale: 0.04
+  DefaultTileType: 3
   Resources:
   - Type: 1
-    Level: 1
-    SpawnChance: 0.08
+    Level: 2
+    SpawnChance: 0.03
   - Type: 2
-    Level: 1
-    SpawnChance: 0.08
-  DungeonName: "\uC815\uAE00"
+    Level: 2
+    SpawnChance: 0.03
+  DungeonName: "\uB3D9\uAD74"
   TimeLimitSeconds: 180
   EntryCost: 100
-  EntryRequirements:
-  - Item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
-    Amount: 1
-  - Item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
-    Amount: 1
+  EntryRequirements: []
   TileWeights: []
-  IsCave: 0
-  CaveFillPercent: 0.45
+  IsCave: 1
+  CaveFillPercent: 0.413
   CaveSmoothIterations: 5
-  WallTileType: 3
+  WallTileType: 4

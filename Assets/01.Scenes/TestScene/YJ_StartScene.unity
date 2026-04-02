@@ -3880,6 +3880,7 @@ GameObject:
   - component: {fileID: 1877693506}
   - component: {fileID: 1877693505}
   - component: {fileID: 1877693504}
+  - component: {fileID: 1877693507}
   m_Layer: 0
   m_Name: Pun2Manager
   m_TagString: Untagged
@@ -3948,6 +3949,18 @@ MonoBehaviour:
   sceneViewId: 1
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &1877693507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1877693502}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 631631db7255a7c4b92c102d36cfbe73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnLoad
 --- !u!1 &1960843157
 GameObject:
   m_ObjectHideFlags: 0
