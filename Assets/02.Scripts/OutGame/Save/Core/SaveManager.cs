@@ -175,10 +175,13 @@ public class SaveManager : MonoBehaviour
 
         _mapManager.ImportVillageSaveData(_loadedData.Terrain);
 
+        Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
+    }
+
+    public async UniTask LoadBuildingAsync()
+    {
         if (BuildingManager.Instance != null && _loadedData.Buildings != null)
             await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
-
-        Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
     }
 
     public UniTask<bool> HasSaveAsync(int slot = 0) => _repository.HasSaveAsync(slot);

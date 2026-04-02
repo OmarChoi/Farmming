@@ -14,7 +14,7 @@ public class ShopController : MonoBehaviour
     private PlayerInventoryAbility _playerInventory;
     private TradeService _tradeService;
     private NpcInteractionContext _currentContext;
-
+    
     private void Start()
     {
         if (_uiShop == null)
@@ -22,12 +22,8 @@ public class ShopController : MonoBehaviour
             enabled = false;
             return;
         }
-
-        _tradeService = new TradeService(_playerInventory);
-        _uiShop.Init(_tradeService);
-        _uiInventory.Init(_tradeService);
-        _uiShop.Close();
     }
+    
     private void OnEnable()
     {
         PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
@@ -40,6 +36,14 @@ public class ShopController : MonoBehaviour
         _uiShop.OnCloseRequested -= CloseShop;
     }
 
+    private void Init()
+    {
+        _tradeService = new TradeService(_playerInventory);
+        _uiShop.Init(_tradeService);
+        _uiInventory.Init(_tradeService);
+        _uiShop.Close();
+    }
+    
     public void OpenShop(Shop shop, NpcInteractionContext context)
     {
         if (shop == null || shop.ShopData == null)
@@ -70,5 +74,6 @@ public class ShopController : MonoBehaviour
     {
         Debug.Log("PlayerInventoryAbility 확인");
         _playerInventory = ability;
+        Init();
     }
 }

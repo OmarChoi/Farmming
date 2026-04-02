@@ -2,6 +2,11 @@ using UnityEngine;
 
 public static class BuildingPlacer
 {
+    private static int GetWidthOffset(int width)
+    {
+        return width % 2 == 0 ? 1 - (width / 2) : -(width / 2);
+    }
+
     public static int GetDirection(Vector3 playerForward)
     {
         if (Mathf.Abs(playerForward.x) > Mathf.Abs(playerForward.z))
@@ -14,10 +19,10 @@ public static class BuildingPlacer
         }
     }
 
-    public static BuildingFootprint GetFootprint(BuildingDataSO data, int direction, bool swapped)
+    public static BuildingFootprint GetFootprint(BuildingDataSO data, int direction)
     {
-        int width = swapped ? data.Depth : data.Width;
-        int depth = swapped ? data.Width : data.Depth;
+        int width = data.Width;
+        int depth = data.Depth;
 
         Vector2Int forward = direction switch
         {
@@ -32,7 +37,7 @@ public static class BuildingPlacer
         {
             Width = width,
             Depth = depth,
-            WidthOffset = -(width - 1) / 2,
+            WidthOffset = GetWidthOffset(width),
             Direction = direction,
             Forward = forward,
             Right = new Vector2Int(forward.y, -forward.x)
