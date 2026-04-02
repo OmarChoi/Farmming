@@ -6,24 +6,14 @@ public class QuestManager : MonoBehaviour
 {
     public static QuestManager Instance { get; private set; }
 
-    [Header("플레이어 컴포넌트")]
-    [SerializeField] private PlayerInventoryAbility _playerInventory;
-
-    [Header("일일 퀘스트 개수")]
-    [SerializeField] private int _dailyQuestCounts = 3;
-    private QuestBoardDataSO _dailyQuestBoardData;
+    private PlayerInventoryAbility _playerInventory;
 
     private readonly Dictionary<string, QuestRuntimeData> _activeQuests = new();
     private readonly HashSet<string> _completedMainQuestIds = new();
     private readonly HashSet<string> _completedSubQuestIds = new();
-    private readonly Dictionary<string, int> _dailyQuestCompletedDays = new();
-
     private Dictionary<EQuestRewardType, IQuestRewardHandler> _rewardHandlers;
 
     public IReadOnlyDictionary<string, QuestRuntimeData> ActiveQuests => _activeQuests;
-
-    private readonly List<QuestDataSO> _todayDailyQuests = new();
-    public IReadOnlyList<QuestDataSO> TodayDailyQuests => _todayDailyQuests;
 
     public event Action<QuestRuntimeData> OnQuestAccepted;
     public event Action<QuestRuntimeData> OnQuestUpdated;
@@ -57,20 +47,22 @@ public class QuestManager : MonoBehaviour
 
     private void OnEnable()
     {
+        PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
         GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
-        TimeEvents.OnDayChanged += HandleDayChanged;
     }
 
     private void OnDisable()
     {
+        PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
         GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
-        TimeEvents.OnDayChanged -= HandleDayChanged;
     }
 
-    public void SetDailyQuestBoardData(QuestBoardDataSO boardData)
+    private void OnPlayerReady(PlayerInventoryAbility ability)
     {
-        _dailyQuestBoardData = boardData;
-        RefreshTodayDailyQuests(_dailyQuestBoardData, _dailyQuestCounts);
+#if UNITY_EDITOR
+        Debug.Log("PlayerInventoryAbility 확인");
+#endif
+        _playerInventory = ability;
     }
 
     private void HandleGatheringCompleted(GatheringObject obj)
@@ -103,9 +95,7 @@ public class QuestManager : MonoBehaviour
     // 수락받을 수 있는 퀘스트인지 확인하는 메서드입니다. (메인, 서브 퀘스트처럼 한 번 클리어한 퀘스트는 클리어 불가능)
     public bool CanAcceptQuest(QuestDataSO questData)
     {
-        if (questData == null) return false;
-        if (string.IsNullOrEmpty(questData.QuestId)) return false;
-
+        if (questData == null || string.IsNullOrEmpty(questData.QuestId)) return false;
         if (_activeQuests.ContainsKey(questData.QuestId)) return false;
 
         switch (questData.QuestCategory)
@@ -117,13 +107,9 @@ public class QuestManager : MonoBehaviour
                 return !_completedSubQuestIds.Contains(questData.QuestId);
 
             case EQuestCategory.Daily:
-                int currentDay = TimeEvents.CurrentDay;
+                return DailyQuestManager.Instance == null ||
+                       DailyQuestManager.Instance.CanAcceptDailyQuest(questData);
 
-                if (_dailyQuestCompletedDays.TryGetValue(questData.QuestId, out int completedDay))
-                {
-                    return completedDay != currentDay;
-                }
-                return true;
         }
         return true;
     }
@@ -277,7 +263,7 @@ public class QuestManager : MonoBehaviour
                 break;
 
             case EQuestCategory.Daily:
-                _dailyQuestCompletedDays[questId] = TimeEvents.CurrentDay;
+                DailyQuestManager.Instance?.MarkCompletedToday(questId);
                 break;
         }
 
@@ -297,6 +283,26 @@ public class QuestManager : MonoBehaviour
         return true;
     }
 
+    // 일일 퀘스트를 전체 삭제하는 메서드입니다.
+    public void RemoveAllDailyQuests()
+    {
+        List<string> removeKeys = new();
+
+        foreach (var pair in _activeQuests)
+        {
+            if (pair.Value == null || pair.Value.QuestData == null) continue;
+            if (pair.Value.QuestData.QuestCategory != EQuestCategory.Daily) continue;
+
+            removeKeys.Add(pair.Key);
+        }
+
+        foreach (string key in removeKeys)
+        {
+            _activeQuests.Remove(key);
+            OnQuestRemoved?.Invoke(key);
+        }
+    }
+
     private void GiveReward(QuestRewardData rewardData)
     {
         if (rewardData == null || rewardData.Rewards == null) return;
@@ -309,67 +315,6 @@ public class QuestManager : MonoBehaviour
             {
                 handler.HandleReward(reward);
             }
-        }
-    }
-
-    private void HandleDayChanged(int day)
-    {
-        ResetDailyQuests();
-        RefreshTodayDailyQuests(_dailyQuestBoardData, _dailyQuestCounts);
-
-#if UNITY_EDITOR
-        Debug.Log($"일일 퀘스트 초기화 - Day {day}");
-#endif
-    }
-
-    public void ResetDailyQuests()
-    {
-        List<string> removeKeys = new();
-
-        foreach (var pair in _activeQuests)
-        {
-            if (pair.Value == null || pair.Value.QuestData == null) continue;
-
-            if (pair.Value.QuestData.QuestCategory == EQuestCategory.Daily)
-            {
-                removeKeys.Add(pair.Key);
-            }
-        }
-
-        foreach (string key in removeKeys)
-        {
-            _activeQuests.Remove(key);
-            OnQuestRemoved?.Invoke(key);
-        }
-    }
-
-    public void RefreshTodayDailyQuests(QuestBoardDataSO boardData, int selectCount = 2)
-    {
-        _todayDailyQuests.Clear();
-
-        if (boardData == null || boardData.AllQuests == null) return;
-
-        List<QuestDataSO> candidates = new();
-
-        foreach (QuestDataSO quest in boardData.AllQuests)
-        {
-            if (quest == null) continue;
-            if (quest.QuestCategory != EQuestCategory.Daily) continue;
-
-            candidates.Add(quest);
-        }
-
-        if (candidates.Count <= selectCount)
-        {
-            _todayDailyQuests.AddRange(candidates);
-            return;
-        }
-
-        for (int i = 0; i < selectCount; i++)
-        {
-            int randomIndex = UnityEngine.Random.Range(0, candidates.Count);
-            _todayDailyQuests.Add(candidates[randomIndex]);
-            candidates.RemoveAt(randomIndex);
         }
     }
 }

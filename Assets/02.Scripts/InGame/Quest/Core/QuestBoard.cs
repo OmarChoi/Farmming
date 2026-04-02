@@ -15,9 +15,9 @@ public class QuestBoard : MonoBehaviour
 
     private void Start()
     {
-        if (QuestManager.Instance != null)
+        if (DailyQuestManager.Instance != null)
         {
-            QuestManager.Instance.SetDailyQuestBoardData(_boardQuest);
+            DailyQuestManager.Instance.SetDailyQuestBoardData(_boardQuest);
         }
     }
 
@@ -44,9 +44,9 @@ public class QuestBoard : MonoBehaviour
 
     public async UniTaskVoid OpenQuestBoard()
     {
-        if (QuestManager.Instance == null) return;
+        if (DailyQuestManager.Instance == null) return;
 
-        var todayQuests = QuestManager.Instance.TodayDailyQuests;
+        var todayQuests = DailyQuestManager.Instance.TodayDailyQuests;
 
         if (todayQuests == null || todayQuests.Count == 0)
         {
