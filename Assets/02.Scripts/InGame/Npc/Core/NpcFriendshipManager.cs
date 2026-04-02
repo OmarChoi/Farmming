@@ -25,12 +25,12 @@ public class NpcFriendshipManager : MonoBehaviour
 
     private void OnEnable()
     {
-        TimeEvents.OnDayChanged += HandleDayChanged;
+        TimeEvents.OnNetDayChanged += HandleDayChanged;
     }
 
     private void OnDisable()
     {
-        TimeEvents.OnDayChanged -= HandleDayChanged;
+        TimeEvents.OnNetDayChanged -= HandleDayChanged;
     }
 
     public ENpcFriendshipStep GetFriendshipStep(int friendship)
@@ -106,11 +106,11 @@ public class NpcFriendshipManager : MonoBehaviour
         return true;
     }
 
-    private void HandleDayChanged(int day)
+    private void HandleDayChanged()
     {
         ResetDailyGreetings();
 #if UNITY_EDITOR
-        Debug.Log($"NPC 일일 인사 기록 초기화 - Day {day}");
+        Debug.Log($"NPC 일일 인사 기록 초기화");
 #endif
     }
 

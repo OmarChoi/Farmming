@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcSchedule
   <ScheduleEntries>k__BackingField:
   - ScheduleTime:
-      _hour: 7
-      _minute: 30
+      _hour: 0
+      _minute: 0
     NpcLocationType: 1
     LocationKey: Shopper_Shop
     WanderingDirection: {x: 0, y: 0, z: 0}
@@ -23,38 +23,38 @@ MonoBehaviour:
     WanderingRadius: 0
     WanderSearchStep: 0
   - ScheduleTime:
-      _hour: 12
-      _minute: 0
+      _hour: 1
+      _minute: 30
     NpcLocationType: 2
     LocationKey: Shopper_Wandering1
-    WanderingDirection: {x: 0, y: 0, z: 1}
-    WanderingDistance: 20
-    WanderingRadius: 6
+    WanderingDirection: {x: 1, y: 0, z: -1}
+    WanderingDistance: 11
+    WanderingRadius: 8
     WanderSearchStep: 5
   - ScheduleTime:
-      _hour: 16
-      _minute: 0
-    NpcLocationType: 2
-    LocationKey: Shopper_Wandering2
-    WanderingDirection: {x: 1, y: 0, z: 0}
-    WanderingDistance: 30
-    WanderingRadius: 12
-    WanderSearchStep: 5
-  - ScheduleTime:
-      _hour: 18
-      _minute: 30
+      _hour: 7
+      _minute: 40
     NpcLocationType: 1
     LocationKey: Shopper_Shop
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
     WanderSearchStep: 0
+  - ScheduleTime:
+      _hour: 18
+      _minute: 40
+    NpcLocationType: 2
+    LocationKey: Shopper_Wandering2
+    WanderingDirection: {x: 1, y: 0, z: -1}
+    WanderingDistance: 8
+    WanderingRadius: 6
+    WanderSearchStep: 5
   - ScheduleTime:
       _hour: 20
       _minute: 0
     NpcLocationType: 2
     LocationKey: Shopper_Wandering3
-    WanderingDirection: {x: 1, y: 0, z: 1}
-    WanderingDistance: 10
-    WanderingRadius: 3
+    WanderingDirection: {x: 1, y: 0, z: 0}
+    WanderingDistance: 52
+    WanderingRadius: 16
     WanderSearchStep: 5

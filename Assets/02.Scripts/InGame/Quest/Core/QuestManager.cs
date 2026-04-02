@@ -57,13 +57,13 @@ public class QuestManager : MonoBehaviour
     private void OnEnable()
     {
         GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
-        TimeEvents.OnDayChanged += HandleDayChanged;
+        TimeEvents.OnNetDayChanged += HandleDayChanged;
     }
 
     private void OnDisable()
     {
         GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
-        TimeEvents.OnDayChanged -= HandleDayChanged;
+        TimeEvents.OnNetDayChanged -= HandleDayChanged;
     }
 
     public void SetDailyQuestBoardData(QuestBoardDataSO boardData)
@@ -231,13 +231,13 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    private void HandleDayChanged(int day)
+    private void HandleDayChanged()
     {
         ResetDailyQuests();
         RefreshTodayDailyQuests(_dailyQuestBoardData, _dailyQuestCounts);
 
 #if UNITY_EDITOR
-        Debug.Log($"일일 퀘스트 초기화 - Day {day}");
+        Debug.Log($"일일 퀘스트 초기화");
 #endif
     }
 

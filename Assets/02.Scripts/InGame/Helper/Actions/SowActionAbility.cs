@@ -20,11 +20,6 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private List<FarmTile> _currentFarmTiles;
     private SeedItemDataSO _currentSeed;
 
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
     private void Start()
     {
         _cultivateAbility = _owner.GetAbility<CultivateAbility>();
@@ -86,7 +81,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
-        if (_isActing)
+        if (_owner.IsMine && _isActing)
         {
             return;
         }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerMoveAbility : PlayerAbility
 {
@@ -20,13 +21,33 @@ public class PlayerMoveAbility : PlayerAbility
     private float _currentMoveParam;
     private bool _wasGrounded = true;
 
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
     private void Start()
     {
         _characterController = _owner.GetComponent<CharacterController>();
         _animation = _owner.GetAbility<PlayerAnimationAbility>();
         _helperInteraction = _owner.GetAbility<PlayerHelperInteractionAbility>();
-        _mainCamera = Camera.main;
+        RefreshMainCamera();
+    }
 
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RefreshMainCamera();
+    }
+
+    private void RefreshMainCamera()
+    {
+        if (!_owner.IsMine) return;
+        _mainCamera = Camera.main;
     }
 
     private void Update()
@@ -57,6 +78,12 @@ public class PlayerMoveAbility : PlayerAbility
     {
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
+        if (_mainCamera == null)
+        {
+            RefreshMainCamera();
+            if (_mainCamera == null)
+                return Vector3.zero;
+        }
 
         Vector3 direction = _mainCamera.transform.TransformDirection(new Vector3(h, 0f, v));
         direction.y = 0f;
