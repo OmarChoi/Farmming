@@ -20,6 +20,9 @@ public class DungeonMapConfig : MapConfig
     public int CaveSmoothIterations = 5;
     public ETileType WallTileType = ETileType.Dungeon2Stone;
 
+    [Header("Environment")]
+    public DungeonEnvironmentProfile EnvironmentProfile;
+
     public override IMapGenerator CreateGenerator() =>
         IsCave ? new CaveMapGenerator() : new HeightMapGenerator();
 }
