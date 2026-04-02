@@ -9,6 +9,11 @@ public class DungeonMapConfig : MapConfig
     public float TimeLimitSeconds = 180f;
     public int EntryCost = 100;
     public DungeonMaterialRequirement[] EntryRequirements;
+    public GameObject CliffPrefab;
+
+    [Header("Object Prefab Overrides")]
+    public GameObject TreePrefab;
+    public GameObject RockPrefab;
 
     [Header("Multiple Tile Types")]
     public TileWeightEntry[] TileWeights;
