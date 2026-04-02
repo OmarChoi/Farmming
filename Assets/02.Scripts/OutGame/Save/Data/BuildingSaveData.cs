@@ -8,6 +8,5 @@ public class BuildingSaveData
     public int AnchorY;
     public int AnchorZ;
     public int Direction;
-    public bool Swapped;
     public int RemainingDays;
 }

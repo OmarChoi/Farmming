@@ -176,7 +176,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         var syncData = JsonUtility.FromJson<MapSyncData>(json);
 
         _terrainGridManager.ImportSaveData(syncData.Terrain);
-
+            
         if (syncData.Buildings != null && syncData.Buildings.Count > 0 && BuildingManager.Instance != null)
         {
             BuildingManager.Instance.ImportBuildings(syncData.Buildings).Forget();

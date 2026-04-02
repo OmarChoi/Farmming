@@ -20,6 +20,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     public int CurrentIndex => _currentIndex;
     public int Count => _helperDataList.Count;
     public int SummonedIndex => _summonedIndex;
+    public HelperController ActiveHelper => _activeHelper;
 
     public HelperDataSO SummonedData => SummonedIndex >= 0 && SummonedIndex < _helperDataList.Count ? _helperDataList[SummonedIndex]: null;
 
@@ -119,7 +120,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         {
             HelperId = _activeHelper.HelperId,
             Level = _activeHelper.Level.CurrentLevel,
-            Grade = (int)_activeHelper.Grade.CurrentGrade
+            Grade = (int)_activeHelper.Grade.CurrentGrade,
+            Experience = _activeHelper.Experience.CurrentExp,
+            Energy = _activeHelper.Energy.Current,
+            EnergySavedAt = (long)UnityEngine.Time.realtimeSinceStartup
         };
     }
 

@@ -10,6 +10,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     [SerializeField] private GameObject _iceVfxPrefab;
     [SerializeField] private float _secondaryEnergyCost = 25f;
     [SerializeField] private float _iceSpawnOffset = 17.5f;
+    [SerializeField] private int _waterExperience = 10;
 
     private HelperAnimationAbility _animAbility;
     private readonly List<IWaterEffect> _waterEffects = new();
@@ -38,7 +39,6 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private void AddWaterEffects()
     {
         _waterEffects.Add(new FarmDryWaterEffect());
-        // 나중에 용암 타일 물적신 효과 추가예정
     }
 
     private void AddIceEffects()
@@ -129,22 +129,26 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
                 waterVfx?.Launch(targetPos, direction, () =>
                 {
-                    ApplyEffects(cell, _waterEffects);
+                    if(ApplyEffects(cell, _waterEffects))
+                    {
+                        _owner.Experience.Add(_waterExperience);
+                    }
                 });
             }
         }
     }
 
-    private void ApplyEffects(TerrainCell cell, List<IWaterEffect> effects)
+    private bool ApplyEffects(TerrainCell cell, List<IWaterEffect> effects)
     {
         foreach (IWaterEffect effect in effects)
         {
             if (effect.CanHandle(cell))
             {
                 effect.Apply(cell);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     public void WaterClose()

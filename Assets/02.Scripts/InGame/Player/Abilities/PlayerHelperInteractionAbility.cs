@@ -130,7 +130,11 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (_backHelper.State == EHelperState.Equipped)
             _backHelper.Unequip();
 
-        _backHelper.gameObject.SetActive(false);
+        if (PhotonNetwork.IsConnected)
+            PhotonNetwork.Destroy(_backHelper.gameObject);
+        else
+            Destroy(_backHelper.gameObject);
+
         _backHelper = null;
     }
 

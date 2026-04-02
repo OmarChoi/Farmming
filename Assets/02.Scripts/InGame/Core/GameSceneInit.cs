@@ -156,9 +156,7 @@ public class GameSceneInit : MonoBehaviour
         // 2. 맵 로드 후 NavMesh 빌드
         _mapNavMeshController.BuildInitialNavMesh();
 
-        // 3. NavMesh 준비 완료 후 완성된 건물의 NPC 스폰
-        if (BuildingManager.Instance != null)
-            BuildingManager.Instance.SpawnBuildingNpcs();
+        await SaveManager.Instance.LoadBuildingAsync();
 
         if (ReturningFromDungeon)
         {
