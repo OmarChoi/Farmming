@@ -54,11 +54,20 @@ public class UI_DungeonPortal : MonoBehaviour
 
     public void ShowRequirements(
         DungeonMaterialRequirement[] requirements,
+        int entryCost,
+        int currentGold,
         System.Func<ItemDataSO, int> getItemCount,
         Action onEnter,
         Action onCancel)
     {
         var sb = new System.Text.StringBuilder();
+
+        if (entryCost > 0)
+        {
+            string goldColor = currentGold >= entryCost ? "#00CC00" : "#CC0000";
+            sb.AppendLine($"입장 비용: <color={goldColor}>{entryCost}G (보유: {currentGold}G)</color>");
+        }
+
         sb.AppendLine("필요한 재료:");
 
         if (requirements != null && requirements.Length > 0)
