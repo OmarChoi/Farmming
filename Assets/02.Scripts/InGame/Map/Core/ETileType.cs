@@ -8,8 +8,8 @@ public enum ETileType
     Dungeon1Sand,
 
     // Dungeon 2
+    Dungeon2Ground,
     Dungeon2Stone,
-    Dungeon2Ice,
     Dungeon2Lava,
 
     // Dungeon 3 (TBD)

@@ -15,7 +15,7 @@ public abstract class BaseBuilding : MonoBehaviour
         SaveData = saveData;
         ConstructionProgress = CalculateConstructionProgress();
 
-        TimeEvents.OnDayStarted += AdvanceDay;
+        TimeEvents.OnNetDayStarted += AdvanceDay;
 
         OnBuildingInitialized();
         OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
@@ -28,7 +28,7 @@ public abstract class BaseBuilding : MonoBehaviour
 
     private void OnDestroy()
     {
-        TimeEvents.OnDayStarted -= AdvanceDay;
+        TimeEvents.OnNetDayStarted -= AdvanceDay;
     }
 
     private void AdvanceDay()

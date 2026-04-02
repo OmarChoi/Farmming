@@ -12,6 +12,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _iceSpawnOffset = 17.5f;
     [SerializeField] private int _waterExperience = 10;
 
+    private static readonly int WaterStateHash = Animator.StringToHash("Water");
+
     private HelperAnimationAbility _animAbility;
     private readonly List<IWaterEffect> _waterEffects = new();
     private readonly List<IWaterEffect> _iceEffects = new();
@@ -29,6 +31,17 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private void Start()
     {
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
+    }
+
+    private void Update()
+    {
+        if (!_isActing) return;
+
+        var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.shortNameHash == WaterStateHash && stateInfo.normalizedTime >= 1f)
+        {
+            ResetState();
+        }
     }
 
     private void OnDisable()
@@ -58,15 +71,9 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        if (cell == null)
-        {
-            return;
-        }
-        if (_isActing)
-        {
-            return;
-        }
-
+        if (cell == null) return;
+        // 로컬만 중복 입력 방지, 원격은 소유자가 검증한 RPC이므로 그대로 실행
+        if (_owner.IsMine && _isActing) return;
         StartWaterAction(cell, isSecondary: false);
     }
 
@@ -76,16 +83,16 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         {
             return;
         }
-        if(_isActing)
-        {
-            return;
-        }
 
         if (_owner.Grade.CurrentGrade != EHelperGrade.Legendary)
         {
             return;
         }
-
+        // 로컬만 중복 입력 방지, 원격은 소유자가 검증한 RPC이므로 그대로 실행
+        if (_owner.IsMine && _isActing)
+        {
+           return;
+        }
         if(!_owner.Energy.TryConsume(_secondaryEnergyCost))
         {
             return;
@@ -168,18 +175,13 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         }
         return false;
     }
-
-    public void WaterClose()
-    {
-        _animAbility?.Play(EHelperAnim.Idle);
-        ResetState();
-    }
-
+    
     private void ResetState()
     {
         _isActing = false;
         _isSecondary = false;
         _currentCell = null;
+        _animAbility?.Play(EHelperAnim.Idle);
         _owner?.EndAction();
     }
 

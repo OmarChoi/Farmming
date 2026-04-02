@@ -15,9 +15,4 @@ public class WaterAnimationEventReceiver : MonoBehaviour
     {
         _waterAbility?.WaterOpen();
     }
-
-    public void WaterClose()
-    {
-        _waterAbility?.WaterClose();
-    }
 }

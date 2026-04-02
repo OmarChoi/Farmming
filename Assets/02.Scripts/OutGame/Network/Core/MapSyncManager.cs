@@ -12,14 +12,21 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     public static MapSyncManager Instance { get; private set; }
 
     [SerializeField] private TerrainGridManager _terrainGridManager;
-    [SerializeField] private MapNavMeshController _mapNavMeshController;
 
     private const int CHUNK_SIZE = 4096;
     private const int SEND_INTERVAL_MS = 50;
 
     private readonly Dictionary<int, byte[][]> _pendingChunks = new();
+    private readonly List<Photon.Realtime.Player> _pendingMapRequests = new();
+    private bool _mapReady = true;
 
     public event Action OnMapSynced;
+
+    // --- 던전 시드 동기화 ---
+    private int _dungeonSeed;
+    private int _dungeonFloor;
+    private bool _dungeonSeedReady;
+    public event Action<int, int> OnDungeonSeedReceived; // floor, seed
 
     private void Awake()
     {
@@ -38,10 +45,24 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         SendChunksAsync(target).Forget();
     }
 
+    /// 마스터의 맵 로드가 완료될 때까지 클라이언트 요청을 대기시킴
+    public void HoldRequests()
+    {
+        _mapReady = false;
+        _pendingMapRequests.Clear();
+    }
+
     /// 마스터가 모든 클라이언트에게 맵 전송
     public void BroadcastMap()
     {
         if (!PhotonNetwork.IsMasterClient) return;
+        _mapReady = true;
+
+        // 맵 로딩 중 도착한 요청을 개별 전송 (씬 전환 타이밍에 브로드캐스트가 누락될 수 있으므로)
+        foreach (var player in _pendingMapRequests)
+            SendMapTo(player);
+        _pendingMapRequests.Clear();
+
         BroadcastChunksAsync().Forget();
     }
 
@@ -165,6 +186,63 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         OnMapSynced?.Invoke();
     }
 
+    // === 던전 시드 동기화 ===
+
+    /// 마스터가 던전 시드를 모든 클라이언트에게 전송
+    public void BroadcastDungeonSeed(int floor, int seed)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        _dungeonFloor = floor;
+        _dungeonSeed = seed;
+        _dungeonSeedReady = true;
+        photonView.RPC(nameof(RPC_DungeonSeed), RpcTarget.Others, floor, seed);
+    }
+
+    /// 클라이언트가 마스터에게 던전 시드 요청
+    public void RequestDungeonSeed()
+    {
+        if (PhotonNetwork.IsMasterClient) return;
+        photonView.RPC(nameof(RPC_RequestDungeonSeed), RpcTarget.MasterClient);
+    }
+
+    [PunRPC]
+    private void RPC_DungeonSeed(int floor, int seed)
+    {
+        OnDungeonSeedReceived?.Invoke(floor, seed);
+    }
+
+    [PunRPC]
+    private void RPC_RequestDungeonSeed(PhotonMessageInfo info)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (!_dungeonSeedReady) return;
+        photonView.RPC(nameof(RPC_DungeonSeed), info.Sender, _dungeonFloor, _dungeonSeed);
+    }
+
+    // === 던전 입장 요청 (클라이언트 → 마스터) ===
+
+    public event Action<int> OnDungeonEntryRequested; // floor
+
+    /// 클라이언트가 마스터에게 던전 입장을 요청
+    public void RequestDungeonEntry(int floor)
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            OnDungeonEntryRequested?.Invoke(floor);
+            return;
+        }
+        photonView.RPC(nameof(RPC_RequestDungeonEntry), RpcTarget.MasterClient, floor);
+    }
+
+    [PunRPC]
+    private void RPC_RequestDungeonEntry(int floor)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        OnDungeonEntryRequested?.Invoke(floor);
+    }
+
+    // === 마을 맵 동기화 ===
+
     /// 클라이언트가 GameScene에 도착한 후 마스터에게 맵 요청
     public void RequestMapFromMaster()
     {
@@ -176,6 +254,13 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     private void RPC_RequestMap(PhotonMessageInfo info)
     {
         if (!PhotonNetwork.IsMasterClient) return;
+
+        if (!_mapReady)
+        {
+            _pendingMapRequests.Add(info.Sender);
+            return;
+        }
+
         SendMapTo(info.Sender);
     }
 }
