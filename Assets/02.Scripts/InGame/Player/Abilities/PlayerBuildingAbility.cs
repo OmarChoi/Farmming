@@ -26,6 +26,11 @@ public class PlayerBuildingAbility : PlayerAbility
     private BuildingManager _buildingManager;
     private PlayerTerrainAbility _terrainAbility;
     private PlayerInventoryAbility _inventoryAbility;
+    private bool _hasStarted;
+    private bool _isBuildingSelectionBound;
+    private bool _isBuildingRemoveRefundBound;
+    private bool _isInventoryReadyEventBound;
+    private bool _isInventorySlotChangedBound;
 
     // ── 건설 상태 ───────────────────────────────────────
     private BuildState _state = BuildState.None;
@@ -37,35 +42,36 @@ public class PlayerBuildingAbility : PlayerAbility
     private BuildingGhost _ghost;
     private string _ghostBuildingId;
     private Vector3Int _prevGridPos;
+    private int _previewRequestVersion;
 
     // ── 건설 자원 캐시 ──────────────────────────────────
     private bool _hasResourcesCached;
     private bool _hasResourcesDirty = true;
 
+    private bool IsLocalPlayer => _owner != null && _owner.IsMine;
+
     protected override void Awake()
     {
         base.Awake();
-        _buildingManager = BuildingManager.Instance;
-        _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
-        _inventoryAbility = _owner.GetAbility<PlayerInventoryAbility>();
+        CacheStaticReferences();
+        CacheLocalInventoryAbility();
+    }
+
+    private void Start()
+    {
+        _hasStarted = true;
+        BindLocalRuntimeEvents();
     }
 
     private void OnEnable()
     {
-        _buildingManager.OnBuildingSelected += OnBuildingSelectedFromUi;
-        if (_inventoryAbility != null)
-        {
-            _inventoryAbility.OnSlotChanged += OnInventoryChanged;
-        }
+        if (!_hasStarted) return;
+        BindLocalRuntimeEvents();
     }
 
     private void OnDisable()
     {
-        _buildingManager.OnBuildingSelected -= OnBuildingSelectedFromUi;
-        if (_inventoryAbility != null)
-        {
-            _inventoryAbility.OnSlotChanged -= OnInventoryChanged;
-        }
+        UnbindLocalRuntimeEvents();
 
         // UI_BuildingList의 OnClosed 구독 해제
         if (UIController.Instance != null)
@@ -73,17 +79,143 @@ public class PlayerBuildingAbility : PlayerAbility
             var ui = UIController.Instance.GetInstance<UI_BuildingList>();
             if (ui != null) ui.OnClosed -= OnBuildingListClosed;
         }
+
+        if (IsLocalPlayer)
+        {
+            DestroyGhost();
+        }
     }
 
     private void OnInventoryChanged(int slotIndex)
     {
+        if (!IsLocalPlayer) return;
+
         _hasResourcesDirty = true;
-        RefreshBuildInfoUI();
+        RefreshBuildInfoUIIfOpen();
+    }
+
+    private void CacheStaticReferences()
+    {
+        _buildingManager ??= BuildingManager.Instance;
+        if (_owner == null) return;
+
+        _terrainAbility ??= _owner.GetAbility<PlayerTerrainAbility>();
+    }
+
+    private void CacheLocalInventoryAbility()
+    {
+        if (_owner == null) return;
+        SetLocalInventoryAbility(_owner.GetAbility<PlayerInventoryAbility>());
+    }
+
+    private void SetLocalInventoryAbility(PlayerInventoryAbility inventoryAbility)
+    {
+        if (inventoryAbility == _inventoryAbility) return;
+
+        if (_inventoryAbility != null && _isInventorySlotChangedBound)
+        {
+            _inventoryAbility.OnSlotChanged -= OnInventoryChanged;
+            _isInventorySlotChangedBound = false;
+        }
+
+        _inventoryAbility = inventoryAbility;
+    }
+
+    private void BindLocalRuntimeEvents()
+    {
+        if (!IsLocalPlayer) return;
+
+        CacheStaticReferences();
+        CacheLocalInventoryAbility();
+
+        if (_buildingManager != null && !_isBuildingSelectionBound)
+        {
+            _buildingManager.OnBuildingSelected += OnBuildingSelectedFromUi;
+            _isBuildingSelectionBound = true;
+        }
+
+        if (_buildingManager != null && !_isBuildingRemoveRefundBound)
+        {
+            _buildingManager.OnLocalRemoveRefundGranted += OnLocalRemoveRefundGranted;
+            _isBuildingRemoveRefundBound = true;
+        }
+
+        if (!_isInventoryReadyEventBound)
+        {
+            PlayerInventoryAbility.OnLocalPlayerReady += OnLocalInventoryReady;
+            _isInventoryReadyEventBound = true;
+        }
+
+        if (_inventoryAbility != null && !_isInventorySlotChangedBound)
+        {
+            _inventoryAbility.OnSlotChanged += OnInventoryChanged;
+            _isInventorySlotChangedBound = true;
+        }
+    }
+
+    private void UnbindLocalRuntimeEvents()
+    {
+        if (_buildingManager != null && _isBuildingSelectionBound)
+        {
+            _buildingManager.OnBuildingSelected -= OnBuildingSelectedFromUi;
+            _isBuildingSelectionBound = false;
+        }
+
+        if (_buildingManager != null && _isBuildingRemoveRefundBound)
+        {
+            _buildingManager.OnLocalRemoveRefundGranted -= OnLocalRemoveRefundGranted;
+            _isBuildingRemoveRefundBound = false;
+        }
+
+        if (_isInventoryReadyEventBound)
+        {
+            PlayerInventoryAbility.OnLocalPlayerReady -= OnLocalInventoryReady;
+            _isInventoryReadyEventBound = false;
+        }
+
+        if (_inventoryAbility != null && _isInventorySlotChangedBound)
+        {
+            _inventoryAbility.OnSlotChanged -= OnInventoryChanged;
+            _isInventorySlotChangedBound = false;
+        }
+    }
+
+    private void OnLocalInventoryReady(PlayerInventoryAbility inventoryAbility)
+    {
+        if (!IsLocalPlayer || inventoryAbility == null) return;
+        if (inventoryAbility.GetComponentInParent<PlayerController>() != _owner) return;
+
+        SetLocalInventoryAbility(inventoryAbility);
+        BindLocalRuntimeEvents();
+    }
+
+    private void OnLocalRemoveRefundGranted(BuildingDataSO buildingData)
+    {
+        if (!IsLocalPlayer || buildingData == null) return;
+        if (!TryEnsureLocalInventoryAbility()) return;
+
+        foreach (BuildingCostEntry costItem in buildingData.Costs)
+        {
+            if (costItem.Item == null || costItem.Amount <= 0) continue;
+            _inventoryAbility.AddItem(costItem.Item, costItem.Amount);
+        }
+    }
+
+    private bool TryEnsureLocalInventoryAbility()
+    {
+        if (!IsLocalPlayer) return false;
+        if (_inventoryAbility != null) return true;
+
+        CacheLocalInventoryAbility();
+        if (_inventoryAbility == null) return false;
+
+        BindLocalRuntimeEvents();
+        return true;
     }
 
     private void Update()
     {
-        if (!_owner.IsMine) return;
+        if (!IsLocalPlayer) return;
         if (!_owner.CanMove) return;
 
         switch (_state)
@@ -101,7 +233,7 @@ public class PlayerBuildingAbility : PlayerAbility
     {
         if (Input.GetKeyDown(_removeKey))
         {
-            TryRemove();
+            TryRemoveFrontBuilding();
             return;
         }
 
@@ -149,12 +281,16 @@ public class PlayerBuildingAbility : PlayerAbility
 
     private void OnBuildingSelectedFromUi(BuildingDataSO buildingData)
     {
+        if (!IsLocalPlayer) return;
+
         SetBuildingData(buildingData);
         EnterPreviewAsync().Forget();
     }
 
     private void HandlePreviewingState()
     {
+        if (_terrainAbility == null || _ghost == null) return;
+
         // Cancel
         if (Input.GetKeyDown(_cancelKey))
         {
@@ -172,7 +308,7 @@ public class PlayerBuildingAbility : PlayerAbility
         // Confirm
         if (Input.GetKeyDown(_placeKey) && !_isBuilding)
         {
-            TryConfirm();
+            TryPlaceSelectedBuilding();
             return;
         }
 
@@ -194,6 +330,10 @@ public class PlayerBuildingAbility : PlayerAbility
 
     private async UniTaskVoid EnterPreviewAsync()
     {
+        if (!IsLocalPlayer) return;
+        CacheStaticReferences();
+        int previewRequestVersion = ++_previewRequestVersion;
+
         BuildingDataSO requestedBuilding = _buildingData;
         if (requestedBuilding == null) return;
 
@@ -204,7 +344,7 @@ public class PlayerBuildingAbility : PlayerAbility
             _rotationQuarterTurns = BuildingPlacer.GetDirection(_owner.transform.forward);
             _ghost.SetVisible(true);
             RefreshGhostInitial();
-            OpenBuildInfoUI();
+            ShowOrRefreshBuildInfoUI();
             return;
         }
 
@@ -212,7 +352,10 @@ public class PlayerBuildingAbility : PlayerAbility
         if (string.IsNullOrEmpty(prefabKey)) return;
 
         var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
-        if (requestedBuilding != _buildingData || !isActiveAndEnabled || _state != BuildState.None) return;
+        if (previewRequestVersion != _previewRequestVersion
+            || requestedBuilding != _buildingData
+            || !isActiveAndEnabled
+            || _state != BuildState.None) return;
 
         if (prefab == null) return;
 
@@ -224,7 +367,7 @@ public class PlayerBuildingAbility : PlayerAbility
         RefreshGhostInitial();
 
         // 건물 정보 패널 표시
-        OpenBuildInfoUI();
+        ShowOrRefreshBuildInfoUI();
     }
 
     private void RefreshGhostInitial()
@@ -243,27 +386,31 @@ public class PlayerBuildingAbility : PlayerAbility
 
     private void CancelPreview()
     {
-        _ghost?.SetVisible(false);
-        _state = BuildState.None;
-        _buildingManager.ClearSelection();
-        UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
+        DestroyGhost();
     }
 
     private void DestroyGhost(bool clearSelection = true)
     {
+        _previewRequestVersion++;
         _ghost?.Destroy();
         _ghost = null;
         _ghostBuildingId = null;
+        _prevGridPos = default;
         _state = BuildState.None;
         if (clearSelection)
         {
-            _buildingManager.ClearSelection();
+            _buildingManager?.ClearSelection();
         }
         UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
 
-    private void TryConfirm()
+    private void TryPlaceSelectedBuilding()
     {
+        if (!IsLocalPlayer) return;
+
+        CacheStaticReferences();
+        if (_terrainAbility == null || _buildingData == null) return;
+
         TerrainCell cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
@@ -273,7 +420,7 @@ public class PlayerBuildingAbility : PlayerAbility
         if (!preview.CanPlace) return;
 
         // 자원 검증 + 소모를 원자적으로 처리
-        if (!TryConsumeResources(_buildingData)) return;
+        if (!TryConsumeBuildResources(_buildingData)) return;
         _hasResourcesDirty = true;
 
         var request = new BuildingRequest
@@ -298,7 +445,7 @@ public class PlayerBuildingAbility : PlayerAbility
 
         if (_hasResourcesDirty)
         {
-            _hasResourcesCached = HasResources(_buildingData);
+            _hasResourcesCached = HasRequiredBuildResources(_buildingData);
             _hasResourcesDirty = false;
         }
 
@@ -311,40 +458,57 @@ public class PlayerBuildingAbility : PlayerAbility
         _rotationQuarterTurns = (_rotationQuarterTurns + 1) % 4;
     }
 
-    private void TryRemove()
+    private void TryRemoveFrontBuilding()
     {
+        if (!IsLocalPlayer) return;
+
+        CacheStaticReferences();
+        if (_terrainAbility == null || _buildingManager == null) return;
+
         var cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
-        if (!_buildingManager.TryRemove(cell.GridPosition, out BuildingDataSO buildingData)) return;
-        if (buildingData == null) return;
-        foreach (BuildingCostEntry costItem in buildingData.Costs)
-        {
-            _inventoryAbility.AddItem(costItem.Item, costItem.Amount);
-        }
+        _buildingManager.RequestRemove(cell.GridPosition);
     }
 
-    private void OpenBuildInfoUI()
+    private void ShowOrRefreshBuildInfoUI()
     {
+        if (!IsLocalPlayer) return;
+        if (_buildingData == null || UIController.Instance == null) return;
+        if (!TryEnsureLocalInventoryAbility()) return;
+        int[] ownedCounts = BuildRequiredItemOwnedCounts(_buildingData);
+
+        UI_BuildInfo openedUi = UIController.Instance.GetInstance<UI_BuildInfo>();
+        if (openedUi != null && openedUi.IsOpen)
+        {
+            openedUi.SetData(_buildingData, ownedCounts);
+            return;
+        }
+
         UIController.Instance?.OpenAsync<UI_BuildInfo>(ui =>
         {
-            ui.SetOwnedCounts(BuildOwnedCounts(_buildingData));
+            ui.SetData(_buildingData, ownedCounts);
         }).Forget();
     }
 
-    private void RefreshBuildInfoUI()
+    private void RefreshBuildInfoUIIfOpen()
     {
+        if (!IsLocalPlayer) return;
         if (_buildingData == null || UIController.Instance == null) return;
+        if (!TryEnsureLocalInventoryAbility()) return;
         var ui = UIController.Instance.GetInstance<UI_BuildInfo>();
         if (ui == null) return;
         if (!ui.IsOpen) return;
-        ui.SetOwnedCounts(BuildOwnedCounts(_buildingData));
+        ui.SetData(_buildingData, BuildRequiredItemOwnedCounts(_buildingData));
     }
 
-    private int[] BuildOwnedCounts(BuildingDataSO data)
+    private int[] BuildRequiredItemOwnedCounts(BuildingDataSO data)
     {
+        if (data == null) return System.Array.Empty<int>();
         IReadOnlyList<BuildingCostEntry> costs = data.Costs;
         var counts = new int[costs.Count];
+        if (!TryEnsureLocalInventoryAbility()) return counts;
+
         for (int i = 0; i < costs.Count; i++)
         {
             if (costs[i].Item == null) continue;
@@ -354,9 +518,10 @@ public class PlayerBuildingAbility : PlayerAbility
     }
 
     // 건설에 필요한 모든 자원이 인벤토리에 충분한지 확인
-    private bool HasResources(BuildingDataSO data)
+    private bool HasRequiredBuildResources(BuildingDataSO data)
     {
-        if (_inventoryAbility == null) return false;
+        if (data == null) return false;
+        if (!TryEnsureLocalInventoryAbility()) return false;
         IReadOnlyList<BuildingCostEntry> costs = data.Costs;
         foreach (BuildingCostEntry cost in costs)
         {
@@ -367,9 +532,12 @@ public class PlayerBuildingAbility : PlayerAbility
     }
 
     // 모든 자원 보유를 먼저 검증한 뒤, 통과 시 한 번에 차감
-    private bool TryConsumeResources(BuildingDataSO data)
+    private bool TryConsumeBuildResources(BuildingDataSO data)
     {
-        if (!HasResources(data)) return false;
+        if (!IsLocalPlayer || data == null) return false;
+        if (!TryEnsureLocalInventoryAbility()) return false;
+
+        if (!HasRequiredBuildResources(data)) return false;
 
         IReadOnlyList<BuildingCostEntry> costs = data.Costs;
         foreach (BuildingCostEntry cost in costs)
