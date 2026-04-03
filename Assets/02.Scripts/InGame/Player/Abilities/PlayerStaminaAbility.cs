@@ -15,14 +15,14 @@ public class PlayerStaminaAbility : PlayerAbility
 
     private void Start()
     {
-        TimeEvents.OnDayStarted += HandleMorning;
+        TimeEvents.OnNetDayStarted += HandleMorning;
         if (!_owner.IsMine) return;
         OnLocalPlayerReady?.Invoke(this);
     }
 
     private void OnDestroy()
     {
-        TimeEvents.OnDayStarted -= HandleMorning;
+        TimeEvents.OnNetDayStarted -= HandleMorning;
     }
 
     public bool TryConsume(float amount) => Stamina.TryConsume(amount);

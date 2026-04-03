@@ -172,7 +172,7 @@ public class PlayerBuildingAbility : PlayerAbility
         // Confirm
         if (Input.GetKeyDown(_placeKey) && !_isBuilding)
         {
-            TryConfirmAsync().Forget();
+            TryConfirm();
             return;
         }
 
@@ -262,7 +262,7 @@ public class PlayerBuildingAbility : PlayerAbility
         UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
     }
 
-    private async UniTaskVoid TryConfirmAsync()
+    private void TryConfirm()
     {
         TerrainCell cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;

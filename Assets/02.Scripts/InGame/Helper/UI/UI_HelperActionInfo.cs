@@ -10,6 +10,7 @@ public class UI_HelperActionInfo : MonoBehaviour
 
     [SerializeField] private Image _rightClickIcon;
     [SerializeField] private TextMeshProUGUI _rightClickExplanation;
+    [SerializeField] private GameObject _rightClickGroup;
 
     [SerializeField] private CanvasGroup _canvasGroup;
     [SerializeField] private float _animDuration = 0.3f;
@@ -34,7 +35,7 @@ public class UI_HelperActionInfo : MonoBehaviour
         }
     }
 
-    public void Show(HelperDataSO data)
+    public void Show(HelperDataSO data, EHelperGrade currentGrade = EHelperGrade.Normal)
     {
         if(data == null)
         {
@@ -42,11 +43,17 @@ public class UI_HelperActionInfo : MonoBehaviour
             return;
         }
 
-        SetIcon(_leftClickIcon, data.LeftClickIcon);
-        SetIcon(_rightClickIcon, data.RightClickIcon);
+        bool secondaryUnlocked = currentGrade >= data.SecondaryUnlockGrade;
 
+        SetIcon(_leftClickIcon, data.LeftClickIcon);
         SetExplanation(_leftClickExplanation, data.LeftClickExplanation);
-        SetExplanation(_rightClickExplanation, data.RightClickExplanation);
+
+        if (_rightClickGroup != null)
+        {
+            _rightClickGroup.SetActive(secondaryUnlocked);
+        }
+        SetIcon(_rightClickIcon, secondaryUnlocked ? data.RightClickIcon : null);
+        SetExplanation(_rightClickExplanation, secondaryUnlocked ? data.RightClickExplanation : null);
 
         if ( _canvasGroup != null)
         {
