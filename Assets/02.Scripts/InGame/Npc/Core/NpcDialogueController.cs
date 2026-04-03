@@ -206,6 +206,18 @@ public class NpcDialogueController : MonoBehaviour
         _uiDialogue.ShowButtons(interactionOptions, OnClickOption);
     }
 
+    public void ShowDefaultChoices()
+    {
+        if (_currentNpc == null || _uiDialogue == null) return;
+
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.Choice;
+
+        _uiDialogue.ClearDialogueText();
+        ShowChoiceButtons(_currentNpc.InteractionOptions);
+    }
+
     public void ShowQuestChoices(IReadOnlyList<NpcDialogueChoiceData> choices)
     {
         if (_uiDialogue == null) return;

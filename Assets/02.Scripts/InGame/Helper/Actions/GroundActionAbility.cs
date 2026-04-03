@@ -57,7 +57,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             PlayerInventoryAbility inventory = GetInventory();
             if (inventory != null && _dirtItem != null)
             {
-                inventory.AddItem(_dirtItem, _getDirtAmount);
+                QuestReportItemHelper.AddItemAndReportQuest(inventory, _dirtItem, _getDirtAmount);
             }
         }
 
