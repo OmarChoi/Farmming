@@ -19,6 +19,9 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     private int _summonedMainIndex = -1;
     private int _summonedLightIndex = -1;
 
+    private void OnMainHelperGradeChanged() => OnSummonChanged?.Invoke(SummonedIndex);
+    private void OnLightHelperGradeChanged() => OnSummonChanged?.Invoke(SummonedIndex);
+
     public int CurrentIndex => _currentIndex;
     public int Count => _helperDataList.Count;
     public int SummonedIndex => _summonedMainIndex >= 0 ? _summonedMainIndex : _summonedLightIndex;
@@ -149,6 +152,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 if (_activeLightHelper != null)
                 {
                     SaveHelperState(_activeLightHelper);
+                    UnsubscribeLightHelper();
                     _helperInteractionAbility.UnsummonBack();
                     _activeLightHelper = null;
                 }
@@ -156,7 +160,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 HelperController helper = InstantiateHelper(data);
                 RestoreHelperState(helper);
                 _activeLightHelper = helper;
-                _activeLightHelper.OnGradeChanged += () => OnSummonChanged?.Invoke(SummonedIndex);
+                _activeLightHelper.OnGradeChanged += OnLightHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
                 _summonedLightIndex = _currentIndex;
             }
@@ -167,6 +171,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             {
                 // 일반 helper 소환 해제
                 SaveHelperState(_activeMainHelper);
+                UnsubscribeMainHelper();
                 _helperInteractionAbility.UnsummonCurrentOnly();
                 _activeMainHelper = null;
                 _summonedMainIndex = -1;
@@ -184,7 +189,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 HelperController helper = InstantiateHelper(data);
                 RestoreHelperState(helper);
                 _activeMainHelper = helper;
-                _activeMainHelper.OnGradeChanged += () => OnSummonChanged?.Invoke(SummonedIndex);
+                _activeMainHelper.OnGradeChanged += OnMainHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
                 _summonedMainIndex = _currentIndex;
             }
@@ -214,8 +219,26 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             Grade = (int)helper.Grade.CurrentGrade,
             Experience = helper.Experience.CurrentExp,
             Energy = helper.Energy.Current,
-            EnergySavedAt = (long)UnityEngine.Time.realtimeSinceStartup
+            EnergySavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         };
+    }
+
+    private void UnsubscribeMainHelper()
+    {
+        if (_activeMainHelper == null)
+        {
+            return;
+        }
+        _activeMainHelper.OnGradeChanged -= OnMainHelperGradeChanged;
+    }
+
+    private void UnsubscribeLightHelper()
+    {
+        if (_activeLightHelper == null)
+        {
+            return;
+        }
+        _activeLightHelper.OnGradeChanged -= OnLightHelperGradeChanged;
     }
 
     private void RestoreHelperState(HelperController helper)
