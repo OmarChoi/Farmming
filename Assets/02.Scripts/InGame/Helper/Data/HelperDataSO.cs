@@ -26,6 +26,7 @@ public class HelperDataSO : ScriptableObject
     public int EpicMaxExp = 1000;
 
     public EHelperGrade SecondaryUnlockGrade = EHelperGrade.Normal;
+    public bool IsLightHelper = false;
 
     [SerializeField] private Sprite _leftClickIcon;
     [SerializeField] private Sprite _rightClickIcon;

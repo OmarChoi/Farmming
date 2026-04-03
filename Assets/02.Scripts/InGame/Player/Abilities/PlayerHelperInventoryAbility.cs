@@ -115,7 +115,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             _summonedLightIndex = -1;
 
             // 현재 인덱스가 방금 해제한 빛곡룡이였으면 소환 해제만
-            if (_helperDataList[_currentIndex].Prefab.GetComponent<LightActionAbility>() != null)
+            if (_helperDataList[_currentIndex].IsLightHelper)
             {
                 OnSummonChanged?.Invoke(SummonedIndex);
                 return;
@@ -123,7 +123,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         }
 
         var data = _helperDataList[_currentIndex];
-        bool isLightHelper = data.Prefab.GetComponent<LightActionAbility>() != null;
+        bool isLightHelper = data.IsLightHelper;
 
         if (isLightHelper)
         {
