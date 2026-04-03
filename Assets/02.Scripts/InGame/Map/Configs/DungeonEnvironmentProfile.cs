@@ -19,6 +19,9 @@ public class DungeonEnvironmentProfile : ScriptableObject
     [Range(0f, 1f)]
     public float FogDensity = 0.03f;
 
+    [Header("Skybox")]
+    public Material SkyboxMaterial;
+
     [Header("Post Processing")]
     [Range(-5f, 5f)]
     public float PostExposure = -0.8f;
