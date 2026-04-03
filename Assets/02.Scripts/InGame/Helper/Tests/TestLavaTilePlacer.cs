@@ -24,7 +24,7 @@ public class TestLavaTilePlacer : MonoBehaviour
                 var pos = new Vector3Int(x, 0, z);
                 var data = new TerrainCellData(
                     ECellType.Dirt,
-                    ETileType.Dungeon2Lava,
+                    ETileType.Dungeon3Lava,
                     1,
                     EGridObjectType.None,
                     0,
