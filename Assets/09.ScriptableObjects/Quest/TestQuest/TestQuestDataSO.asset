@@ -19,18 +19,18 @@ MonoBehaviour:
   StartNpcId: Shopper
   CompleteNpcId: Shopper
   ObjectiveType: 3
-  TargetObjectId: 
+  TargetObjectId: NormalTree
   TargetItemId: 
   TargetNpcId: Shopper
-  RequiredAmount: 1
+  RequiredAmount: 2
   PrerequisiteQuests: []
   RequiredFriendship: 40
   Reward:
     Rewards:
     - RewardType: 2
       RewardItem: {fileID: 0}
-      Amount: 0
-      TargetNpcId: 100
+      Amount: 100
+      TargetNpcId: Shopper
   AcceptDialogue: {fileID: 11400000, guid: 1cbc2922c7e716545a5efa9357c43adf, type: 2}
   InProgressDialogue: {fileID: 11400000, guid: 3e18f632725b07c49ae7624a74a61ed2, type: 2}
   CompleteDialogue: {fileID: 11400000, guid: 1f69e5e8ce6204546b1694c32ed9b23b, type: 2}

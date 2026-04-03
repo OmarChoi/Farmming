@@ -71,6 +71,7 @@ public class NpcDialogueController : MonoBehaviour
         }
 
         StartGreeting();
+        QuestManager.Instance?.ReportNpcTalked(npc.Data.NpcId);
     }
 
     public void Close()
