@@ -48,7 +48,7 @@ public class LavaTileTransition : MonoBehaviour
         TerrainGridManager.Instance.SetCell(cell.GridPosition,
             new TerrainCellData(
                 cell.Data.CellType,
-                ETileType.Dungeon2Stone,
+                ETileType.Dungeon3LavaStone,
                 cell.Data.DirtLevel,
                 cell.Data.ObjectType,
                 cell.Data.ObjectLevel,
