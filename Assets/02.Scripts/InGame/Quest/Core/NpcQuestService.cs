@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class NpcQuestService : MonoBehaviour
 {
@@ -27,10 +28,16 @@ public class NpcQuestService : MonoBehaviour
         }
 
         // 2. 수락 가능한 퀘스트를 확인합니다.
-        QuestDataSO acceptableQuest = FindAcceptableQuest(context);
-        if (acceptableQuest != null)
+        List<QuestDataSO> acceptableQuests = FindAcceptableQuests(context);
+        if (acceptableQuests.Count == 1)
         {
-            HandleAcceptQuest(context, acceptableQuest);
+            HandleAcceptQuest(context, acceptableQuests[0]);
+            return;
+        }
+
+        if (acceptableQuests.Count > 1)
+        {
+            ShowAcceptableQuestChoices(context, acceptableQuests);
             return;
         }
 
@@ -46,24 +53,27 @@ public class NpcQuestService : MonoBehaviour
         HandleNoQuest(context);
     }
 
-    private QuestDataSO FindAcceptableQuest(NpcInteractionContext context)
+    private List<QuestDataSO> FindAcceptableQuests(NpcInteractionContext context)
     {
-        if (context == null || context.Npc == null) return null;
+        List<QuestDataSO> result = new();
+
+        if (context == null || context.Npc == null) return result;
 
         NpcQuest provider = context.Npc.GetComponent<NpcQuest>();
-        if (provider == null || provider.Quests == null) return null;
+        if (provider == null || provider.Quests == null) return result;
 
         string npcId = context.NpcId;
 
         foreach (QuestDataSO questData in provider.Quests)
         {
-            if (questData == null || questData.StartNpcId != npcId) continue;
+            if (questData == null) continue;
+            if (questData.StartNpcId != npcId) continue;
             if (!CanOfferQuest(context, questData)) continue;
 
-            return questData;
+            result.Add(questData);
         }
 
-        return null;
+        return result;
     }
 
     private bool CanOfferQuest(NpcInteractionContext context, QuestDataSO questData)
@@ -213,5 +223,34 @@ public class NpcQuestService : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log("관련된 퀘스트가 없습니다.");
 #endif
+    }
+
+    private void ShowAcceptableQuestChoices(NpcInteractionContext context, List<QuestDataSO> quests)
+    {
+        if (_dialogueController == null || quests == null || quests.Count == 0) return;
+
+        var choices = new List<NpcDialogueChoiceData>();
+
+        foreach (QuestDataSO quest in quests)
+        {
+            if (quest == null) continue;
+
+            QuestDataSO capturedQuest = quest;
+
+            choices.Add(new NpcDialogueChoiceData(capturedQuest.QuestName, () => AcceptSelectedQuest(context, capturedQuest)));
+        }
+
+        _dialogueController.ShowQuestChoices(choices);
+    }
+
+    private void AcceptSelectedQuest(NpcInteractionContext context, QuestDataSO questData)
+    {
+        bool accepted = QuestManager.Instance.AcceptQuest(questData);
+        if (!accepted) return;
+
+        if (questData.AcceptDialogue != null)
+        {
+            _dialogueController.StartDialogue(questData.AcceptDialogue);
+        }
     }
 }
