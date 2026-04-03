@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd2a9ca7cb51afd4e99fac6204fb4665, type: 3}
-  m_Name: Shop
+  m_Name: HairShop
   m_EditorClassIdentifier: Assembly-CSharp::BuildingDataSO
-  _buildingId: MarketStall
-  _displayName: "\uC0C1\uC810"
-  _icon: {fileID: 1109351760, guid: 38092c5ef60c4404b8de8289f44d50e5, type: 3}
-  _description: "\uBB3C\uAC74\uC744 \uC0B4 \uC218 \uC788\uB294 \uC0C1\uC810\uC785\uB2C8\uB2E4."
-  _width: 4
+  _buildingId: HairShop
+  _displayName: "\uBBF8\uC6A9\uC2E4"
+  _icon: {fileID: 1645710345, guid: 38092c5ef60c4404b8de8289f44d50e5, type: 3}
+  _description: "\uBA38\uB9AC \uBA38\uB9AC \uBA38\uB9AC"
+  _width: 3
   _depth: 3
-  _constructionDays: 2
+  _constructionDays: 1
   _costs:
   - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
-    _amount: 5
-  - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
-    _amount: 5
+    _amount: 1
+  - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+    _amount: 1
