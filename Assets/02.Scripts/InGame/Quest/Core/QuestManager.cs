@@ -117,10 +117,64 @@ public class QuestManager : MonoBehaviour
         if (!CanAcceptQuest(questData)) return false;
 
         QuestRuntimeData runtimeData = new QuestRuntimeData(questData);
+
+        InitializeQuestProgressOnAccept(runtimeData);
+
         _activeQuests.Add(questData.QuestId, runtimeData);
 
         OnQuestAccepted?.Invoke(runtimeData);
+        OnQuestUpdated?.Invoke(runtimeData);
         return true;
+    }
+
+    private void InitializeQuestProgressOnAccept(QuestRuntimeData quest)
+    {
+        if (quest == null || quest.QuestData == null) return;
+
+        QuestDataSO data = quest.QuestData;
+
+        switch (data.ObjectiveType)
+        {
+            case EQuestObjectiveType.CollectItem:
+                InitializeCollectItemProgress(quest);
+                break;
+
+            case EQuestObjectiveType.DeliverItem:
+                InitializeDeliverItemProgress(quest);
+                break;
+        }
+
+        if (quest.IsObjectiveCompleted())
+        {
+            quest.Status = EQuestStatus.CanComplete;
+        }
+    }
+
+    private void InitializeCollectItemProgress(QuestRuntimeData quest)
+    {
+        if (quest == null || quest.QuestData == null) return;
+
+        foreach (QuestItemRequirementEntry requirement in quest.QuestData.ItemRequirements)
+        {
+            if (requirement.Item == null) continue;
+
+            quest.SetItemProgress(requirement.ItemId, 0);
+        }
+    }
+
+    private void InitializeDeliverItemProgress(QuestRuntimeData quest)
+    {
+        if (quest == null || quest.QuestData == null || _requirementService == null) return;
+
+        foreach (QuestItemRequirementEntry requirement in quest.QuestData.ItemRequirements)
+        {
+            if (requirement.Item == null) continue;
+
+            int ownedCount = _requirementService.GetOwnedItemCount(requirement.Item);
+            int progress = Mathf.Min(ownedCount, requirement.Amount);
+
+            quest.SetItemProgress(requirement.ItemId, progress);
+        }
     }
 
     public void ReportObjectBroken(string objectId, int amount = 1)

@@ -44,6 +44,16 @@ public class QuestRuntimeData
         SyncListFromMap();
     }
 
+    public void SetItemProgress(int itemId, int amount)
+    {
+        EnsureMap();
+
+        if (itemId < 0) return;
+
+        _itemProgressMap[itemId] = Mathf.Max(0, amount);
+        SyncListFromMap();
+    }
+
     public int GetItemProgress(int itemId)
     {
         EnsureMap();
