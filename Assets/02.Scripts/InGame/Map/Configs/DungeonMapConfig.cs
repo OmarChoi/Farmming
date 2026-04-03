@@ -15,6 +15,10 @@ public class DungeonMapConfig : MapConfig
     public GameObject TreePrefab;
     public GameObject RockPrefab;
 
+    [Header("Spawn")]
+    public DungeonSpawnMode SpawnMode = DungeonSpawnMode.CenterTop;
+    public ETileType[] AllowedSpawnTiles;
+
     [Header("Multiple Tile Types")]
     public TileWeightEntry[] TileWeights;
 
@@ -45,4 +49,10 @@ public class DungeonMaterialRequirement
 {
     public ItemDataSO Item;
     public int Amount = 1;
+}
+
+public enum DungeonSpawnMode
+{
+    CenterTop,
+    TopCellWithAllowedTile,
 }

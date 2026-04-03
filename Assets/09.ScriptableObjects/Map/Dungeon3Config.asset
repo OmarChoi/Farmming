@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1824961e65738ca4499f7865d6856ab5, type: 3}
+  m_Name: Dungeon3Config
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonMapConfig
+  Width: 75
+  Height: 75
+  BaseHeight: 3
+  MaxHeight: 8
+  NoiseScale: 0.02
+  TileNoiseScale: 0.08
+  DefaultTileType: 5
+  Resources:
+  - Type: 1
+    Level: 2
+    SpawnChance: 0.06
+  - Type: 2
+    Level: 2
+    SpawnChance: 0.06
+  DungeonName: "\uC6A9\uC554\uB3D9\uAD74"
+  TimeLimitSeconds: 180
+  EntryCost: 0
+  EntryRequirements: []
+  CliffPrefab: {fileID: 7165573434335360052, guid: 2c6ffc61fc792a940bc44c78a6035fbe, type: 3}
+  TreePrefab: {fileID: 5130300574329225930, guid: faa7465321db6904ab19f54e2cc33af2, type: 3}
+  RockPrefab: {fileID: 5182465649738605643, guid: b979e73f4fec48d47a7516b117260c38, type: 3}
+  SpawnMode: 1
+  AllowedSpawnTiles: 06000000
+  TileWeights:
+  - TileType: 5
+    Weight: 0.65
+  - TileType: 6
+    Weight: 0.35
+  IsCave: 0
+  CaveFillPercent: 0.43
+  CaveSmoothIterations: 5
+  WallTileType: 4
+  EnvironmentProfile: {fileID: 11400000, guid: ef10809ccd2d2bf4cbffde78fc17f9a1, type: 2}
