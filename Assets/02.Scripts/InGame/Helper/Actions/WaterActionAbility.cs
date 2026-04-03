@@ -30,6 +30,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private bool _isActing = false;
     private TerrainCell _currentCell;
     private bool _isSecondary = false;
+    private Coroutine _rotationCoroutine;
 
     private EHelperGrade CurrentGrade => _owner.Grade.CurrentGrade;
 
@@ -47,12 +48,15 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     private void Update()
     {
-        if (!_isActing) return;
-
-        var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
-        if (stateInfo.shortNameHash == WaterStateHash && stateInfo.normalizedTime >= 1f)
+        if(CurrentGrade == EHelperGrade.Normal || _isSecondary)
         {
-            ResetState();
+            if (!_isActing) return;
+
+            var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.shortNameHash == WaterStateHash && stateInfo.normalizedTime >= 1f)
+            {
+                ResetState();
+            }
         }
     }
 
@@ -78,7 +82,38 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _currentCell = cell;
 
         _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.Water);
+
+        if (CurrentGrade == EHelperGrade.Legendary && !isSecondary)
+        {
+            _animAbility?.Play(EHelperAnim.Happy);
+
+            if (_rotationCoroutine != null) StopCoroutine(_rotationCoroutine);
+            _rotationCoroutine = StartCoroutine(RotateLegendary(2.5f));
+            Invoke(nameof(WaterOpen), 0.2f); // wateropen 이벤트를 추가하지않으면 써야되는 코드
+        }
+        else
+        {
+            _animAbility?.Play(EHelperAnim.Water);
+        }
+    }
+
+    private IEnumerator RotateLegendary(float duration)
+    {
+        float elapsed = 0f;
+        Quaternion startRotation = _owner.transform.rotation;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+
+            float angle = (elapsed * 720f); // 720f 숫자가 크면 도는 속도가빨라진다.
+            _owner.transform.rotation = startRotation * Quaternion.Euler(0, angle, 0);
+
+            yield return null;
+        }
+
+        _owner.transform.rotation = startRotation;
+        ResetState();
     }
 
     public void InteractPrimary(TerrainCell cell)
@@ -167,13 +202,19 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     private IEnumerator DelayedLandEffect(TerrainCell cell, Vector3 targetPos, bool isCenter)
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.1f);
 
         SpawnLandingEffect(targetPos);
 
         if (ApplyEffects(cell, _waterEffects) && isCenter)
         {
             _owner.Experience.Add(_waterExperience);
+        }
+
+        if (CurrentGrade == EHelperGrade.Epic)
+        {
+            yield return new WaitForSeconds(1.0f);
+            ResetState();
         }
     }
 
@@ -244,6 +285,12 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     
     private void ResetState()
     {
+        if (_rotationCoroutine != null)
+        {
+            StopCoroutine(_rotationCoroutine);
+            _rotationCoroutine = null;
+        }
+
         _isActing = false;
         _isSecondary = false;
         _currentCell = null;
