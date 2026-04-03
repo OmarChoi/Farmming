@@ -101,6 +101,11 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             return;
         }
 
+        UnsummonCurrentOnly();
+    }
+
+    public void UnsummonCurrentOnly()
+    {
         if (_currentHelper == null) return;
 
         _currentHelper.OnActionStarted -= OnHelperActionStarted;
