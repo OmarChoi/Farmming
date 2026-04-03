@@ -12,8 +12,6 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     [SerializeField] private TerrainGridManager _gridManager;
     [SerializeField] private BuildingDatabase _buildingDatabase;
 
-    public BuildingDataSO SelectedBuilding { get; private set; }
-    public event Action<BuildingDataSO> OnBuildingSelected;
     public event Action<BuildingDataSO> OnLocalBuildCostConfirmed;
     public event Action<BuildingDataSO> OnLocalRemoveRefundGranted;
 
@@ -45,17 +43,6 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     #endregion
 
     #region Query
-    public void SelectBuilding(BuildingDataSO data)
-    {
-        SelectedBuilding = data;
-        OnBuildingSelected?.Invoke(data);
-    }
-
-    public void ClearSelection()
-    {
-        SelectedBuilding = null;
-    }
-
     public bool IsOccupied(Vector3Int gridPos) => _occupiedCells.ContainsKey(gridPos);
 
     public bool IsConstructionComplete(Vector3Int anyPos)
