@@ -46,19 +46,4 @@ public class QuestRequirementService
 
         return _inventoryAbility.GetItemCount(item);
     }
-
-    public int GetOwnedItemCount(int itemId, IReadOnlyList<QuestItemRequirementEntry> requirements)
-    {
-        if (_inventoryAbility == null || requirements == null || itemId < 0) return 0;
-
-        foreach (QuestItemRequirementEntry requirement in requirements)
-        {
-            if (requirement.Item == null) continue;
-            if (requirement.ItemId != itemId) continue;
-
-            return _inventoryAbility.GetItemCount(requirement.Item);
-        }
-
-        return 0;
-    }
 }
