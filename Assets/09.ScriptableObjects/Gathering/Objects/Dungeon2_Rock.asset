@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0e94df61d7155824ba4ad3cb157b683b, type: 3}
-  m_Name: Dungeon1_Rock
+  m_Name: Dungeon2_Rock
   m_EditorClassIdentifier: Assembly-CSharp::GatheringObjectSO
-  _objectName: Dungeon1_Rock
+  _objectName: Dungeon2_Rock
   _maxHealth: 100
   _requiredLevel: 0
   _modelPrefabs:
-  - {fileID: 5365756203952804134, guid: 462bf1c23aa91974ab86070a4f827130, type: 3}
-  - {fileID: 4252661232097606702, guid: 3cf4d4731c990114ba6661beb8f5e504, type: 3}
-  - {fileID: 4196975984229149536, guid: 019630e84b34e2e4f967f81487fdcc26, type: 3}
-  - {fileID: 5045110175054005872, guid: a1270ba2f02fb3242ac66c356b6ab658, type: 3}
+  - {fileID: 1989551228497467314, guid: 21a4f9e0ecd27c54786a1dc82b648a39, type: 3}
+  - {fileID: 383282586856561209, guid: 3ddd6179c16b8b0419529f263b564e88, type: 3}
+  - {fileID: 4969605176084426650, guid: 6e17129b6baf2ed44948932e679228bf, type: 3}
+  - {fileID: 3935588852282388327, guid: c696589a0df3b9e4994cc2751b80fe8d, type: 3}
   _drops:
-  - _item: {fileID: 0}
+  - _item: {fileID: 11400000, guid: fafe0b65ea8ffdd4ba338f10c19c46ec, type: 2}
     _minQuantity: 20
     _maxQuantity: 50
