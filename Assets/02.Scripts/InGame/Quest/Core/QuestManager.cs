@@ -45,12 +45,14 @@ public class QuestManager : MonoBehaviour
     {
         PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
         GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
+        TimeEvents.OnNetDayChanged += HandleDayChanged;
     }
 
     private void OnDisable()
     {
         PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
         GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
+        TimeEvents.OnNetDayChanged -= HandleDayChanged;
     }
 
     private void OnPlayerReady(PlayerInventoryAbility ability)

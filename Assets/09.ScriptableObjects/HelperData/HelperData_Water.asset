@@ -17,7 +17,7 @@ MonoBehaviour:
   HelperIcon: {fileID: 21300000, guid: 4ddd8bab887b0074c8a95d97d1fe0b9a, type: 3}
   Prefab: {fileID: 350823004175790314, guid: a9808f16d9fefed4f9e81b1c641f5dfb, type: 3}
   MaxEnergy: 100
-  EnergyRecoveryPerSecond: 5
+  EnergyRecoveryPerSecond: 0.5
   GatherDamage: 10
   StaminaCost: 5
   MaxLevel: 10
@@ -26,6 +26,9 @@ MonoBehaviour:
   NormalRange: 1
   EpicRange: 2
   LegendaryRange: 3
+  NormalMaxExp: 500
+  EpicMaxExp: 1000
+  SecondaryUnlockGrade: 2
   _leftClickIcon: {fileID: 21300000, guid: 12681ae5bc70f864681174434d53be00, type: 3}
   _rightClickIcon: {fileID: 21300000, guid: 7fb397a705dff8445a260ee2cb130988, type: 3}
   _leftClickExplanation: "\uBB3C \uBFCC\uB9AC\uAE30"
