@@ -246,6 +246,60 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &81009036
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 81009038}
+  - component: {fileID: 81009037}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &81009037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 81009036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c0ff8f6d6fd65245815e3d655be1e92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TestHelperUpgrade
+  _playerHelperInteraction: {fileID: 0}
+  _fillExpKey: 117
+  _upgradeKey: 105
+  _addExpKey: 106
+  _printStatusKey: 107
+  _setNormalKey: 55
+  _setEpicKey: 56
+  _setLegendaryKey: 57
+  _expAddAmount: 100
+  _targetBackHelper: 0
+--- !u!4 &81009038
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 81009036}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &194680198
 GameObject:
   m_ObjectHideFlags: 0
@@ -486,6 +540,7 @@ MonoBehaviour:
   _dungeonConfigs:
   - {fileID: 11400000, guid: c41889c3eba534f4e874f82549244dd1, type: 2}
   - {fileID: 11400000, guid: d04f46f16d45e704994f1e48c3b1a843, type: 2}
+  - {fileID: 11400000, guid: 80c7174be23f3c546ac0053670a90b71, type: 2}
 --- !u!4 &975167272
 Transform:
   m_ObjectHideFlags: 0
@@ -1472,3 +1527,4 @@ SceneRoots:
   - {fileID: 194680200}
   - {fileID: 1800188135}
   - {fileID: 523651334}
+  - {fileID: 81009038}
