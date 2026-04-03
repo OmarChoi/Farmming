@@ -5,8 +5,10 @@ using UnityEngine;
 public class DungeonSceneInit : MonoBehaviour
 {
     [SerializeField] private int _floor = 1;
+    [SerializeField] private DungeonEnvironmentController _environmentController;
 
-    /// 포탈에서 선택한 층 (null이면 SerializeField 사용)
+    private GameObject _spawnedCliff;
+
     public static int? FloorOverride { get; set; }
 
     private const float SeedSyncTimeoutSeconds = 10f;
@@ -37,20 +39,21 @@ public class DungeonSceneInit : MonoBehaviour
     {
         int seed = System.Environment.TickCount;
 
-        // 1. 마스터가 던전 맵 생성
+        ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
+        ApplyEnvironment();
+        SpawnCliff();
 
-        // 2. 플레이어 배치
         PlaceAllPlayers();
 
-        // 3. 시드만 전송 (전체 맵 데이터 대신)
         if (MapSyncManager.Instance != null)
             MapSyncManager.Instance.BroadcastDungeonSeed(_floor, seed);
     }
 
     private async UniTaskVoid WaitForSeedAndGenerate()
     {
-        if (MapSyncManager.Instance == null) return;
+        if (MapSyncManager.Instance == null)
+            return;
 
         bool synced = false;
         int receivedFloor = 0;
@@ -63,7 +66,6 @@ public class DungeonSceneInit : MonoBehaviour
             synced = true;
         };
 
-        // 마스터에게 시드 요청 (브로드캐스트 누락 대비)
         MapSyncManager.Instance.RequestDungeonSeed();
 
         float timeout = Time.time + SeedSyncTimeoutSeconds;
@@ -71,12 +73,16 @@ public class DungeonSceneInit : MonoBehaviour
 
         if (!synced)
         {
-            Debug.LogWarning("[DungeonSceneInit] 던전 시드 수신 타임아웃");
+            Debug.LogWarning("[DungeonSceneInit] Dungeon seed receive timeout");
             return;
         }
 
-        // 동일한 시드로 로컬에서 맵 생성
+        _floor = receivedFloor;
+
+        ApplyObjectPrefabs(receivedFloor);
         MapManager.Instance.EnterDungeon(receivedFloor, receivedSeed);
+        ApplyEnvironment();
+        SpawnCliff();
 
         PlaceAllPlayers();
     }
@@ -86,25 +92,35 @@ public class DungeonSceneInit : MonoBehaviour
         int seed = System.Environment.TickCount;
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
 
+        ApplyObjectPrefabs(_floor);
+
         if (players.Length > 0)
             MapManager.Instance.EnterDungeon(_floor, seed, players[0].transform);
         else
             MapManager.Instance.EnterDungeon(_floor, seed);
+
+        ApplyEnvironment();
+        SpawnCliff();
     }
 
     private void PlaceAllPlayers()
     {
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-        if (players.Length == 0) return;
+        if (players.Length == 0)
+            return;
 
         Vector3 spawnPos = FindSpawnPosition();
 
         foreach (var player in players)
         {
             var cc = player.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
+            if (cc != null)
+                cc.enabled = false;
+
             player.transform.position = spawnPos;
-            if (cc != null) cc.enabled = true;
+
+            if (cc != null)
+                cc.enabled = true;
         }
     }
 
@@ -113,8 +129,11 @@ public class DungeonSceneInit : MonoBehaviour
         var gridManager = MapManager.Instance.GridManager;
         var gridData = gridManager.GetGridData();
 
-        int minX = int.MaxValue, maxX = int.MinValue;
-        int minZ = int.MaxValue, maxZ = int.MinValue;
+        int minX = int.MaxValue;
+        int maxX = int.MinValue;
+        int minZ = int.MaxValue;
+        int maxZ = int.MinValue;
+
         foreach (var pos in gridData.Cells.Keys)
         {
             if (pos.x < minX) minX = pos.x;
@@ -133,5 +152,38 @@ public class DungeonSceneInit : MonoBehaviour
         }
 
         return Vector3.zero;
+    }
+
+    private void ApplyObjectPrefabs(int floor)
+    {
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(floor);
+        if (config == null)
+            return;
+
+        MapManager.Instance.GridManager.OverrideObjectPrefabs(config.TreePrefab, config.RockPrefab);
+    }
+
+    private void SpawnCliff()
+    {
+        if (_spawnedCliff != null)
+            Destroy(_spawnedCliff);
+
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
+        if (config == null || config.CliffPrefab == null)
+            return;
+
+        _spawnedCliff = Instantiate(config.CliffPrefab);
+    }
+
+    private void ApplyEnvironment()
+    {
+        if (_environmentController == null)
+            _environmentController = FindFirstObjectByType<DungeonEnvironmentController>();
+
+        if (_environmentController == null)
+            return;
+
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
+        _environmentController.Apply(config);
     }
 }
