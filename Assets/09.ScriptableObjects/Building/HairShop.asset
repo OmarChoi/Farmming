@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd2a9ca7cb51afd4e99fac6204fb4665, type: 3}
+  m_Name: HairShop
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingDataSO
+  _buildingId: HairShop
+  _displayName: "\uBBF8\uC6A9\uC2E4"
+  _icon: {fileID: 1645710345, guid: 38092c5ef60c4404b8de8289f44d50e5, type: 3}
+  _description: "\uBA38\uB9AC \uBA38\uB9AC \uBA38\uB9AC"
+  _width: 3
+  _depth: 3
+  _constructionDays: 1
+  _costs:
+  - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+    _amount: 1
+  - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+    _amount: 1
