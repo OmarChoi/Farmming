@@ -7,6 +7,7 @@ public class HelperAnimationAbility : HelperAbility
 
     private Animator _animator;
     private EHelperAnim _currentAnim;
+    public Animator Animator => _animator;
 
     protected override void Awake()
     {

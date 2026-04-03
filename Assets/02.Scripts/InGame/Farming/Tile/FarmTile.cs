@@ -42,14 +42,14 @@ public class FarmTile : MonoBehaviour
 
     private void Start()
     {
-        TimeEvents.OnDayStarted += OnMorning;
-        TimeEvents.OnDayEnded += OnNight;
+        TimeEvents.OnNetDayStarted += OnMorning;
+        TimeEvents.OnNetDayEnded += OnNight;
     }
 
     private void OnDisable()
     {
-        TimeEvents.OnDayStarted -= OnMorning;
-        TimeEvents.OnDayEnded -= OnNight;
+        TimeEvents.OnNetDayStarted -= OnMorning;
+        TimeEvents.OnNetDayEnded -= OnNight;
     }
 
     private void OnMorning()
