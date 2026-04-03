@@ -20,11 +20,13 @@ public static class AssetKey
     {
         private const string MarketStall = "MarketStall";
         private const string Smithy = "Smithy";
+        private const string HairShop = "HairShop";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
         {
             MarketStall,
-            Smithy
+            Smithy,
+            HairShop
         };
 
         public static string GetKey(string buildingId)
