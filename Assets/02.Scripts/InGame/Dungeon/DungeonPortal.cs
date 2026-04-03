@@ -16,14 +16,16 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
 
     private void Awake()
     {
-        if (_ui == null)
-            _ui = FindFirstObjectByType<UI_DungeonPortal>();
+        ResolveUI();
     }
 
     public void RequestInteract(Transform interactor)
     {
-        if (_ui == null)
-            _ui = FindFirstObjectByType<UI_DungeonPortal>();
+        if (!ResolveUI())
+        {
+            Debug.LogError("[DungeonPortal] UI_DungeonPortal not found.");
+            return;
+        }
 
         _playerController = interactor.GetComponentInParent<PlayerController>();
         _playerInteraction = interactor.GetComponentInChildren<PlayerNPCInteractionAbility>();
@@ -167,10 +169,19 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
 
     public void EndInteraction()
     {
-        _ui.Close();
+        _ui?.Close();
         _playerController?.ExitUIMode();
         _playerInteraction?.EndInteraction();
         _playerInteraction = null;
         _playerController = null;
+    }
+
+    private bool ResolveUI()
+    {
+        if (_ui != null)
+            return true;
+
+        _ui = FindFirstObjectByType<UI_DungeonPortal>(FindObjectsInactive.Include);
+        return _ui != null;
     }
 }
