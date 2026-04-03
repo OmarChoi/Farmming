@@ -989,8 +989,14 @@ MonoBehaviour:
   _mouthPoint: {fileID: 1982235181728634582}
   _waterVfxPrefab: {fileID: 4881571040572222668, guid: 6a570f51b4cf2924cb95f91f3f9db821, type: 3}
   _iceVfxPrefab: {fileID: 6137449325422851024, guid: 9b0c4a3f931856d45bc0194eb434105d, type: 3}
+  _epicWaterHelperVfxPrefab: {fileID: 0}
+  _epicWaterLandVfxPrefab: {fileID: 3470794928214334574, guid: a2694f0b8f3f73a4ba09103b61d2b9e1, type: 3}
+  _splashDuration: 1
+  _legendaryWaterHelperVfxPrefab: {fileID: 0}
+  _legendaryWaterLandVfxPrefab: {fileID: 4763949867957790656, guid: e2afc80c2b252a146abb95038d904ebc, type: 3}
   _secondaryEnergyCost: 25
   _iceSpawnOffset: 3.4
+  _waterExperience: 10
 --- !u!114 &2251510159385357850
 MonoBehaviour:
   m_ObjectHideFlags: 0

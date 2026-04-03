@@ -8,6 +8,16 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _waterVfxPrefab;
     [SerializeField] private GameObject _iceVfxPrefab;
+
+    [Header("에픽 등급 물효과")]
+    [SerializeField] private GameObject _epicWaterHelperVfxPrefab;
+    [SerializeField] private GameObject _epicWaterLandVfxPrefab;
+    [SerializeField] private float _splashDuration = 1f;
+
+    [Header("레전더리 등급 물효과")]
+    [SerializeField] private GameObject _legendaryWaterHelperVfxPrefab;
+    [SerializeField] private GameObject _legendaryWaterLandVfxPrefab;
+
     [SerializeField] private float _secondaryEnergyCost = 25f;
     [SerializeField] private float _iceSpawnOffset = 17.5f;
     [SerializeField] private int _waterExperience = 10;
@@ -20,6 +30,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private bool _isActing = false;
     private TerrainCell _currentCell;
     private bool _isSecondary = false;
+
+    private EHelperGrade CurrentGrade => _owner.Grade.CurrentGrade;
 
     protected override void Awake()
     {
@@ -113,6 +125,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             ? new List<TerrainCell> { _currentCell }
             : GetTargetCells(_currentCell);
 
+        HandleGradeVisualEffects();
+
         for (int i = 0; i < targetCells.Count; i++)
         {
             TerrainCell cell = targetCells[i];
@@ -139,27 +153,79 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             }
             else
             {
-                if (_waterVfxPrefab != null)
+                if (CurrentGrade == EHelperGrade.Normal)
                 {
-                    TerrainCell capturedCell = cell;
-                    bool addExp = isCenter;
-                    GameObject vfxObj = Instantiate(
-                        _waterVfxPrefab,
-                        spawnPos,
-                        Quaternion.identity
-                    );
-
-                    WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
-
-                    waterVfx?.Launch(targetPos, direction, () =>
-                    {
-                        if (ApplyEffects(capturedCell, _waterEffects) && addExp)
-                        {
-                            _owner.Experience.Add(_waterExperience);
-                        }
-                    });
+                    HandleWaterAction(cell, targetPos, direction, isCenter);
+                }
+                else
+                {
+                    StartCoroutine(DelayedLandEffect(cell, targetPos, isCenter));
                 }
             }
+        }
+    }
+
+    private IEnumerator DelayedLandEffect(TerrainCell cell, Vector3 targetPos, bool isCenter)
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        SpawnLandingEffect(targetPos);
+
+        if (ApplyEffects(cell, _waterEffects) && isCenter)
+        {
+            _owner.Experience.Add(_waterExperience);
+        }
+    }
+
+    private void HandleGradeVisualEffects()
+    {
+        if(CurrentGrade == EHelperGrade.Epic)
+        {
+            if (_epicWaterHelperVfxPrefab != null)
+            {
+                GameObject waterhelpervfx = Instantiate(_epicWaterHelperVfxPrefab, _owner.transform.position, Quaternion.identity);
+                waterhelpervfx.transform.SetParent(_owner.transform);
+                Destroy(waterhelpervfx, _splashDuration);
+            }
+        }
+        else if (CurrentGrade == EHelperGrade.Legendary)
+        {
+            if (_legendaryWaterHelperVfxPrefab != null)
+            {
+                GameObject auroraVfx = Instantiate(_legendaryWaterHelperVfxPrefab, _owner.transform.position, Quaternion.identity);
+                auroraVfx.transform.SetParent(_owner.transform);
+                Destroy(auroraVfx, _splashDuration);
+            }
+        }
+    }
+
+    private void HandleWaterAction(TerrainCell cell, Vector3 targetPos, Vector3 direction, bool isCenter)
+    {
+        if (_waterVfxPrefab == null) return;
+
+        GameObject vfxObj = Instantiate(_waterVfxPrefab, _owner.transform.position, Quaternion.identity);
+        WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
+
+        waterVfx?.Launch(targetPos, direction, () =>
+        {
+            if (ApplyEffects(cell, _waterEffects) && isCenter)
+            {
+                _owner.Experience.Add(_waterExperience);
+            }
+        });
+    }
+
+    private void SpawnLandingEffect(Vector3 position)
+    {
+        GameObject effectPrefab = null;
+
+        if (CurrentGrade == EHelperGrade.Legendary) effectPrefab = _legendaryWaterLandVfxPrefab;
+        else if (CurrentGrade == EHelperGrade.Epic) effectPrefab = _epicWaterLandVfxPrefab;
+
+        if (effectPrefab != null)
+        {
+            GameObject landVfx = Instantiate(effectPrefab, position, Quaternion.identity);
+            Destroy(landVfx, 2f);
         }
     }
 

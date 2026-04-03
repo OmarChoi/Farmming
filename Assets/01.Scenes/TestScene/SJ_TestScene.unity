@@ -5284,6 +5284,7 @@ MonoBehaviour:
   _leftClickExplanation: {fileID: 2094323643}
   _rightClickIcon: {fileID: 482629679}
   _rightClickExplanation: {fileID: 1260496439}
+  _rightClickGroup: {fileID: 0}
   _canvasGroup: {fileID: 1609630444}
   _animDuration: 0.3
   _visibleAlpha: 1
@@ -6229,11 +6230,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c93b55c26965a944f8b6bc4c50887244, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_GoldTest
-  _goldText: {fileID: 1208130180}
-  _addButton: {fileID: 1256822326}
-  _spendButton: {fileID: 346732930}
-  _addAmount: 100
-  _spendAmount: 50
 --- !u!114 &1822457941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6706,7 +6702,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4408521486673430637, guid: 4b7b43ad3385dde48b6f49eb620f77a5, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4842463974024754630, guid: 4b7b43ad3385dde48b6f49eb620f77a5, type: 3}
       propertyPath: _dirtBlock
