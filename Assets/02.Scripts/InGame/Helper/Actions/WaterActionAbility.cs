@@ -93,7 +93,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             _rotationCoroutine = StartCoroutine(RotateLegendary(2.5f));
             Invoke(nameof(WaterOpen), 0.2f); // wateropen 이벤트를 추가하지않으면 써야되는 코드
         }
-        else if(CurrentGrade == EHelperGrade.Epic)
+        else if(CurrentGrade == EHelperGrade.Epic && !isSecondary)
         {
             _animAbility?.Play(EHelperAnim.Jump);
 
@@ -288,7 +288,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         if (effectPrefab != null)
         {
             GameObject landVfx = Instantiate(effectPrefab, position, Quaternion.identity);
-            Destroy(landVfx, 2f);
+            Destroy(landVfx, 2.5f);
         }
     }
 
