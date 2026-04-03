@@ -118,6 +118,12 @@ public class NpcDialogueController : MonoBehaviour
         _interactionService.StartGreeting(CreateContext());
     }
 
+    public void StartDialogue(NpcDialogueSO dialogueSO, EDialogueUiState dialogueState)
+    {
+        _dialogueState = dialogueState;
+        StartDialogue(dialogueSO);
+    }
+
     public void StartDialogue(NpcDialogueSO dialogueSO)
     {
         if (dialogueSO == null || dialogueSO.Lines == null || dialogueSO.Lines.Length == 0)
@@ -183,6 +189,7 @@ public class NpcDialogueController : MonoBehaviour
                 break;
 
             case EDialogueUiState.Talking:
+            case EDialogueUiState.Quest:
                 _dialogueState = EDialogueUiState.None;
                 EndCurrentInteraction();
                 break;
