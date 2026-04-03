@@ -260,14 +260,15 @@ public class UI_HelperInventory : MonoBehaviour
         if (_ability != null)
         {
             var dataToShow = _isShowing ? data : _ability.SummonedData;
-            _actionInfoPanel.Show(dataToShow);
+            EHelperGrade grade = _ability.GetHelperGrade(dataToShow);
+            _actionInfoPanel.Show(dataToShow, grade);
         }
     }
 
     private void RefreshSummonedIndicator()
     {
         if (_summonedIndicator != null)
-            _summonedIndicator.SetActive(_ability.SummonedIndex == _ability.CurrentIndex);
+            _summonedIndicator.SetActive(_ability.IsCurrentIndexSummoned);
     }
 
     private void AnimateDecor(bool expanding)

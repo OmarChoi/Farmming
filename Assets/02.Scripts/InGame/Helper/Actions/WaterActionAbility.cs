@@ -79,10 +79,25 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
-        if (cell == null) return;
+        if (cell == null)
+        {
+            return;
+        }
+
+        if (_owner.Grade.CurrentGrade < _owner.Data.SecondaryUnlockGrade)
+        {
+            return;
+        }
         // 로컬만 중복 입력 방지, 원격은 소유자가 검증한 RPC이므로 그대로 실행
-        if (_owner.IsMine && _isActing) return;
-        if(!_owner.Energy.TryConsume(_secondaryEnergyCost)) return;
+        if (_owner.IsMine && _isActing)
+        {
+           return;
+        }
+        if(!_owner.Energy.TryConsume(_secondaryEnergyCost))
+        {
+            return;
+        }
+
         StartWaterAction(cell, isSecondary: true);
     }
 
@@ -94,43 +109,56 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             ? _mouthPoint.position
             : _owner.transform.position;
 
-        Vector3 targetPos = GetTargetPosition(_currentCell);
-        Vector3 direction = (targetPos - spawnPos).normalized;
-        TerrainCell cell = _currentCell;    
+        List<TerrainCell> targetCells = _isSecondary
+            ? new List<TerrainCell> { _currentCell }
+            : GetTargetCells(_currentCell);
 
-        if(_isSecondary)
+        for (int i = 0; i < targetCells.Count; i++)
         {
-            if (_iceVfxPrefab != null)
+            TerrainCell cell = targetCells[i];
+            bool isCenter = (i == 0); // 경험치는 중앙 셀 1회만 나중에 적용된면적 3개, 5개등등 적용할지 생각하기, 가운데만해도좋을것같다.
+
+            Vector3 targetPos = GetTargetPosition(cell);
+            Vector3 direction = (targetPos - spawnPos).normalized;
+
+
+            if (_isSecondary)
             {
-                Vector3 iceSpawnPos = targetPos + Vector3.up * _iceSpawnOffset;
-
-                GameObject vfxObj = Instantiate(_iceVfxPrefab, iceSpawnPos, Quaternion.identity);
-                IceVFX iceVfx = vfxObj.GetComponentInChildren<IceVFX>();
-                iceVfx?.Launch(targetPos, direction, () =>
+                if (_iceVfxPrefab != null)
                 {
-                    ApplyEffects(cell, _iceEffects);
-                });
-            }
-        }
-        else
-        {
-            if (_waterVfxPrefab != null)
-            {
-                GameObject vfxObj = Instantiate(
-                    _waterVfxPrefab,
-                    spawnPos,
-                    Quaternion.identity
-                );
+                    TerrainCell capturedCell = cell;
+                    Vector3 iceSpawnPos = targetPos + Vector3.up * _iceSpawnOffset;
 
-                WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
-
-                waterVfx?.Launch(targetPos, direction, () =>
-                {
-                    if(ApplyEffects(cell, _waterEffects))
+                    GameObject vfxObj = Instantiate(_iceVfxPrefab, iceSpawnPos, Quaternion.identity);
+                    IceVFX iceVfx = vfxObj.GetComponentInChildren<IceVFX>();
+                    iceVfx?.Launch(targetPos, direction, () =>
                     {
-                        _owner.Experience.Add(_waterExperience);
-                    }
-                });
+                        ApplyEffects(capturedCell, _iceEffects);
+                    });
+                }
+            }
+            else
+            {
+                if (_waterVfxPrefab != null)
+                {
+                    TerrainCell capturedCell = cell;
+                    bool addExp = isCenter;
+                    GameObject vfxObj = Instantiate(
+                        _waterVfxPrefab,
+                        spawnPos,
+                        Quaternion.identity
+                    );
+
+                    WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
+
+                    waterVfx?.Launch(targetPos, direction, () =>
+                    {
+                        if (ApplyEffects(capturedCell, _waterEffects) && addExp)
+                        {
+                            _owner.Experience.Add(_waterExperience);
+                        }
+                    });
+                }
             }
         }
     }
@@ -174,5 +202,42 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         }
 
         return cell.transform.position + Vector3.up * 0.5f;
+    }
+
+    private List<TerrainCell> GetTargetCells(TerrainCell centerCell)
+    {
+        var cells = new List<TerrainCell> { centerCell };
+        int extension = _owner.Grade.GetRange() - 1; // Normal:0  Epic:1
+        if(extension <= 0)
+        {
+            return cells;
+        }
+
+        Vector3Int rightOffset = GetGridRightOffset();
+        for(int i = 1; i<= extension; i++)
+        {
+            var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
+            var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
+            if(rightCell != null)
+            {
+                cells.Add(rightCell);
+            }
+            if(leftCell != null)
+            {
+                cells.Add(leftCell);
+            }
+        }
+        return cells;
+    }
+
+    private Vector3Int GetGridRightOffset()
+    {
+        if(_owner.PlayerOwner == null)
+        {
+            return Vector3Int.right;
+        }
+
+        Vector3 right = _owner.PlayerOwner.transform.right;
+        return new Vector3Int(Mathf.RoundToInt(right.x), 0, Mathf.RoundToInt(right.z));
     }
 }
