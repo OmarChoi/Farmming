@@ -31,6 +31,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private TerrainCell _currentCell;
     private bool _isSecondary = false;
     private Coroutine _rotationCoroutine;
+    private Coroutine _jumpCoroutine;
 
     private EHelperGrade CurrentGrade => _owner.Grade.CurrentGrade;
 
@@ -87,9 +88,18 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         {
             _animAbility?.Play(EHelperAnim.Happy);
 
+            _animAbility?.Play(EHelperAnim.Jump);
             if (_rotationCoroutine != null) StopCoroutine(_rotationCoroutine);
             _rotationCoroutine = StartCoroutine(RotateLegendary(2.5f));
             Invoke(nameof(WaterOpen), 0.2f); // wateropen 이벤트를 추가하지않으면 써야되는 코드
+        }
+        else if(CurrentGrade == EHelperGrade.Epic)
+        {
+            _animAbility?.Play(EHelperAnim.Jump);
+
+            if(_jumpCoroutine != null) StopCoroutine(_jumpCoroutine);
+            _jumpCoroutine = StartCoroutine(LoopJumpAnimation());
+            Invoke(nameof(WaterOpen), 0.2f);
         }
         else
         {
@@ -218,6 +228,18 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         }
     }
 
+    private IEnumerator LoopJumpAnimation()
+    {
+        //_animAbility.Animator.speed = 2f;
+
+        while (true)
+        {
+            _animAbility?.Play(EHelperAnim.Jump);
+
+            yield return new WaitForSeconds(0.6f);
+        }
+    }
+
     private void HandleGradeVisualEffects()
     {
         if(CurrentGrade == EHelperGrade.Epic)
@@ -291,6 +313,12 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             _rotationCoroutine = null;
         }
 
+        if (_jumpCoroutine != null)
+        {
+            StopCoroutine(_jumpCoroutine);
+            _jumpCoroutine = null;
+        }
+
         _isActing = false;
         _isSecondary = false;
         _currentCell = null;
@@ -319,7 +347,13 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     private List<TerrainCell> GetTargetCells(TerrainCell centerCell)
     {
-        var cells = new List<TerrainCell> { centerCell };
+        var cells = new List<TerrainCell>();
+
+        if(!HasObject(centerCell))
+        {
+            cells.Add(centerCell);
+        }
+
         int extension = _owner.Grade.GetRange() - 1; // Normal:0  Epic:1
         if(extension <= 0)
         {
@@ -333,14 +367,25 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
             if(rightCell != null)
             {
-                cells.Add(rightCell);
+                if (!HasObject(rightCell) && rightCell.Data.IsTop) 
+                {
+                    cells.Add(rightCell);
+                }
             }
             if(leftCell != null)
             {
-                cells.Add(leftCell);
+                if (!HasObject(leftCell) && leftCell.Data.IsTop)
+                {
+                    cells.Add(leftCell);
+                }
             }
         }
         return cells;
+    }
+
+    private bool HasObject(TerrainCell cell)
+    {
+        return cell.CurrentObject != null; //돌이나 나무가있는상태
     }
 
     private Vector3Int GetGridRightOffset()
