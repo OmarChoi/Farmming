@@ -75,6 +75,7 @@ public class TerrainCell : MonoBehaviour
 
     public void SpawnObject(GameObject prefab, EGridObjectType type)
     {
+        if(_objectPoint == null)  return;
         ClearCurrentObject();
         _data.SetObject(type);
         CurrentObject = Instantiate(prefab, _objectPoint.position, Quaternion.identity, _objectPoint);

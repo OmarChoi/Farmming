@@ -131,6 +131,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TimeSystem
       objectReference: {fileID: 0}
+    - target: {fileID: 6970724530629894862, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+      propertyPath: sceneViewId
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 9026246651717788652, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -661,6 +665,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TestSeedAdd
   _seedItem: {fileID: 11400000, guid: 126f95a0ef92a304dbe5201eb77ff2de, type: 2}
   _amount: 10
+  _inventory: {fileID: 0}
 --- !u!1001 &221505136
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3392,7 +3397,7 @@ Transform:
   m_GameObject: {fileID: 1523245610}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -1.436}
+  m_LocalPosition: {x: 71.500275, y: 14.642224, z: 70.65187}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -9,6 +9,11 @@ public class DungeonMapConfig : MapConfig
     public float TimeLimitSeconds = 180f;
     public int EntryCost = 100;
     public DungeonMaterialRequirement[] EntryRequirements;
+    public GameObject CliffPrefab;
+
+    [Header("Object Prefab Overrides")]
+    public GameObject TreePrefab;
+    public GameObject RockPrefab;
 
     [Header("Multiple Tile Types")]
     public TileWeightEntry[] TileWeights;
@@ -19,6 +24,9 @@ public class DungeonMapConfig : MapConfig
     public float CaveFillPercent = 0.45f;
     public int CaveSmoothIterations = 5;
     public ETileType WallTileType = ETileType.Dungeon2Stone;
+
+    [Header("Environment")]
+    public DungeonEnvironmentProfile EnvironmentProfile;
 
     public override IMapGenerator CreateGenerator() =>
         IsCave ? new CaveMapGenerator() : new HeightMapGenerator();
