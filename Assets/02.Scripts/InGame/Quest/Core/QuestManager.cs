@@ -6,12 +6,14 @@ public class QuestManager : MonoBehaviour
 {
     public static QuestManager Instance { get; private set; }
 
+    private QuestRewardService _rewardService;
+    private QuestRequirementService _requirementService;
+
     private PlayerInventoryAbility _playerInventory;
 
     private readonly Dictionary<string, QuestRuntimeData> _activeQuests = new();
     private readonly HashSet<string> _completedMainQuestIds = new();
     private readonly HashSet<string> _completedSubQuestIds = new();
-    private Dictionary<EQuestRewardType, IQuestRewardHandler> _rewardHandlers;
 
     public IReadOnlyDictionary<string, QuestRuntimeData> ActiveQuests => _activeQuests;
 
@@ -36,12 +38,6 @@ public class QuestManager : MonoBehaviour
         }
 
         Instance = this;
-        _rewardHandlers = new Dictionary<EQuestRewardType, IQuestRewardHandler>
-        {
-            { EQuestRewardType.Gold, new QuestGoldRewardHandler() },
-            { EQuestRewardType.Item, new QuestItemRewardHandler(_playerInventory) },
-            { EQuestRewardType.Friendship, new QuestFriendshipRewardHandler() }
-        };
         OnQuestManagerReady?.Invoke();
     }
 
@@ -63,7 +59,8 @@ public class QuestManager : MonoBehaviour
         Debug.Log("PlayerInventoryAbility 확인");
 #endif
         _playerInventory = ability;
-        _rewardHandlers[EQuestRewardType.Item] = new QuestItemRewardHandler(_playerInventory);
+        _rewardService = new QuestRewardService(_playerInventory);
+        _requirementService = new QuestRequirementService(_playerInventory);
     }
 
     private void HandleGatheringCompleted(GatheringObject obj)
@@ -146,7 +143,7 @@ public class QuestManager : MonoBehaviour
 
     public bool TryDeliverItemToNpc(string npcId)
     {
-        if (string.IsNullOrEmpty(npcId) || _activeQuests.Count == 0) return false;
+        if (string.IsNullOrEmpty(npcId) || _activeQuests.Count == 0 || _requirementService == null) return false;
 
         foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
@@ -159,24 +156,13 @@ public class QuestManager : MonoBehaviour
             if (questData.TargetNpcId != npcId) continue;
             if (!HasValidItemRequirements(questData)) continue;
 
-            if (!HasAllRequiredItems(questData.ItemRequirements))
-            {
-                continue;
-            }
-
-            if (!TryConsumeRequirements(questData.ItemRequirements))
-            {
-                continue;
-            }
+            if (!_requirementService.TryConsumeRequirements(questData.ItemRequirements)) continue;
 
             foreach (QuestItemRequirementEntry requirement in questData.ItemRequirements)
             {
                 if (requirement.Item == null) continue;
 
-                int itemId = requirement.ItemId;
-                int amount = requirement.Amount;
-
-                quest.AddItemProgress(itemId, amount, amount);
+                quest.AddItemProgress(requirement.ItemId, requirement.Amount, requirement.Amount);
             }
 
             if (quest.IsObjectiveCompleted())
@@ -288,64 +274,6 @@ public class QuestManager : MonoBehaviour
         return false;
     }
 
-    private bool HasAllRequiredItems(List<QuestItemRequirementEntry> requirements)
-    {
-        if (_playerInventory == null || requirements == null || requirements.Count == 0) return false;
-
-        foreach (QuestItemRequirementEntry requirement in requirements)
-        {
-            if (requirement.Item == null) return false;
-
-            int itemId = requirement.ItemId;
-            int requiredAmount = requirement.Amount;
-
-            int ownedAmount = GetOwnedItemCount(itemId);
-            if (ownedAmount < requiredAmount)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private bool TryConsumeRequirements(List<QuestItemRequirementEntry> requirements)
-    {
-        if (_playerInventory == null || requirements == null || requirements.Count == 0) return false;
-
-        if (!HasAllRequiredItems(requirements)) return false;
-
-        foreach (QuestItemRequirementEntry requirement in requirements)
-        {
-            if (requirement.Item == null) return false;
-
-            if (!TryConsumeItem(requirement.ItemId, requirement.Amount))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private int GetOwnedItemCount(int itemId)
-    {
-        if (_playerInventory == null || itemId < 0) return 0;
-
-        // TODO: 아이템 소모 구현
-
-        return 0;
-    }
-
-    private bool TryConsumeItem(int itemId, int amount)
-    {
-        if (_playerInventory == null || itemId < 0 || amount <= 0) return false;
-
-        // TODO: 아이템 소모 구현
-
-        return false;
-    }
-
     // 퀘스트를 완료할 수 있는 지 확인하는 메서드입니다.
     public bool CanCompleteQuest(string questId)
     {
@@ -359,7 +287,7 @@ public class QuestManager : MonoBehaviour
         QuestRuntimeData quest = GetQuest(questId);
         if (quest == null || quest.Status != EQuestStatus.CanComplete) return false;
 
-        GiveReward(quest.QuestData.Reward);
+        _rewardService.GiveReward(quest.QuestData.Reward);
         quest.Status = EQuestStatus.Completed;
 
         switch (quest.QuestData.QuestCategory)
@@ -409,21 +337,6 @@ public class QuestManager : MonoBehaviour
         {
             _activeQuests.Remove(key);
             OnQuestRemoved?.Invoke(key);
-        }
-    }
-
-    private void GiveReward(QuestRewardData rewardData)
-    {
-        if (rewardData == null || rewardData.Rewards == null) return;
-
-        foreach (var reward in rewardData.Rewards)
-        {
-            if (reward == null || !reward.IsValid()) continue;
-
-            if (_rewardHandlers.TryGetValue(reward.RewardType, out var handler))
-            {
-                handler.HandleReward(reward);
-            }
         }
     }
 

@@ -26,12 +26,12 @@ public class DailyQuestManager : MonoBehaviour
 
     private void OnEnable()
     {
-        TimeEvents.OnDayChanged += HandleDayChanged;
+        TimeEvents.OnDayStarted += HandleDayChanged;
     }
 
     private void OnDisable()
     {
-        TimeEvents.OnDayChanged -= HandleDayChanged;
+        TimeEvents.OnDayStarted -= HandleDayChanged;
     }
 
     public void SetDailyQuestBoardData(QuestBoardDataSO boardData)
@@ -59,13 +59,13 @@ public class DailyQuestManager : MonoBehaviour
         _dailyQuestCompletedDays[questId] = TimeEvents.CurrentDay;
     }
 
-    private void HandleDayChanged(int day)
+    private void HandleDayChanged()
     {
         QuestManager.Instance?.RemoveAllDailyQuests();
         RefreshTodayDailyQuests();
 
 #if UNITY_EDITOR
-        Debug.Log($"일일 퀘스트 초기화 - Day {day}");
+        Debug.Log($"일일 퀘스트 초기화");
 #endif
     }
 
