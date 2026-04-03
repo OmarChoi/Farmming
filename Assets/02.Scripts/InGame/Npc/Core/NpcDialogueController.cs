@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class NpcDialogueController : MonoBehaviour
 {
@@ -195,6 +196,14 @@ public class NpcDialogueController : MonoBehaviour
     {
         if (_currentNpc == null) return;
         _uiDialogue.ShowButtons(interactionOptions, OnClickOption);
+    }
+
+    public void ShowQuestChoices(IReadOnlyList<NpcDialogueChoiceData> choices)
+    {
+        if (_uiDialogue == null) return;
+
+        _uiDialogue.ClearDialogueText();
+        _uiDialogue.ShowChoiceButtons(choices);
     }
 
     private void OnClickOption(ENpcInteractionType type)
