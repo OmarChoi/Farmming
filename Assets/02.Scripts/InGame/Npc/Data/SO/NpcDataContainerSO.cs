@@ -11,23 +11,34 @@ public class NpcDataContainerSO : ScriptableObject
 
     public NpcDataSO GetNpc(string id)
     {
-        if (string.IsNullOrEmpty(id))
-            return null;
+        if (string.IsNullOrEmpty(id)) return null;
 
-        if (_map == null)
-        {
-            _map = new Dictionary<string, NpcDataSO>();
-
-            foreach (var npc in _npcList)
-            {
-                if (npc == null || string.IsNullOrEmpty(npc.NpcId))
-                    continue;
-
-                _map[npc.NpcId] = npc;
-            }
-        }
-
+        EnsureMap();
         _map.TryGetValue(id, out var result);
         return result;
+    }
+
+    public string GetNpcName(string id)
+    {
+        NpcDataSO npc = GetNpc(id);
+        return npc != null ? npc.NpcName : id;
+    }
+
+    private void EnsureMap()
+    {
+        if (_map != null) return;
+
+        _map = new Dictionary<string, NpcDataSO>();
+
+        foreach (var npc in _npcList)
+        {
+            if (npc == null || string.IsNullOrEmpty(npc.NpcId)) continue;
+            _map[npc.NpcId] = npc;
+        }
+    }
+
+    private void OnEnable()
+    {
+        _map = null;
     }
 }

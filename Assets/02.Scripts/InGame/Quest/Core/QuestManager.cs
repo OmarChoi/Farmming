@@ -144,7 +144,7 @@ public class QuestManager : MonoBehaviour
                 break;
         }
 
-        if (quest.IsObjectiveCompleted())
+        if (quest.IsObjectiveCompleted() && data.ObjectiveType == EQuestObjectiveType.CollectItem)
         {
             quest.Status = EQuestStatus.CanComplete;
         }
@@ -210,19 +210,10 @@ public class QuestManager : MonoBehaviour
             if (questData.TargetNpcId != npcId) continue;
             if (!HasValidItemRequirements(questData)) continue;
 
+            if (!quest.AreAllItemRequirementsCompleted()) continue;
             if (!_requirementService.TryConsumeRequirements(questData.ItemRequirements)) continue;
 
-            foreach (QuestItemRequirementEntry requirement in questData.ItemRequirements)
-            {
-                if (requirement.Item == null) continue;
-
-                quest.AddItemProgress(requirement.ItemId, requirement.Amount, requirement.Amount);
-            }
-
-            if (quest.IsObjectiveCompleted())
-            {
-                quest.Status = EQuestStatus.CanComplete;
-            }
+            quest.Status = EQuestStatus.CanComplete;
 
             OnQuestUpdated?.Invoke(quest);
             return true;
@@ -277,15 +268,11 @@ public class QuestManager : MonoBehaviour
                 continue;
             }
             if (!HasValidItemRequirements(questData)) continue;
-
-            if (!TryGetRequirementAmount(questData, itemId, out int requiredAmount))
-            {
-                continue;
-            }
+            if (!TryGetRequirementAmount(questData, itemId, out int requiredAmount)) continue;
 
             quest.AddItemProgress(itemId, amount, requiredAmount);
 
-            if (quest.IsObjectiveCompleted())
+            if (quest.IsObjectiveCompleted() && questData.ObjectiveType == EQuestObjectiveType.CollectItem)
             {
                 quest.Status = EQuestStatus.CanComplete;
             }
