@@ -26,12 +26,12 @@ public class DailyQuestManager : MonoBehaviour
 
     private void OnEnable()
     {
-        TimeEvents.OnDayStarted += HandleDayChanged;
+        TimeEvents.OnNetDayStarted += HandleDayChanged;
     }
 
     private void OnDisable()
     {
-        TimeEvents.OnDayStarted -= HandleDayChanged;
+        TimeEvents.OnNetDayStarted -= HandleDayChanged;
     }
 
     public void SetDailyQuestBoardData(QuestBoardDataSO boardData)
