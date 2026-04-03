@@ -14,6 +14,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
 
     public BuildingDataSO SelectedBuilding { get; private set; }
     public event Action<BuildingDataSO> OnBuildingSelected;
+    public event Action<BuildingDataSO> OnLocalBuildCostConfirmed;
     public event Action<BuildingDataSO> OnLocalRemoveRefundGranted;
 
     // anchorPos -> building save data used for removal, persistence, and restore.
@@ -89,7 +90,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsConnected)
         {
-            TryBuild(request).Forget();
+            TryBuildAndConfirmLocal(request).Forget();
             return;
         }
 
@@ -97,6 +98,14 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             request.Data.BuildingId,
             request.AnchorPos.x, request.AnchorPos.y, request.AnchorPos.z,
             request.Direction);
+    }
+
+    private async UniTaskVoid TryBuildAndConfirmLocal(BuildingRequest request)
+    {
+        if (await TryBuild(request))
+        {
+            OnLocalBuildCostConfirmed?.Invoke(request.Data);
+        }
     }
 
     public void RequestRemove(Vector3Int anyPos)
@@ -115,7 +124,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void RPC_RequestBuild(string buildingId, int ax, int ay, int az, int direction)
+    private void RPC_RequestBuild(string buildingId, int ax, int ay, int az, int direction, PhotonMessageInfo info)
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
@@ -126,8 +135,22 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction);
         if (!CanPlace(anchorPos, footprint, out _)) return;
 
+        if (info.Sender != null)
+        {
+            photonView.RPC(nameof(RPC_ConfirmBuild), info.Sender, buildingId);
+        }
+
         photonView.RpcSafe(nameof(RPC_ExecuteBuild), RpcTarget.All,
             buildingId, ax, ay, az, direction);
+    }
+
+    [PunRPC]
+    private void RPC_ConfirmBuild(string buildingId)
+    {
+        BuildingDataSO data = _buildingDatabase.GetById(buildingId);
+        if (data == null) return;
+
+        OnLocalBuildCostConfirmed?.Invoke(data);
     }
 
     [PunRPC]
