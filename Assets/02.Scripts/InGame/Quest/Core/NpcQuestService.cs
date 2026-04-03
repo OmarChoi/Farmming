@@ -137,7 +137,7 @@ public class NpcQuestService : MonoBehaviour
         {
             if (questData.AcceptDialogue != null)
             {
-                _dialogueController.StartDialogue(questData.AcceptDialogue);
+                _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest);
             }
             else
             {
@@ -160,7 +160,7 @@ public class NpcQuestService : MonoBehaviour
         {
             if (quest.QuestData.CompleteDialogue != null)
             {
-                _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue);
+                _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue, EDialogueUiState.Quest);
             }
             else
             {
@@ -183,7 +183,7 @@ public class NpcQuestService : MonoBehaviour
             {
                 if (_dialogueController != null && quest.QuestData.InProgressDialogue != null)
                 {
-                    _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue);
+                    _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
                 }
                 return;
             }
@@ -193,7 +193,7 @@ public class NpcQuestService : MonoBehaviour
         {
             if (quest.QuestData.InProgressDialogue != null)
             {
-                _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue);
+                _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
             }
             else
             {
@@ -216,7 +216,7 @@ public class NpcQuestService : MonoBehaviour
             QuestDataSO firstQuest = provider.Quests[0];
             if (firstQuest != null && firstQuest.NoQuestDialogue != null && _dialogueController != null)
             {
-                _dialogueController.StartDialogue(firstQuest.NoQuestDialogue);
+                _dialogueController.StartDialogue(firstQuest.NoQuestDialogue, EDialogueUiState.Quest);
                 return;
             }
         }
@@ -250,7 +250,7 @@ public class NpcQuestService : MonoBehaviour
 
         if (questData.AcceptDialogue != null)
         {
-            _dialogueController.StartDialogue(questData.AcceptDialogue);
+            _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest);
         }
     }
 }

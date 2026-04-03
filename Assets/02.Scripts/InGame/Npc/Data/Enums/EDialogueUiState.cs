@@ -5,5 +5,6 @@ public enum EDialogueUiState
     None,
     Greeting,
     Choice,
-    Talking
+    Talking,
+    Quest
 }
