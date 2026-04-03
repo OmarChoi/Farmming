@@ -1,15 +1,7 @@
-using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class PlayerBuildingAbility : PlayerAbility
 {
-    private enum BuildState
-    {
-        None,
-        Previewing
-    }
-
     // ── Inspector 설정 ──────────────────────────────────
     [Header("Ghost 설정")]
     [SerializeField] private Material _ghostMaterial;
@@ -23,535 +15,69 @@ public class PlayerBuildingAbility : PlayerAbility
     [SerializeField] private KeyCode _cancelKey = KeyCode.Escape;
 
     // ── 외부 참조 ───────────────────────────────────────
-    private BuildingManager _buildingManager;
     private PlayerTerrainAbility _terrainAbility;
-    private PlayerInventoryAbility _inventoryAbility;
+    private PlayerBuildSession _session;
+    private PlayerBuildResourceTracker _resourceHandler;
     private bool _hasStarted;
-    private bool _isBuildingSelectionBound;
-    private bool _isBuildingRemoveRefundBound;
-    private bool _isBuildingCostConfirmBound;
-    private bool _isInventoryReadyEventBound;
-    private bool _isInventorySlotChangedBound;
-
-    // ── 건설 상태 ───────────────────────────────────────
-    private BuildState _state = BuildState.None;
-    private BuildingDataSO _buildingData => _buildingManager?.SelectedBuilding;
-    private int _rotationQuarterTurns;
-
-    // ── Ghost(미리보기 모델) 관련 ────────────────────────
-    private BuildingGhost _ghost;
-    private string _ghostBuildingId;
-    private Vector3Int _prevGridPos;
-    private int _previewRequestVersion;
-
-    // ── 건설 자원 캐시 ──────────────────────────────────
-    private bool _hasResourcesCached;
-    private bool _hasResourcesDirty = true;
 
     private bool IsLocalPlayer => _owner != null && _owner.IsMine;
 
     protected override void Awake()
     {
         base.Awake();
-        CacheStaticReferences();
-        CacheLocalInventoryAbility();
+
+        var buildingManager = BuildingManager.Instance;
+        _terrainAbility = _owner?.GetAbility<PlayerTerrainAbility>();
+        _resourceHandler = new PlayerBuildResourceTracker(buildingManager, _owner);
+
+        var ghostConfig = new GhostConfig(_ghostMaterial, _ghostValidColor, _ghostInvalidColor);
+        _session = new PlayerBuildSession(buildingManager, _owner, _resourceHandler, ghostConfig);
     }
 
     private void Start()
     {
         _hasStarted = true;
-        BindLocalRuntimeEvents();
+        if (IsLocalPlayer) _resourceHandler?.Bind();
     }
 
     private void OnEnable()
     {
         if (!_hasStarted) return;
-        BindLocalRuntimeEvents();
+        if (IsLocalPlayer) _resourceHandler?.Bind();
     }
 
     private void OnDisable()
     {
-        UnbindLocalRuntimeEvents();
-
-        // UI_BuildingList의 OnClosed 구독 해제
-        if (UIController.Instance != null)
-        {
-            var ui = UIController.Instance.GetInstance<UI_BuildingList>();
-            if (ui != null) ui.OnClosed -= OnBuildingListClosed;
-        }
+        _resourceHandler?.Unbind();
 
         if (IsLocalPlayer)
         {
-            DestroyGhost();
+            _session?.Dispose();
         }
     }
 
     private void OnDestroy()
     {
-        UnbindNetworkResultEvents();
-    }
-
-    private void OnInventoryChanged(int slotIndex)
-    {
-        if (!IsLocalPlayer) return;
-
-        _hasResourcesDirty = true;
-        RefreshBuildInfoUIIfOpen();
-    }
-
-    private void CacheStaticReferences()
-    {
-        _buildingManager ??= BuildingManager.Instance;
-        if (_owner == null) return;
-
-        _terrainAbility ??= _owner.GetAbility<PlayerTerrainAbility>();
-    }
-
-    private void CacheLocalInventoryAbility()
-    {
-        if (_owner == null) return;
-        SetLocalInventoryAbility(_owner.GetAbility<PlayerInventoryAbility>());
-    }
-
-    private void SetLocalInventoryAbility(PlayerInventoryAbility inventoryAbility)
-    {
-        if (inventoryAbility == _inventoryAbility) return;
-
-        if (_inventoryAbility != null && _isInventorySlotChangedBound)
-        {
-            _inventoryAbility.OnSlotChanged -= OnInventoryChanged;
-            _isInventorySlotChangedBound = false;
-        }
-
-        _inventoryAbility = inventoryAbility;
-    }
-
-    private void BindLocalRuntimeEvents()
-    {
-        if (!IsLocalPlayer) return;
-
-        CacheStaticReferences();
-        CacheLocalInventoryAbility();
-
-        if (_buildingManager != null && !_isBuildingSelectionBound)
-        {
-            _buildingManager.OnBuildingSelected += OnBuildingSelectedFromUi;
-            _isBuildingSelectionBound = true;
-        }
-
-        if (_buildingManager != null && !_isBuildingRemoveRefundBound)
-        {
-            _buildingManager.OnLocalRemoveRefundGranted += OnLocalRemoveRefundGranted;
-            _isBuildingRemoveRefundBound = true;
-        }
-
-        if (_buildingManager != null && !_isBuildingCostConfirmBound)
-        {
-            _buildingManager.OnLocalBuildCostConfirmed += OnLocalBuildCostConfirmed;
-            _isBuildingCostConfirmBound = true;
-        }
-
-        if (!_isInventoryReadyEventBound)
-        {
-            PlayerInventoryAbility.OnLocalPlayerReady += OnLocalInventoryReady;
-            _isInventoryReadyEventBound = true;
-        }
-
-        if (_inventoryAbility != null && !_isInventorySlotChangedBound)
-        {
-            _inventoryAbility.OnSlotChanged += OnInventoryChanged;
-            _isInventorySlotChangedBound = true;
-        }
-    }
-
-    private void UnbindLocalRuntimeEvents()
-    {
-        if (_buildingManager != null && _isBuildingSelectionBound)
-        {
-            _buildingManager.OnBuildingSelected -= OnBuildingSelectedFromUi;
-            _isBuildingSelectionBound = false;
-        }
-
-        if (_isInventoryReadyEventBound)
-        {
-            PlayerInventoryAbility.OnLocalPlayerReady -= OnLocalInventoryReady;
-            _isInventoryReadyEventBound = false;
-        }
-
-        if (_inventoryAbility != null && _isInventorySlotChangedBound)
-        {
-            _inventoryAbility.OnSlotChanged -= OnInventoryChanged;
-            _isInventorySlotChangedBound = false;
-        }
-    }
-
-    private void UnbindNetworkResultEvents()
-    {
-        if (_buildingManager != null && _isBuildingRemoveRefundBound)
-        {
-            _buildingManager.OnLocalRemoveRefundGranted -= OnLocalRemoveRefundGranted;
-            _isBuildingRemoveRefundBound = false;
-        }
-
-        if (_buildingManager != null && _isBuildingCostConfirmBound)
-        {
-            _buildingManager.OnLocalBuildCostConfirmed -= OnLocalBuildCostConfirmed;
-            _isBuildingCostConfirmBound = false;
-        }
-    }
-
-    private void OnLocalInventoryReady(PlayerInventoryAbility inventoryAbility)
-    {
-        if (!IsLocalPlayer || inventoryAbility == null) return;
-        if (inventoryAbility.GetComponentInParent<PlayerController>() != _owner) return;
-
-        SetLocalInventoryAbility(inventoryAbility);
-        BindLocalRuntimeEvents();
-    }
-
-    private void OnLocalRemoveRefundGranted(BuildingDataSO buildingData)
-    {
-        if (!IsLocalPlayer || buildingData == null) return;
-        if (!TryEnsureLocalInventoryAbility()) return;
-
-        foreach (BuildingCostEntry costItem in buildingData.Costs)
-        {
-            if (costItem.Item == null || costItem.Amount <= 0) continue;
-            _inventoryAbility.AddItem(costItem.Item, costItem.Amount);
-        }
-    }
-
-    private void OnLocalBuildCostConfirmed(BuildingDataSO buildingData)
-    {
-        if (!IsLocalPlayer || buildingData == null) return;
-        if (!TryEnsureLocalInventoryAbility()) return;
-
-        foreach (BuildingCostEntry cost in buildingData.Costs)
-        {
-            if (cost.Item == null || cost.Amount <= 0) continue;
-            _inventoryAbility.RemoveItem(cost.Item, cost.Amount);
-        }
-        _hasResourcesDirty = true;
-    }
-
-    private bool TryEnsureLocalInventoryAbility()
-    {
-        if (!IsLocalPlayer) return false;
-        if (_inventoryAbility != null) return true;
-
-        CacheLocalInventoryAbility();
-        if (_inventoryAbility == null) return false;
-
-        BindLocalRuntimeEvents();
-        return true;
+        _resourceHandler?.Dispose();
     }
 
     private void Update()
     {
-        if (!IsLocalPlayer) return;
-        if (!_owner.CanMove) return;
+        if (!IsLocalPlayer || !_owner.CanMove) return;
 
-        switch (_state)
+        if (_session.IsPreviewing)
         {
-            case BuildState.None:
-                HandleNoneState();
-                break;
-            case BuildState.Previewing:
-                HandlePreviewingState();
-                break;
-        }
-    }
-
-    private void HandleNoneState()
-    {
-        if (Input.GetKeyDown(_removeKey))
-        {
-            TryRemoveFrontBuilding();
-            return;
-        }
-
-        if (Input.GetKeyDown(_placeKey))
-        {
-            if (UIController.Instance != null)
-            {
-                OpenBuildingSelectionUi();
-            }
-            else
-            {
-                EnterPreviewAsync().Forget();
-            }
-        }
-    }
-
-    private void OpenBuildingSelectionUi()
-    {
-        if (UIController.Instance == null) return;
-        _owner.EnterUIMode();
-        UIController.Instance.OpenAsync<UI_BuildingList>(ui =>
-        {
-            ui.OnClosed -= OnBuildingListClosed;
-            ui.OnClosed += OnBuildingListClosed;
-        }).Forget();
-    }
-
-    private void OnBuildingListClosed()
-    {
-        _owner.ExitUIMode();
-    }
-
-    private void OnBuildingSelectedFromUi(BuildingDataSO buildingData)
-    {
-        if (!IsLocalPlayer) return;
-
-        _hasResourcesDirty = true;
-
-        if (_ghost?.Instance != null && _ghostBuildingId != buildingData?.BuildingId)
-        {
-            DestroyGhost(clearSelection: false);
-        }
-
-        EnterPreviewAsync().Forget();
-    }
-
-    private void HandlePreviewingState()
-    {
-        if (_terrainAbility == null || _ghost == null) return;
-
-        // Cancel
-        if (Input.GetKeyDown(_cancelKey))
-        {
-            CancelPreview();
-            return;
-        }
-
-        // Rotate Preview
-        if (Input.GetKeyDown(_rotateKey))
-        {
-            RotatePreviewClockwise();
-            RefreshGhost();
-        }
-
-        // Confirm
-        if (Input.GetKeyDown(_placeKey))
-        {
-            TryPlaceSelectedBuilding();
-            return;
-        }
-
-        // 셀 위치 변경 감지
-        TerrainCell cell = _terrainAbility.GetFrontCell();
-        if (cell == null)
-        {
-            _ghost.SetVisible(false);
-            return;
-        }
-
-        _ghost.SetVisible(true);
-        if (cell.GridPosition != _prevGridPos || _hasResourcesDirty)
-        {
-            _prevGridPos = cell.GridPosition;
-            RefreshGhost();
-        }
-    }
-
-    private async UniTaskVoid EnterPreviewAsync()
-    {
-        if (!IsLocalPlayer) return;
-        CacheStaticReferences();
-        int previewRequestVersion = ++_previewRequestVersion;
-
-        BuildingDataSO requestedBuilding = _buildingData;
-        if (requestedBuilding == null) return;
-
-        // 기존 Ghost가 있으면 재사용
-        if (_ghost?.Instance != null && _ghostBuildingId == requestedBuilding.BuildingId)
-        {
-            _state = BuildState.Previewing;
-            _rotationQuarterTurns = BuildingPlacer.GetDirection(_owner.transform.forward);
-            _ghost.SetVisible(true);
-            RefreshGhostInitial();
-            ShowOrRefreshBuildInfoUI();
-            return;
-        }
-
-        string prefabKey = AssetKey.Building.GetKey(requestedBuilding.BuildingId);
-        if (string.IsNullOrEmpty(prefabKey)) return;
-
-        var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
-        if (previewRequestVersion != _previewRequestVersion
-            || requestedBuilding != _buildingData
-            || !isActiveAndEnabled
-            || _state != BuildState.None) return;
-
-        if (prefab == null) return;
-
-        _state = BuildState.Previewing;
-        _rotationQuarterTurns = BuildingPlacer.GetDirection(_owner.transform.forward);
-        _ghost = new BuildingGhost();
-        _ghost.Spawn(prefab, _ghostMaterial, _ghostValidColor, _ghostInvalidColor);
-        _ghostBuildingId = requestedBuilding.BuildingId;
-        RefreshGhostInitial();
-
-        // 건물 정보 패널 표시
-        ShowOrRefreshBuildInfoUI();
-    }
-
-    private void RefreshGhostInitial()
-    {
-        TerrainCell cell = _terrainAbility.GetFrontCell();
-        if (cell != null)
-        {
-            _prevGridPos = cell.GridPosition;
-            RefreshGhost();
+            if (Input.GetKeyDown(_cancelKey))  { _session.Cancel(); return; }
+            if (Input.GetKeyDown(_rotateKey))  { _session.Rotate(); }
+            if (Input.GetKeyDown(_placeKey))   { _session.TryPlace(GetFrontCell()); return; }
+            _session.UpdatePreview(GetFrontCell());
         }
         else
         {
-            _ghost.SetVisible(false);
+            if (Input.GetKeyDown(_removeKey))  { _session.TryRemove(GetFrontCell()); return; }
+            if (Input.GetKeyDown(_placeKey))   { _session.OpenSelectionUIAsync(); }
         }
     }
 
-    private void CancelPreview()
-    {
-        DestroyGhost();
-    }
-
-    private void DestroyGhost(bool clearSelection = true)
-    {
-        _previewRequestVersion++;
-        _ghost?.Destroy();
-        _ghost = null;
-        _ghostBuildingId = null;
-        _prevGridPos = default;
-        _state = BuildState.None;
-        if (clearSelection)
-        {
-            _buildingManager?.ClearSelection();
-        }
-        UIController.Instance?.CloseAsync<UI_BuildInfo>().Forget();
-    }
-
-    private void TryPlaceSelectedBuilding()
-    {
-        if (!IsLocalPlayer) return;
-
-        CacheStaticReferences();
-        if (_terrainAbility == null || _buildingData == null) return;
-
-        TerrainCell cell = _terrainAbility.GetFrontCell();
-        if (cell == null) return;
-
-        int direction = _rotationQuarterTurns;
-        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction);
-
-        if (!preview.CanPlace) return;
-        if (!HasRequiredBuildResources(_buildingData)) return;
-
-        var request = new BuildingRequest
-        {
-            Data = _buildingData,
-            AnchorPos = cell.GridPosition,
-            Direction = direction
-        };
-        _buildingManager.RequestBuild(request);
-        DestroyGhost();
-    }
-
-    private void RefreshGhost()
-    {
-        TerrainCell cell = _terrainAbility.GetFrontCell();
-        if (cell == null) return;
-
-        int direction = _rotationQuarterTurns;
-        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _buildingData, direction);
-
-        _ghost.UpdateTransform(preview.SpawnPosition, preview.Rotation);
-
-        if (_hasResourcesDirty)
-        {
-            _hasResourcesCached = HasRequiredBuildResources(_buildingData);
-            _hasResourcesDirty = false;
-        }
-
-        _ghost.SetValid(preview.CanPlace && _hasResourcesCached);
-    }
-
-    private void RotatePreviewClockwise()
-    {
-        if (_buildingData == null) return;
-        _rotationQuarterTurns = (_rotationQuarterTurns + 1) % 4;
-    }
-
-    private void TryRemoveFrontBuilding()
-    {
-        if (!IsLocalPlayer) return;
-
-        CacheStaticReferences();
-        if (_terrainAbility == null || _buildingManager == null) return;
-
-        var cell = _terrainAbility.GetFrontCell();
-        if (cell == null) return;
-
-        _buildingManager.RequestRemove(cell.GridPosition);
-    }
-
-    private void ShowOrRefreshBuildInfoUI()
-    {
-        if (!IsLocalPlayer) return;
-        if (_buildingData == null || UIController.Instance == null) return;
-        if (!TryEnsureLocalInventoryAbility()) return;
-        int[] ownedCounts = BuildRequiredItemOwnedCounts(_buildingData);
-
-        UI_BuildInfo openedUi = UIController.Instance.GetInstance<UI_BuildInfo>();
-        if (openedUi != null && openedUi.IsOpen)
-        {
-            openedUi.SetData(_buildingData, ownedCounts);
-            return;
-        }
-
-        UIController.Instance?.OpenAsync<UI_BuildInfo>(ui =>
-        {
-            ui.SetData(_buildingData, ownedCounts);
-        }).Forget();
-    }
-
-    private void RefreshBuildInfoUIIfOpen()
-    {
-        if (!IsLocalPlayer) return;
-        if (_buildingData == null || UIController.Instance == null) return;
-        if (!TryEnsureLocalInventoryAbility()) return;
-        var ui = UIController.Instance.GetInstance<UI_BuildInfo>();
-        if (ui == null) return;
-        if (!ui.IsOpen) return;
-        ui.SetData(_buildingData, BuildRequiredItemOwnedCounts(_buildingData));
-    }
-
-    private int[] BuildRequiredItemOwnedCounts(BuildingDataSO data)
-    {
-        if (data == null) return System.Array.Empty<int>();
-        IReadOnlyList<BuildingCostEntry> costs = data.Costs;
-        var counts = new int[costs.Count];
-        if (!TryEnsureLocalInventoryAbility()) return counts;
-
-        for (int i = 0; i < costs.Count; i++)
-        {
-            if (costs[i].Item == null) continue;
-            counts[i] = _inventoryAbility.GetItemCount(costs[i].Item);
-        }
-        return counts;
-    }
-
-    // 건설에 필요한 모든 자원이 인벤토리에 충분한지 확인
-    private bool HasRequiredBuildResources(BuildingDataSO data)
-    {
-        if (data == null) return false;
-        if (!TryEnsureLocalInventoryAbility()) return false;
-        IReadOnlyList<BuildingCostEntry> costs = data.Costs;
-        foreach (BuildingCostEntry cost in costs)
-        {
-            if (cost.Item == null) continue;
-            if (_inventoryAbility.GetItemCount(cost.Item) < cost.Amount) return false;
-        }
-        return true;
-    }
-
+    private TerrainCell GetFrontCell() => _terrainAbility?.GetFrontCell();
 }
