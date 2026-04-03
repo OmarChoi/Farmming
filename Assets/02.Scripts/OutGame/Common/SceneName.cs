@@ -4,4 +4,5 @@ public static class SceneName
     public const string Customize = "YJ_Customizing";
     public const string Game = "YJ_Scene";
     public const string Dungeon1 = "YJ_Dungeon";
+    public const string Loading = "YJ_LoadingScene";
 }

@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -134,7 +135,20 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
             await SaveManager.Instance.SaveAsync(slot);
         }
 
-        PhotonNetwork.LoadLevel(SceneName.Dungeon1);
+        SceneTransitionData.Type = ETransitionType.VillageToDungeon;
+        SceneTransitionData.DungeonFloor = floor;
+
+        if (PhotonNetwork.CurrentRoom != null)
+        {
+            var roomProps = new Hashtable
+            {
+                { SceneTransitionRoomProps.TransitionType, (int)ETransitionType.VillageToDungeon },
+                { SceneTransitionRoomProps.DungeonFloor, floor }
+            };
+            PhotonNetwork.CurrentRoom.SetCustomProperties(roomProps);
+        }
+
+        PhotonNetwork.LoadLevel(SceneName.Loading);
     }
 
     private bool AreAllPlayersNearby()

@@ -1,8 +1,9 @@
 using Cysharp.Threading.Tasks;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
 
-public class DungeonSceneInit : MonoBehaviour
+public class DungeonSceneInit : MonoBehaviourPunCallbacks
 {
     [SerializeField] private int _floor = 1;
     [SerializeField] private DungeonEnvironmentController _environmentController;
@@ -11,6 +12,8 @@ public class DungeonSceneInit : MonoBehaviour
 
     public static int? FloorOverride { get; set; }
 
+    private const string PropTerrainReady = "tRdy";
+    private const float TerrainReadyTimeout = 15f;
     private const float SeedSyncTimeoutSeconds = 10f;
 
     private void Start()
@@ -29,25 +32,54 @@ public class DungeonSceneInit : MonoBehaviour
 
     private void InitNetworkDungeon()
     {
-        if (PhotonNetwork.IsMasterClient)
-            InitMasterDungeon();
+        if (SceneTransitionData.SeedReady)
+        {
+            // 로딩씬에서 seed를 이미 받은 경우 — 마스터/클라이언트 동일 흐름
+            GenerateFromSyncedSeed();
+        }
+        else if (PhotonNetwork.IsMasterClient)
+        {
+            // 폴백: 로딩씬 없이 직접 진입한 경우
+            InitMasterDungeonFallback();
+        }
         else
+        {
             WaitForSeedAndGenerate().Forget();
+        }
     }
 
-    private void InitMasterDungeon()
+    private void GenerateFromSyncedSeed()
+    {
+        int seed = SceneTransitionData.DungeonSeed;
+        _floor = SceneTransitionData.DungeonFloor;
+
+        ApplyObjectPrefabs(_floor);
+        MapManager.Instance.EnterDungeon(_floor, seed);
+        LoadingProgress.Value = 0.7f;
+        ApplyEnvironment();
+        SpawnCliff();
+
+        // 마스터는 여전히 시드 브로드캐스트 (폴백 안전장치)
+        if (PhotonNetwork.IsMasterClient && MapSyncManager.Instance != null)
+            MapSyncManager.Instance.BroadcastDungeonSeed(_floor, seed);
+
+        WaitForAllTerrainReady().Forget();
+    }
+
+    private void InitMasterDungeonFallback()
     {
         int seed = System.Environment.TickCount;
 
         ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
+        LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
         SpawnCliff();
 
-        PlaceAllPlayers();
-
         if (MapSyncManager.Instance != null)
             MapSyncManager.Instance.BroadcastDungeonSeed(_floor, seed);
+
+        WaitForAllTerrainReady().Forget();
     }
 
     private async UniTaskVoid WaitForSeedAndGenerate()
@@ -81,15 +113,112 @@ public class DungeonSceneInit : MonoBehaviour
 
         ApplyObjectPrefabs(receivedFloor);
         MapManager.Instance.EnterDungeon(receivedFloor, receivedSeed);
+        LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
         SpawnCliff();
 
+        WaitForAllTerrainReady().Forget();
+    }
+
+    private async UniTaskVoid WaitForAllTerrainReady()
+    {
+        LockAllLocalPlayers();
+
+        // 내 지형 준비 완료 알림
+        var props = new Hashtable { { PropTerrainReady, true } };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        int totalCount = Mathf.Max(PhotonNetwork.PlayerList.Length, 1);
+        float progressTimeout = Time.time + TerrainReadyTimeout;
+
+        while (!AllPlayersTerrainReady() && Time.time <= progressTimeout)
+        {
+            int terrainReadyCount = CountTerrainReadyPlayers();
+            LoadingProgress.Value = 0.7f + (0.3f * terrainReadyCount / totalCount);
+            await UniTask.Yield();
+        }
+
+        // 전원 준비 대기
+        float timeout = Time.time + TerrainReadyTimeout;
+        await UniTask.WaitUntil(() => AllPlayersTerrainReady() || Time.time > timeout);
+
+        if (!AllPlayersTerrainReady())
+            Debug.LogWarning("[DungeonSceneInit] Terrain ready timeout - proceeding");
+
+        LoadingProgress.Value = 1f;
+        LoadingProgress.Complete();
+
         PlaceAllPlayers();
+        await UniTask.Yield();
+        RefreshLocalPlayerCameras();
+        UnlockAllLocalPlayers();
+        ClearSceneTransitionRoomProps();
+        SceneTransitionData.Clear();
+    }
+
+    private bool AllPlayersTerrainReady()
+    {
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.CustomProperties.TryGetValue(PropTerrainReady, out object val))
+            {
+                if (val is bool b && b) continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private int CountTerrainReadyPlayers()
+    {
+        int terrainReadyCount = 0;
+
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.CustomProperties.TryGetValue(PropTerrainReady, out object val) &&
+                val is bool isReady &&
+                isReady)
+            {
+                terrainReadyCount++;
+            }
+        }
+
+        return terrainReadyCount;
+    }
+
+    private void LockAllLocalPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var p in players)
+        {
+            if (p.IsMine)
+                p.LockAction();
+        }
+    }
+
+    private void UnlockAllLocalPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var p in players)
+        {
+            if (p.IsMine)
+                p.UnlockAction();
+        }
     }
 
     private void InitLocalDungeon()
     {
-        int seed = System.Environment.TickCount;
+        int seed;
+
+        if (SceneTransitionData.SeedReady)
+        {
+            seed = SceneTransitionData.DungeonSeed;
+            _floor = SceneTransitionData.DungeonFloor;
+        }
+        else
+        {
+            seed = System.Environment.TickCount;
+        }
+
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
 
         ApplyObjectPrefabs(_floor);
@@ -101,6 +230,7 @@ public class DungeonSceneInit : MonoBehaviour
 
         ApplyEnvironment();
         SpawnCliff();
+        SceneTransitionData.Clear();
     }
 
     private void PlaceAllPlayers()
@@ -121,6 +251,18 @@ public class DungeonSceneInit : MonoBehaviour
 
             if (cc != null)
                 cc.enabled = true;
+        }
+    }
+
+    private void RefreshLocalPlayerCameras()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (!player.IsMine)
+                continue;
+
+            player.GetAbility<PlayerCameraAbility>()?.RebindFollowCamera();
         }
     }
 
@@ -254,5 +396,19 @@ public class DungeonSceneInit : MonoBehaviour
 
         DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
         _environmentController.Apply(config);
+    }
+
+    private void ClearSceneTransitionRoomProps()
+    {
+        if (!PhotonNetwork.IsConnected || !PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == null)
+            return;
+
+        var clearRoomProps = new Hashtable
+        {
+            { SceneTransitionRoomProps.TransitionType, null },
+            { SceneTransitionRoomProps.DungeonSeed, null },
+            { SceneTransitionRoomProps.DungeonFloor, null }
+        };
+        PhotonNetwork.CurrentRoom.SetCustomProperties(clearRoomProps);
     }
 }

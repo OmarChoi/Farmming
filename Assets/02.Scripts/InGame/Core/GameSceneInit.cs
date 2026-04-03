@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
 
@@ -11,7 +12,9 @@ public class GameSceneInit : MonoBehaviour
     [SerializeField] private MapNavMeshController _mapNavMeshController;
     private const float MapSyncTimeoutSeconds = 10f;
     private const int MaxSpawnCheckHeight = 20;
-    
+    private const string PropTerrainReady = "tRdy";
+    private const float TerrainReadyTimeout = 15f;
+
     private void Start()
     {
         if (PhotonNetwork.IsConnected)
@@ -59,14 +62,22 @@ public class GameSceneInit : MonoBehaviour
         await UniTask.WaitUntil(() => synced || Time.time > timeout);
 
         if (!synced) return;
+        LoadingProgress.Value = 0.6f;
 
         // 던전 복귀 시 기존 DontDestroyOnLoad 플레이어가 있으면 중복 스폰 방지
         var existing = FindAnyObjectByType<PlayerController>();
         if (existing != null && existing.IsMine)
-            return;
+        {
+            // 기존 플레이어 사용 — 스폰 건너뜀
+        }
+        else
+        {
+            var pos = FindSpawnPosition();
+            SpawnPlayer(pos);
+        }
 
-        var pos = FindSpawnPosition();
-        SpawnPlayer(pos);
+        // 지형 준비 완료 → 대기 게이트
+        await WaitForAllTerrainReady();
     }
 
     private Vector3 FindSpawnPosition()
@@ -140,6 +151,8 @@ public class GameSceneInit : MonoBehaviour
             string playerId = existing.PlayerId;
             SaveManager.Instance.RegisterPlayer(playerId, existing);
         }
+
+        SceneTransitionData.Clear();
     }
 
     private async UniTaskVoid LoadAndSpawnMaster()
@@ -169,15 +182,107 @@ public class GameSceneInit : MonoBehaviour
             SpawnPlayer(Vector3.zero);
         }
 
-        // 4. 한 프레임 대기 → Start() 실행 보장
+        // 한 프레임 대기 → Start() 실행 보장
         await UniTask.Yield();
 
-        // 5. 맵 로드 완료 → 클라이언트에 전송
+        // 맵 로드 완료 → 클라이언트에 전송
         if (MapSyncManager.Instance != null)
             MapSyncManager.Instance.BroadcastMap();
 
-        // 6. 클라이언트 입장 허용
+        LoadingProgress.Value = 0.6f;
+
+        // 클라이언트 입장 허용
         RoomManager.Instance.OpenRoom();
+
+        // 지형 준비 완료 → 대기 게이트
+        await WaitForAllTerrainReady();
+    }
+
+    private async UniTask WaitForAllTerrainReady()
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            SceneTransitionData.Clear();
+            return;
+        }
+
+        LockAllLocalPlayers();
+        LoadingProgress.Value = 0.7f;
+
+        var props = new Hashtable { { PropTerrainReady, true } };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        int totalCount = Mathf.Max(PhotonNetwork.PlayerList.Length, 1);
+        float progressTimeout = Time.time + TerrainReadyTimeout;
+
+        while (!AllPlayersTerrainReady() && Time.time <= progressTimeout)
+        {
+            int terrainReadyCount = CountTerrainReadyPlayers();
+            LoadingProgress.Value = 0.7f + (0.3f * terrainReadyCount / totalCount);
+            await UniTask.Yield();
+        }
+
+        float timeout = Time.time + TerrainReadyTimeout;
+        await UniTask.WaitUntil(() => AllPlayersTerrainReady() || Time.time > timeout);
+
+        if (!AllPlayersTerrainReady())
+            Debug.LogWarning("[GameSceneInit] Terrain ready timeout - proceeding");
+
+        LoadingProgress.Value = 1f;
+        LoadingProgress.Complete();
+
+        UnlockAllLocalPlayers();
+        ClearSceneTransitionRoomProps();
+        SceneTransitionData.Clear();
+    }
+
+    private bool AllPlayersTerrainReady()
+    {
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.CustomProperties.TryGetValue(PropTerrainReady, out object val))
+            {
+                if (val is bool b && b) continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private int CountTerrainReadyPlayers()
+    {
+        int terrainReadyCount = 0;
+
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.CustomProperties.TryGetValue(PropTerrainReady, out object val) &&
+                val is bool isReady &&
+                isReady)
+            {
+                terrainReadyCount++;
+            }
+        }
+
+        return terrainReadyCount;
+    }
+
+    private void LockAllLocalPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var p in players)
+        {
+            if (p.IsMine)
+                p.LockAction();
+        }
+    }
+
+    private void UnlockAllLocalPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var p in players)
+        {
+            if (p.IsMine)
+                p.UnlockAction();
+        }
     }
 
     private void RestoreExistingPlayers()
@@ -188,5 +293,19 @@ public class GameSceneInit : MonoBehaviour
             if (SaveManager.Instance != null)
                 SaveManager.Instance.RegisterPlayer(player.PlayerId, player);
         }
+    }
+
+    private void ClearSceneTransitionRoomProps()
+    {
+        if (!PhotonNetwork.IsConnected || !PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == null)
+            return;
+
+        var clearRoomProps = new Hashtable
+        {
+            { SceneTransitionRoomProps.TransitionType, null },
+            { SceneTransitionRoomProps.DungeonSeed, null },
+            { SceneTransitionRoomProps.DungeonFloor, null }
+        };
+        PhotonNetwork.CurrentRoom.SetCustomProperties(clearRoomProps);
     }
 }
