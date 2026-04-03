@@ -21,10 +21,12 @@ MonoBehaviour:
   StartNpcId: 
   CompleteNpcId: 
   ObjectiveType: 0
-  TargetObjectId: NormalTree
-  TargetItemId: 
+  TargetObjectId: "\uB098\uBB34"
+  ItemRequirements: []
   TargetNpcId: 
   RequiredAmount: 1
+  PrerequisiteQuests: []
+  RequiredFriendship: 0
   Reward:
     Rewards:
     - RewardType: 0
@@ -35,3 +37,7 @@ MonoBehaviour:
       RewardItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
       Amount: 1
       TargetNpcId: 
+  AcceptDialogue: {fileID: 0}
+  InProgressDialogue: {fileID: 0}
+  CompleteDialogue: {fileID: 0}
+  NoQuestDialogue: {fileID: 0}

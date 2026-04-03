@@ -271,7 +271,11 @@ public class QuestManager : MonoBehaviour
 
             QuestDataSO questData = quest.QuestData;
 
-            if (questData.ObjectiveType != EQuestObjectiveType.CollectItem) continue;
+            if (questData.ObjectiveType != EQuestObjectiveType.CollectItem &&
+                questData.ObjectiveType != EQuestObjectiveType.DeliverItem)
+            {
+                continue;
+            }
             if (!HasValidItemRequirements(questData)) continue;
 
             if (!TryGetRequirementAmount(questData, itemId, out int requiredAmount))
