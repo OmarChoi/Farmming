@@ -15,6 +15,7 @@ public class DungeonEnvironmentController : MonoBehaviour
     private bool _fogEnabled;
     private Color _fogColor;
     private float _fogDensity;
+    private Material _skyboxMaterial;
     private Color _directionalLightColor;
     private float _directionalLightIntensity;
     private bool _hasDirectionalLightState;
@@ -82,6 +83,7 @@ public class DungeonEnvironmentController : MonoBehaviour
         _fogEnabled = RenderSettings.fog;
         _fogColor = RenderSettings.fogColor;
         _fogDensity = RenderSettings.fogDensity;
+        _skyboxMaterial = RenderSettings.skybox;
 
         if (_directionalLight != null)
         {
@@ -115,6 +117,9 @@ public class DungeonEnvironmentController : MonoBehaviour
         RenderSettings.fog = profile.UseFog;
         RenderSettings.fogColor = profile.FogColor;
         RenderSettings.fogDensity = profile.FogDensity;
+
+        if (profile.SkyboxMaterial != null)
+            RenderSettings.skybox = profile.SkyboxMaterial;
 
         if (_directionalLight != null)
         {
@@ -157,6 +162,7 @@ public class DungeonEnvironmentController : MonoBehaviour
         RenderSettings.fog = _fogEnabled;
         RenderSettings.fogColor = _fogColor;
         RenderSettings.fogDensity = _fogDensity;
+        RenderSettings.skybox = _skyboxMaterial;
 
         if (_hasDirectionalLightState && _directionalLight != null)
         {
