@@ -63,6 +63,7 @@ public class QuestManager : MonoBehaviour
         Debug.Log("PlayerInventoryAbility 확인");
 #endif
         _playerInventory = ability;
+        _rewardHandlers[EQuestRewardType.Item] = new QuestItemRewardHandler(_playerInventory);
     }
 
     private void HandleGatheringCompleted(GatheringObject obj)
@@ -128,19 +129,19 @@ public class QuestManager : MonoBehaviour
     public void ReportObjectBroken(string objectId, int amount = 1)
     {
         if (string.IsNullOrEmpty(objectId)) return;
-        TryAddProgress(EQuestObjectiveType.BreakObject, objectId, amount);
+        TryAddSimpleProgress(EQuestObjectiveType.BreakObject, objectId, amount);
     }
 
-    public void ReportItemCollected(string itemId, int amount = 1)
+    public void ReportItemCollected(int itemId, int amount = 1)
     {
-        if (string.IsNullOrEmpty(itemId)) return;
-        TryAddProgress(EQuestObjectiveType.CollectItem, itemId, amount);
+        if (itemId < 0 || amount <= 0) return;
+        TryAddItemProgress(itemId, amount);
     }
 
     public void ReportNpcTalked(string npcId)
     {
         if (string.IsNullOrEmpty(npcId)) return;
-        TryAddProgress(EQuestObjectiveType.TalkToNpc, npcId, 1);
+        TryAddSimpleProgress(EQuestObjectiveType.TalkToNpc, npcId, 1);
     }
 
     public bool TryDeliverItemToNpc(string npcId)
@@ -156,17 +157,33 @@ public class QuestManager : MonoBehaviour
 
             if (questData.ObjectiveType != EQuestObjectiveType.DeliverItem) continue;
             if (questData.TargetNpcId != npcId) continue;
+            if (!HasValidItemRequirements(questData)) continue;
 
-            string itemId = questData.TargetItemId;
-            int amount = questData.RequiredAmount;
-
-            if (!TryConsumeItem(itemId, amount))
+            if (!HasAllRequiredItems(questData.ItemRequirements))
             {
-                return false;
+                continue;
             }
 
-            quest.CurrentAmount = amount;
-            quest.Status = EQuestStatus.CanComplete;
+            if (!TryConsumeRequirements(questData.ItemRequirements))
+            {
+                continue;
+            }
+
+            foreach (QuestItemRequirementEntry requirement in questData.ItemRequirements)
+            {
+                if (requirement.Item == null) continue;
+
+                int itemId = requirement.ItemId;
+                int amount = requirement.Amount;
+
+                quest.AddItemProgress(itemId, amount, amount);
+            }
+
+            if (quest.IsObjectiveCompleted())
+            {
+                quest.Status = EQuestStatus.CanComplete;
+            }
+
             OnQuestUpdated?.Invoke(quest);
             return true;
         }
@@ -174,7 +191,7 @@ public class QuestManager : MonoBehaviour
         return false;
     }
 
-    private void TryAddProgress(EQuestObjectiveType objectiveType, string targetId, int amount)
+    private void TryAddSimpleProgress(EQuestObjectiveType objectiveType, string targetId, int amount)
     {
         if (_activeQuests.Count == 0) return;
         if (string.IsNullOrEmpty(targetId)) return;
@@ -188,7 +205,7 @@ public class QuestManager : MonoBehaviour
             QuestDataSO questData = quest.QuestData;
 
             if (questData.ObjectiveType != objectiveType) continue;
-            if (!IsTargetMatched(questData, objectiveType, targetId)) continue;
+            if (!IsSimpleTargetMatched(questData, objectiveType, targetId)) continue;
 
             quest.CurrentAmount += amount;
 
@@ -202,15 +219,43 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    private bool IsTargetMatched(QuestDataSO questData, EQuestObjectiveType objectiveType, string targetId)
+    private void TryAddItemProgress(int itemId, int amount)
+    {
+        if (_activeQuests.Count == 0) return;
+        if (itemId < 0 || amount <= 0) return;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+
+            QuestDataSO questData = quest.QuestData;
+
+            if (questData.ObjectiveType != EQuestObjectiveType.CollectItem) continue;
+            if (!HasValidItemRequirements(questData)) continue;
+
+            if (!TryGetRequirementAmount(questData, itemId, out int requiredAmount))
+            {
+                continue;
+            }
+
+            quest.AddItemProgress(itemId, amount, requiredAmount);
+
+            if (quest.IsObjectiveCompleted())
+            {
+                quest.Status = EQuestStatus.CanComplete;
+            }
+
+            OnQuestUpdated?.Invoke(quest);
+        }
+    }
+
+    private bool IsSimpleTargetMatched(QuestDataSO questData, EQuestObjectiveType objectiveType, string targetId)
     {
         switch (objectiveType)
         {
             case EQuestObjectiveType.BreakObject:
                 return questData.TargetObjectId == targetId;
-
-            case EQuestObjectiveType.CollectItem:
-                return questData.TargetItemId == targetId;
 
             case EQuestObjectiveType.TalkToNpc:
                 return questData.TargetNpcId == targetId;
@@ -220,11 +265,83 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    private bool TryConsumeItem(string itemId, int amount)
+    private bool HasValidItemRequirements(QuestDataSO questData)
     {
-        if (_playerInventory == null || string.IsNullOrEmpty(itemId) || amount <= 0) return false;
+        return questData != null && questData.ItemRequirements != null && questData.ItemRequirements.Count > 0;
+    }
 
-        // todo. 아이템 차감 후 true 반환
+    private bool TryGetRequirementAmount(QuestDataSO questData, int itemId, out int requiredAmount)
+    {
+        requiredAmount = 0;
+
+        if (!HasValidItemRequirements(questData) || itemId < 0) return false;
+
+        foreach (QuestItemRequirementEntry requirement in questData.ItemRequirements)
+        {
+            if (requirement.Item == null) continue;
+            if (requirement.ItemId != itemId) continue;
+
+            requiredAmount = requirement.Amount;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool HasAllRequiredItems(List<QuestItemRequirementEntry> requirements)
+    {
+        if (_playerInventory == null || requirements == null || requirements.Count == 0) return false;
+
+        foreach (QuestItemRequirementEntry requirement in requirements)
+        {
+            if (requirement.Item == null) return false;
+
+            int itemId = requirement.ItemId;
+            int requiredAmount = requirement.Amount;
+
+            int ownedAmount = GetOwnedItemCount(itemId);
+            if (ownedAmount < requiredAmount)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool TryConsumeRequirements(List<QuestItemRequirementEntry> requirements)
+    {
+        if (_playerInventory == null || requirements == null || requirements.Count == 0) return false;
+
+        if (!HasAllRequiredItems(requirements)) return false;
+
+        foreach (QuestItemRequirementEntry requirement in requirements)
+        {
+            if (requirement.Item == null) return false;
+
+            if (!TryConsumeItem(requirement.ItemId, requirement.Amount))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private int GetOwnedItemCount(int itemId)
+    {
+        if (_playerInventory == null || itemId < 0) return 0;
+
+        // TODO: 아이템 소모 구현
+
+        return 0;
+    }
+
+    private bool TryConsumeItem(int itemId, int amount)
+    {
+        if (_playerInventory == null || itemId < 0 || amount <= 0) return false;
+
+        // TODO: 아이템 소모 구현
 
         return false;
     }
@@ -357,5 +474,29 @@ public class QuestManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    // 현재 진행 중인 퀘스트들 중에서 특정 아이템이 요구되는 퀘스트가 하나라도 있는 지 확인하는 메서드입니다.
+    public bool IsRequiredItemForAnyActiveQuest(int itemId)
+    {
+        if (itemId < 0) return false;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+            if (quest.QuestData.ItemRequirements == null) continue;
+
+            foreach (QuestItemRequirementEntry requirement in quest.QuestData.ItemRequirements)
+            {
+                if (requirement.Item == null) continue;
+                if (requirement.ItemId == itemId)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

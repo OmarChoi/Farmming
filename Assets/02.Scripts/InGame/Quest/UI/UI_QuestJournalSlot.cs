@@ -40,51 +40,9 @@ public class UI_QuestJournalSlot : MonoBehaviour
         QuestDataSO quest = runtimeData.QuestData;
 
         _questNameText.text = quest.QuestName;
-
-        switch (quest.ObjectiveType)
-        {
-            case EQuestObjectiveType.BreakObject:
-                _questTargetText.text = $"{quest.TargetObjectId} {quest.RequiredAmount}만큼 캐기";
-                break;
-
-            case EQuestObjectiveType.CollectItem:
-                _questTargetText.text = $"{quest.TargetItemId} {quest.RequiredAmount}만큼 가져오기";
-                break;
-
-            case EQuestObjectiveType.DeliverItem:
-                _questTargetText.text = $"{quest.TargetNpcId}에게 {quest.TargetItemId} {quest.RequiredAmount}개 가져다주기";
-                break;
-
-            case EQuestObjectiveType.TalkToNpc:
-                _questTargetText.text = $"{quest.TargetNpcId} 찾아가기";
-                break;
-
-            default:
-                _questTargetText.text = "";
-                break;
-        }
-
-        _questProgressText.text = $"진행도: {runtimeData.CurrentAmount} / {quest.RequiredAmount}";
-
-        switch (runtimeData.Status)
-        {
-            case EQuestStatus.InProgress:
-                _questStatusText.text = "상태: 진행 중";
-                break;
-
-            case EQuestStatus.CanComplete:
-                _questStatusText.text = "상태: 완료 가능";
-                break;
-
-            case EQuestStatus.Completed:
-                _questStatusText.text = "상태: 완료";
-                break;
-
-            default:
-                _questStatusText.text = "";
-                break;
-        }
-
+        _questTargetText.text = QuestObjectiveTextFormatter.BuildTargetText(quest);
+        _questProgressText.text = QuestObjectiveTextFormatter.BuildProgressText(runtimeData);
+        _questStatusText.text = QuestStatusTextFormatter.BuildStatusText(runtimeData);
         _questRewardText.text = QuestRewardTextFormatter.BuildQuestReward(quest.Reward);
     }
 }

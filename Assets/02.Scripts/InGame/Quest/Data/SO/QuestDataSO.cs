@@ -19,9 +19,9 @@ public class QuestDataSO : ScriptableObject
     [Header("목표")]
     public EQuestObjectiveType ObjectiveType;
     public string TargetObjectId;   // BreakObject용 Id입니다.
-    public string TargetItemId;     // CollectItem와 DeliverItem용 Id입니다.
+    public List<QuestItemRequirementEntry> ItemRequirements;  // CollectItem와 DeliverItem 단일 아이템용 Id입니다.
     public string TargetNpcId;      // TalkToNpc와 DeliverItem용 Id입니다.
-    public int RequiredAmount = 1;
+    public int RequiredAmount = 1;  // 단일 목표용 요구 수량입니다.
 
     [Header("선행 조건")]
     public List<QuestDataSO> PrerequisiteQuests;
@@ -43,5 +43,30 @@ public class QuestDataSO : ScriptableObject
         {
             RequiredAmount = 1;
         }
+        if (ItemRequirements != null)
+        {
+            for (int i = 0; i < ItemRequirements.Count; i++)
+            {
+                OnValidateItemRequirements(i);
+            }
+        }
+    }
+
+    private void OnValidateItemRequirements(int count)
+    {
+        if (ItemRequirements[count].Amount < 1)
+        {
+            ItemRequirements[count] = ItemRequirements[count].WithAmount(1);
+        }
+    }
+
+    public bool HasMultipleItemRequirements => ItemRequirements != null && ItemRequirements.Count > 0;
+
+    public bool UsesItemRequirementList()
+    {
+        return ObjectiveType == EQuestObjectiveType.CollectItem ||
+               ObjectiveType == EQuestObjectiveType.DeliverItem
+               ? HasMultipleItemRequirements
+               : false;
     }
 }
