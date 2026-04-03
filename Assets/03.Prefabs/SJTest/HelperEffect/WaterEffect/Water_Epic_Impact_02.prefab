@@ -29511,7 +29511,6 @@ GameObject:
   - component: {fileID: 5587889798346349815}
   - component: {fileID: 8222220820995728651}
   - component: {fileID: 2883698859073819654}
-  - component: {fileID: 8870729324697970075}
   m_Layer: 0
   m_Name: ripples
   m_TagString: Untagged
@@ -33187,7 +33186,7 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     range: {x: 0, y: 1}
   CollisionModule:
-    enabled: 1
+    enabled: 0
     serializedVersion: 4
     type: 1
     collisionMode: 0
@@ -34404,18 +34403,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
---- !u!114 &8870729324697970075
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4360784239917238655}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a0f2c0cee3f81b46adf0362e5b5691c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EpicWaterLandEffect
 --- !u!1 &4665298129252116778
 GameObject:
   m_ObjectHideFlags: 0
@@ -54034,6 +54021,7 @@ GameObject:
   - component: {fileID: 7791191812478887955}
   - component: {fileID: 2225728173540509723}
   - component: {fileID: 3172314001251912613}
+  - component: {fileID: 7021798665788943171}
   m_Layer: 0
   m_Name: ground_water
   m_TagString: Untagged
@@ -57709,7 +57697,7 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     range: {x: 0, y: 1}
   CollisionModule:
-    enabled: 0
+    enabled: 1
     serializedVersion: 4
     type: 1
     collisionMode: 0
@@ -58944,6 +58932,18 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &7021798665788943171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5857232577168607709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a0f2c0cee3f81b46adf0362e5b5691c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EpicWaterLandEffect
 --- !u!1 &8942319858210087516
 GameObject:
   m_ObjectHideFlags: 0
