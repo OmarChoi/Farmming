@@ -73,15 +73,17 @@ public class WaterEpicVFXAbility : HelperAbility, IWaterGradeVFX
         bool isCenter, Action<TerrainCell, bool> onCellLand)
     {
         yield return new WaitForSeconds(0.1f);
-        SpawnLandVFX(targetPos);
-        onCellLand?.Invoke(cell, isCenter);
+        SpawnLandVFX(targetPos, cell, isCenter, onCellLand);
     }
 
-    private void SpawnLandVFX(Vector3 position)
+    private void SpawnLandVFX(Vector3 position, TerrainCell cell, bool isCenter,
+        Action<TerrainCell, bool> onCellLand)
     {
         if (_landVfxPrefab == null) return;
 
         GameObject landVfx = Instantiate(_landVfxPrefab, position, Quaternion.identity);
+        EpicWaterLandEffect landEffect = landVfx.GetComponentInChildren<EpicWaterLandEffect>();
+        landEffect?.Initialize(cell, isCenter, onCellLand);
         Destroy(landVfx, _landVfxDuration);
     }
 
