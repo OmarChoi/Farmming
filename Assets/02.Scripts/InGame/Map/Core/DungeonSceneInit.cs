@@ -24,6 +24,8 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
             FloorOverride = null;
         }
 
+        PrepareLocalPlayersForDungeonLoad();
+
         if (PhotonNetwork.IsConnected)
             InitNetworkDungeon();
         else
@@ -34,12 +36,10 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
     {
         if (SceneTransitionData.SeedReady)
         {
-            // 로딩씬에서 seed를 이미 받은 경우 — 마스터/클라이언트 동일 흐름
             GenerateFromSyncedSeed();
         }
         else if (PhotonNetwork.IsMasterClient)
         {
-            // 폴백: 로딩씬 없이 직접 진입한 경우
             InitMasterDungeonFallback();
         }
         else
@@ -59,7 +59,6 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         ApplyEnvironment();
         SpawnCliff();
 
-        // 마스터는 여전히 시드 브로드캐스트 (폴백 안전장치)
         if (PhotonNetwork.IsMasterClient && MapSyncManager.Instance != null)
             MapSyncManager.Instance.BroadcastDungeonSeed(_floor, seed);
 
@@ -122,9 +121,6 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
     private async UniTaskVoid WaitForAllTerrainReady()
     {
-        LockAllLocalPlayers();
-
-        // 내 지형 준비 완료 알림
         var props = new Hashtable { { PropTerrainReady, true } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         int totalCount = Mathf.Max(PhotonNetwork.PlayerList.Length, 1);
@@ -137,7 +133,6 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
             await UniTask.Yield();
         }
 
-        // 전원 준비 대기
         float timeout = Time.time + TerrainReadyTimeout;
         await UniTask.WaitUntil(() => AllPlayersTerrainReady() || Time.time > timeout);
 
@@ -149,8 +144,8 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         PlaceAllPlayers();
         await UniTask.Yield();
+        RestoreLocalPlayersAfterDungeonLoad();
         RefreshLocalPlayerCameras();
-        UnlockAllLocalPlayers();
         ClearSceneTransitionRoomProps();
         SceneTransitionData.Clear();
     }
@@ -161,10 +156,13 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         {
             if (player.CustomProperties.TryGetValue(PropTerrainReady, out object val))
             {
-                if (val is bool b && b) continue;
+                if (val is bool b && b)
+                    continue;
             }
+
             return false;
         }
+
         return true;
     }
 
@@ -185,23 +183,30 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         return terrainReadyCount;
     }
 
-    private void LockAllLocalPlayers()
+    private void PrepareLocalPlayersForDungeonLoad()
     {
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-        foreach (var p in players)
+        foreach (var player in players)
         {
-            if (p.IsMine)
-                p.LockAction();
+            if (!player.IsMine)
+                continue;
+
+            player.LockAction();
+            player.SetVisualsVisible(false);
+            player.GetAbility<PlayerCameraAbility>()?.SuspendFollowCamera();
         }
     }
 
-    private void UnlockAllLocalPlayers()
+    private void RestoreLocalPlayersAfterDungeonLoad()
     {
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-        foreach (var p in players)
+        foreach (var player in players)
         {
-            if (p.IsMine)
-                p.UnlockAction();
+            if (!player.IsMine)
+                continue;
+
+            player.SetVisualsVisible(true);
+            player.UnlockAction();
         }
     }
 

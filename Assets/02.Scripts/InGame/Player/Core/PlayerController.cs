@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
     public void UnlockAction() => IsActionLocked = false;
 
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
+    private Renderer[] _cachedRenderers;
 
     private void Awake()
     {
@@ -95,6 +96,19 @@ public class PlayerController : MonoBehaviour
     {
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
+    }
+
+    public void SetVisualsVisible(bool visible)
+    {
+        _cachedRenderers ??= GetComponentsInChildren<Renderer>(true);
+
+        foreach (var renderer in _cachedRenderers)
+        {
+            if (renderer == null)
+                continue;
+
+            renderer.enabled = visible;
+        }
     }
 
     public PlayerSaveData ExportSaveData(string playerId)
