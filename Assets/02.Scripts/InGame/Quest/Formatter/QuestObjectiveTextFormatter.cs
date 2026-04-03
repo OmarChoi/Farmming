@@ -2,6 +2,18 @@ using System.Collections.Generic;
 
 public class QuestObjectiveTextFormatter
 {
+    private static NpcDataContainerSO _npcDataContainer;
+    public static void SetNpcDataContainer(NpcDataContainerSO container)
+    {
+        _npcDataContainer = container;
+    }
+
+    private static string GetNpcDisplayName(string npcId)
+    {
+        if (_npcDataContainer == null || string.IsNullOrEmpty(npcId)) return npcId;
+        return _npcDataContainer.GetNpcName(npcId);
+    }
+
     public static string BuildTargetText(QuestDataSO questData)
     {
         if (questData == null) return string.Empty;
@@ -15,10 +27,10 @@ public class QuestObjectiveTextFormatter
                 return $"{BuildItemRequirementText(questData.ItemRequirements)} 가져오기";
 
             case EQuestObjectiveType.DeliverItem:
-                return $"{questData.TargetNpcId}에게 {BuildItemRequirementText(questData.ItemRequirements)} 가져다주기";
+                return $"{GetNpcDisplayName(questData.TargetNpcId)}에게 {BuildItemRequirementText(questData.ItemRequirements)} 가져다주기";
 
             case EQuestObjectiveType.TalkToNpc:
-                return $"{questData.TargetNpcId} 찾아가기";
+                return $"{GetNpcDisplayName(questData.TargetNpcId)} 찾아가기";
 
             default:
                 return string.Empty;

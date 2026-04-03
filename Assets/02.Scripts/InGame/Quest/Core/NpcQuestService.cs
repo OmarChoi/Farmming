@@ -175,10 +175,7 @@ public class NpcQuestService : MonoBehaviour
             bool delivered = QuestManager.Instance.TryDeliverItemToNpc(context.NpcId);
             if (delivered)
             {
-                if (_dialogueController != null && quest.QuestData.InProgressDialogue != null)
-                {
-                    _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
-                }
+                HandleCompleteQuest(context, quest);
                 return;
             }
         }
