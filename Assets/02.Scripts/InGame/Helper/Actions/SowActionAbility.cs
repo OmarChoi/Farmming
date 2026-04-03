@@ -193,7 +193,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private List<TerrainCell> GetLateralCells(TerrainCell centerCell)
     {
-        var cells = new List<TerrainCell> { centerCell };
+        var cells = new List<TerrainCell>();
         int extension = _owner.Grade.GetRange() - 1; // Normal:0  Epic:1
         if (extension <= 0)
         {
@@ -201,7 +201,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         Vector3Int rightOffset = GetGridRightOffset();
-        for (int i = 0; i <= extension; i++)
+        for (int i = 1; i <= extension; i++)
         {
             var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
             var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);

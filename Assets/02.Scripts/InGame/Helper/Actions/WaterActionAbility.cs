@@ -84,7 +84,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        if (_owner.Grade.CurrentGrade != EHelperGrade.Legendary)
+        if (_owner.Grade.CurrentGrade < _owner.Data.SecondaryUnlockGrade)
         {
             return;
         }
@@ -214,7 +214,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         }
 
         Vector3Int rightOffset = GetGridRightOffset();
-        for(int i = 0; i<= extension; i++)
+        for(int i = 1; i<= extension; i++)
         {
             var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
             var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
