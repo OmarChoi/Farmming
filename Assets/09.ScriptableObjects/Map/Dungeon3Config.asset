@@ -33,6 +33,8 @@ MonoBehaviour:
   CliffPrefab: {fileID: 7165573434335360052, guid: 2c6ffc61fc792a940bc44c78a6035fbe, type: 3}
   TreePrefab: {fileID: 5130300574329225930, guid: faa7465321db6904ab19f54e2cc33af2, type: 3}
   RockPrefab: {fileID: 5182465649738605643, guid: b979e73f4fec48d47a7516b117260c38, type: 3}
+  SpawnMode: 1
+  AllowedSpawnTiles: 06000000
   TileWeights:
   - TileType: 5
     Weight: 0.65
