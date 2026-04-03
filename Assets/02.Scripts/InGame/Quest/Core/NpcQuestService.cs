@@ -17,34 +17,84 @@ public class NpcQuestService : MonoBehaviour
     {
         if (context == null || context.Npc == null || QuestManager.Instance == null) return;
 
-        string npcId = context.NpcId;
+        List<NpcQuestEntry> entries = FindQuestEntries(context);
 
-        // 1. 완료 가능한 퀘스트를 우선 확인합니다.
-        QuestRuntimeData completableQuest = QuestManager.Instance.GetCompletableQuestByNpc(npcId);
-        if (completableQuest != null)
+        if (entries.Count > 0)
         {
-            HandleCompleteQuest(context, completableQuest);
+            ShowQuestEntries(context, entries);
             return;
         }
 
-        // 2. 수락 가능한 퀘스트를 확인합니다.
-        List<QuestDataSO> acceptableQuests = FindAcceptableQuests(context);
-        if (acceptableQuests.Count > 0)
-        {
-            ShowAcceptableQuestChoices(context, acceptableQuests);
-            return;
-        }
-
-        // 3. 진행 중인 퀘스트를 확인합니다.
-        QuestRuntimeData inProgressQuest = QuestManager.Instance.GetInProgressQuestByNpc(npcId);
-        if (inProgressQuest != null)
-        {
-            HandleInProgressQuest(context, inProgressQuest);
-            return;
-        }
-
-        // 4. 관련 퀘스트가 없을 경우 실행합니다.
         HandleNoQuest(context);
+    }
+
+    private List<NpcQuestEntry> FindQuestEntries(NpcInteractionContext context)
+    {
+        List<NpcQuestEntry> result = new();
+        HashSet<string> addedQuestIds = new();
+
+        if (context == null || context.Npc == null || QuestManager.Instance == null)
+        {
+            return result;
+        }
+
+        string npcId = context.NpcId;
+        List<QuestRuntimeData> activeQuests = QuestManager.Instance.GetActiveQuestList();
+
+        // 1. 완료 가능한 퀘스트를 먼저 넣습니다.
+        foreach (QuestRuntimeData quest in activeQuests)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.CanComplete) continue;
+            if (quest.QuestData.CompleteNpcId != npcId) continue;
+            if (!addedQuestIds.Add(quest.QuestData.QuestId)) continue;
+
+            result.Add(new NpcQuestEntry(quest.QuestData, quest, ENpcQuestEntryType.Completable));
+        }
+
+        // 2. 수락 가능한 퀘스트를 넣습니다.
+        List<QuestDataSO> acceptableQuests = FindAcceptableQuests(context);
+        foreach (QuestDataSO questData in acceptableQuests)
+        {
+            if (questData == null) continue;
+            if (!addedQuestIds.Add(questData.QuestId)) continue;
+
+            result.Add(new NpcQuestEntry(questData, null, ENpcQuestEntryType.Acceptable));
+        }
+
+        // 3. 진행 중인 퀘스트를 넣습니다.
+        foreach (QuestRuntimeData quest in activeQuests)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+            if (!IsQuestRelatedToNpc(quest.QuestData, npcId)) continue;
+            if (!addedQuestIds.Add(quest.QuestData.QuestId)) continue;
+
+            bool canDeliverHere =
+                quest.QuestData.ObjectiveType == EQuestObjectiveType.DeliverItem &&
+                quest.QuestData.TargetNpcId == npcId &&
+                quest.AreAllItemRequirementsCompleted();
+
+            if (canDeliverHere)
+            {
+                result.Add(new NpcQuestEntry(quest.QuestData, quest, ENpcQuestEntryType.Completable));
+            }
+            else
+            {
+                result.Add(new NpcQuestEntry(quest.QuestData, quest, ENpcQuestEntryType.InProgress));
+            }
+        }
+
+        return result;
+    }
+
+    private bool IsQuestRelatedToNpc(QuestDataSO questData, string npcId)
+    {
+        if (questData == null || string.IsNullOrEmpty(npcId)) return false;
+
+        return questData.StartNpcId == npcId ||
+               questData.CompleteNpcId == npcId ||
+               questData.TargetNpcId == npcId;
     }
 
     private List<QuestDataSO> FindAcceptableQuests(NpcInteractionContext context)
@@ -120,6 +170,83 @@ public class NpcQuestService : MonoBehaviour
 
         int currentFriendship = NpcFriendshipManager.Instance.GetFriendship(npcId);
         return currentFriendship >= requiredFriendship;
+    }
+
+    private void ShowQuestEntries(NpcInteractionContext context, List<NpcQuestEntry> entries)
+    {
+        if (_dialogueController == null) return;
+
+        List<NpcDialogueChoiceData> choices = new();
+
+        if (entries != null)
+        {
+            foreach (NpcQuestEntry entry in entries)
+            {
+                if (entry == null || entry.QuestData == null) continue;
+
+                NpcQuestEntry capturedEntry = entry;
+                string buttonText = BuildQuestEntryButtonText(capturedEntry);
+
+                choices.Add(new NpcDialogueChoiceData(buttonText, () => OnClickQuestEntry(context, capturedEntry)));
+            }
+        }
+        choices.Add(new NpcDialogueChoiceData("돌아가기", () => _dialogueController.ShowDefaultChoices()));
+        _dialogueController.ShowQuestChoices(choices);
+    }
+
+    private string BuildQuestEntryButtonText(NpcQuestEntry entry)
+    {
+        if (entry == null || entry.QuestData == null) return "퀘스트";
+
+        switch (entry.EntryType)
+        {
+            case ENpcQuestEntryType.Completable:
+                return $"<{entry.QuestData.QuestName}> [완료]";
+
+            case ENpcQuestEntryType.InProgress:
+                return $"<{entry.QuestData.QuestName}> [진행중]";
+
+            case ENpcQuestEntryType.Acceptable:
+                return $"<{entry.QuestData.QuestName}> [수락]";
+
+            default:
+                return entry.QuestData.QuestName;
+        }
+    }
+
+    private void OnClickQuestEntry(NpcInteractionContext context, NpcQuestEntry entry)
+    {
+        if (entry == null || entry.QuestData == null) return;
+
+        switch (entry.EntryType)
+        {
+            case ENpcQuestEntryType.Acceptable:
+                HandleAcceptQuest(context, entry.QuestData);
+                break;
+
+            case ENpcQuestEntryType.Completable:
+                {
+                    QuestRuntimeData runtimeQuest = entry.RuntimeData;
+                    if (runtimeQuest == null || runtimeQuest.QuestData == null) return;
+
+                    // 배달 퀘스트는 UI상 [완료]로 보여도 실제 상태는 아직 InProgress일 수 있습니다.
+                    // 이 경우 먼저 전달 처리를 시도해서 내부 상태를 CanComplete로 맞춘 뒤 완료 처리합니다.
+                    if (runtimeQuest.Status != EQuestStatus.CanComplete &&
+                        runtimeQuest.QuestData.ObjectiveType == EQuestObjectiveType.DeliverItem &&
+                        runtimeQuest.QuestData.TargetNpcId == context.NpcId)
+                    {
+                        bool delivered = QuestManager.Instance.TryDeliverItemToNpc(context.NpcId);
+                        if (!delivered) return;
+                    }
+
+                    HandleCompleteQuest(context, runtimeQuest);
+                    break;
+                }
+
+            case ENpcQuestEntryType.InProgress:
+                HandleInProgressQuest(context, entry.RuntimeData);
+                break;
+        }
     }
 
     private void HandleAcceptQuest(NpcInteractionContext context, QuestDataSO questData)
@@ -214,34 +341,5 @@ public class NpcQuestService : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log("관련된 퀘스트가 없습니다.");
 #endif
-    }
-
-    private void ShowAcceptableQuestChoices(NpcInteractionContext context, List<QuestDataSO> quests)
-    {
-        if (_dialogueController == null || quests == null || quests.Count == 0) return;
-
-        var choices = new List<NpcDialogueChoiceData>();
-
-        foreach (QuestDataSO quest in quests)
-        {
-            if (quest == null) continue;
-
-            QuestDataSO capturedQuest = quest;
-
-            choices.Add(new NpcDialogueChoiceData(capturedQuest.QuestName, () => AcceptSelectedQuest(context, capturedQuest)));
-        }
-
-        _dialogueController.ShowQuestChoices(choices);
-    }
-
-    private void AcceptSelectedQuest(NpcInteractionContext context, QuestDataSO questData)
-    {
-        bool accepted = QuestManager.Instance.AcceptQuest(questData);
-        if (!accepted) return;
-
-        if (questData.AcceptDialogue != null)
-        {
-            _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest);
-        }
     }
 }
