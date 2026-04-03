@@ -70,15 +70,9 @@ public class UI_QuestBoardSlot : MonoBehaviour
 
         _questNameText.text = quest.QuestName;
         _descriptionText.text = _wrapper.WrapText(quest.Description, _descriptionText);
+        string targetText = QuestObjectiveTextFormatter.BuildTargetText(quest);
+        _questTargetText.text = string.IsNullOrEmpty(targetText) ? "" : targetText;
 
-        if (string.IsNullOrEmpty(quest.TargetObjectId))
-        {
-            _questTargetText.text = "";
-        }
-        else
-        {
-            _questTargetText.text = QuestObjectiveTextFormatter.BuildTargetText(quest);
-        }
         if (quest.Reward == null)
         {
             _questRewardText.text = "";

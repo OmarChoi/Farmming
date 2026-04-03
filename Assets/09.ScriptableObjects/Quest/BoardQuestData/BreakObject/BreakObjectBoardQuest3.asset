@@ -22,13 +22,19 @@ MonoBehaviour:
   StartNpcId: 
   CompleteNpcId: 
   ObjectiveType: 0
-  TargetObjectId: NormalRock
-  TargetItemId: 
+  TargetObjectId: "\uBC14\uC704"
+  ItemRequirements: []
   TargetNpcId: 
   RequiredAmount: 1
+  PrerequisiteQuests: []
+  RequiredFriendship: 0
   Reward:
     Rewards:
     - RewardType: 2
       RewardItem: {fileID: 0}
       Amount: 50
       TargetNpcId: Shopper
+  AcceptDialogue: {fileID: 0}
+  InProgressDialogue: {fileID: 0}
+  CompleteDialogue: {fileID: 0}
+  NoQuestDialogue: {fileID: 0}
