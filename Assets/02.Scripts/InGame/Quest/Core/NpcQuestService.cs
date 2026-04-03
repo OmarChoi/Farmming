@@ -29,13 +29,7 @@ public class NpcQuestService : MonoBehaviour
 
         // 2. 수락 가능한 퀘스트를 확인합니다.
         List<QuestDataSO> acceptableQuests = FindAcceptableQuests(context);
-        if (acceptableQuests.Count == 1)
-        {
-            HandleAcceptQuest(context, acceptableQuests[0]);
-            return;
-        }
-
-        if (acceptableQuests.Count > 1)
+        if (acceptableQuests.Count > 0)
         {
             ShowAcceptableQuestChoices(context, acceptableQuests);
             return;

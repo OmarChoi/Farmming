@@ -16,13 +16,13 @@ public class NpcScheduleManager : MonoBehaviour
     private void OnEnable()
     {
         TimeEvents.OnMinuteChanged += HandleTimeChanged;
-        TimeEvents.OnDayChanged += HandleDayChanged;
+        TimeEvents.OnDayEnded += HandleDayChanged;
     }
 
     private void OnDisable()
     {
         TimeEvents.OnMinuteChanged -= HandleTimeChanged;
-        TimeEvents.OnDayChanged -= HandleDayChanged;
+        TimeEvents.OnDayEnded -= HandleDayChanged;
     }
 
     public void Register(NpcController npc)
@@ -57,8 +57,8 @@ public class NpcScheduleManager : MonoBehaviour
         }
     }
 
-    // 하루가 지나면 스케줄을 리셋합니다.
-    private void HandleDayChanged(int day)
+    // 하루가 끝나면 스케줄을 리셋합니다.
+    private void HandleDayChanged()
     {
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
 
