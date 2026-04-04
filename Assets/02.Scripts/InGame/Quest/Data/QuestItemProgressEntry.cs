@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class QuestItemProgressEntry
+public struct QuestItemProgressEntry
 {
     public int ItemId;
     public int CurrentAmount;
