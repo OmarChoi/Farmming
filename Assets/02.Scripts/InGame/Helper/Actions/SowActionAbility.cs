@@ -34,24 +34,31 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
+        bool isEpic      = _owner.Grade.CurrentGrade == EHelperGrade.Epic;
         bool isLegendary = _owner.Grade.CurrentGrade == EHelperGrade.Legendary;
+
+        System.Action onEpicLeft  = isEpic ? () => TryConvertLateralCell(cell, -1) : (System.Action)null;
+        System.Action onEpicRight = isEpic ? () => TryConvertLateralCell(cell, +1) : (System.Action)null;
 
         if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
             _owner.BeginAction();
-            _cultivateAbility.JumpAndCultivate(cell, () =>
-            {
-                cell.TryConvertToFarm();
-                _owner.Experience.Add(_cultivateExperience);
-
-                foreach(TerrainCell lateralCell in GetLateralCells(cell))
+            _cultivateAbility.JumpAndCultivate(cell,
+                onCultivate: () =>
                 {
-                    if(lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                    cell.TryConvertToFarm();
+                    _owner.Experience.Add(_cultivateExperience);
+                    if (!isEpic)
                     {
-                        lateralCell.TryConvertToFarm();
+                        foreach (TerrainCell lateralCell in GetLateralCells(cell))
+                        {
+                            if (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                                lateralCell.TryConvertToFarm();
+                        }
                     }
-                }
-            }, spin: isLegendary);
+                },
+                spin: isLegendary, epicLook: isEpic,
+                onEpicLookLeft: onEpicLeft, onEpicLookRight: onEpicRight);
             return;
         }
 
@@ -65,20 +72,23 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         if (!farmTile.HasSeed)
         {
-            _cultivateAbility.JumpAndCultivate(cell, () =>
-            {
-                foreach (TerrainCell lateralCell in GetLateralCells(cell))
+            _cultivateAbility.JumpAndCultivate(cell,
+                onCultivate: isEpic ? (System.Action)null : () =>
                 {
-                    if (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                    foreach (TerrainCell lateralCell in GetLateralCells(cell))
                     {
-                        lateralCell.TryConvertToFarm();
+                        if (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                            lateralCell.TryConvertToFarm();
                     }
-                }
-            }, spin: isLegendary);
+                },
+                spin: isLegendary, epicLook: isEpic,
+                onEpicLookLeft: onEpicLeft, onEpicLookRight: onEpicRight);
             return;
         }
 
-        _cultivateAbility.JumpAndCultivate(cell, null, spin: isLegendary);
+        _cultivateAbility.JumpAndCultivate(cell, null,
+            spin: isLegendary, epicLook: isEpic,
+            onEpicLookLeft: onEpicLeft, onEpicLookRight: onEpicRight);
     }
 
     public void InteractSecondary(TerrainCell cell)
@@ -239,6 +249,18 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         return tiles;
+    }
+
+    private void TryConvertLateralCell(TerrainCell centerCell, int directionSign)
+    {
+        Vector3Int rightOffset = GetGridRightOffset();
+        TerrainCell lateralCell = TerrainGridManager.Instance?.GetCell(
+            centerCell.GridPosition + rightOffset * directionSign);
+
+        if (lateralCell != null && (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf))
+        {
+            lateralCell.TryConvertToFarm();
+        }
     }
 
     private Vector3Int GetGridRightOffset()
