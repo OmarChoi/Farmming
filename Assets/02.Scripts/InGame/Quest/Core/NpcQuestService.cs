@@ -235,7 +235,7 @@ public class NpcQuestService : MonoBehaviour
                         runtimeQuest.QuestData.ObjectiveType == EQuestObjectiveType.DeliverItem &&
                         runtimeQuest.QuestData.TargetNpcId == context.NpcId)
                     {
-                        bool delivered = QuestManager.Instance.TryDeliverItemToNpc(context.NpcId);
+                        bool delivered = QuestManager.Instance.TryDeliverItemToNpc(runtimeQuest.QuestData.QuestId, context.NpcId);
                         if (!delivered) return;
                     }
 
@@ -299,7 +299,7 @@ public class NpcQuestService : MonoBehaviour
         // 배달 퀘스트라면, 이 NPC에게 아이템 전달을 시도합니다.
         if (quest.QuestData.ObjectiveType == EQuestObjectiveType.DeliverItem && quest.QuestData.TargetNpcId == context.NpcId)
         {
-            bool delivered = QuestManager.Instance.TryDeliverItemToNpc(context.NpcId);
+            bool delivered = QuestManager.Instance.TryDeliverItemToNpc(quest.QuestData.QuestId, context.NpcId);
             if (delivered)
             {
                 HandleCompleteQuest(context, quest);
