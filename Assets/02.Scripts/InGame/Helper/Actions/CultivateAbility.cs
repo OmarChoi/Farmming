@@ -18,6 +18,10 @@ public class CultivateAbility : HelperAbility
     [SerializeField] private float _rayOriginHeight = 3f;
     [SerializeField] private float _rayDistance = 5f;
 
+    [Header("Epic 방향 전환")]
+    [SerializeField] private float _epicInitialWait = 0.2f;
+    [SerializeField] private float _epicLookDuration = 0.8f;
+
     [Header("Legendary 스핀")]
     [SerializeField] private float _spinDuration = 2f;
     [SerializeField] private float _spinDegreesPerSecond = 720f;
@@ -38,7 +42,13 @@ public class CultivateAbility : HelperAbility
         _owner?.transform.DOKill();
     }
 
-    public void JumpAndCultivate(TerrainCell cell, System.Action onCultivate = null, bool spin = false)
+    public void JumpAndCultivate(
+        TerrainCell cell,
+        System.Action onCultivate = null,
+        bool spin = false,
+        bool epicLook = false,
+        System.Action onEpicLookLeft = null,
+        System.Action onEpicLookRight = null)
     {
         if(_isJumping)
         {
@@ -46,7 +56,7 @@ public class CultivateAbility : HelperAbility
         }
 
         Vector3 targetPos = GetTerrainLandPosition(cell);
-        StartCoroutine(JumpCoroutine(targetPos, onCultivate, spin));
+        StartCoroutine(JumpCoroutine(targetPos, onCultivate, spin, epicLook, onEpicLookLeft, onEpicLookRight));
     }
 
     private Vector3 GetTerrainLandPosition(TerrainCell cell)
@@ -62,7 +72,13 @@ public class CultivateAbility : HelperAbility
         return cell.transform.position;
     }
 
-    private IEnumerator JumpCoroutine(Vector3 targetPosition, System.Action onCultivate = null, bool spin = false)
+    private IEnumerator JumpCoroutine(
+        Vector3 targetPosition,
+        System.Action onCultivate = null,
+        bool spin = false,
+        bool epicLook = false,
+        System.Action onEpicLookLeft = null,
+        System.Action onEpicLookRight = null)
     {
         _isJumping = true;
 
@@ -76,7 +92,30 @@ public class CultivateAbility : HelperAbility
         SpawnDustEffect();
         onCultivate?.Invoke();
 
-        yield return new WaitForSeconds(_cultivateDuration);
+        if (epicLook && _owner.PlayerOwner != null)
+        {
+            yield return new WaitForSeconds(_epicInitialWait);
+
+            Vector3 rightDir = _owner.PlayerOwner.transform.right;
+            Quaternion leftRotation  = Quaternion.LookRotation(-rightDir, Vector3.up);
+            Quaternion rightRotation = Quaternion.LookRotation(rightDir,  Vector3.up);
+
+            yield return _owner.transform
+                .DORotateQuaternion(leftRotation, _epicLookDuration)
+                .SetEase(Ease.InOutQuad)
+                .WaitForCompletion();
+            onEpicLookLeft?.Invoke();
+
+            yield return _owner.transform
+                .DORotateQuaternion(rightRotation, _epicLookDuration)
+                .SetEase(Ease.InOutQuad)
+                .WaitForCompletion();
+            onEpicLookRight?.Invoke();
+        }
+        else
+        {
+            yield return new WaitForSeconds(_cultivateDuration);
+        }
 
         if (spin)
         {
