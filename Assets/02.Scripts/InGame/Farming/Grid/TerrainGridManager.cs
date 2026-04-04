@@ -192,6 +192,45 @@ public class TerrainGridManager : MonoBehaviour
         return true;
     }
 
+    public TerrainCell TryDetachForAnimation(Vector3Int gridPos, int toolLevel)
+    {
+        var cell = GetCell(gridPos);
+        if (cell == null) return null;
+
+        var abovePos = gridPos + Vector3Int.up;
+        var aboveCell = GetCell(abovePos);
+        if (aboveCell != null && aboveCell.Data.CellType == ECellType.Dirt)
+        {
+            var aboveAboveCell = GetCell(abovePos + Vector3Int.up);
+            if (aboveAboveCell != null && aboveAboveCell.Data.CellType == ECellType.Dirt)
+                return null;
+
+            return DetachCell(abovePos, toolLevel);
+        }
+
+        return DetachCell(gridPos, toolLevel);
+    }
+
+    private TerrainCell DetachCell(Vector3Int gridPos, int toolLevel)
+    {
+        var cell = GetCell(gridPos);
+        if (cell == null) return null;
+        if (cell.Data.ObjectType != EGridObjectType.None) return null;
+        if (!cell.Data.CanDig(toolLevel)) return null;
+
+        var belowCell = GetCell(gridPos + Vector3Int.down);
+        if (belowCell != null && belowCell.Data.CellType == ECellType.Dirt)
+        {
+            belowCell.Data.SetTop(true);
+            belowCell.Refresh();
+        }
+
+        _cells.Remove(gridPos);
+        _gridData?.RemoveCell(gridPos);
+
+        return cell;
+    }
+
     /// 셀 삭제. 에디터와 런타임 모두 사용.
     public void RemoveCell(Vector3Int gridPos)
     {
