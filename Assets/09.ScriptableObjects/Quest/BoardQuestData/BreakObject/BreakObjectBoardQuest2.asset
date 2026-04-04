@@ -18,12 +18,22 @@ MonoBehaviour:
     \uACBD\uAD00\uC744 \uD574\uCE58\uB294 \uAC83 \uAC19\uAD6C\uB9CC. \uB204\uAC00
     \uC870\uAE08 \uC5C6\uC560\uC8FC\uC9C0 \uC54A\uC73C\uB828\uC9C0..."
   QuestCategory: 2
+  StartNpcId: 
+  CompleteNpcId: 
   ObjectiveType: 0
-  TargetId: NormalTree
+  TargetObjectId: "\uB098\uBB34"
+  ItemRequirements: []
+  TargetNpcId: 
   RequiredAmount: 2
+  PrerequisiteQuests: []
+  RequiredFriendship: 0
   Reward:
     Rewards:
     - RewardType: 1
       RewardItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
       Amount: 3
       TargetNpcId: 
+  AcceptDialogue: {fileID: 0}
+  InProgressDialogue: {fileID: 0}
+  CompleteDialogue: {fileID: 0}
+  NoQuestDialogue: {fileID: 0}
