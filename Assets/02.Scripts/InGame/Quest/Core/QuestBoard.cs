@@ -15,9 +15,9 @@ public class QuestBoard : MonoBehaviour
 
     private void Start()
     {
-        if (QuestManager.Instance != null)
+        if (DailyQuestManager.Instance != null)
         {
-            QuestManager.Instance.SetDailyQuestBoardData(_boardQuest);
+            DailyQuestManager.Instance.SetDailyQuestBoardData(_boardQuest);
         }
     }
 
@@ -44,9 +44,9 @@ public class QuestBoard : MonoBehaviour
 
     public async UniTaskVoid OpenQuestBoard()
     {
-        if (QuestManager.Instance == null) return;
+        if (DailyQuestManager.Instance == null) return;
 
-        var todayQuests = QuestManager.Instance.TodayDailyQuests;
+        var todayQuests = DailyQuestManager.Instance.TodayDailyQuests;
 
         if (todayQuests == null || todayQuests.Count == 0)
         {
@@ -57,12 +57,18 @@ public class QuestBoard : MonoBehaviour
         }
 
         await _uiQuestBoard.OpenAsync(new List<QuestDataSO>(todayQuests));
-        _playerController?.SetCursorLock(false);
+        if (_playerController != null)
+        {
+            _playerController?.SetCursorLock(false);
+        }
     }
 
     public async void CloseQuestBoard()
     {
         await _uiQuestBoard.CloseAsync();
-        _playerController?.SetCursorLock(true);
+        if (_playerController != null)
+        {
+            _playerController?.SetCursorLock(true);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -70,30 +71,17 @@ public class UI_QuestBoardSlot : MonoBehaviour
 
         _questNameText.text = quest.QuestName;
         _descriptionText.text = _wrapper.WrapText(quest.Description, _descriptionText);
+        SetWrappedText(QuestObjectiveTextFormatter.BuildTargetText(quest), _questTargetText);
+        SetWrappedText(QuestRewardTextFormatter.BuildQuestReward(quest.Reward), _questRewardText);
 
-        if (string.IsNullOrEmpty(quest.TargetId))
-        {
-            _questTargetText.text = "";
-        }
-        else
-        {
-            switch (quest.ObjectiveType)
-            {
-                case EQuestObjectiveType.BreakObject:
-                    _questTargetText.text = $"퀘스트 조건: {quest.TargetId} {quest.RequiredAmount}만큼 캐기";
-                    break;
-            }
-        }
-        if (quest.Reward == null)
-        {
-            _questRewardText.text = "";
-        }
-        else
-        {
-            _rewardText = QuestRewardTextFormatter.BuildQuestReward(quest.Reward);
-            _questRewardText.text = _wrapper.WrapText(_rewardText, _questRewardText);
-        }
         RefreshButtonState();
+    }
+
+    private void SetWrappedText(string text, TextMeshProUGUI target)
+    {
+        target.text = string.IsNullOrEmpty(text)
+            ? ""
+            : _wrapper.WrapText(text, target);
     }
 
     private void RefreshButtonState()
