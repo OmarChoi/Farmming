@@ -221,7 +221,7 @@ public class NpcQuestService : MonoBehaviour
         switch (entry.EntryType)
         {
             case ENpcQuestEntryType.Acceptable:
-                HandleAcceptQuest(context, entry.QuestData);
+                HandleAcceptQuestEntry(context, entry.QuestData);
                 break;
 
             case ENpcQuestEntryType.Completable:
@@ -249,16 +249,46 @@ public class NpcQuestService : MonoBehaviour
         }
     }
 
-    private void HandleAcceptQuest(NpcInteractionContext context, QuestDataSO questData)
+    private void HandleAcceptQuestEntry(NpcInteractionContext context, QuestDataSO questData)
     {
+        if (questData == null || _dialogueController == null) return;
+
+        if (questData.AcceptDialogue != null)
+        {
+            _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest,
+            () => ShowAcceptConfirmChoices(context, questData));
+        }
+        else
+        {
+            ShowAcceptConfirmChoices(context, questData);
+        }
+    }
+
+    private void ShowAcceptConfirmChoices(NpcInteractionContext context, QuestDataSO questData)
+    {
+        if (_dialogueController == null || questData == null) return;
+
+        List<NpcDialogueChoiceData> choices = new()
+    {
+        new NpcDialogueChoiceData("네", () => AcceptQuestWithResultDialogue(context, questData)),
+        new NpcDialogueChoiceData("아니요", () => DeclineQuestWithDialogue(context, questData))
+    };
+
+        _dialogueController.ShowQuestChoices(choices, false);
+    }
+
+    private void AcceptQuestWithResultDialogue(NpcInteractionContext context, QuestDataSO questData)
+    {
+        if (questData == null || QuestManager.Instance == null) return;
+
         bool accepted = QuestManager.Instance.AcceptQuest(questData);
         if (!accepted) return;
 
         if (_dialogueController != null)
         {
-            if (questData.AcceptDialogue != null)
+            if (questData.AcceptResultDialogue != null)
             {
-                _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest);
+                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest);
             }
             else
             {
@@ -266,6 +296,20 @@ public class NpcQuestService : MonoBehaviour
                 Debug.Log($"퀘스트 수락: {questData.QuestName}");
 #endif
             }
+        }
+    }
+
+    private void DeclineQuestWithDialogue(NpcInteractionContext context, QuestDataSO questData)
+    {
+        if (questData == null || _dialogueController == null) return;
+
+        if (questData.DeclineDialogue != null)
+        {
+            _dialogueController.StartDialogue(questData.DeclineDialogue, EDialogueUiState.Quest);
+        }
+        else
+        {
+            ShowQuestEntries(context, FindQuestEntries(context));
         }
     }
 
