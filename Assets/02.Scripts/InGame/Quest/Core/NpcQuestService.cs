@@ -103,7 +103,7 @@ public class NpcQuestService : MonoBehaviour
 
         if (context == null || context.Npc == null) return result;
 
-        NpcQuest provider = context.Npc.GetComponent<NpcQuest>();
+        NpcQuest provider = context.Npc.Quest;
         if (provider == null || provider.Quests == null) return result;
 
         string npcId = context.NpcId;
