@@ -18,6 +18,10 @@ public class CultivateAbility : HelperAbility
     [SerializeField] private float _rayOriginHeight = 3f;
     [SerializeField] private float _rayDistance = 5f;
 
+    [Header("Legendary 스핀")]
+    [SerializeField] private float _spinDuration = 2f;
+    [SerializeField] private float _spinDegreesPerSecond = 720f;
+
     private HelperAnimationAbility _animAbility;
     private bool _isJumping = false;
 
@@ -34,7 +38,7 @@ public class CultivateAbility : HelperAbility
         _owner?.transform.DOKill();
     }
 
-    public void JumpAndCultivate(TerrainCell cell, System.Action onCultivate = null)
+    public void JumpAndCultivate(TerrainCell cell, System.Action onCultivate = null, bool spin = false)
     {
         if(_isJumping)
         {
@@ -42,8 +46,7 @@ public class CultivateAbility : HelperAbility
         }
 
         Vector3 targetPos = GetTerrainLandPosition(cell);
-        StartCoroutine(JumpCoroutine(targetPos, onCultivate));
-        
+        StartCoroutine(JumpCoroutine(targetPos, onCultivate, spin));
     }
 
     private Vector3 GetTerrainLandPosition(TerrainCell cell)
@@ -59,23 +62,32 @@ public class CultivateAbility : HelperAbility
         return cell.transform.position;
     }
 
-    private IEnumerator JumpCoroutine(Vector3 targetPosition, System.Action onCultivate = null)
+    private IEnumerator JumpCoroutine(Vector3 targetPosition, System.Action onCultivate = null, bool spin = false)
     {
         _isJumping = true;
 
         Transform parentBackup = _owner.transform.parent;
         _owner.transform.SetParent(null);
 
-        Vector3 endPosition = targetPosition;
-
         _animAbility.Play(EHelperAnim.Jump);
-        yield return Move(_owner.transform, endPosition, _jumpHeight, _jumpDuration);
+        yield return Move(_owner.transform, targetPosition, _jumpHeight, _jumpDuration);
 
         _animAbility.Play(EHelperAnim.Cultivate);
         SpawnDustEffect();
         onCultivate?.Invoke();
 
         yield return new WaitForSeconds(_cultivateDuration);
+
+        if (spin)
+        {
+            float elapsed = 0f;
+            while (elapsed < _spinDuration)
+            {
+                _owner.transform.Rotate(Vector3.up, _spinDegreesPerSecond * Time.deltaTime, Space.World);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
 
         Vector3 returnPosition = parentBackup != null ? parentBackup.position : _owner.PlayerOwner.transform.position;
 

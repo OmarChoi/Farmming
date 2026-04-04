@@ -34,6 +34,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
+        bool isLegendary = _owner.Grade.CurrentGrade == EHelperGrade.Legendary;
+
         if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
             _owner.BeginAction();
@@ -49,7 +51,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
                         lateralCell.TryConvertToFarm();
                     }
                 }
-            });
+            }, spin: isLegendary);
             return;
         }
 
@@ -72,11 +74,11 @@ public class SowActionAbility : HelperAbility, IHelperAction
                         lateralCell.TryConvertToFarm();
                     }
                 }
-            });
+            }, spin: isLegendary);
             return;
         }
 
-        _cultivateAbility.JumpAndCultivate(cell, null);
+        _cultivateAbility.JumpAndCultivate(cell, null, spin: isLegendary);
     }
 
     public void InteractSecondary(TerrainCell cell)
