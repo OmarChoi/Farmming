@@ -195,31 +195,26 @@ public class QuestManager : MonoBehaviour
         TryAddSimpleProgress(EQuestObjectiveType.TalkToNpc, npcId, 1);
     }
 
-    public bool TryDeliverItemToNpc(string npcId)
+    public bool TryDeliverItemToNpc(string questId, string npcId)
     {
-        if (string.IsNullOrEmpty(npcId) || _activeQuests.Count == 0 || _requirementService == null) return false;
+        if (string.IsNullOrEmpty(questId) || string.IsNullOrEmpty(npcId) || _requirementService == null) return false;
 
-        foreach (QuestRuntimeData quest in _activeQuests.Values)
-        {
-            if (quest == null || quest.QuestData == null) continue;
-            if (quest.Status != EQuestStatus.InProgress) continue;
+        if (!_activeQuests.TryGetValue(questId, out var quest)) return false;
+        if (quest.Status != EQuestStatus.InProgress) return false;
 
-            QuestDataSO questData = quest.QuestData;
+        QuestDataSO questData = quest.QuestData;
 
-            if (questData.ObjectiveType != EQuestObjectiveType.DeliverItem) continue;
-            if (questData.TargetNpcId != npcId) continue;
-            if (!HasValidItemRequirements(questData)) continue;
+        if (questData.ObjectiveType != EQuestObjectiveType.DeliverItem) return false;
+        if (questData.TargetNpcId != npcId) return false;
+        if (!HasValidItemRequirements(questData)) return false;
 
-            if (!quest.AreAllItemRequirementsCompleted()) continue;
-            if (!_requirementService.TryConsumeRequirements(questData.ItemRequirements)) continue;
+        if (!quest.AreAllItemRequirementsCompleted()) return false;
+        if (!_requirementService.TryConsumeRequirements(questData.ItemRequirements)) return false;
 
-            quest.Status = EQuestStatus.CanComplete;
+        quest.Status = EQuestStatus.CanComplete;
 
-            OnQuestUpdated?.Invoke(quest);
-            return true;
-        }
-
-        return false;
+        OnQuestUpdated?.Invoke(quest);
+        return true;
     }
 
     private void TryAddSimpleProgress(EQuestObjectiveType objectiveType, string targetId, int amount)
