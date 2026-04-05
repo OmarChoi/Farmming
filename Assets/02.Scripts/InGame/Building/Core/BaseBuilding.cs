@@ -9,26 +9,43 @@ public abstract class BaseBuilding : MonoBehaviour
     public float ConstructionProgress { get; private set; }
     public bool IsConstructionComplete => SaveData == null || SaveData.RemainingDays <= 0;
 
+    private bool _isDayBound;
+    private bool _constructionCompletedHandled;
+
     public void Initialize(BuildingDataSO buildingData, BuildingSaveData saveData)
     {
         BuildingData = buildingData;
         SaveData = saveData;
         ConstructionProgress = CalculateConstructionProgress();
+        if (!IsConstructionComplete)
+        {
+            // Import/restore can reinitialize the same runtime object more than once.
+            // Only reopen the completion callback when the building is still under construction.
+            _constructionCompletedHandled = false;
+        }
 
+        if (_isDayBound)
+        {
+            TimeEvents.OnNetDayStarted -= AdvanceDay;
+        }
         TimeEvents.OnNetDayStarted += AdvanceDay;
+        _isDayBound = true;
 
         OnBuildingInitialized();
         OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
 
         if (IsConstructionComplete)
         {
-            HandleConstructionCompleted();
+            TryHandleConstructionCompleted();
         }
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
+        if (!_isDayBound) return;
+
         TimeEvents.OnNetDayStarted -= AdvanceDay;
+        _isDayBound = false;
     }
 
     private void AdvanceDay()
@@ -41,7 +58,7 @@ public abstract class BaseBuilding : MonoBehaviour
 
         if (SaveData.RemainingDays <= 0)
         {
-            HandleConstructionCompleted();
+            TryHandleConstructionCompleted();
         }
     }
 
@@ -65,6 +82,14 @@ public abstract class BaseBuilding : MonoBehaviour
     protected abstract void OnConstructionStateChanged(float progress, bool isComplete);
 
     protected abstract void OnConstructionCompleted();
+
+    private void TryHandleConstructionCompleted()
+    {
+        if (_constructionCompletedHandled) return;
+
+        _constructionCompletedHandled = true;
+        HandleConstructionCompleted();
+    }
 
     private float CalculateConstructionProgress()
     {
