@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,6 +23,8 @@ public class UI_QuestBoardSlot : MonoBehaviour
     private int _slotIndex;
     private QuestDataSO _questData;
 
+    private IQuestProgressService _questProgressService;
+
     public int SlotIndex => _slotIndex;
     public QuestDataSO QuestData => _questData;
 
@@ -33,6 +34,11 @@ public class UI_QuestBoardSlot : MonoBehaviour
         {
             _wrapper = FindFirstObjectByType<TypewriterWithWrap>();
         }
+    }
+
+    public void Initialized(IQuestProgressService questProgressService)
+    {
+        _questProgressService = questProgressService;
     }
 
     public void Init(UI_QuestBoard uiQuestBoard, int index)
@@ -99,11 +105,9 @@ public class UI_QuestBoardSlot : MonoBehaviour
             return;
         }
 
-        QuestManager questManager = QuestManager.Instance;
-
-        bool hasQuest = questManager.HasQuest(_questData.QuestId);
-        bool canComplete = questManager.CanCompleteQuest(_questData.QuestId);
-        bool canAccept = questManager.CanAcceptQuest(_questData);
+        bool hasQuest = _questProgressService.HasQuest(_questData.QuestId);
+        bool canComplete = _questProgressService.CanCompleteQuest(_questData.QuestId);
+        bool canAccept = _questProgressService.CanAcceptQuest(_questData);
 
         if (hasQuest)
         {
