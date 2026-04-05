@@ -5,30 +5,49 @@ public abstract class BaseBuilding : MonoBehaviour
 {
     public BuildingDataSO BuildingData { get; private set; }
     public BuildingSaveData SaveData { get; private set; }
-    
+    public BuildingConstructionContext ConstructionContext { get; private set; }
+
     public float ConstructionProgress { get; private set; }
     public bool IsConstructionComplete => SaveData == null || SaveData.RemainingDays <= 0;
 
-    public void Initialize(BuildingDataSO buildingData, BuildingSaveData saveData)
+    private bool _isDayBound;
+    private bool _constructionCompletedHandled;
+
+    public void Initialize(BuildingDataSO buildingData, BuildingSaveData saveData, BuildingConstructionContext constructionContext)
     {
         BuildingData = buildingData;
         SaveData = saveData;
+        ConstructionContext = constructionContext;
         ConstructionProgress = CalculateConstructionProgress();
+        if (!IsConstructionComplete)
+        {
+            // 가져오기/복원 과정에서 동일한 런타임 객체가 두 번 이상 초기화 가능성이 존재해
+            // 건물이 아직 건설 중일 때만 완료 콜백을 다시 엽니다.
+            _constructionCompletedHandled = false;
+        }
 
+        if (_isDayBound)
+        {
+            TimeEvents.OnNetDayStarted -= AdvanceDay;
+        }
         TimeEvents.OnNetDayStarted += AdvanceDay;
+        _isDayBound = true;
 
         OnBuildingInitialized();
         OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
 
         if (IsConstructionComplete)
         {
-            HandleConstructionCompleted();
+            TryHandleConstructionCompleted();
         }
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
+        if (!_isDayBound) return;
+
         TimeEvents.OnNetDayStarted -= AdvanceDay;
+        _isDayBound = false;
     }
 
     private void AdvanceDay()
@@ -41,7 +60,7 @@ public abstract class BaseBuilding : MonoBehaviour
 
         if (SaveData.RemainingDays <= 0)
         {
-            HandleConstructionCompleted();
+            TryHandleConstructionCompleted();
         }
     }
 
@@ -65,6 +84,14 @@ public abstract class BaseBuilding : MonoBehaviour
     protected abstract void OnConstructionStateChanged(float progress, bool isComplete);
 
     protected abstract void OnConstructionCompleted();
+
+    private void TryHandleConstructionCompleted()
+    {
+        if (_constructionCompletedHandled) return;
+
+        _constructionCompletedHandled = true;
+        HandleConstructionCompleted();
+    }
 
     private float CalculateConstructionProgress()
     {
