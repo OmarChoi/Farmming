@@ -2,6 +2,7 @@ using DG.Tweening;
 using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
 using System.Collections;
+using System;
 
 public class CultivateAbility : HelperAbility
 {
@@ -49,6 +50,12 @@ public class CultivateAbility : HelperAbility
         bool epicLook = false,
         System.Action onEpicLookLeft = null,
         System.Action onEpicLookRight = null)
+        bool epicLookLeft = true,
+        bool epicLookRight = true,
+        Action onEpicLookLeft = null,
+        Action onEpicLookRight = null,
+        float epicRightLookDuration = 0f,
+        Action onEpicLookRightMid = null)
     {
         if(_isJumping)
         {
@@ -56,7 +63,7 @@ public class CultivateAbility : HelperAbility
         }
 
         Vector3 targetPos = GetTerrainLandPosition(cell);
-        StartCoroutine(JumpCoroutine(targetPos, onCultivate, spin, epicLook, onEpicLookLeft, onEpicLookRight));
+        StartCoroutine(JumpCoroutine(targetPos, onCultivate, spin, epicLook, epicLookLeft, epicLookRight, onEpicLookLeft, onEpicLookRight, epicRightLookDuration, onEpicLookRightMid));
     }
 
     private Vector3 GetTerrainLandPosition(TerrainCell cell)
@@ -74,11 +81,15 @@ public class CultivateAbility : HelperAbility
 
     private IEnumerator JumpCoroutine(
         Vector3 targetPosition,
-        System.Action onCultivate = null,
+        Action onCultivate = null,
         bool spin = false,
         bool epicLook = false,
-        System.Action onEpicLookLeft = null,
-        System.Action onEpicLookRight = null)
+        bool epicLookLeft = true,
+        bool epicLookRight = true,
+        Action onEpicLookLeft = null,
+        Action onEpicLookRight = null,
+        float epicRightLookDuration = 0f,
+        Action onEpicLookRightMid = null)
     {
         _isJumping = true;
 
@@ -100,17 +111,25 @@ public class CultivateAbility : HelperAbility
             Quaternion leftRotation  = Quaternion.LookRotation(-rightDir, Vector3.up);
             Quaternion rightRotation = Quaternion.LookRotation(rightDir,  Vector3.up);
 
-            yield return _owner.transform
-                .DORotateQuaternion(leftRotation, _epicLookDuration)
-                .SetEase(Ease.InOutQuad)
-                .WaitForCompletion();
-            onEpicLookLeft?.Invoke();
+            if (epicLookLeft)
+            {
+                yield return _owner.transform
+                    .DORotateQuaternion(leftRotation, _epicLookDuration)
+                    .SetEase(Ease.InOutQuad)
+                    .WaitForCompletion();
+                onEpicLookLeft?.Invoke();
+            }
 
-            yield return _owner.transform
-                .DORotateQuaternion(rightRotation, _epicLookDuration)
-                .SetEase(Ease.InOutQuad)
-                .WaitForCompletion();
-            onEpicLookRight?.Invoke();
+            if (epicLookRight)
+            {
+                float rightDuration = epicRightLookDuration > 0f ? epicRightLookDuration : _epicLookDuration;
+                var seq = DOTween.Sequence()
+                    .Append(_owner.transform.DORotateQuaternion(rightRotation, rightDuration).SetEase(Ease.InOutQuad));
+                if (onEpicLookRightMid != null)
+                    seq.InsertCallback(rightDuration * 0.5f, () => onEpicLookRightMid.Invoke());
+                yield return seq.WaitForCompletion();
+                onEpicLookRight?.Invoke();
+            }
         }
         else
         {

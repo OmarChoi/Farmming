@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
+using System;
 
 public class SowActionAbility : HelperAbility, IHelperAction
 {
@@ -37,8 +38,61 @@ public class SowActionAbility : HelperAbility, IHelperAction
         bool isEpic      = _owner.Grade.CurrentGrade == EHelperGrade.Epic;
         bool isLegendary = _owner.Grade.CurrentGrade == EHelperGrade.Legendary;
 
-        System.Action onEpicLeft  = isEpic ? () => TryConvertLateralCell(cell, -1) : (System.Action)null;
-        System.Action onEpicRight = isEpic ? () => TryConvertLateralCell(cell, +1) : (System.Action)null;
+        if (isEpic && cell.CurrentObject != null)
+        {
+            TerrainCell leftCell  = GetLateralCell(cell, -1);
+            TerrainCell rightCell = GetLateralCell(cell, +1);
+
+            bool leftBlocked  = leftCell  == null || leftCell.CurrentObject  != null;
+            bool rightBlocked = rightCell == null || rightCell.CurrentObject != null;
+
+            if (leftBlocked && rightBlocked)
+            {
+                return;
+            }
+
+            if (leftBlocked)
+            {
+                _owner.BeginAction();
+                _cultivateAbility.JumpAndCultivate(rightCell,
+                    onCultivate: () =>
+                    {
+                        rightCell.TryConvertToFarm();
+                        _owner.Experience.Add(_cultivateExperience);
+                    });
+                return;
+            }
+
+            if (rightBlocked)
+            {
+                _owner.BeginAction();
+                _cultivateAbility.JumpAndCultivate(leftCell,
+                    onCultivate: () =>
+                    {
+                        leftCell.TryConvertToFarm();
+                        _owner.Experience.Add(_cultivateExperience);
+                    });
+                return;
+            }
+
+            _owner.BeginAction();
+            _cultivateAbility.JumpAndCultivate(leftCell,
+                onCultivate: () =>
+                {
+                    leftCell.TryConvertToFarm();
+                    _owner.Experience.Add(_cultivateExperience);
+                },
+                epicLook: true,
+                epicLookLeft: false,
+                epicLookRight: true,
+                epicRightLookDuration: 1.6f,
+                onEpicLookRightMid: () => TryConvertLateralCell(leftCell, +1),
+                onEpicLookRight: () => TryConvertLateralCell(leftCell, +2));
+            return;
+        }
+
+        Action onEpicLeft  = isEpic ? () => TryConvertLateralCell(cell, -1) : (Action)null;
+        Action onEpicRight = isEpic ? () => TryConvertLateralCell(cell, +1) : (Action)null;
 
         if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
@@ -73,7 +127,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (!farmTile.HasSeed)
         {
             _cultivateAbility.JumpAndCultivate(cell,
-                onCultivate: isEpic ? (System.Action)null : () =>
+                onCultivate: isEpic ? (Action)null : () =>
                 {
                     foreach (TerrainCell lateralCell in GetLateralCells(cell))
                     {
@@ -249,6 +303,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         return tiles;
+    }
+
+    private TerrainCell GetLateralCell(TerrainCell centerCell, int directionSign)
+    {
+        Vector3Int rightOffset = GetGridRightOffset();
+        return TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * directionSign);
     }
 
     private void TryConvertLateralCell(TerrainCell centerCell, int directionSign)

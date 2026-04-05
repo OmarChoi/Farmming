@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using DG.Tweening;
 using Photon.Pun;
 using UnityEngine;
+using System;
 
 public class GroundActionAbility : HelperAbility, IHelperAction
 {
-    [System.Serializable]
+    [Serializable]
     private struct GroundItemMapping
     {
         public ItemDataSO Item;
@@ -23,15 +24,15 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     [Header("땅제거 액션")]
     [SerializeField] private Transform _mouthPoint;
-    [SerializeField] private float _absorbArcHeight = 2f;
-    [SerializeField] private float _absorbDuration = 0.5f;
+    [SerializeField] private float _absorbArcHeight = 2f; // 흡수할때 땅블록 튀는높이
+    [SerializeField] private float _absorbDuration = 0.5f; // 흡수 시간
     [SerializeField] private float _absorbTargetScale = 0.05f;
     [SerializeField] private float _digAnimDelay = 0.2f;
 
     [Header("땅 생성 액션")]
     [SerializeField] private float _placeAnimLeadTime = 0.3f; // cell움직임 보다 먼저 애니메이션 실행
     [SerializeField] private float _placeHorizontalDuration = 0.1f;
-    [SerializeField] private float _placeHoverDuration = 0.2f;
+    [SerializeField] private float _placeHoverDuration = 0.2f; //땅이 잠깐 뜨는 시간
     [SerializeField] private float _placeDropDuration = 0.15f;
 
     private HelperAnimationAbility _animAbility;
