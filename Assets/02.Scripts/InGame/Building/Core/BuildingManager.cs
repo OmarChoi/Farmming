@@ -32,9 +32,15 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     private readonly Dictionary<Vector3Int, BaseBuilding> _buildingInstances = new Dictionary<Vector3Int, BaseBuilding>();
 
     public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
-    public Shader ConstructionRevealLitShader => _constructionRevealLitShader;
-    public Shader ConstructionGhostRevealShader => _constructionGhostRevealShader;
     public GhostConfig GhostConfig => new GhostConfig(_ghostMaterial, _ghostValidColor, _ghostInvalidColor);
+
+    private BuildingConstructionContext CreateConstructionContext()
+    {
+        return new BuildingConstructionContext(
+            _constructionRevealLitShader,
+            _constructionGhostRevealShader,
+            _ghostMaterial);
+    }
 
     #region Lifecycle
     private void Awake()
@@ -360,7 +366,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         BaseBuilding buildingInstance = instance.GetComponent<BaseBuilding>();
         if (buildingInstance == null) return;
 
-        buildingInstance.Initialize(buildingData, saveData);
+        buildingInstance.Initialize(buildingData, saveData, CreateConstructionContext());
         _buildingInstances[anchor] = buildingInstance;
     }
 
@@ -484,7 +490,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             built.RemainingDays = saveData.RemainingDays;
             if (_buildingInstances.TryGetValue(anchor, out BaseBuilding baseBuildingInstance))
             {
-                baseBuildingInstance.Initialize(data, built);
+                baseBuildingInstance.Initialize(data, built, CreateConstructionContext());
             }
         }
     }

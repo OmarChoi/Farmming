@@ -36,15 +36,7 @@ public class DefaultBuilding : BaseBuilding
             return;
         }
 
-        BuildingManager manager = BuildingManager.Instance;
-        if (manager == null)
-        {
-            Debug.LogWarning($"{nameof(DefaultBuilding)} skipped construction visuals because {nameof(BuildingManager)} is not available.", this);
-            _constructionVisual.Dispose();
-            return;
-        }
-
-        if (manager.ConstructionRevealLitShader == null || manager.ConstructionGhostRevealShader == null)
+        if (!ConstructionContext.HasRequiredShaders)
         {
             Debug.LogWarning($"{nameof(DefaultBuilding)} skipped construction visuals because the required construction shaders are missing.", this);
             _constructionVisual.Dispose();
@@ -53,9 +45,9 @@ public class DefaultBuilding : BaseBuilding
 
         _constructionVisual.Initialize(
             gameObject,
-            manager.ConstructionRevealLitShader,
-            manager.ConstructionGhostRevealShader,
-            manager.GhostConfig.Material,
+            ConstructionContext.RevealLitShader,
+            ConstructionContext.GhostRevealShader,
+            ConstructionContext.GhostMaterial,
             RevealFeather);
     }
 
