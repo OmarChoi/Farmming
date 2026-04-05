@@ -211,6 +211,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI_QuestBoard
       objectReference: {fileID: 0}
+    - target: {fileID: 7985939927810980449, guid: 2beab69326107ad48aa064e00293e0aa, type: 3}
+      propertyPath: _questManager
+      value: 
+      objectReference: {fileID: 1925945244}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2602,11 +2606,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c93b55c26965a944f8b6bc4c50887244, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_GoldTest
-  _goldText: {fileID: 649909937}
-  _addButton: {fileID: 0}
-  _spendButton: {fileID: 0}
-  _addAmount: 100
-  _spendAmount: 50
 --- !u!114 &921706357
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3369,6 +3368,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7055232347936409727, guid: 9ad330b1e9d97fe4c8568c5964b03675, type: 3}
+      propertyPath: _questManager
+      value: 
+      objectReference: {fileID: 1925945244}
     - target: {fileID: 7153713579882407639, guid: 9ad330b1e9d97fe4c8568c5964b03675, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -3805,6 +3808,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1020165581}
     m_Modifications:
+    - target: {fileID: 619936988127355259, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 619936988127355259, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 619936988127355259, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 619936988127355259, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 619936988127355259, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 130
+      objectReference: {fileID: 0}
+    - target: {fileID: 619936988127355259, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -46.36
+      objectReference: {fileID: 0}
     - target: {fileID: 738820641616482331, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -3894,6 +3921,30 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2201715390461543946, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4109678578369832293, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4109678578369832293, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4109678578369832293, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4109678578369832293, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4109678578369832293, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4109678578369832293, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
@@ -4111,19 +4162,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7549689506291292020, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7549689506291292020, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549689506291292020, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549689506291292020, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7549689506291292020, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 146
       objectReference: {fileID: 0}
     - target: {fileID: 7549689506291292020, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -66.36
       objectReference: {fileID: 0}
     - target: {fileID: 8767778437027014643, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchorMax.y
@@ -4409,6 +4468,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -439.5
       objectReference: {fileID: 0}
+    - target: {fileID: 8480200022037935526, guid: d9b3e4e5ccdd9a44a9f5b57bd1a25366, type: 3}
+      propertyPath: _questManager
+      value: 
+      objectReference: {fileID: 1925945244}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4757,6 +4820,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f234a6a8ef1f1458aadf28d805a0ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueController
+  _friendshipManager: {fileID: 0}
   _uiDialogue: {fileID: 1340610323}
   _uiFriendshipBar: {fileID: 1678978433}
   _interactionService: {fileID: 1678978435}
@@ -4790,6 +4854,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcQuestService
   _dialogueController: {fileID: 2028739916}
+  _questManager: {fileID: 1925945244}
+  _npcFriendshipManager: {fileID: 158083902}
 --- !u!4 &2058502417
 Transform:
   m_ObjectHideFlags: 0

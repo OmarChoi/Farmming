@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-public class QuestManager : MonoBehaviour
+public class QuestManager : MonoBehaviour, IQuestProgressService
 {
     public static QuestManager Instance { get; private set; }
 
