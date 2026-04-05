@@ -13,6 +13,7 @@ public sealed class BuildingConstructionVisual
 
     private const float MinimumHeight = 0.01f;
     private const float DefaultFeather = 0.08f;
+    private const string GhostNameSuffix = "_ConstructionGhost";
 
     private readonly List<RendererRecord> _records = new List<RendererRecord>();
     private readonly List<Material> _runtimeMaterials = new List<Material>();
@@ -44,7 +45,7 @@ public sealed class BuildingConstructionVisual
         foreach (Renderer renderer in renderers)
         {
             if (renderer == null) continue;
-            if (renderer is ParticleSystemRenderer || renderer.name.EndsWith("_ConstructionGhost")) continue;
+            if (renderer is ParticleSystemRenderer || renderer.name.EndsWith(GhostNameSuffix)) continue;
 
             Material[] originalMaterials = renderer.sharedMaterials;
             if (originalMaterials == null || originalMaterials.Length == 0) continue;
@@ -131,7 +132,7 @@ public sealed class BuildingConstructionVisual
         Material ghostBaseMaterial)
     {
         Transform sourceTransform = sourceRenderer.transform;
-        var overlayObject = new GameObject(sourceRenderer.name + "_ConstructionGhost");
+        var overlayObject = new GameObject(sourceRenderer.name + GhostNameSuffix);
         overlayObject.layer = sourceRenderer.gameObject.layer;
         Transform overlayTransform = overlayObject.transform;
         overlayTransform.SetParent(sourceTransform, false);

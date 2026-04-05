@@ -21,8 +21,8 @@ public abstract class BaseBuilding : MonoBehaviour
         ConstructionProgress = CalculateConstructionProgress();
         if (!IsConstructionComplete)
         {
-            // Import/restore can reinitialize the same runtime object more than once.
-            // Only reopen the completion callback when the building is still under construction.
+            // 가져오기/복원 과정에서 동일한 런타임 객체가 두 번 이상 초기화 가능성이 존재해
+            // 건물이 아직 건설 중일 때만 완료 콜백을 다시 엽니다.
             _constructionCompletedHandled = false;
         }
 

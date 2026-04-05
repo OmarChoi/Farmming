@@ -13,11 +13,9 @@ public class BuildingGhost
     // todo. _originalMaterials를 블렌딩 셰이더에 원본 텍스처로 전달
     private readonly List<(Renderer renderer, Material[] originals)> _originalMaterials = new List<(Renderer, Material[])>();
 
-    // todo. 높이 기반 블렌딩 셰이더 적용 - UV.y/월드 높이 기준 cutoff로 Ghost/완성 머티리얼 전환
-    // todo. SetProgress(float progress) - 건설 진행도(0=Ghost, 1=완성)에 따른 시각 효과
-
     private Renderer[] _cachedRenderers;
     private readonly MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
+    
     // 중복 SetValid 호출 방지
     private bool? _lastValid;
 
