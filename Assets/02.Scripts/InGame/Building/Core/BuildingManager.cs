@@ -24,12 +24,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     public event Action<BuildingDataSO> OnLocalBuildCostConfirmed;
     public event Action<BuildingDataSO> OnLocalRemoveRefundGranted;
 
-    // anchorPos -> building save data used for removal, persistence, and restore.
-    private readonly Dictionary<Vector3Int, BuildingSaveData> _buildings = new Dictionary<Vector3Int, BuildingSaveData>();
-    // occupied cell -> anchor position mapping so any footprint cell can resolve the full building.
-    private readonly Dictionary<Vector3Int, Vector3Int> _occupiedCells = new Dictionary<Vector3Int, Vector3Int>();
-    // anchorPos -> spawned runtime building instance.
-    private readonly Dictionary<Vector3Int, BaseBuilding> _buildingInstances = new Dictionary<Vector3Int, BaseBuilding>();
+    private readonly BuildingRegistry _registry = new BuildingRegistry();
 
     public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
     public GhostConfig GhostConfig => new GhostConfig(_ghostMaterial, _ghostValidColor, _ghostInvalidColor);
@@ -75,15 +70,9 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     #endregion
 
     #region Query
-    public bool IsOccupied(Vector3Int gridPos) => _occupiedCells.ContainsKey(gridPos);
+    public bool IsOccupied(Vector3Int gridPos) => _registry.IsOccupied(gridPos);
 
-    public bool IsConstructionComplete(Vector3Int anyPos)
-    {
-        if (!_occupiedCells.TryGetValue(anyPos, out Vector3Int anchor)) return false;
-        if (!_buildings.TryGetValue(anchor, out BuildingSaveData saveData)) return false;
-        return saveData.RemainingDays <= 0;
-    }
-
+    public bool IsConstructionComplete(Vector3Int anyPos) => _registry.IsConstructionComplete(anyPos);
     #endregion
 
     #region Ghost Preview
@@ -241,7 +230,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             RemainingDays = request.Data.ConstructionDays
         };
 
-        _buildings[anchor] = saveData;
+        _registry.RegisterBuilding(anchor, saveData);
         MarkOccupiedCells(anchor, footprint);
 
         string prefabKey = AssetKey.Building.GetKey(request.Data.BuildingId);
@@ -270,8 +259,8 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         saveData = null;
         buildingData = null;
 
-        if (!_occupiedCells.TryGetValue(anyPos, out anchor)) return false;
-        if (!_buildings.TryGetValue(anchor, out saveData)) return false;
+        if (!_registry.TryGetAnchor(anyPos, out anchor)) return false;
+        if (!_registry.TryGetSaveData(anchor, out saveData)) return false;
 
         buildingData = _buildingDatabase.GetById(saveData.BuildingId);
         return buildingData != null;
@@ -321,7 +310,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
 
                 var pos = new Vector3Int(cx, topY, cz);
 
-                if (_occupiedCells.ContainsKey(pos)) return false;
+                if (_registry.IsOccupied(pos)) return false;
 
                 TerrainCell cell = _gridManager.GetCell(pos);
                 if (cell == null) return false;
@@ -344,7 +333,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
                 int cz = anchor.z + footprint.Forward.y * f + footprint.Right.y * r;
                 var pos = new Vector3Int(cx, anchor.y, cz);
 
-                _occupiedCells[pos] = anchor;
+                _registry.MarkCell(pos, anchor);
 
                 TerrainCell cell = _gridManager.GetCell(pos);
                 if (cell != null)
@@ -367,12 +356,12 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         if (buildingInstance == null) return;
 
         buildingInstance.Initialize(buildingData, saveData, CreateConstructionContext());
-        _buildingInstances[anchor] = buildingInstance;
+        _registry.RegisterInstance(anchor, buildingInstance);
     }
 
     private void DestroyBuildingInstance(Vector3Int anchor)
     {
-        if (!_buildingInstances.Remove(anchor, out BaseBuilding buildingInstance)) return;
+        if (!_registry.RemoveInstance(anchor, out BaseBuilding buildingInstance)) return;
         if (buildingInstance == null) return;
 
         Transform instanceRoot = buildingInstance.transform;
@@ -395,7 +384,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
                 int cz = anchor.z + footprint.Forward.y * f + footprint.Right.y * r;
                 var pos = new Vector3Int(cx, anchor.y, cz);
 
-                _occupiedCells.Remove(pos);
+                _registry.UnmarkCell(pos);
 
                 TerrainCell cell = _gridManager.GetCell(pos);
                 if (cell != null)
@@ -405,7 +394,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             }
         }
 
-        _buildings.Remove(anchor);
+        _registry.RemoveBuilding(anchor);
         return true;
     }
 
@@ -449,10 +438,10 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     #region Sync
     public void SpawnBuildingNpcs()
     {
-        foreach (KeyValuePair<Vector3Int, BuildingSaveData> kvp in _buildings)
+        foreach (KeyValuePair<Vector3Int, BuildingSaveData> kvp in _registry.AllBuildings)
         {
             if (kvp.Value.RemainingDays > 0) continue;
-            if (!_buildingInstances.TryGetValue(kvp.Key, out BaseBuilding instance) || instance == null) continue;
+            if (!_registry.TryGetInstance(kvp.Key, out BaseBuilding instance) || instance == null) continue;
 
             BuildingNpcSpawner spawner = instance.GetComponent<BuildingNpcSpawner>();
             if (spawner != null && spawner.HasValidData)
@@ -462,10 +451,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
     }
 
-    public List<BuildingSaveData> ExportBuildings()
-    {
-        return new List<BuildingSaveData>(_buildings.Values);
-    }
+    public List<BuildingSaveData> ExportBuildings() => _registry.ExportAll();
 
     public async UniTask ImportBuildings(List<BuildingSaveData> list)
     {
@@ -485,10 +471,10 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             await TryBuild(request);
 
             var anchor = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ);
-            if (!_buildings.TryGetValue(anchor, out BuildingSaveData built)) continue;
+            if (!_registry.TryGetSaveData(anchor, out BuildingSaveData built)) continue;
 
             built.RemainingDays = saveData.RemainingDays;
-            if (_buildingInstances.TryGetValue(anchor, out BaseBuilding baseBuildingInstance))
+            if (_registry.TryGetInstance(anchor, out BaseBuilding baseBuildingInstance))
             {
                 baseBuildingInstance.Initialize(data, built, CreateConstructionContext());
             }
