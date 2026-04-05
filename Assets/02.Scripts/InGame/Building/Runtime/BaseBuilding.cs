@@ -1,8 +1,11 @@
+using System;
 using Photon.Pun;
 using UnityEngine;
 
 public abstract class BaseBuilding : MonoBehaviour
 {
+    public event Action<BaseBuilding> ConstructionCompleted;
+
     public BuildingDataSO BuildingData { get; private set; }
     public BuildingSaveData SaveData { get; private set; }
     public BuildingConstructionContext ConstructionContext { get; private set; }
@@ -13,7 +16,10 @@ public abstract class BaseBuilding : MonoBehaviour
     private bool _isDayBound;
     private bool _constructionCompletedHandled;
 
-    public void Initialize(BuildingDataSO buildingData, BuildingSaveData saveData, BuildingConstructionContext constructionContext)
+    public void Initialize(
+        BuildingDataSO buildingData, 
+        BuildingSaveData saveData, 
+        BuildingConstructionContext constructionContext)
     {
         BuildingData = buildingData;
         SaveData = saveData;
@@ -77,6 +83,7 @@ public abstract class BaseBuilding : MonoBehaviour
         }
 
         OnConstructionCompleted();
+        ConstructionCompleted?.Invoke(this);
     }
 
     protected virtual void OnBuildingInitialized() { }

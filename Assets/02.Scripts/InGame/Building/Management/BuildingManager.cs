@@ -23,6 +23,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
 
     public event Action<BuildingDataSO> OnLocalBuildCostConfirmed;
     public event Action<BuildingDataSO> OnLocalRemoveRefundGranted;
+    public event Action<BuildingDataSO> OnBuildingBuilt;
 
     private readonly BuildingRegistry _registry = new BuildingRegistry();
     private BuildingPlacementService _placement;
@@ -108,9 +109,9 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
 
         photonView.RpcSafe(nameof(RPC_RequestBuild), RpcTarget.MasterClient,
-            request.Data.BuildingId,
-            request.AnchorPos.x, request.AnchorPos.y, request.AnchorPos.z,
-            request.Direction);
+                           request.Data.BuildingId,
+                           request.AnchorPos.x, request.AnchorPos.y, request.AnchorPos.z,
+                           request.Direction);
     }
 
     private async UniTaskVoid TryBuildAndConfirmLocal(BuildingRequest request)
@@ -133,7 +134,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
 
         photonView.RpcSafe(nameof(RPC_RequestRemove), RpcTarget.MasterClient,
-            anyPos.x, anyPos.y, anyPos.z);
+                           anyPos.x, anyPos.y, anyPos.z);
     }
 
     [PunRPC]
@@ -154,7 +155,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
 
         photonView.RpcSafe(nameof(RPC_ExecuteBuild), RpcTarget.All,
-            buildingId, ax, ay, az, direction);
+                           buildingId, ax, ay, az, direction);
     }
 
     [PunRPC]
@@ -191,7 +192,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         if (!TryRemoveResolved(anchor, saveData, buildingData)) return;
 
         photonView.RpcSafe(nameof(RPC_ExecuteRemove), RpcTarget.Others,
-            anchor.x, anchor.y, anchor.z);
+                           anchor.x, anchor.y, anchor.z);
 
         if (info.Sender != null)
         {
@@ -239,26 +240,37 @@ public class BuildingManager : MonoBehaviourPunCallbacks
 
         float yRot = footprint.Direction * 90f;
         Vector3 spawnPos = _placement.CalculateSpawnPos(anchor, footprint);
-        BaseBuilding instance = await _factory.CreateAsync(
+        BaseBuilding instance = await _factory.CreateAsync
+        (
             request.Data,
-            saveData,
             spawnPos,
-            Quaternion.Euler(0f, yRot, 0f),
-            CreateConstructionContext());
+            Quaternion.Euler(0f, yRot, 0f)
+        );
 
         if (instance != null)
         {
             _registry.RegisterInstance(anchor, instance);
+            instance.ConstructionCompleted -= HandleBuildingConstructionCompleted;
+            instance.ConstructionCompleted += HandleBuildingConstructionCompleted;
+            instance.Initialize(request.Data, saveData, CreateConstructionContext());
         }
 
         return true;
+    }
+
+    private void HandleBuildingConstructionCompleted(BaseBuilding building)
+    {
+        if (building == null) return;
+        building.ConstructionCompleted -= HandleBuildingConstructionCompleted;
+        OnBuildingBuilt?.Invoke(building.BuildingData);
     }
 
     private bool TryGetBuildingInfo(
         Vector3Int anyPos,
         out Vector3Int anchor,
         out BuildingSaveData saveData,
-        out BuildingDataSO buildingData)
+        out BuildingDataSO buildingData
+    )
     {
         anchor = default;
         saveData = null;
@@ -383,4 +395,5 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
     }
     #endregion
+
 }
