@@ -15,10 +15,7 @@ public class BuildingPlacementService
         _registry = registry;
     }
 
-    /// <summary>
-    /// 주어진 앵커에 건물을 배치할 수 있는지 검사한다.
-    /// 푸트프린트 전체 셀이 동일 높이, Dirt 타입, 비점유 상태여야 한다.
-    /// </summary>
+    // 주어진 앵커에 건물을 배치할 수 있는지 검사한다. 푸트프린트 전체 셀이 동일 높이, Dirt 타입, 비점유 상태여야 한다.
     public bool CanPlace(Vector3Int anchorPos, BuildingFootprint footprint, out int baseY)
     {
         baseY = _gridManager.GetTopY(anchorPos.x, anchorPos.z);
@@ -48,9 +45,7 @@ public class BuildingPlacementService
         return true;
     }
 
-    /// <summary>
-    /// 앵커 셀 기준으로 푸트프린트 중심의 월드 스폰 좌표를 계산한다.
-    /// </summary>
+    // 앵커 셀 기준으로 Footprint 중심의 월드 스폰 좌표를 계산한다.
     public Vector3 CalculateSpawnPos(Vector3Int anchorPos, BuildingFootprint footprint)
     {
         int offsetSize = (int)(_gridManager.CellSize * 0.5f);
@@ -68,9 +63,7 @@ public class BuildingPlacementService
         return _gridManager.GridToWorld(elevated) + centerOffset;
     }
 
-    /// <summary>
-    /// 푸트프린트 영역의 셀을 점유 상태로 표시한다(레지스트리 + 그리드).
-    /// </summary>
+    // Footprint 영역의 셀을 점유 상태로 표시한다(레지스트리 + 그리드).
     public void MarkOccupied(Vector3Int anchor, BuildingFootprint footprint)
     {
         for (int f = 0; f < footprint.Depth; f++)
@@ -92,9 +85,7 @@ public class BuildingPlacementService
         }
     }
 
-    /// <summary>
-    /// 푸트프린트 영역의 점유 상태를 해제한다(레지스트리 + 그리드).
-    /// </summary>
+    // Footprint 영역의 점유 상태를 해제한다(레지스트리 + 그리드).
     public void ClearOccupied(Vector3Int anchor, BuildingFootprint footprint)
     {
         for (int f = 0; f < footprint.Depth; f++)
