@@ -7,6 +7,7 @@ public enum EItemType
     Stone,
     Crop,
     Seed,
+    Potion,
 }
 
 [CreateAssetMenu(fileName = "ItemData", menuName = "Data/ItemData")]
