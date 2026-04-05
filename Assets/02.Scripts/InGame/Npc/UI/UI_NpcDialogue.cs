@@ -10,6 +10,7 @@ public class UI_NpcDialogue : MonoBehaviour
 
     [Header("컴포넌트 참조")]
     [SerializeField] private Transform _interactionButtonRoot;
+    [SerializeField] private RectTransform _interactionButtonRect;
     [SerializeField] private GameObject _interactionButtonPrefab;
     [SerializeField] private TextMeshProUGUI _npcNameText;
     [SerializeField] private TextMeshProUGUI _npcDialogueText;
@@ -109,6 +110,7 @@ public class UI_NpcDialogue : MonoBehaviour
             UI_InteractionButton uiButton = button.GetComponent<UI_InteractionButton>();
             uiButton.Init(choice.ButtonText, choice.OnClick);
         }
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_interactionButtonRect);
     }
 
     public void HideButtons()
