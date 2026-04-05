@@ -20,6 +20,10 @@ public class BuildingDataSO : ScriptableObject
     [Header("Cost")]
     [SerializeField] private BuildingCostEntry[] _costs = Array.Empty<BuildingCostEntry>();
 
+    [Header("Village Level")]
+    [SerializeField] private int _requiredVillageLevel = 1;
+    [SerializeField] private int _firstBuildGaugeContribution = 0;
+
     public string BuildingId => _buildingId;
     public string DisplayName => _displayName;
     public Sprite Icon => _icon;
@@ -29,4 +33,7 @@ public class BuildingDataSO : ScriptableObject
     public int Depth => _depth;
     public int ConstructionDays => _constructionDays;
     public IReadOnlyList<BuildingCostEntry> Costs => _costs;
+
+    public int RequiredVillageLevel => _requiredVillageLevel;
+    public int FirstBuildGaugeContribution => _firstBuildGaugeContribution;
 }
