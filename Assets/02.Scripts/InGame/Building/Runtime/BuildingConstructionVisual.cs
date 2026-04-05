@@ -10,6 +10,26 @@ public sealed class BuildingConstructionVisual
     private static readonly int RevealInvertId = Shader.PropertyToID("_ConstructionRevealInvert");
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
+    private static readonly int LegacyColorId = Shader.PropertyToID("_Color");
+    private static readonly int LegacyMainTexId = Shader.PropertyToID("_MainTex");
+    
+    // glTFast(com.unity.cloud.gltfast) 셰이더 프로퍼티 이름 (glTF 스펙 명명)
+    private static readonly int GltfBaseColorTextureId = Shader.PropertyToID("baseColorTexture");
+    private static readonly int GltfBaseColorFactorId = Shader.PropertyToID("baseColorFactor");
+
+    private static readonly int[] SourceBaseTexturePropertyIds =
+    {
+        BaseMapId,
+        LegacyMainTexId,
+        GltfBaseColorTextureId,
+    };
+
+    private static readonly int[] SourceBaseColorPropertyIds =
+    {
+        BaseColorId,
+        LegacyColorId,
+        GltfBaseColorFactorId,
+    };
 
     private const float MinimumHeight = 0.01f;
     private const float DefaultFeather = 0.08f;
@@ -266,7 +286,22 @@ public sealed class BuildingConstructionVisual
 
         if (source != null)
         {
-            destination.CopyPropertiesFromMaterial(source);
+            // CopyPropertiesFromMaterial은 서로 다른 셰이더 간 복사를 보장하지 않으므로
+            // 핵심 속성은 명시적으로 복사한다. URP Lit(_BaseMap/_BaseColor),
+            // Built-in/Legacy(_MainTex/_Color), glTFast(baseColorTexture/baseColorFactor) 모두 지원.
+            if (TryGetSourceBaseTexture(source, out Texture sourceBaseTexture, out Vector2 sourceBaseScale, out Vector2 sourceBaseOffset)
+                && destination.HasProperty(BaseMapId))
+            {
+                destination.SetTexture(BaseMapId, sourceBaseTexture);
+                destination.SetTextureScale(BaseMapId, sourceBaseScale);
+                destination.SetTextureOffset(BaseMapId, sourceBaseOffset);
+            }
+
+            if (TryGetSourceBaseColor(source, out Color sourceBaseColor) && destination.HasProperty(BaseColorId))
+            {
+                destination.SetColor(BaseColorId, sourceBaseColor);
+            }
+
             destination.renderQueue = source.renderQueue;
             destination.enableInstancing = source.enableInstancing;
         }
@@ -305,6 +340,41 @@ public sealed class BuildingConstructionVisual
         destination.sortingLayerID = source.sortingLayerID;
         destination.sortingOrder = source.sortingOrder;
         destination.enabled = source.enabled;
+    }
+
+    private static bool TryGetSourceBaseTexture(Material source, out Texture texture, out Vector2 scale, out Vector2 offset)
+    {
+        texture = null;
+        scale = Vector2.one;
+        offset = Vector2.zero;
+        if (source == null) return false;
+
+        foreach (int propertyId in SourceBaseTexturePropertyIds)
+        {
+            if (!source.HasProperty(propertyId)) continue;
+            Texture candidate = source.GetTexture(propertyId);
+            if (candidate == null) continue;
+
+            texture = candidate;
+            scale = source.GetTextureScale(propertyId);
+            offset = source.GetTextureOffset(propertyId);
+            return true;
+        }
+        return false;
+    }
+
+    private static bool TryGetSourceBaseColor(Material source, out Color color)
+    {
+        color = Color.white;
+        if (source == null) return false;
+
+        foreach (int propertyId in SourceBaseColorPropertyIds)
+        {
+            if (!source.HasProperty(propertyId)) continue;
+            color = source.GetColor(propertyId);
+            return true;
+        }
+        return false;
     }
 
     private static void SetKeyword(Material material, string keyword, bool enabled)
