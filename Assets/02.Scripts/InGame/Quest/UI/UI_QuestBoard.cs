@@ -10,6 +10,9 @@ public class UI_QuestBoard : MonoBehaviour
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_QuestBoardSlot _slotPrefab;
     [SerializeField] private GameObject _questBoardRoot;
+    [SerializeField] private QuestManager _questManager;
+
+    private IQuestProgressService _questProgressService;
 
     [Header("팝업 트윈")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
@@ -25,6 +28,12 @@ public class UI_QuestBoard : MonoBehaviour
 
     private void Awake()
     {
+        if (_questManager == null)
+        {
+            _questManager = FindFirstObjectByType<QuestManager>();
+        }
+        _questProgressService = _questManager;
+
         if (_exitButton != null)
         {
             _exitButton.onClick.AddListener(OnClickCloseButton);
@@ -83,6 +92,7 @@ public class UI_QuestBoard : MonoBehaviour
         while (_slots.Count < slotCount)
         {
             UI_QuestBoardSlot newSlot = Instantiate(_slotPrefab, _slotParent);
+            newSlot.Initialized(_questProgressService);
             newSlot.Init(this, _slots.Count);
             _slots.Add(newSlot);
         }
@@ -101,19 +111,18 @@ public class UI_QuestBoard : MonoBehaviour
 
     public void OnQuestSlotClicked(QuestDataSO questData)
     {
-        if (questData == null || QuestManager.Instance == null) return;
+        if (questData == null || _questProgressService == null) return;
         if (string.IsNullOrEmpty(questData.QuestId)) return;
 
-        QuestManager questManager = QuestManager.Instance;
         string questId = questData.QuestId;
 
-        bool hasQuest = questManager.HasQuest(questId);
+        bool hasQuest = _questProgressService.HasQuest(questId);
 
         if (hasQuest)
         {
-            if (questManager.CanCompleteQuest(questId))
+            if (_questProgressService.CanCompleteQuest(questId))
             {
-                bool success = questManager.CompleteQuest(questId);
+                bool success = _questProgressService.CompleteQuest(questId);
 
 #if UNITY_EDITOR
                 if (success)
@@ -135,9 +144,9 @@ public class UI_QuestBoard : MonoBehaviour
         }
         else
         {
-            if (questManager.CanAcceptQuest(questData))
+            if (_questProgressService.CanAcceptQuest(questData))
             {
-                bool success = questManager.AcceptQuest(questData);
+                bool success = _questProgressService.AcceptQuest(questData);
 
 #if UNITY_EDITOR
                 if (success)

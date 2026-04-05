@@ -1,11 +1,15 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 public class NpcDialogueController : MonoBehaviour
 {
+    [SerializeField] private NpcFriendshipManager _friendshipManager;
     [SerializeField] private UI_NpcDialogue _uiDialogue;
     [SerializeField] private UI_FriendshipBar _uiFriendshipBar;
     [SerializeField] private InteractService _interactionService;
+
+    private IFriendshipService _friendshipService;
 
     private NpcController _currentNpc;
     private Transform _currentInteractor;
@@ -17,8 +21,16 @@ public class NpcDialogueController : MonoBehaviour
 
     private EDialogueUiState _dialogueState = EDialogueUiState.None;
 
+    private Action _onDialogueEnded;
+
     private void Awake()
     {
+        if (_friendshipManager == null)
+        {
+            _friendshipManager = FindFirstObjectByType<NpcFriendshipManager>();
+        }
+        _friendshipService = _friendshipManager;
+
         if (_uiDialogue == null)
         {
             _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
@@ -34,17 +46,17 @@ public class NpcDialogueController : MonoBehaviour
     }
     private void OnEnable()
     {
-        if (NpcFriendshipManager.Instance != null)
+        if (_friendshipService != null)
         {
-            NpcFriendshipManager.Instance.OnFriendshipChanged += HandleFriendshipChanged;
+            _friendshipService.OnFriendshipChanged += HandleFriendshipChanged;
         }
     }
 
     private void OnDisable()
     {
-        if (NpcFriendshipManager.Instance != null)
+        if (_friendshipService != null)
         {
-            NpcFriendshipManager.Instance.OnFriendshipChanged -= HandleFriendshipChanged;
+            _friendshipService.OnFriendshipChanged -= HandleFriendshipChanged;
         }
     }
 
@@ -125,6 +137,13 @@ public class NpcDialogueController : MonoBehaviour
         StartDialogue(dialogueSO);
     }
 
+    public void StartDialogue(NpcDialogueSO dialogueSO, EDialogueUiState dialogueState, Action onEnded)
+    {
+        _dialogueState = dialogueState;
+        _onDialogueEnded = onEnded;
+        StartDialogue(dialogueSO);
+    }
+
     public void StartDialogue(NpcDialogueSO dialogueSO)
     {
         if (dialogueSO == null || dialogueSO.Lines == null || dialogueSO.Lines.Length == 0)
@@ -182,6 +201,14 @@ public class NpcDialogueController : MonoBehaviour
         _currentDialogue = null;
         _currentLineIndex = 0;
 
+        Action endedCallback = _onDialogueEnded;
+        _onDialogueEnded = null;
+        if (endedCallback != null)
+        {
+            endedCallback.Invoke();
+            return;
+        }
+
         switch (_dialogueState)
         {
             case EDialogueUiState.Greeting:
@@ -218,11 +245,15 @@ public class NpcDialogueController : MonoBehaviour
         ShowChoiceButtons(_currentNpc.InteractionOptions);
     }
 
-    public void ShowQuestChoices(IReadOnlyList<NpcDialogueChoiceData> choices)
+    public void ShowQuestChoices(IReadOnlyList<NpcDialogueChoiceData> choices, bool clearText = true)
     {
         if (_uiDialogue == null) return;
 
-        _uiDialogue.ClearDialogueText();
+        if (clearText)
+        {
+            _uiDialogue.ClearDialogueText();
+        }
+
         _uiDialogue.ShowChoiceButtons(choices);
     }
 

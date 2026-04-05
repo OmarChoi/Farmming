@@ -32,6 +32,8 @@ public class QuestDataSO : ScriptableObject
 
     [Header("NPC 대사")]
     public NpcDialogueSO AcceptDialogue;
+    public NpcDialogueSO AcceptResultDialogue;
+    public NpcDialogueSO DeclineDialogue;
     public NpcDialogueSO InProgressDialogue;
     public NpcDialogueSO CompleteDialogue;
     public NpcDialogueSO NoQuestDialogue;
