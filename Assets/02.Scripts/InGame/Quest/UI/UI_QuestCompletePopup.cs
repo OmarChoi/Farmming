@@ -4,6 +4,10 @@ using Cysharp.Threading.Tasks;
 
 public class UI_QuestCompletePopup : MonoBehaviour
 {
+    [SerializeField] private QuestManager _questManager;
+
+    private IQuestProgressService _questProgressService;
+
     [Header("퀘스트 완료 팝업")]
     [SerializeField] private GameObject _completePopup;
     [SerializeField] private TextMeshProUGUI _completeRewardText;
@@ -11,11 +15,20 @@ public class UI_QuestCompletePopup : MonoBehaviour
     [Header("팝업 트윈")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
 
+    private void Awake()
+    {
+        if (_questManager == null)
+        {
+            _questManager = FindFirstObjectByType<QuestManager>();
+        }
+        _questProgressService = _questManager;
+    }
+
     private void OnEnable()
     {
-        if (QuestManager.Instance != null)
+        if (_questProgressService != null)
         {
-            QuestManager.Instance.OnQuestCompleted += ShowCompletePopup;
+            _questProgressService.OnQuestCompleted += ShowCompletePopup;
         }
         else
         {
@@ -25,9 +38,9 @@ public class UI_QuestCompletePopup : MonoBehaviour
 
     private void OnDisable()
     {
-        if (QuestManager.Instance != null)
+        if (_questProgressService != null)
         {
-            QuestManager.Instance.OnQuestCompleted -= ShowCompletePopup;
+            _questProgressService.OnQuestCompleted -= ShowCompletePopup;
         }
 
         QuestManager.OnQuestManagerReady -= SubscribeWhenReady;
@@ -35,7 +48,7 @@ public class UI_QuestCompletePopup : MonoBehaviour
 
     private void SubscribeWhenReady()
     {
-        QuestManager.Instance.OnQuestCompleted += ShowCompletePopup;
+        _questProgressService.OnQuestCompleted += ShowCompletePopup;
         QuestManager.OnQuestManagerReady -= SubscribeWhenReady;
     }
 

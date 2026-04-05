@@ -4,9 +4,12 @@ using System.Collections.Generic;
 
 public class NpcDialogueController : MonoBehaviour
 {
+    [SerializeField] private NpcFriendshipManager _friendshipManager;
     [SerializeField] private UI_NpcDialogue _uiDialogue;
     [SerializeField] private UI_FriendshipBar _uiFriendshipBar;
     [SerializeField] private InteractService _interactionService;
+
+    private IFriendshipService _friendshipService;
 
     private NpcController _currentNpc;
     private Transform _currentInteractor;
@@ -22,6 +25,12 @@ public class NpcDialogueController : MonoBehaviour
 
     private void Awake()
     {
+        if (_friendshipManager == null)
+        {
+            _friendshipManager = FindFirstObjectByType<NpcFriendshipManager>();
+        }
+        _friendshipService = _friendshipManager;
+
         if (_uiDialogue == null)
         {
             _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
@@ -37,17 +46,17 @@ public class NpcDialogueController : MonoBehaviour
     }
     private void OnEnable()
     {
-        if (NpcFriendshipManager.Instance != null)
+        if (_friendshipService != null)
         {
-            NpcFriendshipManager.Instance.OnFriendshipChanged += HandleFriendshipChanged;
+            _friendshipService.OnFriendshipChanged += HandleFriendshipChanged;
         }
     }
 
     private void OnDisable()
     {
-        if (NpcFriendshipManager.Instance != null)
+        if (_friendshipService != null)
         {
-            NpcFriendshipManager.Instance.OnFriendshipChanged -= HandleFriendshipChanged;
+            _friendshipService.OnFriendshipChanged -= HandleFriendshipChanged;
         }
     }
 
