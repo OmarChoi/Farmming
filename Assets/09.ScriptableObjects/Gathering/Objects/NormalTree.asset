@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e94df61d7155824ba4ad3cb157b683b, type: 3}
+  m_Name: NormalTree
+  m_EditorClassIdentifier: Assembly-CSharp::GatheringObjectSO
+  _objectName: "\uB098\uBB34"
+  _maxHealth: 100
+  _requiredLevel: 0
+  _modelPrefabs:
+  - {fileID: 8676952158559593809, guid: 418119bc089da594caa33bd03ea445f2, type: 3}
+  - {fileID: 1470561777393996130, guid: fe31936cab7e0794097a481152b2dde8, type: 3}
+  - {fileID: 321735410901635458, guid: 8bcf7d324d7bf3d408efd85c3f387606, type: 3}
+  - {fileID: 4582802595405526183, guid: 1e164c3cf6879984cba9630b8bc6fd9d, type: 3}
+  - {fileID: 5054089686411890155, guid: 1351ebae22b0cf349b5d82e30d4ac3e7, type: 3}
+  _drops:
+  - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
+    _minQuantity: 2
+    _maxQuantity: 5

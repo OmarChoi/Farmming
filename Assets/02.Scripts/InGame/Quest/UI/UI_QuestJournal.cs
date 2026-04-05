@@ -8,6 +8,9 @@ public class UI_QuestJournal : MonoBehaviour
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_QuestJournalSlot _slotPrefab;
     [SerializeField] private GameObject _uiQuestJournalRoot;
+    [SerializeField] private QuestManager _questManager;
+
+    private IQuestProgressService _questProgressService;
 
     [Header("팝업 트윈")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
@@ -15,25 +18,34 @@ public class UI_QuestJournal : MonoBehaviour
     private readonly List<UI_QuestJournalSlot> _slots = new();
     private readonly List<QuestRuntimeData> _currentQuests = new();
 
+    private void Awake()
+    {
+        if (_questManager == null)
+        {
+            _questManager = FindFirstObjectByType<QuestManager>();
+        }
+        _questProgressService = _questManager;
+    }
+
     private void OnEnable()
     {
-        if (QuestManager.Instance != null)
+        if (_questProgressService != null)
         {
-            QuestManager.Instance.OnQuestAccepted += HandleQuestChanged;
-            QuestManager.Instance.OnQuestUpdated += HandleQuestChanged;
-            QuestManager.Instance.OnQuestCompleted += HandleQuestChanged;
-            QuestManager.Instance.OnQuestRemoved += HandleQuestRemoved;
+            _questProgressService.OnQuestAccepted += HandleQuestChanged;
+            _questProgressService.OnQuestUpdated += HandleQuestChanged;
+            _questProgressService.OnQuestCompleted += HandleQuestChanged;
+            _questProgressService.OnQuestRemoved += HandleQuestRemoved;
         }
     }
 
     private void OnDisable()
     {
-        if (QuestManager.Instance != null)
+        if (_questProgressService != null)
         {
-            QuestManager.Instance.OnQuestAccepted -= HandleQuestChanged;
-            QuestManager.Instance.OnQuestUpdated -= HandleQuestChanged;
-            QuestManager.Instance.OnQuestCompleted -= HandleQuestChanged;
-            QuestManager.Instance.OnQuestRemoved -= HandleQuestRemoved;
+            _questProgressService.OnQuestAccepted -= HandleQuestChanged;
+            _questProgressService.OnQuestUpdated -= HandleQuestChanged;
+            _questProgressService.OnQuestCompleted -= HandleQuestChanged;
+            _questProgressService.OnQuestRemoved -= HandleQuestRemoved;
         }
     }
 
@@ -73,9 +85,9 @@ public class UI_QuestJournal : MonoBehaviour
     {
         _currentQuests.Clear();
 
-        if (QuestManager.Instance == null) return;
+        if (_questProgressService == null) return;
 
-        List<QuestRuntimeData> activeQuests = QuestManager.Instance.GetActiveQuestList();
+        List<QuestRuntimeData> activeQuests = _questProgressService.GetActiveQuestList();
         if (activeQuests == null) return;
 
         _currentQuests.AddRange(activeQuests);

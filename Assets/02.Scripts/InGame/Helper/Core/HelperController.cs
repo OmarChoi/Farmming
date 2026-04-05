@@ -18,6 +18,7 @@ public class HelperController : MonoBehaviour
 
     public event Action OnActionStarted;
     public event Action OnActionEnded;
+    public event Action OnGradeChanged;
 
     public HelperLevel Level { get; private set; }
     public HelperGrade Grade { get; private set; }
@@ -144,6 +145,17 @@ public class HelperController : MonoBehaviour
             ? (float)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - data.EnergySavedAt)
             : 0f;
         Energy.Load(data.Energy, elapsed);
+    }
+
+    public void PerformUpgrade()
+    {
+        if(!Experience.IsReadyToUpgrade)
+        {
+            return;
+        }
+        Grade.Upgrade();
+        Experience.Reset();
+        OnGradeChanged?.Invoke();
     }
 
     public void BeginAction()

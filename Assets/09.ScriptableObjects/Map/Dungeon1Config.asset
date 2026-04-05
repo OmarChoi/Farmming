@@ -34,8 +34,12 @@ MonoBehaviour:
     Amount: 1
   - Item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
     Amount: 1
+  CliffPrefab: {fileID: 0}
+  TreePrefab: {fileID: 5130300574329225930, guid: aaea097398e8fd847b32e81f83888654, type: 3}
+  RockPrefab: {fileID: 5182465649738605643, guid: 3e31cb771959b174eac42a22acfce587, type: 3}
   TileWeights: []
   IsCave: 0
   CaveFillPercent: 0.45
   CaveSmoothIterations: 5
   WallTileType: 3
+  EnvironmentProfile: {fileID: 0}

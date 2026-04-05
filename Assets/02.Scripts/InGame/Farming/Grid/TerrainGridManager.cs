@@ -31,6 +31,12 @@ public class TerrainGridManager : MonoBehaviour
 
     public void SetMaxHeight(int maxHeight) => _maxHeight = maxHeight;
 
+    public void OverrideObjectPrefabs(GameObject tree, GameObject rock)
+    {
+        if (tree != null) _treePrefab = tree;
+        if (rock != null) _rockPrefab = rock;
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
