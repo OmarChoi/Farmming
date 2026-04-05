@@ -25,6 +25,8 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     public event Action<BuildingDataSO> OnLocalRemoveRefundGranted;
 
     private readonly BuildingRegistry _registry = new BuildingRegistry();
+    private BuildingPlacementService _placement;
+    private BuildingInstanceFactory _factory;
 
     public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
     public GhostConfig GhostConfig => new GhostConfig(_ghostMaterial, _ghostValidColor, _ghostInvalidColor);
@@ -47,6 +49,8 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
 
         Instance = this;
+        _placement = new BuildingPlacementService(_gridManager, _registry);
+        _factory = new BuildingInstanceFactory(transform);
         ResolveConstructionVisualReferences();
         ValidateConstructionVisualReferences();
     }
@@ -79,10 +83,10 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     public BuildingPreviewInfo GetPreviewInfo(Vector3Int anchorPos, BuildingDataSO data, int direction)
     {
         BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction);
-        bool canPlace = CanPlace(anchorPos, footprint, out int baseY);
+        bool canPlace = _placement.CanPlace(anchorPos, footprint, out int baseY);
 
         var adjustedAnchor = new Vector3Int(anchorPos.x, baseY >= 0 ? baseY : anchorPos.y, anchorPos.z);
-        Vector3 spawnPos = CalculateSpawnPos(adjustedAnchor, footprint);
+        Vector3 spawnPos = _placement.CalculateSpawnPos(adjustedAnchor, footprint);
         float yRot = footprint.Direction * 90f;
 
         return new BuildingPreviewInfo
@@ -142,7 +146,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
 
         var anchorPos = new Vector3Int(ax, ay, az);
         BuildingFootprint footprint = BuildingPlacer.GetFootprint(data, direction);
-        if (!CanPlace(anchorPos, footprint, out _)) return;
+        if (!_placement.CanPlace(anchorPos, footprint, out _)) return;
 
         if (info.Sender != null)
         {
@@ -216,7 +220,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     public async UniTask<bool> TryBuild(BuildingRequest request)
     {
         BuildingFootprint footprint = BuildingPlacer.GetFootprint(request.Data, request.Direction);
-        if (!CanPlace(request.AnchorPos, footprint, out int baseY)) return false;
+        if (!_placement.CanPlace(request.AnchorPos, footprint, out int baseY)) return false;
 
         var anchor = new Vector3Int(request.AnchorPos.x, baseY, request.AnchorPos.z);
 
@@ -231,19 +235,20 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         };
 
         _registry.RegisterBuilding(anchor, saveData);
-        MarkOccupiedCells(anchor, footprint);
+        _placement.MarkOccupied(anchor, footprint);
 
-        string prefabKey = AssetKey.Building.GetKey(request.Data.BuildingId);
-        if (!string.IsNullOrEmpty(prefabKey))
+        float yRot = footprint.Direction * 90f;
+        Vector3 spawnPos = _placement.CalculateSpawnPos(anchor, footprint);
+        BaseBuilding instance = await _factory.CreateAsync(
+            request.Data,
+            saveData,
+            spawnPos,
+            Quaternion.Euler(0f, yRot, 0f),
+            CreateConstructionContext());
+
+        if (instance != null)
         {
-            GameObject prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
-            if (prefab != null)
-            {
-                float yRot = footprint.Direction * 90f;
-                Vector3 spawnPos = CalculateSpawnPos(anchor, footprint);
-                GameObject go = Instantiate(prefab, spawnPos, Quaternion.Euler(0f, yRot, 0f), transform);
-                InitializeBuildingInstance(anchor, go, request.Data, saveData);
-            }
+            _registry.RegisterInstance(anchor, instance);
         }
 
         return true;
@@ -276,96 +281,10 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         return TryRemoveResolved(anchor, saveData, buildingData);
     }
 
-    public Vector3 CalculateSpawnPos(Vector3Int anchorPos, BuildingFootprint footprint)
-    {
-        int offsetSize = (int)(_gridManager.CellSize * 0.5f);
-        Vector3Int elevated = anchorPos + Vector3Int.up * offsetSize;
-
-        float depthCenter = (footprint.Depth - 1) * 0.5f;
-        float widthCenter = footprint.WidthOffset + (footprint.Width - 1) * 0.5f;
-        float cellSize = _gridManager.CellSize;
-        Vector3 centerOffset = new Vector3(
-            (footprint.Forward.x * depthCenter + footprint.Right.x * widthCenter) * cellSize,
-            0f,
-            (footprint.Forward.y * depthCenter + footprint.Right.y * widthCenter) * cellSize
-        );
-
-        return _gridManager.GridToWorld(elevated) + centerOffset;
-    }
-
-    public bool CanPlace(Vector3Int anchorPos, BuildingFootprint footprint, out int baseY)
-    {
-        baseY = _gridManager.GetTopY(anchorPos.x, anchorPos.z);
-        if (baseY < 0) return false;
-
-        for (int f = 0; f < footprint.Depth; f++)
-        {
-            for (int r = footprint.WidthOffset; r < footprint.WidthOffset + footprint.Width; r++)
-            {
-                int cx = anchorPos.x + footprint.Forward.x * f + footprint.Right.x * r;
-                int cz = anchorPos.z + footprint.Forward.y * f + footprint.Right.y * r;
-
-                int topY = _gridManager.GetTopY(cx, cz);
-                if (topY < 0 || topY != baseY) return false;
-
-                var pos = new Vector3Int(cx, topY, cz);
-
-                if (_registry.IsOccupied(pos)) return false;
-
-                TerrainCell cell = _gridManager.GetCell(pos);
-                if (cell == null) return false;
-                if (cell.Data.CellType != ECellType.Dirt) return false;
-                if (cell.Data.ObjectType != EGridObjectType.None) return false;
-            }
-        }
-
-        return true;
-    }
-    #endregion
-
-    private void MarkOccupiedCells(Vector3Int anchor, BuildingFootprint footprint)
-    {
-        for (int f = 0; f < footprint.Depth; f++)
-        {
-            for (int r = footprint.WidthOffset; r < footprint.WidthOffset + footprint.Width; r++)
-            {
-                int cx = anchor.x + footprint.Forward.x * f + footprint.Right.x * r;
-                int cz = anchor.z + footprint.Forward.y * f + footprint.Right.y * r;
-                var pos = new Vector3Int(cx, anchor.y, cz);
-
-                _registry.MarkCell(pos, anchor);
-
-                TerrainCell cell = _gridManager.GetCell(pos);
-                if (cell != null)
-                {
-                    cell.Data.SetObject(EGridObjectType.Building, int.MaxValue);
-                }
-            }
-        }
-    }
-
-    private void InitializeBuildingInstance(
-        Vector3Int anchor,
-        GameObject instance,
-        BuildingDataSO buildingData,
-        BuildingSaveData saveData)
-    {
-        if (instance == null) return;
-
-        BaseBuilding buildingInstance = instance.GetComponent<BaseBuilding>();
-        if (buildingInstance == null) return;
-
-        buildingInstance.Initialize(buildingData, saveData, CreateConstructionContext());
-        _registry.RegisterInstance(anchor, buildingInstance);
-    }
-
     private void DestroyBuildingInstance(Vector3Int anchor)
     {
         if (!_registry.RemoveInstance(anchor, out BaseBuilding buildingInstance)) return;
-        if (buildingInstance == null) return;
-
-        Transform instanceRoot = buildingInstance.transform;
-        Destroy(instanceRoot.gameObject);
+        _factory.Destroy(buildingInstance);
     }
 
     private bool TryRemoveResolved(Vector3Int anchor, BuildingSaveData saveData, BuildingDataSO buildingData)
@@ -375,28 +294,11 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         BuildingFootprint footprint = BuildingPlacer.GetFootprint(buildingData, saveData.Direction);
 
         DestroyBuildingInstance(anchor);
-
-        for (int f = 0; f < footprint.Depth; f++)
-        {
-            for (int r = footprint.WidthOffset; r < footprint.WidthOffset + footprint.Width; r++)
-            {
-                int cx = anchor.x + footprint.Forward.x * f + footprint.Right.x * r;
-                int cz = anchor.z + footprint.Forward.y * f + footprint.Right.y * r;
-                var pos = new Vector3Int(cx, anchor.y, cz);
-
-                _registry.UnmarkCell(pos);
-
-                TerrainCell cell = _gridManager.GetCell(pos);
-                if (cell != null)
-                {
-                    cell.Data.RemoveObject();
-                }
-            }
-        }
-
+        _placement.ClearOccupied(anchor, footprint);
         _registry.RemoveBuilding(anchor);
         return true;
     }
+    #endregion
 
     private void NotifyLocalRemoveRefund(BuildingDataSO buildingData)
     {
