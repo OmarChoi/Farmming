@@ -44,7 +44,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         PlayerInventoryAbility inventory = GetInventory();
         if(inventory != null && seed.HarvestItem !=null)
         {
-            inventory.AddItem(seed.HarvestItem, harvestAmount);
+            QuestReportItemHelper.AddItemAndReportQuest(inventory, seed.HarvestItem, harvestAmount);
             _owner.Experience.Add(_harvestExperience);
         }
 

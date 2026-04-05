@@ -1,10 +1,15 @@
 using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 public class NpcDialogueController : MonoBehaviour
 {
+    [SerializeField] private NpcFriendshipManager _friendshipManager;
     [SerializeField] private UI_NpcDialogue _uiDialogue;
     [SerializeField] private UI_FriendshipBar _uiFriendshipBar;
     [SerializeField] private InteractService _interactionService;
+
+    private IFriendshipService _friendshipService;
 
     private NpcController _currentNpc;
     private Transform _currentInteractor;
@@ -16,8 +21,16 @@ public class NpcDialogueController : MonoBehaviour
 
     private EDialogueUiState _dialogueState = EDialogueUiState.None;
 
+    private Action _onDialogueEnded;
+
     private void Awake()
     {
+        if (_friendshipManager == null)
+        {
+            _friendshipManager = FindFirstObjectByType<NpcFriendshipManager>();
+        }
+        _friendshipService = _friendshipManager;
+
         if (_uiDialogue == null)
         {
             _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
@@ -33,17 +46,17 @@ public class NpcDialogueController : MonoBehaviour
     }
     private void OnEnable()
     {
-        if (NpcFriendshipManager.Instance != null)
+        if (_friendshipService != null)
         {
-            NpcFriendshipManager.Instance.OnFriendshipChanged += HandleFriendshipChanged;
+            _friendshipService.OnFriendshipChanged += HandleFriendshipChanged;
         }
     }
 
     private void OnDisable()
     {
-        if (NpcFriendshipManager.Instance != null)
+        if (_friendshipService != null)
         {
-            NpcFriendshipManager.Instance.OnFriendshipChanged -= HandleFriendshipChanged;
+            _friendshipService.OnFriendshipChanged -= HandleFriendshipChanged;
         }
     }
 
@@ -70,6 +83,7 @@ public class NpcDialogueController : MonoBehaviour
         }
 
         StartGreeting();
+        QuestManager.Instance?.ReportNpcTalked(npc.Data.NpcId);
     }
 
     public void Close()
@@ -115,6 +129,19 @@ public class NpcDialogueController : MonoBehaviour
 
         _dialogueState = EDialogueUiState.Greeting;
         _interactionService.StartGreeting(CreateContext());
+    }
+
+    public void StartDialogue(NpcDialogueSO dialogueSO, EDialogueUiState dialogueState)
+    {
+        _dialogueState = dialogueState;
+        StartDialogue(dialogueSO);
+    }
+
+    public void StartDialogue(NpcDialogueSO dialogueSO, EDialogueUiState dialogueState, Action onEnded)
+    {
+        _dialogueState = dialogueState;
+        _onDialogueEnded = onEnded;
+        StartDialogue(dialogueSO);
     }
 
     public void StartDialogue(NpcDialogueSO dialogueSO)
@@ -174,6 +201,14 @@ public class NpcDialogueController : MonoBehaviour
         _currentDialogue = null;
         _currentLineIndex = 0;
 
+        Action endedCallback = _onDialogueEnded;
+        _onDialogueEnded = null;
+        if (endedCallback != null)
+        {
+            endedCallback.Invoke();
+            return;
+        }
+
         switch (_dialogueState)
         {
             case EDialogueUiState.Greeting:
@@ -182,6 +217,7 @@ public class NpcDialogueController : MonoBehaviour
                 break;
 
             case EDialogueUiState.Talking:
+            case EDialogueUiState.Quest:
                 _dialogueState = EDialogueUiState.None;
                 EndCurrentInteraction();
                 break;
@@ -195,6 +231,30 @@ public class NpcDialogueController : MonoBehaviour
     {
         if (_currentNpc == null) return;
         _uiDialogue.ShowButtons(interactionOptions, OnClickOption);
+    }
+
+    public void ShowDefaultChoices()
+    {
+        if (_currentNpc == null || _uiDialogue == null) return;
+
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.Choice;
+
+        _uiDialogue.ClearDialogueText();
+        ShowChoiceButtons(_currentNpc.InteractionOptions);
+    }
+
+    public void ShowQuestChoices(IReadOnlyList<NpcDialogueChoiceData> choices, bool clearText = true)
+    {
+        if (_uiDialogue == null) return;
+
+        if (clearText)
+        {
+            _uiDialogue.ClearDialogueText();
+        }
+
+        _uiDialogue.ShowChoiceButtons(choices);
     }
 
     private void OnClickOption(ENpcInteractionType type)

@@ -4,7 +4,7 @@ public class LavaToStoneWaterEffect : IWaterEffect
 {
     public bool CanHandle(TerrainCell cell)
     {
-        return cell.Data.TileType == ETileType.Dungeon2Lava;
+        return cell.Data.TileType == ETileType.Dungeon3Lava;
     }
 
     public void Apply(TerrainCell cell)

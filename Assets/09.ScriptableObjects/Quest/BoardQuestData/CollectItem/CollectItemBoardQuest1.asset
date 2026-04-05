@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002c5ad1e0e02f74784441da1d9fa045, type: 3}
+  m_Name: CollectItemBoardQuest1
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
+  QuestId: CollectItemBoardQuest1
+  QuestName: "\uB3CC\uACFC \uB098\uBB34\uB97C \uBAA8\uC73C\uC790"
+  Description: "\uB3CC\uACFC \uB098\uBB34\uB97C \uC794\uB729 \uBAA8\uC544\uC11C \uBD80\uC790\uAC00
+    \uB429\uC2DC\uB2E4."
+  QuestCategory: 2
+  StartNpcId: 
+  CompleteNpcId: 
+  ObjectiveType: 1
+  TargetObjectId: 
+  ItemRequirements:
+  - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+    _amount: 20
+  - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
+    _amount: 10
+  TargetNpcId: 
+  RequiredAmount: 1
+  PrerequisiteQuests: []
+  RequiredFriendship: 0
+  Reward:
+    Rewards:
+    - RewardType: 0
+      RewardItem: {fileID: 0}
+      Amount: 400
+      TargetNpcId: 
+    - RewardType: 1
+      RewardItem: {fileID: 11400000, guid: ef234c8f445434c4b99b956a0afdc7e6, type: 2}
+      Amount: 1
+      TargetNpcId: 
+  AcceptDialogue: {fileID: 0}
+  InProgressDialogue: {fileID: 0}
+  CompleteDialogue: {fileID: 0}
+  NoQuestDialogue: {fileID: 0}

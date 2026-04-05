@@ -1,8 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 
-// 파종 곡룡: FarmDry에서 씨앗 주기
 public class SowActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
@@ -17,7 +17,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private HelperAnimationAbility _animAbility;
 
     private bool _isActing = false;
-    private FarmTile _currentFarmTile;
+    private List<FarmTile> _currentFarmTiles;
     private SeedItemDataSO _currentSeed;
 
     private void Start()
@@ -41,6 +41,14 @@ public class SowActionAbility : HelperAbility, IHelperAction
             {
                 cell.TryConvertToFarm();
                 _owner.Experience.Add(_cultivateExperience);
+
+                foreach(TerrainCell lateralCell in GetLateralCells(cell))
+                {
+                    if(lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                    {
+                        lateralCell.TryConvertToFarm();
+                    }
+                }
             });
             return;
         }
@@ -52,6 +60,22 @@ public class SowActionAbility : HelperAbility, IHelperAction
         }
 
         _owner.BeginAction();
+
+        if (!farmTile.HasSeed)
+        {
+            _cultivateAbility.JumpAndCultivate(cell, () =>
+            {
+                foreach (TerrainCell lateralCell in GetLateralCells(cell))
+                {
+                    if (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                    {
+                        lateralCell.TryConvertToFarm();
+                    }
+                }
+            });
+            return;
+        }
+
         _cultivateAbility.JumpAndCultivate(cell, null);
     }
 
@@ -62,14 +86,13 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        FarmTile farmTile = GetFarmTile(cell);
-        if (farmTile == null) return;
-        if (!farmTile.IsReadyToSow) return;
-
         SeedItemDataSO selectedSeed = _seedSelector?.SelectedSeed;
         if(selectedSeed == null) return;
 
-        StartSow(farmTile, selectedSeed);
+        List<FarmTile> farmTiles = GetSowableFarmTiles(cell);
+        if(farmTiles.Count == 0) return;
+
+        StartSow(farmTiles, selectedSeed);
 
         var pos = cell.GridPosition;
         _owner.PhotonView.RpcSafe(
@@ -77,10 +100,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
             pos.x, pos.y, pos.z, selectedSeed.Id);
     }
 
-    private void StartSow(FarmTile farmTile, SeedItemDataSO seed)
+    private void StartSow(List<FarmTile> farmTiles, SeedItemDataSO seed)
     {
         _isActing = true;
-        _currentFarmTile = farmTile;
+        _currentFarmTiles = farmTiles;
         _currentSeed = seed;
 
         _owner.BeginAction();
@@ -89,32 +112,34 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void SowOpen()
     {
-        if (_currentFarmTile == null || _mouthPoint == null)
+        if (_currentFarmTiles == null || _currentFarmTiles.Count == 0 || _mouthPoint == null)
         {
             return;
         }
 
         Vector3 spawnPos = _mouthPoint.position;
-        Vector3 targetPos = _currentFarmTile.CropSpawnPoint.position;
-        Vector3 direction = (targetPos - spawnPos).normalized;
 
-        if (_seedVfxPrefab != null)
+        foreach(FarmTile tile in _currentFarmTiles)
         {
-            GameObject vfxObj = Instantiate(_seedVfxPrefab, spawnPos, Quaternion.identity);
-            SowVFX sowVfx = vfxObj.GetComponent<SowVFX>();
-            sowVfx?.Launch(targetPos, direction);
+            FarmTile capturedTile = tile;
+            Vector3 targetPos = capturedTile.CropSpawnPoint.position;
+            Vector3 direction = (targetPos - spawnPos).normalized;
+
+            if (_seedVfxPrefab != null)
+            {
+                GameObject vfxObj = Instantiate(_seedVfxPrefab, spawnPos, Quaternion.identity);
+                SowVFX sowVfx = vfxObj.GetComponent<SowVFX>();
+                sowVfx?.Launch(targetPos, direction);
+            }
+
+            StartCoroutine(PlantAfterDelay(capturedTile, _currentSeed));
         }
-
-        FarmTile farmTile = _currentFarmTile;
-        SeedItemDataSO seed = _currentSeed;
-
-        StartCoroutine(PlantAfterDelay(farmTile, seed));
     }
 
     public void SowClose()
     {
         _animAbility?.Play(EHelperAnim.Idle);
-        _currentFarmTile = null;
+        _currentFarmTiles = null;
         _currentSeed = null;
         _isActing = false;
         _owner.EndAction();
@@ -146,7 +171,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private void OnDisable()
     {
         _isActing = false;
-        _currentFarmTile = null;
+        _currentFarmTiles = null;
         _currentSeed = null;
         _owner?.EndAction();
     }
@@ -154,15 +179,74 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [PunRPC]
     internal void RPC_PlantSeed(int gridX, int gridY, int gridZ, int seedId)
     {
-        var cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
-        if (cell == null) return;
+        var centerCell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (centerCell == null) return;
 
         var seed = TerrainGridManager.Instance.SeedDatabase?.GetById(seedId);
         if (seed == null) return;
 
-        FarmTile farmTile = GetFarmTile(cell);
-        if (farmTile == null) return;
+        List<FarmTile> farmTiles = GetSowableFarmTiles(centerCell);
+        if (farmTiles.Count == 0) return;
 
-        StartSow(farmTile, seed);
+        StartSow(farmTiles, seed);
+    }
+
+    private List<TerrainCell> GetLateralCells(TerrainCell centerCell)
+    {
+        var cells = new List<TerrainCell>();
+        int extension = _owner.Grade.GetRange() - 1; // Normal:0  Epic:1
+        if (extension <= 0)
+        {
+            return cells;
+        }
+
+        Vector3Int rightOffset = GetGridRightOffset();
+        for (int i = 1; i <= extension; i++)
+        {
+            var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
+            var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
+            if (rightCell != null)
+            {
+                cells.Add(rightCell);
+            }
+            if (leftCell != null)
+            {
+                cells.Add(leftCell);
+            }
+        }
+        return cells;
+    }
+
+    private List<TerrainCell> GetTargetCells(TerrainCell centerCell)
+    {
+        var cells = new List<TerrainCell> { centerCell };
+        cells.AddRange(GetLateralCells(centerCell));
+            return cells;
+    }
+
+    private List<FarmTile> GetSowableFarmTiles(TerrainCell centerCell)
+    {
+        var tiles = new List<FarmTile>();
+        foreach(TerrainCell cell in GetTargetCells(centerCell))
+        {
+            FarmTile tile = GetFarmTile(cell);
+            if(tile != null && tile.IsReadyToSow)
+            {
+                tiles.Add(tile);
+            }
+        }
+
+        return tiles;
+    }
+
+    private Vector3Int GetGridRightOffset()
+    {
+        if (_owner.PlayerOwner == null)
+        {
+            return Vector3Int.right;
+        }
+
+        Vector3 right = _owner.PlayerOwner.transform.right;
+        return new Vector3Int(Mathf.RoundToInt(right.x), 0, Mathf.RoundToInt(right.z));
     }
 }

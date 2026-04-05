@@ -36,6 +36,15 @@ public class ShopController : MonoBehaviour
         _uiShop.OnCloseRequested -= CloseShop;
     }
 
+    private void OnPlayerReady(PlayerInventoryAbility ability)
+    {
+#if UNITY_EDITOR
+        Debug.Log("PlayerInventoryAbility 확인");
+#endif
+        _playerInventory = ability;
+        Init();
+    }
+
     private void Init()
     {
         _tradeService = new TradeService(_playerInventory);
@@ -67,13 +76,5 @@ public class ShopController : MonoBehaviour
 
         _currentContext?.InteractionComponent?.EndInteraction();
         _currentContext = null;
-    }
-    
-    
-    private void OnPlayerReady(PlayerInventoryAbility ability)
-    {
-        Debug.Log("PlayerInventoryAbility 확인");
-        _playerInventory = ability;
-        Init();
     }
 }

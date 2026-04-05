@@ -21,6 +21,7 @@ public class NpcController : MonoBehaviour
     [SerializeField] private Shop _shop;
 
     [SerializeField] private NpcDataSO _npcData;
+    [SerializeField] private NpcQuest _npcQuest;
     private Transform _currentInteractor;
 
     private int _timeOffset;
@@ -33,6 +34,7 @@ public class NpcController : MonoBehaviour
     public Animator Animator => _animator;
     public NpcAnimatorController Anim => _anim;
     public NpcDataSO Data => _npcData;
+    public NpcQuest Quest => _npcQuest;
     public NpcScheduleSO Schedule => _npcSchedule;
     public Shop Shop => _shop;
     public Transform CurrentInteractor => _currentInteractor;
@@ -45,6 +47,7 @@ public class NpcController : MonoBehaviour
         if (_animator == null) _animator = GetComponent<Animator>();
         if (_movement == null) _movement = GetComponent<NpcMovement>();
         if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
+        if (_npcQuest == null) _npcQuest = GetComponent<NpcQuest>();
 
         _movement?.SetOwner(IsMine);
     }

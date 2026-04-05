@@ -1,7 +1,8 @@
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
+using System.Collections.Generic;
 
 public class UI_NpcDialogue : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class UI_NpcDialogue : MonoBehaviour
 
     [Header("컴포넌트 참조")]
     [SerializeField] private Transform _interactionButtonRoot;
+    [SerializeField] private RectTransform _interactionButtonRect;
     [SerializeField] private GameObject _interactionButtonPrefab;
     [SerializeField] private TextMeshProUGUI _npcNameText;
     [SerializeField] private TextMeshProUGUI _npcDialogueText;
@@ -72,19 +74,43 @@ public class UI_NpcDialogue : MonoBehaviour
         _typewriter.CompleteTyping();
     }
 
+    // NPC가 가진 상호작용에 관한 버튼을 생성하는 메서드입니다.
     public void ShowButtons(NpcInteractionOption[] options, Action<ENpcInteractionType> onClickOption)
+    {
+        if (options == null)
+        {
+            HideButtons();
+            return;
+        }
+
+        var choices = new List<NpcDialogueChoiceData>();
+
+        foreach (var option in options)
+        {
+            var capturedType = option.Type;
+            choices.Add(new NpcDialogueChoiceData(option.ButtonName, () => onClickOption?.Invoke(capturedType)));
+        }
+
+        ShowChoiceButtons(choices);
+    }
+
+    // 버튼을 생성해주는 범용 메서드입니다.
+    public void ShowChoiceButtons(IReadOnlyList<NpcDialogueChoiceData> choices)
     {
         ClearButtons();
         _interactionButtonRoot.gameObject.SetActive(true);
 
-        if (options == null) return;
+        if (choices == null || choices.Count == 0) return;
 
-        foreach (var option in options)
+        foreach (NpcDialogueChoiceData choice in choices)
         {
+            if (choice == null) continue;
+
             GameObject button = Instantiate(_interactionButtonPrefab, _interactionButtonRoot);
             UI_InteractionButton uiButton = button.GetComponent<UI_InteractionButton>();
-            uiButton.Init(option.ButtonName, () => onClickOption?.Invoke(option.Type));
+            uiButton.Init(choice.ButtonText, choice.OnClick);
         }
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_interactionButtonRect);
     }
 
     public void HideButtons()
