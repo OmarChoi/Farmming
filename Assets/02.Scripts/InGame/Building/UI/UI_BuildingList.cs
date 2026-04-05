@@ -29,6 +29,9 @@ public class UI_BuildingList : UIBase
     [SerializeField] private Color _normalColor = new Color(0.08f, 0.08f, 0.12f, 0.85f);
     [SerializeField] private Color _highlightColor = new Color(0.1f, 0.6f, 0.9f, 0.9f);
 
+    private IReadOnlyList<BuildingDataSO> _buildings;
+    private Action<BuildingDataSO> _onSelected;
+
     private int _hoveredIndex = -1;
     private int _activeCount;
     private Vector2 _mouseDelta;
@@ -36,6 +39,12 @@ public class UI_BuildingList : UIBase
     private bool _prevCursorVisible;
     private const float MaxDeltaMagnitude = 50f;
     private static readonly Vector2 InitialDirection = new Vector2(1f, 1f);
+
+    public void Initialize(IReadOnlyList<BuildingDataSO> buildings, Action<BuildingDataSO> onSelected)
+    {
+        _buildings = buildings;
+        _onSelected = onSelected;
+    }
 
     protected override void OnOpen() => BindData();
     protected override void OnClose() => ResetVisuals();
@@ -61,10 +70,9 @@ public class UI_BuildingList : UIBase
     // 건물 데이터를 슬롯에 바인딩 + 슬라이스 fill/rotation 설정
     private void BindData()
     {
-        var buildings = BuildingManager.Instance?.AvailableBuildings;
-        if (buildings == null) return;
+        if (_buildings == null) return;
 
-        _activeCount = Mathf.Min(buildings.Count, _slots.Count);
+        _activeCount = Mathf.Min(_buildings.Count, _slots.Count);
 
         for (int i = 0; i < _slots.Count; i++)
         {
@@ -72,7 +80,7 @@ public class UI_BuildingList : UIBase
             {
                 // 슬라이스 fill/rotation + 아이콘 위치/크기 설정
                 _slots[i].SetLayout(CreateLayoutData(i, _activeCount));
-                _slots[i].SetData(buildings[i].Icon, buildings[i].DisplayName);
+                _slots[i].SetData(_buildings[i].Icon, _buildings[i].DisplayName);
                 _slots[i].SetColor(_normalColor);
                 _slots[i].gameObject.SetActive(true);
             }
@@ -159,25 +167,22 @@ public class UI_BuildingList : UIBase
     {
         if (_previewImage == null) return;
 
-        var buildings = BuildingManager.Instance?.AvailableBuildings;
-        bool valid = index >= 0 && buildings != null && index < buildings.Count;
+        bool valid = index >= 0 && _buildings != null && index < _buildings.Count;
 
-        _previewImage.sprite = valid ? buildings[index].Icon : null;
+        _previewImage.sprite = valid ? _buildings[index].Icon : null;
         _previewImage.color = valid ? Color.white : Color.clear;
 
         if (_previewLabel != null)
         {
-            _previewLabel.text = valid ? buildings[index].DisplayName : string.Empty;
+            _previewLabel.text = valid ? _buildings[index].DisplayName : string.Empty;
         }
     }
 
     // 건물 선택 처리
     private void SelectSlot(int index)
     {
-        var buildings = BuildingManager.Instance?.AvailableBuildings;
-        if (buildings == null || index < 0 || index >= buildings.Count) return;
-
-        BuildingManager.Instance.SelectBuilding(buildings[index]);
+        if (_buildings == null || index < 0 || index >= _buildings.Count) return;
+        _onSelected?.Invoke(_buildings[index]);
         RequestClose();
     }
 

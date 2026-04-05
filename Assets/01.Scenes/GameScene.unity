@@ -4934,6 +4934,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingManager
   _gridManager: {fileID: 798923366}
   _buildingDatabase: {fileID: 11400000, guid: 866bf7a11d319f24fa3776a9d4a8f35e, type: 2}
+  _constructionRevealLitShader: {fileID: 4800000, guid: 6fc9182b11404d2d926cc7d9d9486be1, type: 3}
+  _constructionGhostRevealShader: {fileID: 4800000, guid: b8e3b30c56c7467ebf2340db98eb5c58, type: 3}
+  _ghostMaterial: {fileID: 2100000, guid: d6f88503848ba7b4cbb3a970646aefc7, type: 2}
+  _ghostValidColor: {r: 0, g: 1, b: 0, a: 0.5}
+  _ghostInvalidColor: {r: 1, g: 0, b: 0, a: 0.5}
 --- !u!4 &2119514835
 Transform:
   m_ObjectHideFlags: 0
