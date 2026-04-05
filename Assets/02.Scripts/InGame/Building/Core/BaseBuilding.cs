@@ -5,17 +5,19 @@ public abstract class BaseBuilding : MonoBehaviour
 {
     public BuildingDataSO BuildingData { get; private set; }
     public BuildingSaveData SaveData { get; private set; }
-    
+    public BuildingConstructionContext ConstructionContext { get; private set; }
+
     public float ConstructionProgress { get; private set; }
     public bool IsConstructionComplete => SaveData == null || SaveData.RemainingDays <= 0;
 
     private bool _isDayBound;
     private bool _constructionCompletedHandled;
 
-    public void Initialize(BuildingDataSO buildingData, BuildingSaveData saveData)
+    public void Initialize(BuildingDataSO buildingData, BuildingSaveData saveData, BuildingConstructionContext constructionContext)
     {
         BuildingData = buildingData;
         SaveData = saveData;
+        ConstructionContext = constructionContext;
         ConstructionProgress = CalculateConstructionProgress();
         if (!IsConstructionComplete)
         {
