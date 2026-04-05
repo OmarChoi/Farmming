@@ -7,10 +7,19 @@ using UnityEngine;
 [RequireComponent(typeof(PhotonView))]
 public class BuildingManager : MonoBehaviourPunCallbacks
 {
+    private const string RevealLitShaderName = "Custom/Construction/RevealLit";
+    private const string GhostRevealShaderName = "Custom/Construction/GhostReveal";
+
     public static BuildingManager Instance { get; private set; }
 
     [SerializeField] private TerrainGridManager _gridManager;
     [SerializeField] private BuildingDatabase _buildingDatabase;
+    [Header("Construction Visuals")]
+    [SerializeField] private Shader _constructionRevealLitShader;
+    [SerializeField] private Shader _constructionGhostRevealShader;
+    [SerializeField] private Material _ghostMaterial;
+    [SerializeField] private Color _ghostValidColor = new Color(0f, 1f, 0f, 0.5f);
+    [SerializeField] private Color _ghostInvalidColor = new Color(1f, 0f, 0f, 0.5f);
 
     public event Action<BuildingDataSO> OnLocalBuildCostConfirmed;
     public event Action<BuildingDataSO> OnLocalRemoveRefundGranted;
@@ -23,6 +32,9 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     private readonly Dictionary<Vector3Int, BaseBuilding> _buildingInstances = new Dictionary<Vector3Int, BaseBuilding>();
 
     public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
+    public Shader ConstructionRevealLitShader => _constructionRevealLitShader;
+    public Shader ConstructionGhostRevealShader => _constructionGhostRevealShader;
+    public GhostConfig GhostConfig => new GhostConfig(_ghostMaterial, _ghostValidColor, _ghostInvalidColor);
 
     #region Lifecycle
     private void Awake()
@@ -34,11 +46,25 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
 
         Instance = this;
+        ResolveConstructionVisualReferences();
+        ValidateConstructionVisualReferences();
     }
 
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
+    }
+
+    private void Reset()
+    {
+        ResolveConstructionVisualReferences();
+    }
+
+    private void OnValidate()
+    {
+#if UNITY_EDITOR
+        ResolveConstructionVisualReferences();
+#endif
     }
     #endregion
 
@@ -51,6 +77,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         if (!_buildings.TryGetValue(anchor, out BuildingSaveData saveData)) return false;
         return saveData.RemainingDays <= 0;
     }
+
     #endregion
 
     #region Ghost Preview
@@ -380,6 +407,37 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     {
         if (buildingData == null) return;
         OnLocalRemoveRefundGranted?.Invoke(buildingData);
+    }
+
+    private void ResolveConstructionVisualReferences()
+    {
+        if (_constructionRevealLitShader == null)
+        {
+            _constructionRevealLitShader = Shader.Find(RevealLitShaderName);
+        }
+
+        if (_constructionGhostRevealShader == null)
+        {
+            _constructionGhostRevealShader = Shader.Find(GhostRevealShaderName);
+        }
+    }
+
+    private void ValidateConstructionVisualReferences()
+    {
+        if (_constructionRevealLitShader == null)
+        {
+            Debug.LogError($"{nameof(BuildingManager)} could not resolve {RevealLitShaderName}. Assign the reveal shader in the inspector so construction visuals work in builds.", this);
+        }
+
+        if (_constructionGhostRevealShader == null)
+        {
+            Debug.LogError($"{nameof(BuildingManager)} could not resolve {GhostRevealShaderName}. Assign the ghost reveal shader in the inspector so construction visuals work in builds.", this);
+        }
+
+        if (_ghostMaterial == null)
+        {
+            Debug.LogWarning($"{nameof(BuildingManager)} is missing a ghost material. Preview and construction overlays will use the shader fallback tint.", this);
+        }
     }
 
     #region Sync
