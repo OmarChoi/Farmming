@@ -30,17 +30,21 @@ public class PlayerAnimationAbility : PlayerAbility
 
     public void PlayGreet()
     {
-        if (_animator == null) return;
-        _animator.SetTrigger(GreetHash);
-
-        if (_owner.IsMine)
-            _owner.PhotonView.RPC(nameof(RPC_PlayGreet), RpcTarget.Others);
+        PlayTriggerSynced(GreetHash, "Greet");
     }
 
-    [PunRPC]
-    private void RPC_PlayGreet()
+    public void PlayTrigger(string triggerName)
     {
         if (_animator != null)
-            _animator.SetTrigger(GreetHash);
+            _animator.SetTrigger(Animator.StringToHash(triggerName));
+    }
+
+    private void PlayTriggerSynced(int hash, string name)
+    {
+        if (_animator == null) return;
+        _animator.SetTrigger(hash);
+
+        if (_owner.IsMine)
+            _owner.PhotonView.RPC(nameof(PlayerController.RPC_AnimTrigger), RpcTarget.Others, name);
     }
 }
