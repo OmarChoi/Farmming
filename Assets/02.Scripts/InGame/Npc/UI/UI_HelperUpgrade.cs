@@ -260,12 +260,12 @@ public class UI_HelperUpgrade : MonoBehaviour
         int maxExp = _helperUpgradeService.GetMaxExp(data, grade);
         int range = _helperUpgradeService.GetRange(data, grade);
 
-        _helperNameText.text = string.IsNullOrEmpty(data.HelperName) ? data.HelperId : data.HelperName;
-        _helperGradeText.text = grade.ToString();
+        _helperNameText.text = string.IsNullOrEmpty(data.HelperName) ? $"{data.HelperId}" : $"{data.HelperName}";
+        _helperGradeText.text = $"현재 등급: {grade.ToString()}";
         _helperExpText.text = grade == EHelperGrade.Legendary
-            ? "MAX"
-            : $"{exp} / {maxExp}";
-        _helperRangeText.text = range.ToString();
+            ? "현재 경험치: MAX"
+            : $"현재 경험치: {exp} / {maxExp}";
+        _helperRangeText.text = $"작업 범위: {range.ToString()}";
 
         bool canUpgrade = _helperUpgradeService.CanUpgrade(data);
 
