@@ -9,6 +9,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     [SerializeField] private int _harvestExperience = 10;
 
     private HelperAnimationAbility _animAbility;
+    private HarvestEpicVFXAbility _epicVFX;
     private HarvestLegendaryVFXAbility _legendaryVFX;
 
     private PlayerInventoryAbility GetInventory()
@@ -20,6 +21,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     {
         base.Awake();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
+        _epicVFX = _owner.GetAbility<HarvestEpicVFXAbility>();
         _legendaryVFX = _owner.GetAbility<HarvestLegendaryVFXAbility>();
     }
 
@@ -30,12 +32,22 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        if (_owner.Grade.CurrentGrade == EHelperGrade.Legendary)
+        switch (_owner.Grade.CurrentGrade)
         {
-            InteractPrimaryLegendary(cell);
-            return;
+            case EHelperGrade.Normal:
+                InteractPrimaryNormal(cell);
+                break;
+            case EHelperGrade.Epic:
+                InteractPrimaryEpic(cell);
+                break;
+            case EHelperGrade.Legendary:
+                InteractPrimaryLegendary(cell);
+                break;
         }
+    }
 
+    private void InteractPrimaryNormal(TerrainCell cell)
+    {
         FarmTile farmTile = GetFarmTile(cell);
         if (farmTile == null) return;
         if (!farmTile.HasSeed) return;
@@ -45,19 +57,38 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (!cropGrowth.IsHarvestable) return;
 
         float cost = _owner.Data.BaseEnergyCost;
-
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
-        {
-            return;
-        }
+        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost)) return;
 
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Harvest);
 
         HarvestCell(farmTile, farmTile.PlantedSeed);
-
         farmTile.Interact();
         _owner.EndAction();
+    }
+
+    private void InteractPrimaryEpic(TerrainCell centerCell)
+    {
+        float cost = _owner.Data.BaseEnergyCost;
+        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost)) return;
+
+        _owner.BeginAction();
+        _animAbility?.Play(EHelperAnim.EpicHarvest);
+
+        if (_epicVFX != null)
+        {
+            _epicVFX.SpawnEffects(centerCell, TryHarvestCell, () =>
+            {
+                _animAbility?.Play(EHelperAnim.Idle);
+                _owner.EndAction();
+            });
+        }
+        else
+        {
+            TryHarvestCell(centerCell);
+            _animAbility?.Play(EHelperAnim.Idle);
+            _owner.EndAction();
+        }
     }
 
     private void InteractPrimaryLegendary(TerrainCell centerCell)

@@ -11,7 +11,7 @@ public class HarvestLegendaryVFXAbility : HelperAbility
 
     [SerializeField] private float _tornadoSweepDistance = 4f;
     [SerializeField] private float _tornadoSweepDuration = 2f;
-    [SerializeField] private float _tornadoSpawnHeight = 1.5f;
+    [SerializeField] private float _tornadoSpawnHeight = 0.5f;
 
     public void SpawnEffects(TerrainCell centerCell, Vector3 rightDirection,
         List<(TerrainCell cell, Action onHarvest)> cellHarvests, Action onComplete)
@@ -34,8 +34,6 @@ public class HarvestLegendaryVFXAbility : HelperAbility
 
         Vector3 centerPos = GetCellPosition(centerCell);
 
-        // 실제 cell 위치에서 최대 오프셋을 계산해 sweep 거리 결정
-        // → 항상 양끝 cell 가운데까지 정확히 도달
         float sweepDistance = _tornadoSweepDistance;
         foreach (var (cell, _) in cellHarvests)
         {

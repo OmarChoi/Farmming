@@ -352,6 +352,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TornadoVFX
   _sweepDuration: 2
   _sweepDistance: 2
+  _fadeOutDuration: 0.5
 --- !u!1 &8716886021065739576
 GameObject:
   m_ObjectHideFlags: 0
@@ -468,8 +469,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 5
-      minScalar: 3
+      scalar: 1
+      minScalar: 0.8
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -1222,7 +1223,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 30
+      scalar: 50
       minScalar: 10
       maxCurve:
         serializedVersion: 2
