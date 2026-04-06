@@ -12,12 +12,11 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     private float _syncTimer;
 
     private int CurrentDay => _clock?.CurrentDay ?? 0;
-    private GameTime CurrentTime => _clock?.CurrentTime ?? default;
+    public GameTime CurrentTime => _clock?.CurrentTime ?? default;
     private bool IsDayTime => _clock is { IsDayTime: true };
     private int ElapsedDays => _clock?.ElapsedDays ?? 0;
 
     #region Lifecycle
-
     private void Awake()
     {
         TryCreateClock();
@@ -36,7 +35,6 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         _syncTimer = 0f;
         SyncToRemote();
     }
-
     #endregion
 
     #region Public API
@@ -50,11 +48,9 @@ public class TimeSystem : MonoBehaviourPunCallbacks
 
         ExecuteMasterClientSkipToNextDay();
     }
-
     #endregion
 
     #region Local
-
     private void Tick(float deltaTime)
     {
         if (!TryCreateClock()) return;
@@ -114,9 +110,9 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         if (_clock == null || _timeSettings == null) return;
 
         _clock.SetTime(_clock.CurrentDay + 1, _timeSettings.DayStartTime);
-        
+
         _accumulatedGameMinutes = 0f;
-        
+
         SyncLocalState();
     }
 
@@ -141,11 +137,9 @@ public class TimeSystem : MonoBehaviourPunCallbacks
                 break;
         }
     }
-    
     #endregion
 
     #region Master Client Only
-
     private void ExecuteMasterClientSkipToNextDay()
     {
         if (!PhotonNetwork.IsMasterClient) return;
@@ -166,7 +160,7 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         if (HasCrossed(prevTime, _timeSettings.SunriseTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.SunRise);
         if (HasCrossed(prevTime, _timeSettings.SunsetTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.SunSet);
         if (HasCrossed(prevTime, _timeSettings.DayEndTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.DayEnd);
-        
+
         if (dayChanged) ExecuteMasterClientEvent(TimeEvents.EventType.DayChange);
         if (HasCrossed(prevTime, _timeSettings.DayStartTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.DayStart);
     }
@@ -197,11 +191,9 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         ExecuteEvent(eventType);
         BroadcastEventToRemote(eventType);
     }
-
     #endregion
 
     #region Network
-
     [PunRPC]
     private void RPC_RequestSkipToNextDay()
     {
@@ -257,4 +249,25 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         ExecuteEvent((TimeEvents.EventType)eventTypeByte);
     }
     #endregion
+
+    public void ImportTimeSaveData(TimeSaveData timeSaveData)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        _clock.SetTime
+        (
+            timeSaveData.Day,
+            new GameTime(timeSaveData.Hour, timeSaveData.Minute)
+        );
+        SyncLocalState();
+    }
+
+    public TimeSaveData ExportSaveData()
+    {
+        return new TimeSaveData
+        {
+            Day = CurrentDay,
+            Hour = CurrentTime.Hour,
+            Minute = CurrentTime.Minute
+        };
+    }
 }
