@@ -10,10 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
-  m_Name: HairdresserGreetingDialogue2
+  m_Name: HairdresserDeclineDialogue
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
-  Id: HairdresserGreetingDialogue2
+  Id: HairdresserDeclineDialogue
   Lines:
-  - Text: "\uC5B4\uBA38\uB098~ \uBC18\uAC00\uC6CC\uC694. \uC5EC\uAE30\uC11C \uC774\uB807\uAC8C
-      \uBD48\uB2C8\uAE4C \uB354 \uBC18\uAC00\uC6B4 \uAC78\uC694? \uD6C4\uD6D7."
+  - Text: "\uC544\uC544... \uAD1C\uCC2E\uC544\uC694! \uBC14\uBE60\uC11C \uADF8\uB7EC\uC2E0
+      \uAC70\uC8E0?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uB098\uC911\uC5D0\uB77C\uB3C4 \uB9C8\uC74C\uC774 \uBC14\uB00C\uC2DC\uBA74
+      \uC5B8\uC81C\uB4E0 \uB9D0\uC500\uD574\uC8FC\uC138\uC694~ \uD6C4\uD6D7."
     NextDialogue: {fileID: 0}
