@@ -7,4 +7,5 @@ public class SaveData
     public TerrainSaveData Terrain = new();
     public List<PlayerSaveData> Players = new();
     public List<BuildingSaveData> Buildings = new();
+    public TimeSaveData Time = new();
 }
