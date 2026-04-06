@@ -25,13 +25,21 @@ MonoBehaviour:
   Job: "\uBBF8\uC6A9\uC0AC"
   WayOfTone: "\uC6B0\uC544\uD558\uACE0 \uC815\uC5F4\uC801\uC778 \uD574\uC694\uCCB4
     \uB9D0\uD22C"
-  Prefab: {fileID: 0}
+  Prefab: {fileID: 7840605641264675590, guid: 2a334721538565a47ab7ca5f1dd39f9d, type: 3}
   WalkSpeed: 3.5
   RunSpeed: 6
   JumpDuration: 0.8
   JumpHeight: 1.8
-  GreetDialogues: []
-  TalkDialogues: []
+  GreetDialogues:
+  - {fileID: 11400000, guid: 96c57fd9c862c3547b8ac3fd23a3c9ab, type: 2}
+  - {fileID: 11400000, guid: 5a2b2fcad1115d24cb77d83791cfd35b, type: 2}
+  - {fileID: 11400000, guid: 1049cdcb5d8bf814e8691e53a4f83daa, type: 2}
+  - {fileID: 11400000, guid: 7c172b53afb23594cb5e99bd7cafa43c, type: 2}
+  TalkDialogues:
+  - {fileID: 11400000, guid: 7356426f1d090dd459e98cbe543ffa27, type: 2}
+  - {fileID: 11400000, guid: 251fa3b6a3eb3994693872f967d1c09a, type: 2}
+  - {fileID: 11400000, guid: d99a5f74d037d7c44b717a6da4aecea9, type: 2}
+  - {fileID: 11400000, guid: 1af26985bd0656b49813387915754ff5, type: 2}
   UseRandomTimeOffset: 1
   MinTimeOffset: 0
   MaxTimeOffset: 10

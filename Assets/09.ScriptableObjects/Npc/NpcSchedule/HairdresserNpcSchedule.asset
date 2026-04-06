@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1709fdcac17c18e4288fc16dade8a477, type: 3}
+  m_Name: HairdresserNpcSchedule
+  m_EditorClassIdentifier: Assembly-CSharp::NpcScheduleSO
+  <ScheduleEntries>k__BackingField:
+  - ScheduleTime:
+      _hour: 0
+      _minute: 0
+    NpcLocationType: 4
+    LocationKey: Hairdresser_HairShop
+    WanderingDirection: {x: 0, y: 0, z: 0}
+    WanderingDistance: 0
+    WanderingRadius: 0
+    WanderSearchStep: 0
+  - ScheduleTime:
+      _hour: 6
+      _minute: 30
+    NpcLocationType: 2
+    LocationKey: Hairdresser_Wandering1
+    WanderingDirection: {x: 1, y: 0, z: 0}
+    WanderingDistance: 6
+    WanderingRadius: 2
+    WanderSearchStep: 5
+  - ScheduleTime:
+      _hour: 8
+      _minute: 0
+    NpcLocationType: 4
+    LocationKey: Hairdresser_HairShop
+    WanderingDirection: {x: 0, y: 0, z: 0}
+    WanderingDistance: 0
+    WanderingRadius: 0
+    WanderSearchStep: 0
+  - ScheduleTime:
+      _hour: 17
+      _minute: 0
+    NpcLocationType: 2
+    LocationKey: Hairdresser_Wandering2
+    WanderingDirection: {x: 0, y: 0, z: 1}
+    WanderingDistance: 16
+    WanderingRadius: 6
+    WanderSearchStep: 5
+  - ScheduleTime:
+      _hour: 22
+      _minute: 0
+    NpcLocationType: 2
+    LocationKey: Hairdresser_Wandering2
+    WanderingDirection: {x: -1, y: 0, z: 1}
+    WanderingDistance: 14
+    WanderingRadius: 8
+    WanderSearchStep: 5
