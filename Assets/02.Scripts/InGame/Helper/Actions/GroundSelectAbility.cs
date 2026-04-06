@@ -79,7 +79,7 @@ public class GroundSelectAbility : HelperAbility
             InventorySlot slot = _inventory.GetSlot(i);
             if (slot == null || slot.IsEmpty) continue;
 
-            if (slot.Item.Type == EItemType.Dirt || slot.Item.Type == EItemType.Stone)
+            if (slot.Item.IsGround)
             {
                 _availableGrounds.Add((i, slot.Item));
             }

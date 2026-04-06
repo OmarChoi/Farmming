@@ -35,4 +35,6 @@ public class ItemDataSO : ScriptableObject
     public int BuyCost => _buyCost;
     public int SellCost => _sellCost;
     public string DisplayExplanation => _displayExplanation;
+
+    public bool IsGround => Type == EItemType.Dirt || Type == EItemType.Stone;
 }
