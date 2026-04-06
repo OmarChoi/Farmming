@@ -10,6 +10,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _seedVfxPrefab;
     [SerializeField] private float _sowDelay = 0.5f;
+    [SerializeField] private float _epicThreeTileLookDuration = 1.6f;
 
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
@@ -161,7 +162,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
                 EpicLook = true,
                 EpicLookLeft = false,
                 EpicLookRight = true,
-                EpicRightLookDuration = 1.6f,
+                EpicRightLookDuration = _epicThreeTileLookDuration,
                 OnEpicLookRightMid = () => TryConvertLateralCell(leftCell, +1),
                 OnEpicLookRight = () => TryConvertLateralCell(leftCell, +2)
             });
@@ -209,6 +210,14 @@ public class SowActionAbility : HelperAbility, IHelperAction
                 {
                     cell.TryConvertToFarm();
                     _owner.Experience.Add(_cultivateExperience);
+
+                    foreach (TerrainCell lateralCell in GetLateralCells(cell))
+                    {
+                        if (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                        {
+                            lateralCell.TryConvertToFarm();
+                        }
+                    }
                 },
                 Spin = true
             });
