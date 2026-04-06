@@ -7,6 +7,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 {
     [SerializeField] private int _floor = 1;
     [SerializeField] private DungeonEnvironmentController _environmentController;
+    [SerializeField] private DungeonTimer _dungeonTimer;
 
     private GameObject _spawnedCliff;
 
@@ -146,6 +147,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         await UniTask.Yield();
         RestoreLocalPlayersAfterDungeonLoad();
         RefreshLocalPlayerCameras();
+        StartDungeonTimer();
         ClearSceneTransitionRoomProps();
         SceneTransitionData.Clear();
     }
@@ -236,6 +238,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         DungeonSpawnHelper.SpawnChests(_floor, seed);
         ApplyEnvironment();
         SpawnCliff();
+        StartDungeonTimer();
         SceneTransitionData.Clear();
     }
 
@@ -270,6 +273,16 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
             player.GetAbility<PlayerCameraAbility>()?.RebindFollowCamera();
         }
+    }
+
+    private void StartDungeonTimer()
+    {
+        if (_dungeonTimer == null) return;
+
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
+        if (config == null || config.TimeLimitSeconds <= 0f) return;
+
+        _dungeonTimer.StartTimer(config.TimeLimitSeconds);
     }
 
     private void ApplyObjectPrefabs(int floor)
