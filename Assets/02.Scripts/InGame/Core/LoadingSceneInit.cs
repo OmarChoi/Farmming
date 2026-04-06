@@ -152,10 +152,10 @@ public class LoadingSceneInit : MonoBehaviourPunCallbacks
 
     private async UniTaskVoid WaitForAllReadyAndTransition()
     {
-        float timeout = Time.time + ReadyTimeoutSeconds;
+        float timeout = Time.realtimeSinceStartup + ReadyTimeoutSeconds;
         int totalCount = Mathf.Max(PhotonNetwork.PlayerList.Length, 1);
 
-        while (!AreAllPlayersReady() && Time.time <= timeout)
+        while (!AreAllPlayersReady() && Time.realtimeSinceStartup <= timeout)
         {
             int readyCount = CountReadyPlayers();
 
@@ -228,8 +228,8 @@ public class LoadingSceneInit : MonoBehaviourPunCallbacks
         if (transitionType != ETransitionType.None)
             return transitionType;
 
-        float timeout = Time.time + TransitionResolveTimeoutSeconds;
-        while (Time.time <= timeout)
+        float timeout = Time.realtimeSinceStartup + TransitionResolveTimeoutSeconds;
+        while (Time.realtimeSinceStartup <= timeout)
         {
             transitionType = TryReadTransitionTypeFromRoomProps();
             if (transitionType != ETransitionType.None)

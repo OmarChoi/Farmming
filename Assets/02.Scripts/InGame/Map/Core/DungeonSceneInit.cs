@@ -99,8 +99,8 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         MapSyncManager.Instance.RequestDungeonSeed();
 
-        float timeout = Time.time + SeedSyncTimeoutSeconds;
-        await UniTask.WaitUntil(() => synced || Time.time > timeout);
+        float timeout = Time.realtimeSinceStartup + SeedSyncTimeoutSeconds;
+        await UniTask.WaitUntil(() => synced || Time.realtimeSinceStartup > timeout);
 
         if (!synced)
         {
@@ -124,9 +124,9 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         var props = new Hashtable { { PropTerrainReady, true } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         int totalCount = Mathf.Max(PhotonNetwork.PlayerList.Length, 1);
-        float progressTimeout = Time.time + TerrainReadyTimeout;
+        float progressTimeout = Time.realtimeSinceStartup + TerrainReadyTimeout;
 
-        while (!AllPlayersTerrainReady() && Time.time <= progressTimeout)
+        while (!AllPlayersTerrainReady() && Time.realtimeSinceStartup <= progressTimeout)
         {
             int terrainReadyCount = CountTerrainReadyPlayers();
             LoadingProgress.Value = 0.7f + (0.3f * terrainReadyCount / totalCount);
