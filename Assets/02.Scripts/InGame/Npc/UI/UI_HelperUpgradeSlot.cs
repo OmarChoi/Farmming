@@ -7,7 +7,7 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
     [Header("텍스트")]
     [SerializeField] private TextMeshProUGUI _helperNameText;
     [SerializeField] private TextMeshProUGUI _helperGradeText;
-    [SerializeField] private TextMeshProUGUI _helperReadyText;
+    [SerializeField] private TextMeshProUGUI _upgradeReadyText;
 
     [Header("선택 표시")]
     [SerializeField] private GameObject _selectedHighlight;
@@ -45,14 +45,14 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
         {
             _helperNameText.text = "";
             _helperGradeText.text = "";
-            _helperReadyText.text = "";
+            _upgradeReadyText.text = "";
             SetSelected(false);
             return;
         }
 
         _helperNameText.text = helper.HelperId;
         _helperGradeText.text = helper.Grade.CurrentGrade.ToString();
-        _helperReadyText.text = helper.Experience.IsReadyToUpgrade ? "업그레이드 가능" : "업그레이드 불가";
+        _upgradeReadyText.text = helper.Experience.IsReadyToUpgrade ? "업그레이드 가능!" : "업그레이드 불가능";
 
         SetSelected(isSelected);
     }

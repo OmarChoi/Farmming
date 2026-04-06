@@ -61,13 +61,20 @@ public class HelperUpgradeService : MonoBehaviour
         }
 
         _dialogueController?.Close();
-        _uiHelperUpgrade?.Open(helpers);
+        _uiHelperUpgrade?.OpenUpgradeUi(helpers);
     }
 
     public List<HelperController> GetUpgradeableTargetList()
     {
         List<HelperController> result = new();
 
+        if (_playerHelperInteraction == null)
+        {
+            _playerHelperInteraction = FindFirstObjectByType<PlayerHelperInteractionAbility>();
+        }
+#if UNITY_EDITOR
+        Debug.Log($"{_playerHelperInteraction}");
+#endif
         if (_playerHelperInteraction == null) return result;
 
         if (_playerHelperInteraction.CurrentHelper != null)
@@ -170,7 +177,7 @@ public class HelperUpgradeService : MonoBehaviour
 
     private void CloseUpgradeUi()
     {
-        _uiHelperUpgrade?.Close();
+        _uiHelperUpgrade?.CloseUpgradeUi();
         _currentContext?.InteractionComponent?.EndInteraction();
         _currentContext = null;
     }
