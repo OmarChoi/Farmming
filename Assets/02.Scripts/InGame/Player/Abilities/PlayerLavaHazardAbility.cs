@@ -22,9 +22,20 @@ public class PlayerLavaHazardAbility : PlayerAbility
 
     private void Update()
     {
-        if (!_owner.IsMine) return;
-        if (_isJumping) return;
-        if (_cc == null || !_cc.enabled || !_cc.isGrounded) return;
+        if (!_owner.IsMine)
+        {
+            return;
+        }
+
+        if (_isJumping)
+        {
+            return;
+        }
+
+        if (_cc == null || !_cc.enabled || !_cc.isGrounded)
+        {
+            return;
+        }
 
         CheckGround();
     }
