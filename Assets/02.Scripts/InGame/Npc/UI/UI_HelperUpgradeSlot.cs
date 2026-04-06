@@ -17,10 +17,10 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
 
     private UI_HelperUpgrade _uiHelperUpgrade;
     private int _slotIndex;
-    private HelperController _helper;
+    private HelperDataSO _helper;
 
     public int SlotIndex => _slotIndex;
-    public HelperController Helper => _helper;
+    public HelperDataSO Helper => _helper;
 
     private void Awake()
     {
@@ -37,7 +37,7 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
         _slotIndex = index;
     }
 
-    public void Refresh(HelperController helper, bool isSelected)
+    public void Refresh(HelperDataSO helper, bool isSelected)
     {
         _helper = helper;
 
@@ -50,9 +50,15 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
             return;
         }
 
-        _helperNameText.text = helper.HelperId;
-        _helperGradeText.text = helper.Grade.CurrentGrade.ToString();
-        _upgradeReadyText.text = helper.Experience.IsReadyToUpgrade ? "업그레이드 가능!" : "업그레이드 불가능";
+        EHelperGrade grade = _uiHelperUpgrade != null
+            ? _uiHelperUpgrade.GetGrade(helper)
+            : EHelperGrade.Normal;
+
+        bool canUpgrade = _uiHelperUpgrade != null && _uiHelperUpgrade.CanUpgrade(helper);
+
+        _helperNameText.text = string.IsNullOrEmpty(helper.HelperName) ? helper.HelperId : helper.HelperName;
+        _helperGradeText.text = grade.ToString();
+        _upgradeReadyText.text = canUpgrade ? "업그레이드 가능!" : "업그레이드 불가능";
 
         SetSelected(isSelected);
     }

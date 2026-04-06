@@ -31,11 +31,11 @@ public class UI_HelperUpgrade : MonoBehaviour
     [SerializeField] private UI_PopupDoTween _popupDoTween;
 
     private readonly List<UI_HelperUpgradeSlot> _slots = new();
-    private readonly List<HelperController> _currentHelpers = new();
+    private readonly List<HelperDataSO> _currentHelpers = new();
 
     private int _selectedIndex = -1;
 
-    public event Action<HelperController> OnUpgradeRequested;
+    public event Action<HelperDataSO> OnUpgradeRequested;
     public event Action OnCloseRequested;
 
     private void Awake()
@@ -58,16 +58,17 @@ public class UI_HelperUpgrade : MonoBehaviour
         }
     }
 
-    public async void OpenUpgradeUi(List<HelperController> helpers)
+    public async void OpenUpgradeUi(List<HelperDataSO> helpers)
     {
         await OpenAsync(helpers);
+
         if (_playerController != null)
         {
-            _playerController?.SetCursorLock(false);
+            _playerController.SetCursorLock(false);
         }
     }
 
-    public async UniTask OpenAsync(List<HelperController> helpers)
+    public async UniTask OpenAsync(List<HelperDataSO> helpers)
     {
         BindHelperList(helpers);
         CreateOrRefreshSlots();
@@ -94,9 +95,10 @@ public class UI_HelperUpgrade : MonoBehaviour
     public async void CloseUpgradeUi()
     {
         await CloseAsync();
+
         if (_playerController != null)
         {
-            _playerController?.SetCursorLock(true);
+            _playerController.SetCursorLock(true);
         }
     }
 
@@ -115,7 +117,7 @@ public class UI_HelperUpgrade : MonoBehaviour
         _selectedIndex = -1;
     }
 
-    public void RefreshAfterUpgrade(HelperController upgradedHelper)
+    public void RefreshAfterUpgrade(HelperDataSO upgradedHelper)
     {
         RefreshHelperListFromService();
         CreateOrRefreshSlots();
@@ -162,7 +164,21 @@ public class UI_HelperUpgrade : MonoBehaviour
         BindDetail(_currentHelpers[_selectedIndex]);
     }
 
-    private void BindHelperList(List<HelperController> helpers)
+    public EHelperGrade GetGrade(HelperDataSO data)
+    {
+        if (_helperUpgradeService == null) return EHelperGrade.Normal;
+
+        return _helperUpgradeService.GetGrade(data);
+    }
+
+    public bool CanUpgrade(HelperDataSO data)
+    {
+        if (_helperUpgradeService == null) return false;
+
+        return _helperUpgradeService.CanUpgrade(data);
+    }
+
+    private void BindHelperList(List<HelperDataSO> helpers)
     {
         _currentHelpers.Clear();
 
@@ -180,14 +196,13 @@ public class UI_HelperUpgrade : MonoBehaviour
         _currentHelpers.AddRange(_helperUpgradeService.GetUpgradeableTargetList());
     }
 
-    private int FindHelperIndex(HelperController target)
+    private int FindHelperIndex(HelperDataSO target)
     {
         if (target == null) return -1;
 
         for (int i = 0; i < _currentHelpers.Count; i++)
         {
-            if (_currentHelpers[i] == target)
-                return i;
+            if (_currentHelpers[i] == target) return i;
         }
 
         return -1;
@@ -226,20 +241,33 @@ public class UI_HelperUpgrade : MonoBehaviour
         }
     }
 
-    private void BindDetail(HelperController helper)
+    private void BindDetail(HelperDataSO data)
     {
-        if (helper == null)
+        if (data == null)
         {
             ClearDetail();
             return;
         }
 
-        _helperNameText.text = helper.HelperId;
-        _helperGradeText.text = helper.Grade.CurrentGrade.ToString();
-        _helperExpText.text = $"{helper.Experience.CurrentExp} / {helper.Experience.MaxExp}";
-        _helperRangeText.text = helper.Grade.GetRange().ToString();
+        if (_helperUpgradeService == null)
+        {
+            ClearDetail();
+            return;
+        }
 
-        bool canUpgrade = _helperUpgradeService != null && _helperUpgradeService.CanUpgrade(helper);
+        EHelperGrade grade = _helperUpgradeService.GetGrade(data);
+        int exp = _helperUpgradeService.GetExperience(data);
+        int maxExp = _helperUpgradeService.GetMaxExp(data, grade);
+        int range = _helperUpgradeService.GetRange(data, grade);
+
+        _helperNameText.text = string.IsNullOrEmpty(data.HelperName) ? data.HelperId : data.HelperName;
+        _helperGradeText.text = grade.ToString();
+        _helperExpText.text = grade == EHelperGrade.Legendary
+            ? "MAX"
+            : $"{exp} / {maxExp}";
+        _helperRangeText.text = range.ToString();
+
+        bool canUpgrade = _helperUpgradeService.CanUpgrade(data);
 
         if (_upgradeButton != null)
         {
@@ -248,9 +276,7 @@ public class UI_HelperUpgrade : MonoBehaviour
 
         _helperMessageText.text = canUpgrade
             ? "업그레이드가 가능합니다!"
-            : _helperUpgradeService != null
-                ? _helperUpgradeService.GetBlockReason(helper)
-                : "업그레이드가 불가능합니다.";
+            : _helperUpgradeService.GetBlockReason(data);
     }
 
     private void ClearDetail()
