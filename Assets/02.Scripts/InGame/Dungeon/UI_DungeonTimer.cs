@@ -8,21 +8,27 @@ public class UI_DungeonTimer : MonoBehaviour
     [SerializeField] private Color _warningColor = Color.red;
     [SerializeField] private float _warningThreshold = 30f;
 
-    private void Update()
+    private void OnEnable()
     {
-        if (DungeonTimer.Instance == null || !DungeonTimer.Instance.IsRunning)
-        {
-            _timerText.gameObject.SetActive(false);
-            return;
-        }
+        if (DungeonTimer.Instance != null)
+            DungeonTimer.Instance.OnSecondChanged += UpdateDisplay;
+    }
 
-        _timerText.gameObject.SetActive(true);
+    private void OnDisable()
+    {
+        if (DungeonTimer.Instance != null)
+            DungeonTimer.Instance.OnSecondChanged -= UpdateDisplay;
+    }
 
-        float remaining = DungeonTimer.Instance.RemainingSeconds;
-        int minutes = (int)(remaining / 60f);
-        int seconds = (int)(remaining % 60f);
+    private void UpdateDisplay(int totalSeconds)
+    {
+        if (!_timerText.gameObject.activeSelf)
+            _timerText.gameObject.SetActive(true);
+
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
 
         _timerText.text = $"{minutes:00}:{seconds:00}";
-        _timerText.color = remaining <= _warningThreshold ? _warningColor : _normalColor;
+        _timerText.color = totalSeconds <= _warningThreshold ? _warningColor : _normalColor;
     }
 }

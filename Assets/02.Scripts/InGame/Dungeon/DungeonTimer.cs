@@ -11,10 +11,11 @@ public class DungeonTimer : MonoBehaviourPunCallbacks
     public float RemainingSeconds { get; private set; }
     public bool IsRunning { get; private set; }
 
-    public event Action<float> OnTimeUpdated;
+    public event Action<int> OnSecondChanged;
     public event Action OnTimeExpired;
 
     private float _endTime;
+    private int _lastDisplayedSeconds = -1;
 
     private void Awake()
     {
@@ -64,7 +65,13 @@ public class DungeonTimer : MonoBehaviourPunCallbacks
         if (!IsRunning) return;
 
         RemainingSeconds = Mathf.Max(0f, _endTime - Time.realtimeSinceStartup);
-        OnTimeUpdated?.Invoke(RemainingSeconds);
+
+        int displaySeconds = Mathf.CeilToInt(RemainingSeconds);
+        if (displaySeconds != _lastDisplayedSeconds)
+        {
+            _lastDisplayedSeconds = displaySeconds;
+            OnSecondChanged?.Invoke(displaySeconds);
+        }
 
         if (RemainingSeconds <= 0f)
         {
