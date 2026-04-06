@@ -528,6 +528,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TestSeedAdd
   _seedItem: {fileID: 11400000, guid: 126f95a0ef92a304dbe5201eb77ff2de, type: 2}
   _amount: 10
+  _inventory: {fileID: 0}
 --- !u!4 &176422402
 Transform:
   m_ObjectHideFlags: 0
@@ -2010,6 +2011,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 994301744}
   m_CullTransparentMesh: 1
+--- !u!1001 &1012069207
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.73024
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.66509
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.22357
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1348875672055446532, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5873887345306381958, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
+      propertyPath: m_Name
+      value: Stone_FX
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0bbf6a3da9dc15849a9d757e93db44d7, type: 3}
 --- !u!1 &1110676720
 GameObject:
   m_ObjectHideFlags: 0
@@ -3360,6 +3418,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_Stamina
   _fillImage: {fileID: 323828842}
+  _warningColor: {r: 1, g: 0, b: 0, a: 1}
+  _warningThreshold: 0.3
+  _tweenDuration: 0.3
 --- !u!222 &1689027509
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3750,6 +3811,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1926626408
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4589982395189178116, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_Name
+      value: SawDust_FX03
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.73024
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.66509
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.22357
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497104834596901073, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 09192ba570c9c984cafac59a97c05ccb, type: 3}
 --- !u!1 &2061716857
 GameObject:
   m_ObjectHideFlags: 0
@@ -3915,6 +4033,7 @@ MonoBehaviour:
   _leftClickExplanation: {fileID: 994301746}
   _rightClickIcon: {fileID: 1154089690}
   _rightClickExplanation: {fileID: 1337633219}
+  _rightClickGroup: {fileID: 0}
   _canvasGroup: {fileID: 2114318177}
   _animDuration: 0.3
   _visibleAlpha: 1
@@ -3941,3 +4060,5 @@ SceneRoots:
   - {fileID: 797949070}
   - {fileID: 1574976393}
   - {fileID: 1412429385}
+  - {fileID: 1926626408}
+  - {fileID: 1012069207}
