@@ -56,8 +56,8 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
 
         bool canUpgrade = _uiHelperUpgrade != null && _uiHelperUpgrade.CanUpgrade(helper);
 
-        _helperNameText.text = string.IsNullOrEmpty(helper.HelperName) ? helper.HelperId : helper.HelperName;
-        _helperGradeText.text = grade.ToString();
+        _helperNameText.text = string.IsNullOrEmpty(helper.HelperName) ? $"{helper.HelperId}" : $"{helper.HelperName}";
+        _helperGradeText.text = $"현재 등급: {grade.ToString()}";
         _upgradeReadyText.text = canUpgrade ? "업그레이드 가능!" : "업그레이드 불가능";
 
         SetSelected(isSelected);
