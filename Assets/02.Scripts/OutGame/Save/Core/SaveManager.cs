@@ -99,8 +99,6 @@ public class SaveManager : MonoBehaviour
             if (BuildingManager.Instance != null)
                 data.Buildings = BuildingManager.Instance.ExportBuildings();
 
-            if (VillageLevelManager.Instance != null)
-                data.Village = VillageLevelManager.Instance.ExportBuildings();
             _receivedSaveData.Clear();
             _expectedResponses = 0;
 
