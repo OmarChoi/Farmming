@@ -37,13 +37,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        float cost = _owner.Data.BaseEnergyCost;
-
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
-        {
-            return;
-        }
-
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.WoodCutting);
 
@@ -82,13 +75,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
-        float cost = _owner.Data.BaseEnergyCost;
-
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
-        {
-            return;
-        }
-
         _owner.BeginAction();
         _stoneMineAbility?.JumpAndSmash(cell);
     }

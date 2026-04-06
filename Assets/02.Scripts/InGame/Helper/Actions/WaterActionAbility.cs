@@ -23,6 +23,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     private bool _isActing;
     private bool _isSecondary;
+    private bool _anyWatered;
     private TerrainCell _currentCell;
 
     private EHelperGrade CurrentGrade => _owner.Grade.CurrentGrade;
@@ -63,13 +64,6 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     {
         if (cell == null) return;
 
-        float cost = _owner.Data.BaseEnergyCost;
-
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
-        {
-            return;
-        }
-
         if (_owner.IsMine && _isActing) return;
         StartWaterAction(cell, isSecondary: false);
     }
@@ -79,7 +73,10 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         if (cell == null) return;
         if (_owner.Grade.CurrentGrade < _owner.Data.SecondaryUnlockGrade) return;
         if (_owner.IsMine && _isActing) return;
-        if (!_owner.Energy.TryConsume(_secondaryEnergyCost)) return;
+
+        float extraCost = _secondaryEnergyCost - _owner.Level.GetEnergyCost();
+        if (extraCost > 0 && !_owner.Energy.TryConsume(extraCost)) return;
+
         StartWaterAction(cell, isSecondary: true);
     }
 
@@ -87,6 +84,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     {
         _isActing = true;
         _isSecondary = isSecondary;
+        _anyWatered = false;
         _currentCell = cell;
 
         _owner.BeginAction();
@@ -133,9 +131,9 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     private void OnCellLand(TerrainCell cell, bool isCenter)
     {
-        if (ApplyEffects(cell, _waterEffects) && isCenter)
+        if (ApplyEffects(cell, _waterEffects))
         {
-            _owner.Experience.Add(_waterExperience);
+            _anyWatered = true;
         }
     }
 
@@ -173,8 +171,11 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
         GetCurrentGradeVFX().Cancel();
 
+        if (_anyWatered) _owner.Experience.Add(_waterExperience);
+
         _isActing = false;
         _isSecondary = false;
+        _anyWatered = false;
         _currentCell = null;
         _animAbility?.Play(EHelperAnim.Idle);
         _owner?.EndAction();
