@@ -61,6 +61,36 @@ public class PlayerCameraAbility : PlayerAbility
             cinemachineCamera.Follow = _cameraRoot;
     }
 
+    public void RebindFollowCamera()
+    {
+        if (!_owner.IsMine) return;
+        if (_cameraRoot == null) return;
+
+        var followCamObj = GameObject.Find("FollowCamera");
+        if (followCamObj == null) return;
+
+        var cinemachineCamera = followCamObj.GetComponent<CinemachineCamera>();
+        if (cinemachineCamera == null) return;
+
+        cinemachineCamera.Follow = null;
+        cinemachineCamera.Follow = _cameraRoot;
+        cinemachineCamera.PreviousStateIsValid = false;
+    }
+
+    public void SuspendFollowCamera()
+    {
+        if (!_owner.IsMine) return;
+
+        var followCamObj = GameObject.Find("FollowCamera");
+        if (followCamObj == null) return;
+
+        var cinemachineCamera = followCamObj.GetComponent<CinemachineCamera>();
+        if (cinemachineCamera == null) return;
+
+        cinemachineCamera.Follow = null;
+        cinemachineCamera.PreviousStateIsValid = false;
+    }
+
     public void SetPreset(CameraPreset preset, Transform target = null)
     {
         _preset.data = preset;

@@ -51,7 +51,7 @@ GameObject:
   - component: {fileID: 4168066349458401290}
   - component: {fileID: 7513555976057043112}
   - component: {fileID: 4508421513288246365}
-  - component: {fileID: 3573414103667705416}
+  - component: {fileID: 2097310397374882297}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -240,7 +240,7 @@ MonoBehaviour:
   _removeKey: 118
   _rotateKey: 114
   _cancelKey: 27
---- !u!114 &3573414103667705416
+--- !u!114 &2097310397374882297
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -249,9 +249,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1597716759267161692}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 070059ced19c74f4097e4afa81fb954e, type: 3}
+  m_Script: {fileID: 11500000, guid: 590c3abd696d21c44990cb7b5d2054bb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerPotionAbility
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLavaHazardAbility
+  _jumpHeight: 2
+  _jumpDuration: 0.5
+  _searchRadius: 5
+  _lavaStaminaCost: 10
 --- !u!1 &4055360776355550448
 GameObject:
   m_ObjectHideFlags: 0

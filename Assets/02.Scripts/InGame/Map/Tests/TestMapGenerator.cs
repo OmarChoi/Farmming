@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -41,20 +42,47 @@ public class TestMapGenerator : MonoBehaviour
             await SaveManager.Instance.SaveAsync(slot);
         }
 
+        DungeonSceneInit.FloorOverride = 1;
+        SceneTransitionData.Type = ETransitionType.VillageToDungeon;
+        SceneTransitionData.DungeonFloor = 1;
+
         if (PhotonNetwork.IsConnected)
-            PhotonNetwork.LoadLevel(SceneName.Dungeon1);
+        {
+            if (PhotonNetwork.CurrentRoom != null)
+            {
+                var roomProps = new Hashtable
+                {
+                    { SceneTransitionRoomProps.TransitionType, (int)ETransitionType.VillageToDungeon },
+                    { SceneTransitionRoomProps.DungeonFloor, 1 }
+                };
+                PhotonNetwork.CurrentRoom.SetCustomProperties(roomProps);
+            }
+
+            PhotonNetwork.LoadLevel(SceneName.Loading);
+        }
         else
-            SceneManager.LoadScene(SceneName.Dungeon1);
+            SceneManager.LoadScene(SceneName.Loading);
     }
 
     private void ReturnToVillage()
     {
-
+        SceneTransitionData.Type = ETransitionType.DungeonToVillage;
         GameSceneInit.ReturningFromDungeon = true;
 
         if (PhotonNetwork.IsConnected)
-            PhotonNetwork.LoadLevel(SceneName.Game);
+        {
+            if (PhotonNetwork.CurrentRoom != null)
+            {
+                var roomProps = new Hashtable
+                {
+                    { SceneTransitionRoomProps.TransitionType, (int)ETransitionType.DungeonToVillage }
+                };
+                PhotonNetwork.CurrentRoom.SetCustomProperties(roomProps);
+            }
+
+            PhotonNetwork.LoadLevel(SceneName.Loading);
+        }
         else
-            SceneManager.LoadScene(SceneName.Game);
+            SceneManager.LoadScene(SceneName.Loading);
     }
 }
