@@ -30,6 +30,19 @@ public class CultivateAbility : HelperAbility
     private HelperAnimationAbility _animAbility;
     private bool _isJumping = false;
 
+    public class CultivationParams
+    {
+        public Action OnCultivate;
+        public bool Spin;
+        public bool EpicLook;
+        public bool EpicLookLeft = true;
+        public bool EpicLookRight = true;
+        public Action OnEpicLookLeft;
+        public Action OnEpicLookRight;
+        public float EpicRightLookDuration;
+        public Action OnEpicLookRightMid;
+    }
+
     private void Start()
     {
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
@@ -43,25 +56,13 @@ public class CultivateAbility : HelperAbility
         _owner?.transform.DOKill();
     }
 
-    public void JumpAndCultivate(
-        TerrainCell cell,
-        Action onCultivate = null,
-        bool spin = false,
-        bool epicLook = false,
-        bool epicLookLeft = true,
-        bool epicLookRight = true,
-        Action onEpicLookLeft = null,
-        Action onEpicLookRight = null,
-        float epicRightLookDuration = 0f,
-        Action onEpicLookRightMid = null)
+    public void JumpAndCultivate(TerrainCell cell, CultivationParams cultivationParams = null)
     {
-        if(_isJumping)
-        {
-            return;
-        }
+        if (_isJumping) return;
 
+        cultivationParams ??= new CultivationParams();
         Vector3 targetPos = GetTerrainLandPosition(cell);
-        StartCoroutine(JumpCoroutine(targetPos, onCultivate, spin, epicLook, epicLookLeft, epicLookRight, onEpicLookLeft, onEpicLookRight, epicRightLookDuration, onEpicLookRightMid));
+        StartCoroutine(JumpCoroutine(targetPos, cultivationParams));
     }
 
     private Vector3 GetTerrainLandPosition(TerrainCell cell)
@@ -77,17 +78,7 @@ public class CultivateAbility : HelperAbility
         return cell.transform.position;
     }
 
-    private IEnumerator JumpCoroutine(
-        Vector3 targetPosition,
-        Action onCultivate = null,
-        bool spin = false,
-        bool epicLook = false,
-        bool epicLookLeft = true,
-        bool epicLookRight = true,
-        Action onEpicLookLeft = null,
-        Action onEpicLookRight = null,
-        float epicRightLookDuration = 0f,
-        Action onEpicLookRightMid = null)
+    private IEnumerator JumpCoroutine(Vector3 targetPosition, CultivationParams cultivationParams)
     {
         _isJumping = true;
 
@@ -99,34 +90,34 @@ public class CultivateAbility : HelperAbility
 
         _animAbility.Play(EHelperAnim.Cultivate);
         SpawnDustEffect();
-        onCultivate?.Invoke();
+        cultivationParams.OnCultivate?.Invoke();
 
-        if (epicLook && _owner.PlayerOwner != null)
+        if (cultivationParams.EpicLook && _owner.PlayerOwner != null)
         {
             yield return new WaitForSeconds(_epicInitialWait);
 
             Vector3 rightDir = _owner.PlayerOwner.transform.right;
-            Quaternion leftRotation  = Quaternion.LookRotation(-rightDir, Vector3.up);
-            Quaternion rightRotation = Quaternion.LookRotation(rightDir,  Vector3.up);
+            Quaternion leftRotation = Quaternion.LookRotation(-rightDir, Vector3.up);
+            Quaternion rightRotation = Quaternion.LookRotation(rightDir, Vector3.up);
 
-            if (epicLookLeft)
+            if (cultivationParams.EpicLookLeft)
             {
                 yield return _owner.transform
                     .DORotateQuaternion(leftRotation, _epicLookDuration)
                     .SetEase(Ease.InOutQuad)
                     .WaitForCompletion();
-                onEpicLookLeft?.Invoke();
+                cultivationParams.OnEpicLookLeft?.Invoke();
             }
 
-            if (epicLookRight)
+            if (cultivationParams.EpicLookRight)
             {
-                float rightDuration = epicRightLookDuration > 0f ? epicRightLookDuration : _epicLookDuration;
+                float rightDuration = cultivationParams.EpicRightLookDuration > 0f ? cultivationParams.EpicRightLookDuration : _epicLookDuration;
                 var seq = DOTween.Sequence()
                     .Append(_owner.transform.DORotateQuaternion(rightRotation, rightDuration).SetEase(Ease.InOutQuad));
-                if (onEpicLookRightMid != null)
-                    seq.InsertCallback(rightDuration * 0.5f, () => onEpicLookRightMid.Invoke());
+                if (cultivationParams.OnEpicLookRightMid != null)
+                    seq.InsertCallback(rightDuration * 0.5f, () => cultivationParams.OnEpicLookRightMid.Invoke());
                 yield return seq.WaitForCompletion();
-                onEpicLookRight?.Invoke();
+                cultivationParams.OnEpicLookRight?.Invoke();
             }
         }
         else
@@ -134,7 +125,7 @@ public class CultivateAbility : HelperAbility
             yield return new WaitForSeconds(_cultivateDuration);
         }
 
-        if (spin)
+        if (cultivationParams.Spin)
         {
             float elapsed = 0f;
             while (elapsed < _spinDuration)
