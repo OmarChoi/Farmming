@@ -122,4 +122,13 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         if (idx < 0 || idx >= _levelThresholds.Length) return 0;
         return _levelThresholds[idx];
     }
+    
+    public VillageSaveData ExportBuildings()
+    {
+        return new VillageSaveData
+        {
+            CurrentGauge = CurrentGauge,
+            CurrentLevel = CurrentLevel
+        };
+    }
 }
