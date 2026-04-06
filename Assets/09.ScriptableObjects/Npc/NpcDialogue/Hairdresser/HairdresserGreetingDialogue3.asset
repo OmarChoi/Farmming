@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: HairdresserGreetingDialogue3
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: HairdresserGreetingDialogue3
+  Lines:
+  - Text: "\uC6B0\uD6C4\uD6D7. \uC624\uB298\uC740 \uB204\uAD74 \uBCC0\uC2E0 \uC2DC\uCF1C
+      \uB4DC\uB9AC\uAC8C \uB420\uAE4C\uC694?"
+    NextDialogue: {fileID: 0}
