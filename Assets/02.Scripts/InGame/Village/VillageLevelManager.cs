@@ -72,12 +72,16 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
             return;
         }
         CurrentGauge += data.FirstBuildGaugeContribution;
+        if (CurrentGauge >= CurrentThreshold)
+        {
+            RequestLevelUp();
+        }
         OnVillageStateChanged?.Invoke();
     }
 
     public bool IsBuildingUnlocked(BuildingDataSO data) => data != null && CurrentLevel >= data.RequiredVillageLevel;
 
-    public void RequestLevelUp()
+    private void RequestLevelUp()
     {
         if (!CanLevelUp) return;
 
