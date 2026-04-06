@@ -76,8 +76,8 @@ public class GameSceneInit : MonoBehaviour
         MapSyncManager.Instance.OnMapSynced += () => synced = true;
         MapSyncManager.Instance.RequestMapFromMaster();
 
-        float timeout = Time.time + MapSyncTimeoutSeconds;
-        await UniTask.WaitUntil(() => synced || Time.time > timeout);
+        float timeout = Time.realtimeSinceStartup + MapSyncTimeoutSeconds;
+        await UniTask.WaitUntil(() => synced || Time.realtimeSinceStartup > timeout);
 
         if (!synced)
         {
@@ -257,9 +257,9 @@ public class GameSceneInit : MonoBehaviour
         var props = new Hashtable { { PropTerrainReady, true } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         int totalCount = Mathf.Max(PhotonNetwork.PlayerList.Length, 1);
-        float progressTimeout = Time.time + TerrainReadyTimeout;
+        float progressTimeout = Time.realtimeSinceStartup + TerrainReadyTimeout;
 
-        while (!AllPlayersTerrainReady() && Time.time <= progressTimeout)
+        while (!AllPlayersTerrainReady() && Time.realtimeSinceStartup <= progressTimeout)
         {
             int terrainReadyCount = CountTerrainReadyPlayers();
             LoadingProgress.Value = 0.7f + (0.3f * terrainReadyCount / totalCount);
