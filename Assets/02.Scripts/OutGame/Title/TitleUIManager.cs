@@ -63,6 +63,7 @@ public class TitleUIManager : MonoBehaviour
 
     public void OnClickConfirmJoin() => _flowManager.ConfirmJoin(_roomIdInput.text.Trim().ToUpper());
     public void OnClickJoinBack() => ShowPanel(ETitlePanel.Lobby);
+    public void OnClickRoomBack() => ShowPanel(ETitlePanel.Lobby);
     public void OnClickLobbyBack() => ShowPanel(ETitlePanel.Title);
 
     // === Slot UI ===
