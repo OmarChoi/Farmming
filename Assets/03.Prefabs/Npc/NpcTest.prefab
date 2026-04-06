@@ -132,7 +132,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 5
+  m_Speed: 4
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -182,9 +182,9 @@ MonoBehaviour:
     _buttonName: "\uAE4A\uC740 \uB300\uD654"
   - _type: 2
     _buttonName: "\uC0C1\uC810"
-  - _type: 4
-    _buttonName: "\uD018\uC2A4\uD2B8"
   - _type: 5
+    _buttonName: "\uD018\uC2A4\uD2B8"
+  - _type: 6
     _buttonName: "\uB300\uD654 \uC885\uB8CC"
   _shop: {fileID: 7734502852426753408}
   _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}

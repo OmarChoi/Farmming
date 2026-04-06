@@ -5,6 +5,7 @@ public enum ENpcInteractionType
     DeepTalk = 1,
     Trade = 2,
     Upgrade = 3,
-    Quest = 4,
-    EndTalk = 5
+    Styling = 4,
+    Quest = 5,
+    EndTalk = 6
 }

@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002c5ad1e0e02f74784441da1d9fa045, type: 3}
+  m_Name: HairdresserQuestData
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
+  QuestId: HairdresserQuestData
+  QuestName: "\uC608\uBED0\uC9C0\uACE0 \uC2F6\uC5B4~"
+  Description: "\uCEF7\uD305 C\uC5D0\uAC8C \uD638\uBC15\uC744 \uAC00\uC838\uB2E4
+    \uC8FC\uC790."
+  QuestCategory: 1
+  StartNpcId: Hairdresser
+  CompleteNpcId: Hairdresser
+  ObjectiveType: 2
+  TargetObjectId: 
+  ItemRequirements:
+  - _item: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
+    _amount: 5
+  TargetNpcId: Hairdresser
+  RequiredAmount: 1
+  PrerequisiteQuests: []
+  RequiredFriendship: 40
+  Reward:
+    Rewards:
+    - RewardType: 0
+      RewardItem: {fileID: 0}
+      Amount: 4000
+      TargetNpcId: 
+    - RewardType: 2
+      RewardItem: {fileID: 0}
+      Amount: 100
+      TargetNpcId: Hairdresser
+  AcceptDialogue: {fileID: 11400000, guid: 8e5964a978b2fb94aa1ab4f375152482, type: 2}
+  AcceptResultDialogue: {fileID: 11400000, guid: 60324de120e824342b171f4150b8897f, type: 2}
+  DeclineDialogue: {fileID: 11400000, guid: b72506fde694df54194620e45d8e850f, type: 2}
+  InProgressDialogue: {fileID: 11400000, guid: 0b8ba155ad2c4a04eb1bfbb658a33268, type: 2}
+  CompleteDialogue: {fileID: 11400000, guid: a037a8ca89fe69c4ba75ca8850c9bd77, type: 2}
+  NoQuestDialogue: {fileID: 11400000, guid: 54006578a718cf34c8c6a47b70bb2851, type: 2}
