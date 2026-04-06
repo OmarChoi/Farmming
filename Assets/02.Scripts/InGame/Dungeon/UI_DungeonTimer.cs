@@ -8,7 +8,7 @@ public class UI_DungeonTimer : MonoBehaviour
     [SerializeField] private Color _warningColor = Color.red;
     [SerializeField] private float _warningThreshold = 30f;
 
-    private void OnEnable()
+    private void Start()
     {
         if (DungeonTimer.Instance != null)
             DungeonTimer.Instance.OnSecondChanged += UpdateDisplay;

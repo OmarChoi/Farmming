@@ -11,11 +11,12 @@ public class DungeonTimer : MonoBehaviourPunCallbacks
     public float RemainingSeconds { get; private set; }
     public bool IsRunning { get; private set; }
 
+    private float _endTime;
+    private int _lastDisplayedSeconds = -1;
+    
     public event Action<int> OnSecondChanged;
     public event Action OnTimeExpired;
 
-    private float _endTime;
-    private int _lastDisplayedSeconds = -1;
 
     private void Awake()
     {
@@ -88,7 +89,9 @@ public class DungeonTimer : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.IsConnected)
         {
-            if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom != null)
+            if (!PhotonNetwork.IsMasterClient) return;
+
+            if (PhotonNetwork.CurrentRoom != null)
             {
                 var roomProps = new Hashtable
                 {
