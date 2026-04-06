@@ -56,36 +56,39 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (cropGrowth == null) return;
         if (!cropGrowth.IsHarvestable) return;
 
-        float cost = _owner.Data.BaseEnergyCost;
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost)) return;
-
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Harvest);
 
-        HarvestCell(farmTile, farmTile.PlantedSeed);
+        if (HarvestCell(farmTile, farmTile.PlantedSeed))
+            _owner.Experience.Add(_harvestExperience);
+
         farmTile.Interact();
         _owner.EndAction();
     }
 
     private void InteractPrimaryEpic(TerrainCell centerCell)
     {
-        float cost = _owner.Data.BaseEnergyCost;
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost)) return;
-
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.EpicHarvest);
 
+        bool anyHarvested = false;
+
         if (_epicVFX != null)
         {
-            _epicVFX.SpawnEffects(centerCell, TryHarvestCell, () =>
+            _epicVFX.SpawnEffects(centerCell, cell =>
             {
+                if (TryHarvestCell(cell)) anyHarvested = true;
+            }, () =>
+            {
+                if (anyHarvested) _owner.Experience.Add(_harvestExperience);
                 _animAbility?.Play(EHelperAnim.Idle);
                 _owner.EndAction();
             });
         }
         else
         {
-            TryHarvestCell(centerCell);
+            if (TryHarvestCell(centerCell)) anyHarvested = true;
+            if (anyHarvested) _owner.Experience.Add(_harvestExperience);
             _animAbility?.Play(EHelperAnim.Idle);
             _owner.EndAction();
         }
@@ -93,26 +96,29 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private void InteractPrimaryLegendary(TerrainCell centerCell)
     {
-        float cost = _owner.Data.BaseEnergyCost;
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost)) return;
+        List<TerrainCell> targetCells = GetLegendaryCells(centerCell);
 
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Stun);
 
         Vector3 rightDir = GetRightDirection();
-        List<TerrainCell> targetCells = GetLegendaryCells(centerCell);
+        bool anyHarvested = false;
 
         var cellHarvests = new List<(TerrainCell, Action)>();
         foreach (TerrainCell targetCell in targetCells)
         {
             TerrainCell captured = targetCell;
-            cellHarvests.Add((captured, () => TryHarvestCell(captured)));
+            cellHarvests.Add((captured, () =>
+            {
+                if (TryHarvestCell(captured)) anyHarvested = true;
+            }));
         }
 
         if (_legendaryVFX != null)
         {
             _legendaryVFX.SpawnEffects(centerCell, rightDir, cellHarvests, () =>
             {
+                if (anyHarvested) _owner.Experience.Add(_harvestExperience);
                 _animAbility?.Play(EHelperAnim.Idle);
                 _owner.EndAction();
             });
@@ -121,38 +127,51 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         {
             foreach (var (_, harvest) in cellHarvests)
                 harvest?.Invoke();
+            if (anyHarvested) _owner.Experience.Add(_harvestExperience);
             _animAbility?.Play(EHelperAnim.Idle);
             _owner.EndAction();
         }
     }
 
-    private void TryHarvestCell(TerrainCell cell)
+    private bool TryHarvestCell(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);
-        if (farmTile == null || !farmTile.HasSeed) return;
+        if (farmTile == null || !farmTile.HasSeed) return false;
 
         CropGrowth cropGrowth = farmTile.CropGrowth;
-        if (cropGrowth == null || !cropGrowth.IsHarvestable) return;
+        if (cropGrowth == null || !cropGrowth.IsHarvestable) return false;
 
-        HarvestCell(farmTile, farmTile.PlantedSeed);
+        bool success = HarvestCell(farmTile, farmTile.PlantedSeed);
         farmTile.Interact();
+        return success;
     }
 
-    private void HarvestCell(FarmTile farmTile, SeedItemDataSO seed)
+    private bool HarvestCell(FarmTile farmTile, SeedItemDataSO seed)
     {
         int harvestAmount = UnityEngine.Random.Range(seed.HarvestAmountMin, seed.HarvestAmountMax + 1);
 
         PlayerInventoryAbility inventory = GetInventory();
+        bool success = false;
         if (inventory != null && seed.HarvestItem != null)
         {
             QuestReportItemHelper.AddItemAndReportQuest(inventory, seed.HarvestItem, harvestAmount);
-            _owner.Experience.Add(_harvestExperience);
+            success = true;
         }
 
         if (seed.Icon != null)
         {
             _harvestItem?.Raise(seed.Icon, seed.DisplayName, harvestAmount);
         }
+
+        return success;
+    }
+
+    private bool IsHarvestableCell(TerrainCell cell)
+    {
+        FarmTile farmTile = GetFarmTile(cell);
+        if (farmTile == null || !farmTile.HasSeed) return false;
+        CropGrowth cropGrowth = farmTile.CropGrowth;
+        return cropGrowth != null && cropGrowth.IsHarvestable;
     }
 
     private List<TerrainCell> GetLegendaryCells(TerrainCell centerCell)
