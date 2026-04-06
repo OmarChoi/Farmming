@@ -15,14 +15,18 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     [SerializeField] protected Transform _effectSpawnPoint;
     [SerializeField] private float _idleTransition = 0.5f;
 
+    [SerializeField] private float _wideGatherOffset = 2f;
+
     private StoneMineAbility _stoneMineAbility;
     private HelperAnimationAbility _animAbility;
+    private RangeBoostEffect _rangeBoostEffect;
 
     protected override void Awake()
     {
         base.Awake();
         _stoneMineAbility = _owner.GetAbility<StoneMineAbility>();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
+        _rangeBoostEffect = _owner.GetAbility<RangeBoostEffect>();
     }
 
     private void OnDisable()
@@ -33,16 +37,40 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        float cost = _owner.Data.BaseEnergyCost;
+
+        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
+        {
+            return;
+        }
+
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.WoodCutting);
 
-        // 이펙트 소환
-        GameObject effect = Instantiate(_effectWoodPrefab, _effectSpawnPoint.position, _effectSpawnPoint.rotation);
-        WoodCuttingVFX cuttingVfx = effect.GetComponent<WoodCuttingVFX>();
         GatheringInfo info = new GatheringInfo(_owner);
-        cuttingVfx.Initiate(info, EGatherType.Wood);
+
+        bool isWideActive = _rangeBoostEffect != null && _rangeBoostEffect.IsActive;
+        if (isWideActive)
+        {
+            Vector3 playerRight = _owner.PlayerOwner.transform.right;
+            SpawnWoodVFX(info, Vector3.zero);                         
+            SpawnWoodVFX(info, playerRight * _wideGatherOffset);  
+            SpawnWoodVFX(info, -playerRight * _wideGatherOffset);   
+        }
+        else
+        {
+            SpawnWoodVFX(info, Vector3.zero);
+        }
 
         StartCoroutine(AnimPlayCoroutine());
+    }
+
+    private void SpawnWoodVFX(GatheringInfo info, Vector3 worldOffset)
+    {
+        Vector3 spawnPos = _effectSpawnPoint.position + worldOffset;
+        GameObject effect = Instantiate(_effectWoodPrefab, spawnPos, _effectSpawnPoint.rotation);
+        WoodCuttingVFX cuttingVfx = effect.GetComponent<WoodCuttingVFX>();
+        cuttingVfx.Initiate(info, EGatherType.Wood);
     }
 
     private IEnumerator AnimPlayCoroutine()
@@ -54,6 +82,13 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
+        float cost = _owner.Data.BaseEnergyCost;
+
+        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
+        {
+            return;
+        }
+
         _owner.BeginAction();
         _stoneMineAbility?.JumpAndSmash(cell);
     }

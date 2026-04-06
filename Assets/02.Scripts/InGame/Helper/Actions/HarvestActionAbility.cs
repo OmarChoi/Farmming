@@ -34,6 +34,13 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (cropGrowth == null) return;
         if (!cropGrowth.IsHarvestable) return;
 
+        float cost = _owner.Data.BaseEnergyCost;
+
+        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
+        {
+            return;
+        }
+
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.Harvest);
 

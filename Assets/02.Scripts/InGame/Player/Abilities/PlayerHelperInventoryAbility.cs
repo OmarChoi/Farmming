@@ -158,10 +158,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 }
 
                 HelperController helper = InstantiateHelper(data);
-                RestoreHelperState(helper);
                 _activeLightHelper = helper;
                 _activeLightHelper.OnGradeChanged += OnLightHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
+                RestoreHelperState(helper);
                 _summonedLightIndex = _currentIndex;
             }
         }
@@ -187,10 +187,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 }
 
                 HelperController helper = InstantiateHelper(data);
-                RestoreHelperState(helper);
                 _activeMainHelper = helper;
                 _activeMainHelper.OnGradeChanged += OnMainHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
+                RestoreHelperState(helper);
                 _summonedMainIndex = _currentIndex;
             }
         }
@@ -272,7 +272,9 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 {
                     HelperId = data.HelperId,
                     Level = 1,
-                    Grade = 0
+                    Grade = 0,
+                    Energy = data.MaxEnergy,
+                    EnergySavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 });
             }
         }

@@ -818,6 +818,7 @@ GameObject:
   - component: {fileID: 11937006228506086}
   - component: {fileID: 871120140780161131}
   - component: {fileID: 4305468134012487607}
+  - component: {fileID: 1475702922432846875}
   m_Layer: 7
   m_Name: GroundHelper
   m_TagString: Untagged
@@ -989,6 +990,23 @@ MonoBehaviour:
   _toolLevel: 1
   _getDirtAmount: 1
   _generateDirtAmount: 1
+  _groundItemMappings:
+  - Item: {fileID: 11400000, guid: 496a91325591fb746b65ab955ba01fe0, type: 2}
+    TileType: 0
+  _mouthPoint: {fileID: 6475551524434919391}
+  _absorbVfxPrefab: {fileID: 0}
+--- !u!114 &1475702922432846875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5658aa0f05df5444988ec2f2377b79bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GroundSelectAbility
 --- !u!1 &5410132598804558874
 GameObject:
   m_ObjectHideFlags: 0
