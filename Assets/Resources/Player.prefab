@@ -52,6 +52,7 @@ GameObject:
   - component: {fileID: 7513555976057043112}
   - component: {fileID: 4508421513288246365}
   - component: {fileID: 2097310397374882297}
+  - component: {fileID: 2155480617688705000}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -256,6 +257,18 @@ MonoBehaviour:
   _jumpDuration: 0.5
   _searchRadius: 5
   _lavaStaminaCost: 10
+--- !u!114 &2155480617688705000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 070059ced19c74f4097e4afa81fb954e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerPotionAbility
 --- !u!1 &4055360776355550448
 GameObject:
   m_ObjectHideFlags: 0

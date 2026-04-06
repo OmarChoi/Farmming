@@ -54,7 +54,14 @@ public class UI_Slot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        _uiInventory.OnSlotClicked(this);
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            _uiInventory.OnSlotRightClicked(this);
+        }
+        else
+        { 
+            _uiInventory.OnSlotClicked(this);
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
