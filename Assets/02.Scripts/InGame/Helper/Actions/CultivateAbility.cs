@@ -45,11 +45,9 @@ public class CultivateAbility : HelperAbility
 
     public void JumpAndCultivate(
         TerrainCell cell,
-        System.Action onCultivate = null,
+        Action onCultivate = null,
         bool spin = false,
         bool epicLook = false,
-        System.Action onEpicLookLeft = null,
-        System.Action onEpicLookRight = null)
         bool epicLookLeft = true,
         bool epicLookRight = true,
         Action onEpicLookLeft = null,
