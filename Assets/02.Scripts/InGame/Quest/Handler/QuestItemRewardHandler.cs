@@ -13,6 +13,6 @@ public class QuestItemRewardHandler : IQuestRewardHandler
 
     public void HandleReward(QuestRewardEntry reward)
     {
-        _inventory?.AddItem(reward.RewardItem, reward.Amount);
+        QuestReportItemHelper.AddItemAndReportQuest(_inventory, reward.RewardItem, reward.Amount);
     }
 }

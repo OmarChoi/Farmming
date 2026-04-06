@@ -11,12 +11,10 @@ public class TradeService
     public bool Buy(ShopData shopData, ItemDataSO item, int amount = 1)
     {
         if (shopData == null || item == null || amount <= 0) return false;
-
         if (!shopData.SellItems.Contains(item)) return false;
-
         if (!CurrencyManager.Instance.TrySpendGold(item.BuyCost * amount)) return false;
 
-        _playerInventory.AddItem(item, amount);
+        QuestReportItemHelper.AddItemAndReportQuest(_playerInventory, item, amount);
         return true;
     }
 

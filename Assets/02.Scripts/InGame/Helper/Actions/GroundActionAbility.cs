@@ -91,10 +91,11 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             _owner.PhotonView.RpcSafe(nameof(RPC_DigWithAnimation), RpcTarget.Others, pos.x, pos.y, pos.z, _canDigLevel);
         }
 
-        PlayerInventoryAbility inventory = GetInventory();
-        if (inventory != null && _dirtItem != null)
-        {
-            inventory.AddItem(_dirtItem, _getDirtAmount);
+            PlayerInventoryAbility inventory = GetInventory();
+            if (inventory != null && _dirtItem != null)
+            {
+                QuestReportItemHelper.AddItemAndReportQuest(inventory, _dirtItem, _getDirtAmount);
+            }
         }
 
         _owner.EndAction();

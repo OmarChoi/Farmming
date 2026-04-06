@@ -2,32 +2,20 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-public class QuestManager : MonoBehaviour
+public class QuestManager : MonoBehaviour, IQuestProgressService
 {
     public static QuestManager Instance { get; private set; }
 
-    [Header("플레이어 컴포넌트")]
-    [SerializeField] private PlayerInventoryAbility _playerInventory;
+    private QuestRewardService _rewardService;
+    private QuestRequirementService _requirementService;
 
-    [Header("일일 퀘스트 개수")]
-    [SerializeField] private int _dailyQuestCounts = 3;
-    private QuestBoardDataSO _dailyQuestBoardData;
+    private PlayerInventoryAbility _playerInventory;
 
     private readonly Dictionary<string, QuestRuntimeData> _activeQuests = new();
     private readonly HashSet<string> _completedMainQuestIds = new();
     private readonly HashSet<string> _completedSubQuestIds = new();
-    private readonly Dictionary<string, int> _dailyQuestCompletedDays = new();
-
-    private Dictionary<EQuestRewardType, IQuestRewardHandler> _rewardHandlers;
 
     public IReadOnlyDictionary<string, QuestRuntimeData> ActiveQuests => _activeQuests;
-    public List<QuestRuntimeData> GetActiveQuestList()
-    {
-        return new List<QuestRuntimeData>(_activeQuests.Values);
-    }
-
-    private readonly List<QuestDataSO> _todayDailyQuests = new();
-    public IReadOnlyList<QuestDataSO> TodayDailyQuests => _todayDailyQuests;
 
     public event Action<QuestRuntimeData> OnQuestAccepted;
     public event Action<QuestRuntimeData> OnQuestUpdated;
@@ -35,6 +23,11 @@ public class QuestManager : MonoBehaviour
     public event Action<string> OnQuestRemoved;
 
     public static event Action OnQuestManagerReady;
+
+    public List<QuestRuntimeData> GetActiveQuestList()
+    {
+        return new List<QuestRuntimeData>(_activeQuests.Values);
+    }
 
     private void Awake()
     {
@@ -45,37 +38,35 @@ public class QuestManager : MonoBehaviour
         }
 
         Instance = this;
-        _rewardHandlers = new Dictionary<EQuestRewardType, IQuestRewardHandler>
-        {
-            { EQuestRewardType.Gold, new QuestGoldRewardHandler() },
-            { EQuestRewardType.Item, new QuestItemRewardHandler(_playerInventory) },
-            { EQuestRewardType.Friendship, new QuestFriendshipRewardHandler() }
-        };
         OnQuestManagerReady?.Invoke();
     }
 
     private void OnEnable()
     {
+        PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
         GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
-        TimeEvents.OnNetDayChanged += HandleDayChanged;
     }
 
     private void OnDisable()
     {
+        PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
         GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
-        TimeEvents.OnNetDayChanged -= HandleDayChanged;
     }
 
-    public void SetDailyQuestBoardData(QuestBoardDataSO boardData)
+    private void OnPlayerReady(PlayerInventoryAbility ability)
     {
-        _dailyQuestBoardData = boardData;
-        RefreshTodayDailyQuests(_dailyQuestBoardData, _dailyQuestCounts);
+#if UNITY_EDITOR
+        Debug.Log("PlayerInventoryAbility 확인");
+#endif
+        _playerInventory = ability;
+        _rewardService = new QuestRewardService(_playerInventory);
+        _requirementService = new QuestRequirementService(_playerInventory);
     }
 
     private void HandleGatheringCompleted(GatheringObject obj)
     {
         if (obj == null || obj.GatheringData == null) return;
-        AddProgress(EQuestObjectiveType.BreakObject, obj.GatheringData.ObjectName);
+        ReportObjectBroken(obj.GatheringData.ObjectName);
     }
 
     // 현재 진행 중인 퀘스트가 하나라도 있는지 확인합니다.
@@ -94,7 +85,6 @@ public class QuestManager : MonoBehaviour
     public QuestRuntimeData GetQuest(string questId)
     {
         if (string.IsNullOrEmpty(questId)) return null;
-
         _activeQuests.TryGetValue(questId, out QuestRuntimeData quest);
         return quest;
     }
@@ -102,9 +92,7 @@ public class QuestManager : MonoBehaviour
     // 수락받을 수 있는 퀘스트인지 확인하는 메서드입니다. (메인, 서브 퀘스트처럼 한 번 클리어한 퀘스트는 클리어 불가능)
     public bool CanAcceptQuest(QuestDataSO questData)
     {
-        if (questData == null) return false;
-        if (string.IsNullOrEmpty(questData.QuestId)) return false;
-
+        if (questData == null || string.IsNullOrEmpty(questData.QuestId)) return false;
         if (_activeQuests.ContainsKey(questData.QuestId)) return false;
 
         switch (questData.QuestCategory)
@@ -116,13 +104,9 @@ public class QuestManager : MonoBehaviour
                 return !_completedSubQuestIds.Contains(questData.QuestId);
 
             case EQuestCategory.Daily:
-                int currentDay = TimeEvents.CurrentDay;
+                return DailyQuestManager.Instance == null ||
+                       DailyQuestManager.Instance.CanAcceptDailyQuest(questData);
 
-                if (_dailyQuestCompletedDays.TryGetValue(questData.QuestId, out int completedDay))
-                {
-                    return completedDay != currentDay;
-                }
-                return true;
         }
         return true;
     }
@@ -133,28 +117,121 @@ public class QuestManager : MonoBehaviour
         if (!CanAcceptQuest(questData)) return false;
 
         QuestRuntimeData runtimeData = new QuestRuntimeData(questData);
+
+        InitializeQuestProgressOnAccept(runtimeData);
+
         _activeQuests.Add(questData.QuestId, runtimeData);
 
         OnQuestAccepted?.Invoke(runtimeData);
+        OnQuestUpdated?.Invoke(runtimeData);
         return true;
     }
 
-    // 현재 퀘스트의 진행도를 확인하는 메서드입니다.
-    public void AddProgress(EQuestObjectiveType objectiveType, string targetId, int amount = 1)
+    private void InitializeQuestProgressOnAccept(QuestRuntimeData quest)
+    {
+        if (quest == null || quest.QuestData == null) return;
+
+        QuestDataSO data = quest.QuestData;
+
+        switch (data.ObjectiveType)
+        {
+            case EQuestObjectiveType.CollectItem:
+                InitializeCollectItemProgress(quest);
+                break;
+
+            case EQuestObjectiveType.DeliverItem:
+                InitializeDeliverItemProgress(quest);
+                break;
+        }
+
+        if (quest.IsObjectiveCompleted() && data.ObjectiveType == EQuestObjectiveType.CollectItem)
+        {
+            quest.Status = EQuestStatus.CanComplete;
+        }
+    }
+
+    private void InitializeCollectItemProgress(QuestRuntimeData quest)
+    {
+        if (quest == null || quest.QuestData == null) return;
+
+        foreach (QuestItemRequirementEntry requirement in quest.QuestData.ItemRequirements)
+        {
+            if (requirement.Item == null) continue;
+
+            quest.SetItemProgress(requirement.ItemId, 0);
+        }
+    }
+
+    private void InitializeDeliverItemProgress(QuestRuntimeData quest)
+    {
+        if (quest == null || quest.QuestData == null || _requirementService == null) return;
+
+        foreach (QuestItemRequirementEntry requirement in quest.QuestData.ItemRequirements)
+        {
+            if (requirement.Item == null) continue;
+
+            int ownedCount = _requirementService.GetOwnedItemCount(requirement.Item);
+            int progress = Mathf.Min(ownedCount, requirement.Amount);
+
+            quest.SetItemProgress(requirement.ItemId, progress);
+        }
+    }
+
+    public void ReportObjectBroken(string objectId, int amount = 1)
+    {
+        if (string.IsNullOrEmpty(objectId)) return;
+        TryAddSimpleProgress(EQuestObjectiveType.BreakObject, objectId, amount);
+    }
+
+    public void ReportItemCollected(int itemId, int amount = 1)
+    {
+        if (itemId < 0 || amount <= 0) return;
+        TryAddItemProgress(itemId, amount);
+    }
+
+    public void ReportNpcTalked(string npcId)
+    {
+        if (string.IsNullOrEmpty(npcId)) return;
+        TryAddSimpleProgress(EQuestObjectiveType.TalkToNpc, npcId, 1);
+    }
+
+    public bool TryDeliverItemToNpc(string questId, string npcId)
+    {
+        if (string.IsNullOrEmpty(questId) || string.IsNullOrEmpty(npcId) || _requirementService == null) return false;
+
+        if (!_activeQuests.TryGetValue(questId, out var quest)) return false;
+        if (quest.Status != EQuestStatus.InProgress) return false;
+
+        QuestDataSO questData = quest.QuestData;
+
+        if (questData.ObjectiveType != EQuestObjectiveType.DeliverItem) return false;
+        if (questData.TargetNpcId != npcId) return false;
+        if (!HasValidItemRequirements(questData)) return false;
+
+        if (!quest.AreAllItemRequirementsCompleted()) return false;
+        if (!_requirementService.TryConsumeRequirements(questData.ItemRequirements)) return false;
+
+        quest.Status = EQuestStatus.CanComplete;
+
+        OnQuestUpdated?.Invoke(quest);
+        return true;
+    }
+
+    private void TryAddSimpleProgress(EQuestObjectiveType objectiveType, string targetId, int amount)
     {
         if (_activeQuests.Count == 0) return;
         if (string.IsNullOrEmpty(targetId)) return;
+        if (amount <= 0) return;
 
         foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
-            if (quest == null) continue;
+            if (quest == null || quest.QuestData == null) continue;
             if (quest.Status != EQuestStatus.InProgress) continue;
-            if (quest.QuestData == null) continue;
 
             QuestDataSO questData = quest.QuestData;
 
             if (questData.ObjectiveType != objectiveType) continue;
-            if (questData.TargetId != targetId) continue;
+            if (!IsSimpleTargetMatched(questData, objectiveType, targetId)) continue;
 
             quest.CurrentAmount += amount;
 
@@ -168,6 +245,75 @@ public class QuestManager : MonoBehaviour
         }
     }
 
+    private void TryAddItemProgress(int itemId, int amount)
+    {
+        if (_activeQuests.Count == 0) return;
+        if (itemId < 0 || amount <= 0) return;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+
+            QuestDataSO questData = quest.QuestData;
+
+            if (questData.ObjectiveType != EQuestObjectiveType.CollectItem &&
+                questData.ObjectiveType != EQuestObjectiveType.DeliverItem)
+            {
+                continue;
+            }
+            if (!HasValidItemRequirements(questData)) continue;
+            if (!TryGetRequirementAmount(questData, itemId, out int requiredAmount)) continue;
+
+            quest.AddItemProgress(itemId, amount, requiredAmount);
+
+            if (quest.IsObjectiveCompleted() && questData.ObjectiveType == EQuestObjectiveType.CollectItem)
+            {
+                quest.Status = EQuestStatus.CanComplete;
+            }
+
+            OnQuestUpdated?.Invoke(quest);
+        }
+    }
+
+    private bool IsSimpleTargetMatched(QuestDataSO questData, EQuestObjectiveType objectiveType, string targetId)
+    {
+        switch (objectiveType)
+        {
+            case EQuestObjectiveType.BreakObject:
+                return questData.TargetObjectId == targetId;
+
+            case EQuestObjectiveType.TalkToNpc:
+                return questData.TargetNpcId == targetId;
+
+            default:
+                return false;
+        }
+    }
+
+    private bool HasValidItemRequirements(QuestDataSO questData)
+    {
+        return questData != null && questData.ItemRequirements != null && questData.ItemRequirements.Count > 0;
+    }
+
+    private bool TryGetRequirementAmount(QuestDataSO questData, int itemId, out int requiredAmount)
+    {
+        requiredAmount = 0;
+
+        if (!HasValidItemRequirements(questData) || itemId < 0) return false;
+
+        foreach (QuestItemRequirementEntry requirement in questData.ItemRequirements)
+        {
+            if (requirement.Item == null) continue;
+            if (requirement.ItemId != itemId) continue;
+
+            requiredAmount = requirement.Amount;
+            return true;
+        }
+
+        return false;
+    }
+
     // 퀘스트를 완료할 수 있는 지 확인하는 메서드입니다.
     public bool CanCompleteQuest(string questId)
     {
@@ -179,10 +325,9 @@ public class QuestManager : MonoBehaviour
     public bool CompleteQuest(string questId)
     {
         QuestRuntimeData quest = GetQuest(questId);
-        if (quest == null) return false;
-        if (quest.Status != EQuestStatus.CanComplete) return false;
+        if (quest == null || quest.Status != EQuestStatus.CanComplete) return false;
 
-        GiveReward(quest.QuestData.Reward);
+        _rewardService.GiveReward(quest.QuestData.Reward);
         quest.Status = EQuestStatus.Completed;
 
         switch (quest.QuestData.QuestCategory)
@@ -196,7 +341,7 @@ public class QuestManager : MonoBehaviour
                 break;
 
             case EQuestCategory.Daily:
-                _dailyQuestCompletedDays[questId] = TimeEvents.CurrentDay;
+                DailyQuestManager.Instance?.MarkCompletedToday(questId);
                 break;
         }
 
@@ -208,51 +353,24 @@ public class QuestManager : MonoBehaviour
     // 완료된 퀘스트를 목록에서 비우는 메서드입니다.
     public bool RemoveQuest(string questId)
     {
-        if (string.IsNullOrEmpty(questId)) return false;
-        if (!_activeQuests.ContainsKey(questId)) return false;
+        if (string.IsNullOrEmpty(questId) || !_activeQuests.ContainsKey(questId)) return false;
 
         _activeQuests.Remove(questId);
         OnQuestRemoved?.Invoke(questId);
         return true;
     }
 
-    private void GiveReward(QuestRewardData rewardData)
-    {
-        if (rewardData == null || rewardData.Rewards == null) return;
-
-        foreach (var reward in rewardData.Rewards)
-        {
-            if (reward == null || !reward.IsValid()) continue;
-
-            if (_rewardHandlers.TryGetValue(reward.RewardType, out var handler))
-            {
-                handler.HandleReward(reward);
-            }
-        }
-    }
-
-    private void HandleDayChanged()
-    {
-        ResetDailyQuests();
-        RefreshTodayDailyQuests(_dailyQuestBoardData, _dailyQuestCounts);
-
-#if UNITY_EDITOR
-        Debug.Log($"일일 퀘스트 초기화");
-#endif
-    }
-
-    public void ResetDailyQuests()
+    // 일일 퀘스트를 전체 삭제하는 메서드입니다.
+    public void RemoveAllDailyQuests()
     {
         List<string> removeKeys = new();
 
         foreach (var pair in _activeQuests)
         {
             if (pair.Value == null || pair.Value.QuestData == null) continue;
+            if (pair.Value.QuestData.QuestCategory != EQuestCategory.Daily) continue;
 
-            if (pair.Value.QuestData.QuestCategory == EQuestCategory.Daily)
-            {
-                removeKeys.Add(pair.Key);
-            }
+            removeKeys.Add(pair.Key);
         }
 
         foreach (string key in removeKeys)
@@ -262,33 +380,76 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    public void RefreshTodayDailyQuests(QuestBoardDataSO boardData, int selectCount = 2)
+    // 선행 퀘스트 확인용 메서드입니다.
+    public bool IsQuestCompleted(string questId)
     {
-        _todayDailyQuests.Clear();
+        if (string.IsNullOrEmpty(questId)) return false;
 
-        if (boardData == null || boardData.AllQuests == null) return;
+        if (_completedMainQuestIds.Contains(questId)) return true;
+        if (_completedSubQuestIds.Contains(questId)) return true;
 
-        List<QuestDataSO> candidates = new();
+        return false;
+    }
 
-        foreach (QuestDataSO quest in boardData.AllQuests)
+    public QuestRuntimeData GetCompletableQuestByNpc(string npcId)
+    {
+        if (string.IsNullOrEmpty(npcId)) return null;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
-            if (quest == null) continue;
-            if (quest.QuestCategory != EQuestCategory.Daily) continue;
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.CanComplete) continue;
 
-            candidates.Add(quest);
+            if (quest.QuestData.CompleteNpcId == npcId)
+            {
+                return quest;
+            }
         }
 
-        if (candidates.Count <= selectCount)
+        return null;
+    }
+
+    public QuestRuntimeData GetInProgressQuestByNpc(string npcId)
+    {
+        if (string.IsNullOrEmpty(npcId)) return null;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
-            _todayDailyQuests.AddRange(candidates);
-            return;
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+
+            QuestDataSO data = quest.QuestData;
+
+            if (data.StartNpcId == npcId || data.CompleteNpcId == npcId || data.TargetNpcId == npcId)
+            {
+                return quest;
+            }
         }
 
-        for (int i = 0; i < selectCount; i++)
+        return null;
+    }
+
+    // 현재 진행 중인 퀘스트들 중에서 특정 아이템이 요구되는 퀘스트가 하나라도 있는 지 확인하는 메서드입니다.
+    public bool IsRequiredItemForAnyActiveQuest(int itemId)
+    {
+        if (itemId < 0) return false;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
-            int randomIndex = UnityEngine.Random.Range(0, candidates.Count);
-            _todayDailyQuests.Add(candidates[randomIndex]);
-            candidates.RemoveAt(randomIndex);
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+            if (quest.QuestData.ItemRequirements == null) continue;
+
+            foreach (QuestItemRequirementEntry requirement in quest.QuestData.ItemRequirements)
+            {
+                if (requirement.Item == null) continue;
+                if (requirement.ItemId == itemId)
+                {
+                    return true;
+                }
+            }
         }
+
+        return false;
     }
 }

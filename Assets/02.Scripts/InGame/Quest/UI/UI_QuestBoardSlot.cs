@@ -23,6 +23,8 @@ public class UI_QuestBoardSlot : MonoBehaviour
     private int _slotIndex;
     private QuestDataSO _questData;
 
+    private IQuestProgressService _questProgressService;
+
     public int SlotIndex => _slotIndex;
     public QuestDataSO QuestData => _questData;
 
@@ -32,6 +34,11 @@ public class UI_QuestBoardSlot : MonoBehaviour
         {
             _wrapper = FindFirstObjectByType<TypewriterWithWrap>();
         }
+    }
+
+    public void Initialized(IQuestProgressService questProgressService)
+    {
+        _questProgressService = questProgressService;
     }
 
     public void Init(UI_QuestBoard uiQuestBoard, int index)
@@ -70,30 +77,17 @@ public class UI_QuestBoardSlot : MonoBehaviour
 
         _questNameText.text = quest.QuestName;
         _descriptionText.text = _wrapper.WrapText(quest.Description, _descriptionText);
+        SetWrappedText(QuestObjectiveTextFormatter.BuildTargetText(quest), _questTargetText);
+        SetWrappedText(QuestRewardTextFormatter.BuildQuestReward(quest.Reward), _questRewardText);
 
-        if (string.IsNullOrEmpty(quest.TargetId))
-        {
-            _questTargetText.text = "";
-        }
-        else
-        {
-            switch (quest.ObjectiveType)
-            {
-                case EQuestObjectiveType.BreakObject:
-                    _questTargetText.text = $"퀘스트 조건: {quest.TargetId} {quest.RequiredAmount}만큼 캐기";
-                    break;
-            }
-        }
-        if (quest.Reward == null)
-        {
-            _questRewardText.text = "";
-        }
-        else
-        {
-            _rewardText = QuestRewardTextFormatter.BuildQuestReward(quest.Reward);
-            _questRewardText.text = _wrapper.WrapText(_rewardText, _questRewardText);
-        }
         RefreshButtonState();
+    }
+
+    private void SetWrappedText(string text, TextMeshProUGUI target)
+    {
+        target.text = string.IsNullOrEmpty(text)
+            ? ""
+            : _wrapper.WrapText(text, target);
     }
 
     private void RefreshButtonState()
@@ -111,11 +105,9 @@ public class UI_QuestBoardSlot : MonoBehaviour
             return;
         }
 
-        QuestManager questManager = QuestManager.Instance;
-
-        bool hasQuest = questManager.HasQuest(_questData.QuestId);
-        bool canComplete = questManager.CanCompleteQuest(_questData.QuestId);
-        bool canAccept = questManager.CanAcceptQuest(_questData);
+        bool hasQuest = _questProgressService.HasQuest(_questData.QuestId);
+        bool canComplete = _questProgressService.CanCompleteQuest(_questData.QuestId);
+        bool canAccept = _questProgressService.CanAcceptQuest(_questData);
 
         if (hasQuest)
         {

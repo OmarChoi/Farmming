@@ -40,39 +40,9 @@ public class UI_QuestJournalSlot : MonoBehaviour
         QuestDataSO quest = runtimeData.QuestData;
 
         _questNameText.text = quest.QuestName;
-
-        switch (quest.ObjectiveType)
-        {
-            case EQuestObjectiveType.BreakObject:
-                _questTargetText.text = $"{quest.TargetId} {quest.RequiredAmount}만큼 캐기";
-                break;
-
-            default:
-                _questTargetText.text = "";
-                break;
-        }
-
-        _questProgressText.text = $"진행도: {runtimeData.CurrentAmount} / {quest.RequiredAmount}";
-
-        switch (runtimeData.Status)
-        {
-            case EQuestStatus.InProgress:
-                _questStatusText.text = "상태: 진행 중";
-                break;
-
-            case EQuestStatus.CanComplete:
-                _questStatusText.text = "상태: 완료 가능";
-                break;
-
-            case EQuestStatus.Completed:
-                _questStatusText.text = "상태: 완료";
-                break;
-
-            default:
-                _questStatusText.text = "";
-                break;
-        }
-
+        _questTargetText.text = QuestObjectiveTextFormatter.BuildTargetText(quest);
+        _questProgressText.text = QuestObjectiveTextFormatter.BuildProgressText(runtimeData);
+        _questStatusText.text = QuestStatusTextFormatter.BuildStatusText(runtimeData);
         _questRewardText.text = QuestRewardTextFormatter.BuildQuestReward(quest.Reward);
     }
 }

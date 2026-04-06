@@ -83,7 +83,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
         var inventory = info.Player.GetAbility<PlayerInventoryAbility>();
         foreach (DropEntry entry in _gatheringData.Drops)
         {
-            inventory.AddItem(entry.Item, entry.GetRandomQuantity());
+            QuestReportItemHelper.AddItemAndReportQuest(inventory, entry.Item, entry.GetRandomQuantity());
         }
 
         info.HelperExperience?.Add(_gatherExperience);
