@@ -28,6 +28,27 @@ public class DungeonTimer : MonoBehaviourPunCallbacks
 
         Instance = this;
     }
+    
+    private void Update()
+    {
+        if (!IsRunning) return;
+
+        RemainingSeconds = Mathf.Max(0f, _endTime - Time.realtimeSinceStartup);
+
+        int displaySeconds = Mathf.CeilToInt(RemainingSeconds);
+        if (displaySeconds != _lastDisplayedSeconds)
+        {
+            _lastDisplayedSeconds = displaySeconds;
+            OnSecondChanged?.Invoke(displaySeconds);
+        }
+
+        if (RemainingSeconds <= 0f)
+        {
+            IsRunning = false;
+            OnTimeExpired?.Invoke();
+            ReturnToVillage();
+        }
+    }
 
     private void OnDestroy()
     {
@@ -61,26 +82,6 @@ public class DungeonTimer : MonoBehaviourPunCallbacks
         IsRunning = true;
     }
 
-    private void Update()
-    {
-        if (!IsRunning) return;
-
-        RemainingSeconds = Mathf.Max(0f, _endTime - Time.realtimeSinceStartup);
-
-        int displaySeconds = Mathf.CeilToInt(RemainingSeconds);
-        if (displaySeconds != _lastDisplayedSeconds)
-        {
-            _lastDisplayedSeconds = displaySeconds;
-            OnSecondChanged?.Invoke(displaySeconds);
-        }
-
-        if (RemainingSeconds <= 0f)
-        {
-            IsRunning = false;
-            OnTimeExpired?.Invoke();
-            ReturnToVillage();
-        }
-    }
 
     private void ReturnToVillage()
     {
