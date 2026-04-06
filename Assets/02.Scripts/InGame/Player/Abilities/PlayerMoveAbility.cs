@@ -53,6 +53,7 @@ public class PlayerMoveAbility : PlayerAbility
     private void Update()
     {
         if (!_owner.IsMine) return;
+        if (_characterController == null || !_characterController.enabled) return;
 
         if (!_owner.CanMove)
         {
