@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-public class NpcFriendshipManager : MonoBehaviour
+public class NpcFriendshipManager : MonoBehaviour, IFriendshipService, IFriendshipHeartCalculator
 {
     public static NpcFriendshipManager Instance { get; private set; }
 
@@ -130,7 +130,7 @@ public class NpcFriendshipManager : MonoBehaviour
         _friendshipSettings?.Validate();
     }
 
-    public int[] GetHeartSteps(int friendship, int slotCount)
+    public int[] CalculateHeartSteps(int friendship, int slotCount)
     {
         int halfStepValue = _friendshipSettings.HalfStepValue;
         int halfStepsPerHeart = _friendshipSettings.HalfStepsPerHeart;
@@ -155,7 +155,7 @@ public class NpcFriendshipManager : MonoBehaviour
         return result;
     }
 
-    public List<int> GetChangedHeartSlotIndices(int oldFriendship, int newFriendship, int slotCount)
+    public List<int> GetChangedHeartSlots(int oldFriendship, int newFriendship, int slotCount)
     {
         int halfStepValue = _friendshipSettings.HalfStepValue;
         int halfStepsPerHeart = _friendshipSettings.HalfStepsPerHeart;

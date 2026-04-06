@@ -21,6 +21,9 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
 
     public void RequestInteract(Transform interactor)
     {
+        if (_ui == null)
+            _ui = FindFirstObjectByType<UI_DungeonPortal>();
+
         _playerController = interactor.GetComponentInParent<PlayerController>();
         _playerInteraction = interactor.GetComponentInChildren<PlayerNPCInteractionAbility>();
 

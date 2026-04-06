@@ -1,9 +1,13 @@
+using UnityEngine;
 using DG.Tweening;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class UI_FriendshipBar : MonoBehaviour
 {
+    [SerializeField] private NpcFriendshipManager _friendshipManager;
+    private IFriendshipService _friendshipService;
+    private IFriendshipHeartCalculator _friendshipHeartCalculator;
+
     [Header("하트 슬롯")]
     [SerializeField] private UI_FriendshipHeartSlot[] _slots;
 
@@ -22,17 +26,26 @@ public class UI_FriendshipBar : MonoBehaviour
     private int _currentFriendship = -1;
     private string _currentNpcId;
 
+    private void Awake()
+    {
+        if (_friendshipManager == null)
+        {
+            _friendshipManager = FindFirstObjectByType<NpcFriendshipManager>();
+        }
+        _friendshipService = _friendshipManager;
+        _friendshipHeartCalculator = _friendshipManager;
+    }
     public void BindNpc(string npcId, bool immediate = true)
     {
         _currentNpcId = npcId;
 
-        if (string.IsNullOrEmpty(npcId) || NpcFriendshipManager.Instance == null)
+        if (string.IsNullOrEmpty(npcId) || _friendshipService == null)
         {
             RefreshImmediate(0);
             return;
         }
 
-        int friendship = NpcFriendshipManager.Instance.GetFriendship(npcId);
+        int friendship = _friendshipService.GetFriendship(npcId);
 
         if (immediate)
         {
@@ -72,9 +85,9 @@ public class UI_FriendshipBar : MonoBehaviour
         _currentFriendship = targetFriendship;
         ApplyToSlots(targetFriendship);
 
-        if (_usePunchAnimation && NpcFriendshipManager.Instance != null)
+        if (_usePunchAnimation && _friendshipHeartCalculator != null)
         {
-            var changedSlots = NpcFriendshipManager.Instance.GetChangedHeartSlotIndices(oldValue, newValue, _slots.Length);
+            var changedSlots = _friendshipHeartCalculator.GetChangedHeartSlots(oldValue, newValue, _slots.Length);
 
             PlayChangedSlotAnimation(changedSlots);
         }
@@ -83,9 +96,9 @@ public class UI_FriendshipBar : MonoBehaviour
     private void ApplyToSlots(int friendship)
     {
         if (_slots == null || _slots.Length == 0) return;
-        if (NpcFriendshipManager.Instance == null) return;
+        if (_friendshipHeartCalculator == null) return;
 
-        var steps = NpcFriendshipManager.Instance.GetHeartSteps(friendship, _slots.Length);
+        var steps = _friendshipHeartCalculator.CalculateHeartSteps(friendship, _slots.Length);
 
         for (int i = 0; i < _slots.Length; i++)
         {
@@ -99,15 +112,6 @@ public class UI_FriendshipBar : MonoBehaviour
             };
 
             _slots[i].SetState(state);
-        }
-    }
-
-    private void ApplyEmpty()
-    {
-        for (int i = 0; i < _slots.Length; i++)
-        {
-            if (_slots[i] == null) continue;
-            _slots[i].SetState(EHeartFillState.Empty);
         }
     }
 

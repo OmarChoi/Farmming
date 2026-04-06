@@ -2,10 +2,11 @@ using UnityEngine;
 
 public class InteractService : MonoBehaviour
 {
-    [Header("컨트롤러")]
+    [Header("컴포넌트 참조")]
     [SerializeField] private NpcDialogueController _dialogueController;
     [SerializeField] private AiDialogueController _aiDialogueController;
     [SerializeField] private ShopController _shopController;
+    [SerializeField] private NpcQuestService _npcQuestService;
 
     private IDialogueHandler _scriptedHandler;
     private IDialogueHandler _aiHandler;
@@ -23,6 +24,10 @@ public class InteractService : MonoBehaviour
         if (_shopController == null)
         {
             _shopController = FindFirstObjectByType<ShopController>();
+        }
+        if (_npcQuestService == null)
+        {
+            _npcQuestService = FindFirstObjectByType<NpcQuestService>();
         }
 
         _scriptedHandler = new ScriptedDialogueHandler(_dialogueController);
@@ -110,6 +115,6 @@ public class InteractService : MonoBehaviour
 
     private void ExecuteQuest(NpcInteractionContext context)
     {
-        // todo.npc 전용 퀘스트 연결
+        _npcQuestService?.ExecuteQuestInteraction(context);
     }
 }
