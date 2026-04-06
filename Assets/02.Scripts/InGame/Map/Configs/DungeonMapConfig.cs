@@ -22,18 +22,14 @@ public class DungeonMapConfig : MapConfig
     [Header("Multiple Tile Types")]
     public TileWeightEntry[] TileWeights;
 
-    [Header("Cave (Dungeon 2)")]
-    public bool IsCave = false;
-    [Range(0.40f, 0.55f)]
-    public float CaveFillPercent = 0.45f;
-    public int CaveSmoothIterations = 5;
-    public ETileType WallTileType = ETileType.Dungeon2Stone;
+    [Header("Chest")]
+    public GameObject ChestPrefab;
+    public int ChestCount = 3;
 
     [Header("Environment")]
     public DungeonEnvironmentProfile EnvironmentProfile;
 
-    public override IMapGenerator CreateGenerator() =>
-        IsCave ? new CaveMapGenerator() : new HeightMapGenerator();
+    public override IMapGenerator CreateGenerator() => new HeightMapGenerator();
 }
 
 [Serializable]
