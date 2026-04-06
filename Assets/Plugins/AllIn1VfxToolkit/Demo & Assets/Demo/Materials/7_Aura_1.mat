@@ -2,21 +2,31 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: 7_Aura_1
   m_Shader: {fileID: 4800000, guid: 6eb86e4931b506a408fd1477edec61ea, type: 3}
-  m_ShaderKeywords: ADDITIVECONFIG_ON COLORRAMPGRAD_ON COLORRAMP_ON HSV_ON POSTERIZE_ON
-    PREMULTIPLYCOLOR_ON SHAPE2_ON
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - ADDITIVECONFIG_ON
+  - COLORRAMPGRAD_ON
+  - COLORRAMP_ON
+  - HSV_ON
+  - POSTERIZE_ON
+  - PREMULTIPLYCOLOR_ON
+  - SHAPE2_ON
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -88,6 +98,7 @@ Material:
         m_Texture: {fileID: 2800000, guid: 48da24d771916524899d36e4bfe7f762, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _Alpha: 0.768
     - _AlphaBrightness: 0
@@ -241,27 +252,33 @@ Material:
     - _Shape2Color: {r: 1, g: 1, b: 1, a: 1}
     - _Shape3Color: {r: 1, g: 1, b: 1, a: 1}
     - _ShapeColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!28 &4577025434482680088
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: z_ColorRampTexGradientTex{"mode":0,"colorKeys":[{"color":{"r":0.0,"g":0.0,"b":0.0,"a":1.0},"time":0.0},{"color":{"r":0.4373927116394043,"g":0.0,"b":1.0,"a":1.0},"time":0.5159838199615479},{"color":{"r":1.0,"g":0.6084905862808228,"b":0.9948430061340332,"a":1.0},"time":1.0}],"alphaKeys":[{"alpha":1.0,"time":0.0},{"alpha":1.0,"time":1.0}]}
+  m_Name: z_ColorRampTexGradientTex{"mode":0,"colorKeys":[{"color":{"r":0.0,"g":0.0,"b":0.0,"a":1.0},"time":0.0},{"color":{"r":0.0,"g":0.8546385765075684,"b":1.0,"a":1.0},"time":0.5159838199615479},{"color":{"r":0.6078431606292725,"g":1.0,"b":1.0,"a":1.0},"time":1.0}],"alphaKeys":[{"alpha":1.0,"time":0.0},{"alpha":1.0,"time":1.0}]}
   m_ImageContentsHash:
     serializedVersion: 2
     Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 2
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 4
   m_Width: 64
   m_Height: 1
   m_CompleteImageSize: 256
+  m_MipsStripped: 0
   m_TextureFormat: 4
   m_MipCount: 1
   m_IsReadable: 1
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 0
+  m_MipmapLimitGroupName: 
   m_StreamingMipmaps: 0
   m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
   m_AlphaIsTransparency: 0
   m_ImageCount: 1
   m_TextureDimension: 2
@@ -275,9 +292,11 @@ Texture2D:
     m_WrapW: 1
   m_LightmapFormat: 0
   m_ColorSpace: 0
+  m_PlatformBlob: 
   image data: 256
-  _typelessdata: 000000ff030008ff070010ff0a0018ff0e001fff110027ff15002fff180037ff1b003fff1f0047ff22004eff260056ff29005eff2d0066ff30006eff330076ff37007eff3a0085ff3e008dff410095ff45009dff4800a5ff4b00adff4f00b4ff5200bcff5600c4ff5900ccff5d00d4ff6000dcff6400e3ff6700ebff6a00f3ff6e00fbff7203ffff7708ffff7b0dffff8012ffff8517ffff891cffff8e21ffff9326ffff972bffff9c30ffffa135ffffa63affffaa40feffaf45feffb44afeffb84ffeffbd54feffc259feffc75efeffcb63feffd068feffd56dfeffd972feffde78feffe37dfeffe782feffec87fefff18cfefff691fefffa96feffff9bfeff
+  _typelessdata: 000000ff000708ff000d10ff001418ff001b1fff002227ff00282fff002f37ff00363fff003c47ff00434eff004a56ff00505eff005766ff005e6eff006576ff006b7eff007285ff00798dff007f95ff00869dff008da5ff0093adff009ab4ff00a1bcff00a8c4ff00aeccff00b5d4ff00bcdcff00c2e3ff00c9ebff00d0f3ff00d7fbff03dbffff08dcffff0dddffff12deffff17dfffff1ce1ffff21e2ffff26e3ffff2be4ffff30e5ffff35e7ffff3ae8ffff40e9ffff45eaffff4aecffff4fedffff54eeffff59efffff5ef0ffff63f2ffff68f3ffff6df4ffff72f5ffff77f6ffff7df8ffff82f9ffff87faffff8cfbffff91fdffff96feffff9bffffff
   m_StreamData:
+    serializedVersion: 2
     offset: 0
     size: 0
     path: 
