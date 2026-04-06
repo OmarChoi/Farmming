@@ -133,9 +133,6 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
             await UniTask.Yield();
         }
 
-        float timeout = Time.time + TerrainReadyTimeout;
-        await UniTask.WaitUntil(() => AllPlayersTerrainReady() || Time.time > timeout);
-
         if (!AllPlayersTerrainReady())
             Debug.LogWarning("[DungeonSceneInit] Terrain ready timeout - proceeding");
 

@@ -145,6 +145,12 @@ public class PlayerController : MonoBehaviour
     // === PunRPC ===
 
     [PunRPC]
+    public void RPC_AnimTrigger(string triggerName)
+    {
+        GetAbility<PlayerAnimationAbility>()?.PlayTrigger(triggerName);
+    }
+
+    [PunRPC]
     public void RPC_RestoreSaveData(string json)
     {
         var saveData = JsonUtility.FromJson<PlayerSaveData>(json);
