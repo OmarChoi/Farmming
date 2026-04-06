@@ -28,6 +28,7 @@ public class TerrainGridManager : MonoBehaviour
     private int _maxHeight = int.MaxValue;
 
     public float CellSize => _cellSize;
+    public IReadOnlyDictionary<Vector3Int, TerrainCell> Cells => _cells;
 
     public void SetMaxHeight(int maxHeight) => _maxHeight = maxHeight;
 

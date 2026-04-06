@@ -40,8 +40,6 @@ MonoBehaviour:
     Weight: 0.65
   - TileType: 6
     Weight: 0.35
-  IsCave: 0
-  CaveFillPercent: 0.43
-  CaveSmoothIterations: 5
-  WallTileType: 4
+  ChestPrefab: {fileID: 1725259873546053907, guid: c195d47ad9b6dee41a802a02aff23963, type: 3}
+  ChestCount: 3
   EnvironmentProfile: {fileID: 11400000, guid: ef10809ccd2d2bf4cbffde78fc17f9a1, type: 2}
