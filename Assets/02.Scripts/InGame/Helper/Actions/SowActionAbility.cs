@@ -37,6 +37,13 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
+        float cost = _owner.Data.BaseEnergyCost;
+
+        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
+        {
+            return;
+        }
+
         switch (_owner.Grade.CurrentGrade)
         {
             case EHelperGrade.Epic:
@@ -234,6 +241,13 @@ public class SowActionAbility : HelperAbility, IHelperAction
     public void InteractSecondary(TerrainCell cell)
     {
         if (_owner.IsMine && _isActing)
+        {
+            return;
+        }
+
+        float cost = _owner.Data.BaseEnergyCost;
+
+        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
         {
             return;
         }
