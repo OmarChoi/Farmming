@@ -96,8 +96,6 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             {
                 QuestReportItemHelper.AddItemAndReportQuest(inventory, _dirtItem, _getDirtAmount);
             }
-        }
-
         _owner.EndAction();
     }
 
@@ -147,7 +145,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     private bool CanRemoveCell(TerrainCell cell)
     {
-        if (cell.Data.TileType == ETileType.Dungeon2Lava) return false;
+        if (cell.Data.TileType == ETileType.Dungeon3Lava) return false;
 
         if (cell.Data.ObjectType == EGridObjectType.FarmLand)
         {
