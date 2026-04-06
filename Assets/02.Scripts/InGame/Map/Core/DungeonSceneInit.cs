@@ -55,6 +55,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
+        DungeonSpawnHelper.SpawnChests(_floor, seed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
         SpawnCliff();
@@ -71,6 +72,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
+        DungeonSpawnHelper.SpawnChests(_floor, seed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
         SpawnCliff();
@@ -112,6 +114,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(receivedFloor);
         MapManager.Instance.EnterDungeon(receivedFloor, receivedSeed);
+        DungeonSpawnHelper.SpawnChests(receivedFloor, receivedSeed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
         SpawnCliff();
@@ -230,6 +233,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         else
             MapManager.Instance.EnterDungeon(_floor, seed);
 
+        DungeonSpawnHelper.SpawnChests(_floor, seed);
         ApplyEnvironment();
         SpawnCliff();
         SceneTransitionData.Clear();
@@ -241,7 +245,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         if (players.Length == 0)
             return;
 
-        Vector3 spawnPos = FindSpawnPosition();
+        Vector3 spawnPos = DungeonSpawnHelper.FindSpawnPosition(_floor);
 
         foreach (var player in players)
         {
@@ -266,105 +270,6 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
             player.GetAbility<PlayerCameraAbility>()?.RebindFollowCamera();
         }
-    }
-
-    private Vector3 FindSpawnPosition()
-    {
-        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
-        var gridManager = MapManager.Instance.GridManager;
-        var gridData = gridManager.GetGridData();
-
-        if (config != null && config.SpawnMode == DungeonSpawnMode.TopCellWithAllowedTile)
-        {
-            if (TryFindAllowedTileSpawnPosition(gridData, gridManager, config, out Vector3 allowedSpawn))
-                return allowedSpawn;
-
-            Debug.LogWarning("[DungeonSceneInit] No valid allowed-tile spawn found. Falling back to center-top spawn.");
-        }
-
-        return FindCenterTopSpawnPosition(gridData, gridManager);
-    }
-
-    private static Vector3 FindCenterTopSpawnPosition(TerrainGridData gridData, TerrainGridManager gridManager)
-    {
-        int minX = int.MaxValue;
-        int maxX = int.MinValue;
-        int minZ = int.MaxValue;
-        int maxZ = int.MinValue;
-
-        foreach (var pos in gridData.Cells.Keys)
-        {
-            if (pos.x < minX) minX = pos.x;
-            if (pos.x > maxX) maxX = pos.x;
-            if (pos.z < minZ) minZ = pos.z;
-            if (pos.z > maxZ) maxZ = pos.z;
-        }
-
-        int cx = (minX + maxX) / 2;
-        int cz = (minZ + maxZ) / 2;
-
-        for (int y = 20; y >= 0; y--)
-        {
-            if (gridData.HasCell(new Vector3Int(cx, y, cz)))
-                return gridManager.GridToWorld(new Vector3Int(cx, y + 1, cz));
-        }
-
-        return Vector3.zero;
-    }
-
-    private static bool TryFindAllowedTileSpawnPosition(TerrainGridData gridData, TerrainGridManager gridManager, DungeonMapConfig config, out Vector3 spawnPosition)
-    {
-        if (config.AllowedSpawnTiles == null || config.AllowedSpawnTiles.Length == 0)
-        {
-            spawnPosition = default;
-            return false;
-        }
-
-        int centerX = config.Width / 2;
-        int centerZ = config.Height / 2;
-        bool found = false;
-        Vector3Int bestCell = default;
-        int bestDistance = int.MaxValue;
-
-        foreach (var kvp in gridData.Cells)
-        {
-            Vector3Int pos = kvp.Key;
-            TerrainCellData cell = kvp.Value;
-
-            if (!cell.IsTop)
-                continue;
-
-            if (!IsAllowedSpawnTile(cell.TileType, config.AllowedSpawnTiles))
-                continue;
-
-            int distance = Mathf.Abs(pos.x - centerX) + Mathf.Abs(pos.z - centerZ);
-            if (!found || distance < bestDistance)
-            {
-                found = true;
-                bestCell = pos;
-                bestDistance = distance;
-            }
-        }
-
-        if (!found)
-        {
-            spawnPosition = default;
-            return false;
-        }
-
-        spawnPosition = gridManager.GridToWorld(bestCell + Vector3Int.up);
-        return true;
-    }
-
-    private static bool IsAllowedSpawnTile(ETileType tileType, ETileType[] allowedTiles)
-    {
-        foreach (ETileType allowedTile in allowedTiles)
-        {
-            if (tileType == allowedTile)
-                return true;
-        }
-
-        return false;
     }
 
     private void ApplyObjectPrefabs(int floor)
