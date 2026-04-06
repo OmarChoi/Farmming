@@ -51,9 +51,16 @@ public static class DungeonSpawnHelper
         }
 
         int count = Mathf.Min(config.ChestCount, candidates.Count);
+        var lootTables = config.ChestLootTables;
+        bool hasLoot = lootTables != null && lootTables.Length > 0;
+
         for (int i = 0; i < count; i++)
         {
             candidates[i].SpawnObject(config.ChestPrefab, EGridObjectType.Chest);
+
+            var chest = candidates[i].CurrentObject.GetComponent<DungeonChest>();
+            if (chest != null && hasLoot)
+                chest.Init(lootTables[i % lootTables.Length]);
         }
     }
 
