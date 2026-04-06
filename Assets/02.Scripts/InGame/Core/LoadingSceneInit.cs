@@ -66,6 +66,7 @@ public class LoadingSceneInit : MonoBehaviourPunCallbacks
     private void InitVillageToDungeon()
     {
         LoadingProgress.Begin();
+        VillageCache.CapturePlayerPositions();
 
         if (PhotonNetwork.IsMasterClient)
         {
@@ -165,9 +166,6 @@ public class LoadingSceneInit : MonoBehaviourPunCallbacks
 
             await UniTask.Yield();
         }
-
-        await UniTask.WaitUntil(() =>
-            AreAllPlayersReady() || Time.time > timeout);
 
         if (!AreAllPlayersReady())
             Debug.LogWarning("[LoadingSceneInit] Timeout - proceeding with available players");
@@ -276,17 +274,6 @@ public class LoadingSceneInit : MonoBehaviourPunCallbacks
                 { PropTerrainReady, null }
             };
             player.SetCustomProperties(clearPlayer);
-        }
-    }
-
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
-    {
-        if (!PhotonNetwork.IsMasterClient) return;
-        if (_transitionStarted) return;
-
-        if (changedProps.ContainsKey(PropLoadingReady) && AreAllPlayersReady())
-        {
-            // WaitForAllReadyAndTransition will pick this up
         }
     }
 
