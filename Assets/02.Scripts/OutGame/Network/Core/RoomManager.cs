@@ -21,8 +21,10 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     private Action _onJoinedCallback;
     private Action _onFailedCallback;
+    private Action _onLeftRoomCallback;
     private Action _onFirstVisit;
     private Action _onReturning;
+    private bool _loadTitleSceneOnLeftRoom = true;
 
     private readonly Dictionary<string, RoomInfo> _cachedRoomList = new();
     private Action<bool> _onRoomCheckResult;
@@ -68,6 +70,21 @@ public class RoomManager : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinRoom(roomId);
     }
 
+    public void LeaveRoom(Action onLeftRoom = null, bool loadTitleScene = true)
+    {
+        _onLeftRoomCallback = onLeftRoom;
+        _loadTitleSceneOnLeftRoom = loadTitleScene;
+
+        if (!PhotonNetwork.InRoom)
+        {
+            _onLeftRoomCallback?.Invoke();
+            _onLeftRoomCallback = null;
+            return;
+        }
+
+        PhotonNetwork.LeaveRoom();
+    }
+
     public override void OnJoinedRoom()
     {
         _onJoinedCallback?.Invoke();
@@ -98,9 +115,18 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
+        RoomId = null;
+        PendingRoomId = null;
+        PendingAction = ERoomAction.None;
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
+
+        _onLeftRoomCallback?.Invoke();
+        _onLeftRoomCallback = null;
+
+        if (_loadTitleSceneOnLeftRoom)
+            UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
     }
 
     /// 마스터가 GameScene에 도착한 후 호출 — 클라이언트 입장 허용
