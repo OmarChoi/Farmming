@@ -8,6 +8,7 @@ public class PlayerAnimationAbility : PlayerAbility
     private static readonly int MoveHash = Animator.StringToHash("Move");
     private static readonly int GroundedHash = Animator.StringToHash("Grounded");
     private static readonly int GreetHash = Animator.StringToHash("Greet");
+    private static readonly int LavaHitHash = Animator.StringToHash("LavaHit");
 
     private Animator _animator;
 
@@ -31,6 +32,11 @@ public class PlayerAnimationAbility : PlayerAbility
     public void PlayGreet()
     {
         PlayTriggerSynced(GreetHash, "Greet");
+    }
+
+    public void PlayLavaHit()
+    {
+        PlayTriggerSynced(LavaHitHash, "LavaHit");
     }
 
     public void PlayTrigger(string triggerName)
