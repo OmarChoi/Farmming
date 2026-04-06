@@ -1,8 +1,9 @@
+using Photon.Pun;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using Photon.Pun;
 using UnityEngine;
-using System;
+using static CultivateAbility;
 
 public class SowActionAbility : HelperAbility, IHelperAction
 {
@@ -54,15 +55,18 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
             _owner.BeginAction();
-            _cultivateAbility.JumpAndCultivate(cell, onCultivate: () =>
+            _cultivateAbility.JumpAndCultivate(cell, new CultivationParams
             {
-                cell.TryConvertToFarm();
-                _owner.Experience.Add(_cultivateExperience);
-                foreach (TerrainCell lateralCell in GetLateralCells(cell))
+                OnCultivate = () =>
                 {
-                    if (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                    cell.TryConvertToFarm();
+                    _owner.Experience.Add(_cultivateExperience);
+                    foreach (TerrainCell lateralCell in GetLateralCells(cell))
                     {
-                        lateralCell.TryConvertToFarm();
+                        if (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                        {
+                            lateralCell.TryConvertToFarm();
+                        }
                     }
                 }
             });
@@ -80,7 +84,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         if (!farmTile.HasSeed)
         {
-            _cultivateAbility.JumpAndCultivate(cell, onCultivate: () =>
+            _cultivateAbility.JumpAndCultivate(cell, new CultivationParams
+            {
+                OnCultivate = () =>
                 {
                     foreach (TerrainCell lateralCell in GetLateralCells(cell))
                     {
@@ -89,7 +95,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
                             lateralCell.TryConvertToFarm();
                         }
                     }
-                });
+                }
+            });
             return;
         }
 
@@ -118,10 +125,13 @@ public class SowActionAbility : HelperAbility, IHelperAction
             if (leftBlocked)
             {
                 _owner.BeginAction();
-                _cultivateAbility.JumpAndCultivate(rightCell, onCultivate: () =>
+                _cultivateAbility.JumpAndCultivate(rightCell, new CultivationParams
                 {
-                    rightCell.TryConvertToFarm();
-                    _owner.Experience.Add(_cultivateExperience);
+                    OnCultivate = () =>
+                    {
+                        rightCell.TryConvertToFarm();
+                        _owner.Experience.Add(_cultivateExperience);
+                    }
                 });
                 return;
             }
@@ -129,42 +139,49 @@ public class SowActionAbility : HelperAbility, IHelperAction
             if (rightBlocked)
             {
                 _owner.BeginAction();
-                _cultivateAbility.JumpAndCultivate(leftCell, onCultivate: () =>
+                _cultivateAbility.JumpAndCultivate(leftCell, new CultivationParams
                 {
-                    leftCell.TryConvertToFarm();
-                    _owner.Experience.Add(_cultivateExperience);
+                    OnCultivate = () =>
+                    {
+                        leftCell.TryConvertToFarm();
+                        _owner.Experience.Add(_cultivateExperience);
+                    }
                 });
                 return;
             }
 
             _owner.BeginAction();
-            _cultivateAbility.JumpAndCultivate(leftCell,
-                onCultivate: () =>
+            _cultivateAbility.JumpAndCultivate(leftCell, new CultivationParams
+            {
+                OnCultivate = () =>
                 {
                     leftCell.TryConvertToFarm();
                     _owner.Experience.Add(_cultivateExperience);
                 },
-                epicLook: true,
-                epicLookLeft: false,
-                epicLookRight: true,
-                epicRightLookDuration: 1.6f,
-                onEpicLookRightMid: () => TryConvertLateralCell(leftCell, +1),
-                onEpicLookRight: () => TryConvertLateralCell(leftCell, +2));
+                EpicLook = true,
+                EpicLookLeft = false,
+                EpicLookRight = true,
+                EpicRightLookDuration = 1.6f,
+                OnEpicLookRightMid = () => TryConvertLateralCell(leftCell, +1),
+                OnEpicLookRight = () => TryConvertLateralCell(leftCell, +2)
+            });
             return;
         }
 
         if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
             _owner.BeginAction();
-            _cultivateAbility.JumpAndCultivate(cell,
-                onCultivate: () =>
+            _cultivateAbility.JumpAndCultivate(cell, new CultivationParams
+            {
+                OnCultivate = () =>
                 {
                     cell.TryConvertToFarm();
                     _owner.Experience.Add(_cultivateExperience);
                 },
-                epicLook: true,
-                onEpicLookLeft: onEpicLeft,
-                onEpicLookRight: onEpicRight);
+                EpicLook = true,
+                OnEpicLookLeft = onEpicLeft,
+                OnEpicLookRight = onEpicRight
+            });
             return;
         }
 
@@ -173,11 +190,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         _owner.BeginAction();
 
-        _cultivateAbility.JumpAndCultivate(cell,
-            onCultivate: farmTile.HasSeed ? null : (Action)null,
-            epicLook: true,
-            onEpicLookLeft: onEpicLeft,
-            onEpicLookRight: onEpicRight);
+        _cultivateAbility.JumpAndCultivate(cell, new CultivationParams
+        {
+            EpicLook = true,
+            OnEpicLookLeft = onEpicLeft,
+            OnEpicLookRight = onEpicRight
+        });
     }
 
     private void HandleLegendaryCultivation(TerrainCell cell)
@@ -185,13 +203,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf)
         {
             _owner.BeginAction();
-            _cultivateAbility.JumpAndCultivate(cell,
-                onCultivate: () =>
+            _cultivateAbility.JumpAndCultivate(cell, new CultivationParams
+            {
+                OnCultivate = () =>
                 {
                     cell.TryConvertToFarm();
                     _owner.Experience.Add(_cultivateExperience);
                 },
-                spin: true);
+                Spin = true
+            });
             return;
         }
 
@@ -199,7 +219,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (farmTile == null) return;
 
         _owner.BeginAction();
-        _cultivateAbility.JumpAndCultivate(cell, null, spin: true);
+        _cultivateAbility.JumpAndCultivate(cell, new CultivationParams { Spin = true });
     }
 
     public void InteractSecondary(TerrainCell cell)
