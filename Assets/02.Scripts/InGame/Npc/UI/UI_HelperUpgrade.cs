@@ -13,6 +13,9 @@ public class UI_HelperUpgrade : MonoBehaviour
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_HelperUpgradeSlot _slotPrefab;
 
+    [Header("플레이어 컨트롤러")]
+    [SerializeField] private PlayerController _playerController;
+
     [Header("상세 패널 텍스트")]
     [SerializeField] private TextMeshProUGUI _helperNameText;
     [SerializeField] private TextMeshProUGUI _helperGradeText;
@@ -55,9 +58,13 @@ public class UI_HelperUpgrade : MonoBehaviour
         }
     }
 
-    public bool IsOpen()
+    public async void OpenUpgradeUi(List<HelperController> helpers)
     {
-        return _helperUpgradeRoot != null && _helperUpgradeRoot.activeSelf;
+        await OpenAsync(helpers);
+        if (_playerController != null)
+        {
+            _playerController?.SetCursorLock(false);
+        }
     }
 
     public async UniTask OpenAsync(List<HelperController> helpers)
@@ -84,23 +91,12 @@ public class UI_HelperUpgrade : MonoBehaviour
         }
     }
 
-    public void Open(List<HelperController> helpers)
+    public async void CloseUpgradeUi()
     {
-        BindHelperList(helpers);
-        CreateOrRefreshSlots();
-
-        if (_currentHelpers.Count > 0)
+        await CloseAsync();
+        if (_playerController != null)
         {
-            SelectSlot(0);
-        }
-        else
-        {
-            ClearDetail();
-        }
-
-        if (_helperUpgradeRoot != null)
-        {
-            _helperUpgradeRoot.SetActive(true);
+            _playerController?.SetCursorLock(true);
         }
     }
 
@@ -111,17 +107,6 @@ public class UI_HelperUpgrade : MonoBehaviour
             await _popupDoTween.PlayCloseAsync();
         }
         else if (_helperUpgradeRoot != null)
-        {
-            _helperUpgradeRoot.SetActive(false);
-        }
-
-        _currentHelpers.Clear();
-        _selectedIndex = -1;
-    }
-
-    public void Close()
-    {
-        if (_helperUpgradeRoot != null)
         {
             _helperUpgradeRoot.SetActive(false);
         }
@@ -262,10 +247,10 @@ public class UI_HelperUpgrade : MonoBehaviour
         }
 
         _helperMessageText.text = canUpgrade
-            ? "업그레이드가 가능합니다."
+            ? "업그레이드가 가능합니다!"
             : _helperUpgradeService != null
                 ? _helperUpgradeService.GetBlockReason(helper)
-                : "업그레이드할 수 없습니다.";
+                : "업그레이드가 불가능합니다.";
     }
 
     private void ClearDetail()
