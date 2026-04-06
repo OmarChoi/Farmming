@@ -4,5 +4,6 @@ public enum EGridObjectType
     Tree,
     Rock,
     FarmLand,
-    Building
+    Building,
+    Chest
 }
