@@ -25,6 +25,7 @@ public class DungeonMapConfig : MapConfig
     [Header("Chest")]
     public GameObject ChestPrefab;
     public int ChestCount = 3;
+    public ChestLootTable[] ChestLootTables;
 
     [Header("Environment")]
     public DungeonEnvironmentProfile EnvironmentProfile;
