@@ -58,13 +58,6 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     {
         if (cell == null) return;
 
-        float cost = _owner.Data.BaseEnergyCost;
-
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
-        {
-            return;
-        }
-
         if (!CanRemoveCell(cell)) return;
 
         bool isFarmLand = cell.Data.ObjectType == EGridObjectType.FarmLand;
@@ -110,13 +103,6 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     public void InteractSecondary(TerrainCell cell)
     {
         if (cell == null) return;
-
-        float cost = _owner.Data.BaseEnergyCost;
-
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
-        {
-            return;
-        }
 
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return;
