@@ -272,6 +272,7 @@ public class NpcDialogueController : MonoBehaviour
             case ENpcInteractionType.DeepTalk:
             case ENpcInteractionType.Trade:
             case ENpcInteractionType.Upgrade:
+            case ENpcInteractionType.Styling:
             case ENpcInteractionType.Quest:
             case ENpcInteractionType.EndTalk:
                 _interactionService.Execute(type, CreateContext());
