@@ -11,7 +11,7 @@ public readonly struct SfxPlayRequest
     public Vector3 Position { get; }
     public Transform FollowTarget { get; }
 
-    private SfxPlayRequest(string clipKey, ESpatialMode spatialMode, Vector3 position, Transform followTarget)
+    public SfxPlayRequest(string clipKey, ESpatialMode spatialMode = ESpatialMode.Flat2D, Vector3 position = default, Transform followTarget = null)
     {
         ClipKey = clipKey;
         ESpatialMode = spatialMode;

@@ -17,9 +17,14 @@ public class PlayerMoveAbility : PlayerAbility
     private PlayerHelperInteractionAbility _helperInteraction;
     private Camera _mainCamera;
 
+    [Header("Footstep Sound")]
+    [SerializeField] private float _walkStepInterval = 0.45f;
+    [SerializeField] private float _sprintStepInterval = 0.3f;
+
     private float _yVelocity;
     private float _currentMoveParam;
     private bool _wasGrounded = true;
+    private float _stepTimer;
 
     private void OnEnable()
     {
@@ -66,13 +71,14 @@ public class PlayerMoveAbility : PlayerAbility
         Vector3 direction = GetMoveDirection();
         bool isMoving = direction.sqrMagnitude > MoveThresholdSqr;
         bool isHelperEquipped = _helperInteraction.CurrentHelper != null
-            && _helperInteraction.CurrentHelper.State == EHelperState.Equipped;
+                                && _helperInteraction.CurrentHelper.State == EHelperState.Equipped;
         bool isSprinting = isMoving && Input.GetKey(_sprintKey) && !isHelperEquipped;
 
         UpdateAnimation(isMoving, isSprinting);
         FaceMovementDirection(direction, isMoving);
         UpdateGravity();
         Move(direction, isSprinting);
+        UpdateFootstepSound(isMoving, isSprinting);
     }
 
     private Vector3 GetMoveDirection()
@@ -140,6 +146,31 @@ public class PlayerMoveAbility : PlayerAbility
         }
 
         _wasGrounded = isGrounded;
+    }
+
+    private void UpdateFootstepSound(bool isMoving, bool isSprinting)
+    {
+        if (!isMoving || !_characterController.isGrounded)
+        {
+            // 다음 번에 최초 1회는 바로 시작할 수 있게 설정
+            _stepTimer = _walkStepInterval;
+            return;
+        }
+
+        _stepTimer += Time.deltaTime;
+        float interval = isSprinting ? _sprintStepInterval : _walkStepInterval;
+
+        if (_stepTimer < interval) return;
+        _stepTimer = 0f;
+        SoundManager.Instance.PlaySfx
+        (
+            new SfxPlayRequest
+            (
+                clipKey: AssetKey.SFX.Move,
+                spatialMode: ESpatialMode.FollowTransform,
+                followTarget: _characterController.transform
+            )
+        );
     }
 
     private void UpdateAnimation(bool isMoving, bool isSprinting)
