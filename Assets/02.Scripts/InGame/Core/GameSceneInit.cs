@@ -214,11 +214,15 @@ public class GameSceneInit : MonoBehaviour
         {
             // 캐시에서 마을 복원 (파일 I/O 없이)
             _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            
+            if (VillageCache.Buildings != null && BuildingManager.Instance != null)
+                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+            
             _mapNavMeshController.BuildInitialNavMesh();
 
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
-                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
-
+                BuildingManager.Instance.SpawnBuildingNpcs();
+            
             VillageCache.RestorePlayerPositions();
             RestoreExistingPlayers();
             ReturningFromDungeon = false;
@@ -232,6 +236,9 @@ public class GameSceneInit : MonoBehaviour
             await SaveManager.Instance.LoadAsync(slot);
             _mapNavMeshController.BuildInitialNavMesh();
 
+            if (BuildingManager.Instance != null)
+                BuildingManager.Instance.SpawnBuildingNpcs();
+            
             if (ReturningFromDungeon)
             {
                 RestoreExistingPlayers();
