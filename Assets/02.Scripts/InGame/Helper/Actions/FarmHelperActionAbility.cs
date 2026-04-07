@@ -6,6 +6,15 @@ public class FarmHelperActionAbility : HelperAbility, IHelperAction
 
     public void SetSeed(SeedItemDataSO seed) => _currentSeed = seed;
 
+    public bool CanInteractPrimary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (cell.Data.CellType != ECellType.Dirt) return false;
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return false;
+        return true;
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         _owner.BeginAction();

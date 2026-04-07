@@ -144,6 +144,25 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _owner.EndAction();
     }
 
+    public bool CanInteractPrimary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        return CanRemoveCell(cell);
+    }
+
+    public bool CanInteractSecondary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return false;
+
+        PlayerInventoryAbility inventory = GetInventory();
+        if (inventory == null) return false;
+
+        ItemDataSO selectedGround = _groundSelector?.SelectedGround;
+        return selectedGround != null;
+    }
+
     private bool CanRemoveCell(TerrainCell cell)
     {
         if (cell.Data.TileType == ETileType.Dungeon3Lava) return false;

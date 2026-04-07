@@ -30,6 +30,22 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
     }
 
+    public bool CanInteractPrimary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (cell.Data.CellType != ECellType.Dirt) return false;
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return false;
+        return true;
+    }
+
+    public bool CanInteractSecondary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        FarmTile farmTile = GetFarmTile(cell);
+        return farmTile != null && farmTile.IsReadyToSow;
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         if (cell == null)

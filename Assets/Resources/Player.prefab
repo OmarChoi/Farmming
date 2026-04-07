@@ -55,6 +55,7 @@ GameObject:
   - component: {fileID: 2155480617688705000}
   - component: {fileID: 3687428902528433680}
   - component: {fileID: 6003655954720563584}
+  - component: {fileID: 1723760070143069421}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -91,6 +92,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMoveAbility
   _sprintKey: 304
   _jumpKey: 32
+  _walkStepInterval: 0.45
+  _sprintStepInterval: 0.3
 --- !u!114 &7878009165133541125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,11 +306,26 @@ MonoBehaviour:
   _fadeRadius: 0.3
   _castRadius: 1.4
   _candidateSearchPadding: 2
+  _fadeStrengthLerpSpeed: 8
   _ditherMinVisibility: 0
   _occlusionLayer:
     serializedVersion: 2
     m_Bits: 2048
   _playerOffset: {x: 0, y: 1.5, z: 0}
+--- !u!114 &1723760070143069421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7477bf2ab68cee0438906465f8b8c8f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerGridIndicatorAbility
+  _indicatorPrefab: {fileID: 2068350137740573875, guid: dbfcd4c00696ff64b9ad76999ec8c4ec, type: 3}
+  _heightOffset: 0.05
 --- !u!1 &2101610759984280812
 GameObject:
   m_ObjectHideFlags: 0
