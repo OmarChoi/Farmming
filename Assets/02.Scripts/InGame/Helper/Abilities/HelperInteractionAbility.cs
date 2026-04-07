@@ -6,6 +6,8 @@ public class HelperInteractionAbility : HelperAbility
     private IHelperAction _action;
     private PlayerStaminaAbility _playerStamina;
 
+    public IHelperAction Action => _action;
+
     protected override void Awake()
     {
         base.Awake();
