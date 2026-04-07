@@ -37,6 +37,11 @@ public class HelperEnergy
         return true;
     }
 
+    public bool HasEnough(float amount)
+    {
+        return Current >= amount;
+    }
+
     public void Recover(float deltaTime)
     {
         if(Current >= Max)
