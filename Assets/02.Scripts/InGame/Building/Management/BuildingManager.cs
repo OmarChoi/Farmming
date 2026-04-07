@@ -360,7 +360,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             BuildingNpcSpawner spawner = instance.GetComponent<BuildingNpcSpawner>();
             if (spawner != null && spawner.HasValidData)
             {
-                spawner.SpawnNpc();
+                instance.SetNpc(spawner.SpawnNpc());
             }
         }
     }
@@ -390,7 +390,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             built.RemainingDays = saveData.RemainingDays;
             if (_registry.TryGetInstance(anchor, out BaseBuilding baseBuildingInstance))
             {
-                baseBuildingInstance.Initialize(data, built, CreateConstructionContext());
+                baseBuildingInstance.Initialize(data, built, CreateConstructionContext(), true);
             }
         }
     }

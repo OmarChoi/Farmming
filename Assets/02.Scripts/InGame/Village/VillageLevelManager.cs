@@ -8,7 +8,7 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
 {
     public static VillageLevelManager Instance { get; private set; }
 
-    [SerializeField] private int[] _levelThresholds = { 100 };
+    [SerializeField] private int[] _levelThresholds = { 100, 150, 200 };
 
     public int CurrentLevel { get; private set; } = 1;
     public int CurrentGauge { get; private set; }
