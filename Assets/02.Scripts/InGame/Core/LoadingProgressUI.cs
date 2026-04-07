@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,10 @@ public class LoadingProgressUI : MonoBehaviour
     [SerializeField] private CanvasGroup _canvasGroup;
     [SerializeField] private float _smoothSpeed = 5f;
     [SerializeField] private float _fadeOutSpeed = 2f;
+
+    private float _sceneLoadBase;
+    private float _sceneLoadRange;
+    private bool _trackingSceneLoad;
 
     private void Awake()
     {
@@ -25,8 +30,31 @@ public class LoadingProgressUI : MonoBehaviour
             _canvasGroup.alpha = 1f;
     }
 
+    /// <summary>
+    /// 씬 로딩 진행률 추적 시작.
+    /// base ~ base+range 범위를 PhotonNetwork.LevelLoadingProgress로 채움.
+    /// </summary>
+    public void TrackSceneLoad(float baseValue, float range)
+    {
+        _sceneLoadBase = baseValue;
+        _sceneLoadRange = range;
+        _trackingSceneLoad = true;
+    }
+
     private void Update()
     {
+        if (_trackingSceneLoad && PhotonNetwork.IsConnected)
+        {
+            float sceneProgress = PhotonNetwork.LevelLoadingProgress;
+            float mapped = _sceneLoadBase + _sceneLoadRange * sceneProgress;
+
+            if (mapped > LoadingProgress.Value)
+                LoadingProgress.Value = mapped;
+
+            if (sceneProgress >= 1f)
+                _trackingSceneLoad = false;
+        }
+
         if (_fillBar != null)
         {
             float targetFill = Mathf.Clamp01(LoadingProgress.Value);
