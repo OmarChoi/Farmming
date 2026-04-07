@@ -1,11 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 /// <summary>
 /// Character Customization UI Manager
 /// </summary>
 public class CharacterCustomizeUI : MonoBehaviour
 {
+    [Header("Root")]
+    [SerializeField] private GameObject _root;
+
     [Header("Reference")]
     [Tooltip("CharacterPartSwapper that handles part swapping")]
     public CharacterPartSwapper partSwapper;
@@ -48,22 +52,19 @@ public class CharacterCustomizeUI : MonoBehaviour
     [Header("Other Buttons")]
     public Button randomizeButton;
 
+    [Header("Styling Buttons")]
+    [SerializeField] private Button _confirmButton;
+    [SerializeField] private Button _cancelButton;
+
+    public event Action<CustomizeSaveData> OnConfirmRequested;
+    public event Action OnCancelRequested;
+
     private void Start()
     {
-        // Auto-find partSwapper
-        if (partSwapper == null)
-        {
-            partSwapper = FindObjectOfType<CharacterPartSwapper>();
-        }
-
-        if (partSwapper == null)
-        {
-            Debug.LogError("CharacterPartSwapper not found!");
-            return;
-        }
-
         // Setup button events
         SetupButtons();
+
+        BindStylingButtons();
 
         // Display initial indices
         UpdateAllIndexTexts();
@@ -118,6 +119,18 @@ public class CharacterCustomizeUI : MonoBehaviour
             randomizeButton.onClick.AddListener(() => { partSwapper.RandomizeAll(); UpdateAllIndexTexts(); });
     }
 
+    private void BindStylingButtons()
+    {
+        if (_confirmButton != null)
+            _confirmButton.onClick.AddListener(HandleConfirmClicked);
+
+        if (_cancelButton != null)
+            _cancelButton.onClick.AddListener(() =>
+            {
+                OnCancelRequested?.Invoke();
+            });
+    }
+
     private void UpdateIndexText(Text textComponent, int index)
     {
         if (textComponent != null)
@@ -128,6 +141,8 @@ public class CharacterCustomizeUI : MonoBehaviour
 
     private void UpdateAllIndexTexts()
     {
+        if (partSwapper == null) return;
+
         UpdateIndexText(bodyIndexText, partSwapper.currentBodyIndex);
         UpdateIndexText(hairIndexText, partSwapper.currentHairIndex);
         UpdateIndexText(hatIndexText, partSwapper.currentHatIndex);
@@ -135,5 +150,49 @@ public class CharacterCustomizeUI : MonoBehaviour
         UpdateIndexText(mouthIndexText, partSwapper.currentMouthIndex);
         UpdateIndexText(eyebrowIndexText, partSwapper.currentEyebrowIndex);
         UpdateIndexText(cheekIndexText, partSwapper.currentCheekIndex);
+    }
+
+    public void OpenForStyling(CharacterPartSwapper targetSwapper, CustomizeSaveData initialData)
+    {
+        if (targetSwapper == null)
+        {
+#if UNITY_EDITOR
+            Debug.LogWarning("OpenForStyling failed: targetSwapper is null.");
+#endif
+            return;
+        }
+
+        partSwapper = targetSwapper;
+        SetVisible(true);
+
+        if (initialData != null)
+        {
+            partSwapper.ApplySaveData(initialData);
+        }
+
+        UpdateAllIndexTexts();
+    }
+
+    public void CloseForStyling()
+    {
+        SetVisible(false);
+    }
+
+    public CustomizeSaveData GetCurrentData()
+    {
+        if (partSwapper == null) return new CustomizeSaveData();
+
+        return partSwapper.CreateSaveData();
+    }
+
+    private void HandleConfirmClicked()
+    {
+        OnConfirmRequested?.Invoke(GetCurrentData());
+    }
+
+    private void SetVisible(bool visible)
+    {
+        if (_root != null) _root.SetActive(visible);
+        else gameObject.SetActive(visible);
     }
 }

@@ -10,6 +10,9 @@ public class NpcLocationAnchor : MonoBehaviour
 
     [SerializeField] private Transform _point;
 
+    [Header("스타일링 숨김 대상")]
+    [SerializeField] private GameObject _stylingHideRoot;
+
     public string NpcId => _npcData != null ? _npcData.NpcId : "";
 
     public ENpcLocationType LocationType => _locationType;
@@ -31,6 +34,16 @@ public class NpcLocationAnchor : MonoBehaviour
         if (NpcLocationManager.Instance != null)
         {
             NpcLocationManager.Instance.Unregister(this);
+        }
+    }
+
+    public GameObject StylingHideRoot
+    {
+        get
+        {
+            if (_stylingHideRoot != null) return _stylingHideRoot;
+
+            return transform.root.gameObject;
         }
     }
 }

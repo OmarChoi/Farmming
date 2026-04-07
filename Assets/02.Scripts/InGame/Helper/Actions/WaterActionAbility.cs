@@ -62,6 +62,13 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         ResetState();
     }
 
+    public bool CanInteractPrimary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf) return false;
+        return true;
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         if (cell == null) return;

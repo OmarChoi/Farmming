@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using ExitGames.Client.Photon;
 using Photon.Pun;
@@ -6,6 +7,7 @@ using UnityEngine;
 public class GameSceneInit : MonoBehaviour
 {
     public static bool ReturningFromDungeon{ get; set; }
+    public static event Action OnCompleteInitialize;
 
     [SerializeField] private string _playerPrefabName = "Player";
     [SerializeField] private MapManager _mapManager;
@@ -36,7 +38,14 @@ public class GameSceneInit : MonoBehaviour
                 _mapNavMeshController.BuildInitialNavMesh();
                 SpawnPlayer(spawnPos);
                 CacheVillageData();
+
+                var props = new Hashtable { { PropTerrainReady, true } };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+                LoadingProgress.Value = 1f;
+                LoadingProgress.Complete();
+
                 RoomManager.Instance.OpenRoom();
+                OnCompleteInitialize?.Invoke();
             }
             else
             {
@@ -103,6 +112,7 @@ public class GameSceneInit : MonoBehaviour
 
         CacheVillageData();
         await WaitForAllTerrainReady();
+        OnCompleteInitialize?.Invoke();
     }
 
     private Vector3 FindSpawnPosition()
@@ -158,6 +168,8 @@ public class GameSceneInit : MonoBehaviour
 
         if (existing != null && CustomizeData.Instance != null)
             existing.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
+
+        OnCompleteInitialize?.Invoke();
     }
 
     private async UniTaskVoid LoadLocalVillage()
@@ -190,6 +202,7 @@ public class GameSceneInit : MonoBehaviour
         ReturningFromDungeon = false;
         UnfreezeExistingPlayers();
         SceneTransitionData.Clear();
+        OnCompleteInitialize?.Invoke();
     }
 
     private async UniTaskVoid LoadAndSpawnMaster()
@@ -201,11 +214,15 @@ public class GameSceneInit : MonoBehaviour
         {
             // 캐시에서 마을 복원 (파일 I/O 없이)
             _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            
+            if (VillageCache.Buildings != null && BuildingManager.Instance != null)
+                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+            
             _mapNavMeshController.BuildInitialNavMesh();
 
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
-                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
-
+                BuildingManager.Instance.SpawnBuildingNpcs();
+            
             VillageCache.RestorePlayerPositions();
             RestoreExistingPlayers();
             ReturningFromDungeon = false;
@@ -218,8 +235,10 @@ public class GameSceneInit : MonoBehaviour
 
             await SaveManager.Instance.LoadAsync(slot);
             _mapNavMeshController.BuildInitialNavMesh();
-            await SaveManager.Instance.LoadBuildingAsync();
 
+            if (BuildingManager.Instance != null)
+                BuildingManager.Instance.SpawnBuildingNpcs();
+            
             if (ReturningFromDungeon)
             {
                 RestoreExistingPlayers();
@@ -241,6 +260,7 @@ public class GameSceneInit : MonoBehaviour
         LoadingProgress.Value = 0.6f;
         RoomManager.Instance.OpenRoom();
         await WaitForAllTerrainReady();
+        OnCompleteInitialize?.Invoke();
     }
 
     private async UniTask WaitForAllTerrainReady()
