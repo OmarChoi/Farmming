@@ -26,6 +26,13 @@ public class HelperAnimationAbility : HelperAbility
         TrySetAnimation(anim);
     }
 
+    // 현재 재생 중인 애니메이션과 같더라도 처음부터 다시 재생
+    public void Replay(EHelperAnim anim)
+    {
+        _currentAnim = (EHelperAnim)(-1);
+        Play(anim);
+    }
+
     [PunRPC]
     internal void RPC_PlayAnimation(int anim)
     {

@@ -987,14 +987,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GroundActionAbility
   _dirtItem: {fileID: 11400000, guid: 496a91325591fb746b65ab955ba01fe0, type: 2}
-  _toolLevel: 1
+  _canDigLevel: 1
   _getDirtAmount: 1
   _generateDirtAmount: 1
   _groundItemMappings:
   - Item: {fileID: 11400000, guid: 496a91325591fb746b65ab955ba01fe0, type: 2}
     TileType: 0
+  - Item: {fileID: 11400000, guid: 9433c087fdd661042a64d1ffb5bedbd1, type: 2}
+    TileType: 6
   _mouthPoint: {fileID: 6475551524434919391}
-  _absorbVfxPrefab: {fileID: 0}
+  _absorbArcHeight: 2
+  _absorbDuration: 0.5
+  _absorbTargetScale: 0.05
+  _digAnimDelay: 0.2
+  _placeAnimLeadTime: 0.3
+  _placeHorizontalDuration: 0.1
+  _placeHoverDuration: 0.2
+  _placeDropDuration: 0.15
 --- !u!114 &1475702922432846875
 MonoBehaviour:
   m_ObjectHideFlags: 0

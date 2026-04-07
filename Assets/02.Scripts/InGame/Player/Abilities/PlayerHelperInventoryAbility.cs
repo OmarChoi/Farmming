@@ -226,13 +226,16 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private HelperController InstantiateHelper(HelperDataSO data)
     {
+        EHelperGrade grade = GetHelperGrade(data);
+        HelperController prefab = data.GetPrefabForGrade(grade);
+
         Vector3 spawnPos = _owner.transform.position + _owner.transform.right * 1.5f;
         if (PhotonNetwork.IsConnected)
         {
-            var go = PhotonNetwork.Instantiate(data.Prefab.name, spawnPos, Quaternion.identity);
+            var go = PhotonNetwork.Instantiate(prefab.name, spawnPos, Quaternion.identity);
             return go.GetComponent<HelperController>();
         }
-        return Instantiate(data.Prefab, spawnPos, Quaternion.identity);
+        return Instantiate(prefab, spawnPos, Quaternion.identity);
     }
 
     private void SaveHelperState(HelperController helper)
@@ -333,18 +336,17 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
         HelperController activeHelper = FindActiveHelper(data.HelperId);
 
-        // 소환 중이면 실제 오브젝트 업그레이드
         if (activeHelper != null)
         {
             if (!activeHelper.Experience.IsReadyToUpgrade)
                 return false;
 
             activeHelper.PerformUpgrade();
+            activeHelper.Energy.RecoverFull();
             SaveHelperState(activeHelper);
             return true;
         }
 
-        // 소환 중이 아니면 저장 데이터만 업그레이드
         if (!_savedStates.TryGetValue(data.HelperId, out var state))
             return false;
 
@@ -356,11 +358,49 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         if (state.Experience < needExp)
             return false;
 
-        state.Experience -= needExp;
+        state.Experience = 0;
         state.Grade += 1;
+        state.Energy = data.MaxEnergy;
 
         _savedStates[data.HelperId] = state;
         return true;
+    }
+
+    public void RespawnHelper(HelperDataSO data)
+    {
+        if (data == null) return;
+
+        HelperController activeHelper = FindActiveHelper(data.HelperId);
+        if (activeHelper == null) return;
+
+        if (data.IsLightHelper)
+        {
+            SaveHelperState(activeHelper);
+            UnsubscribeLightHelper();
+            _helperInteractionAbility.UnsummonBack();
+            _activeLightHelper = null;
+
+            HelperController newHelper = InstantiateHelper(data);
+            _activeLightHelper = newHelper;
+            _activeLightHelper.OnGradeChanged += OnLightHelperGradeChanged;
+            _helperInteractionAbility.Summon(newHelper);
+            RestoreHelperState(newHelper);
+        }
+        else
+        {
+            SaveHelperState(activeHelper);
+            UnsubscribeMainHelper();
+            _helperInteractionAbility.UnsummonCurrentOnly();
+            _activeMainHelper = null;
+
+            HelperController newHelper = InstantiateHelper(data);
+            _activeMainHelper = newHelper;
+            _activeMainHelper.OnGradeChanged += OnMainHelperGradeChanged;
+            _helperInteractionAbility.Summon(newHelper);
+            RestoreHelperState(newHelper);
+        }
+
+        OnSummonChanged?.Invoke(SummonedIndex);
     }
 
     private HelperController FindActiveHelper(string helperId)

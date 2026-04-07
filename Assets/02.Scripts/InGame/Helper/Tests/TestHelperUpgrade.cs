@@ -7,6 +7,7 @@ using UnityEngine;
 public class TestHelperUpgrade : MonoBehaviour
 {
     [SerializeField] private PlayerHelperInteractionAbility _playerHelperInteraction;
+    [SerializeField] private PlayerHelperInventoryAbility _playerHelperInventory;
 
     [Header("테스트 키")]
     [SerializeField] private KeyCode _fillExpKey = KeyCode.U;           // 경험치 최대 채우기
@@ -27,9 +28,9 @@ public class TestHelperUpgrade : MonoBehaviour
     private void Start()
     {
         if (_playerHelperInteraction == null)
-        {
             _playerHelperInteraction = FindFirstObjectByType<PlayerHelperInteractionAbility>();
-        }
+        if (_playerHelperInventory == null)
+            _playerHelperInventory = FindFirstObjectByType<PlayerHelperInventoryAbility>();
     }
 
     private HelperController GetTarget()
@@ -72,6 +73,8 @@ public class TestHelperUpgrade : MonoBehaviour
         }
 
         helper.PerformUpgrade();
+        helper.Energy.RecoverFull();
+        _playerHelperInventory?.RespawnHelper(helper.Data);
         Debug.Log($"[HelperUpgradeTest] 업그레이드 완료 → 등급: {helper.Grade.CurrentGrade}  범위: {helper.Grade.GetRange()}");
     }
 
@@ -102,6 +105,8 @@ public class TestHelperUpgrade : MonoBehaviour
 
         helper.Grade.CurrentGrade = grade;
         helper.Experience.Reset();
+        helper.Energy.RecoverFull();
+        _playerHelperInventory?.RespawnHelper(helper.Data);
         Debug.Log($"[HelperUpgradeTest] 등급 강제 설정 → {grade}  범위: {helper.Grade.GetRange()}");
     }
 }
