@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: HairdresserCompleteDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: HairdresserCompleteDialogue
+  Lines:
+  - Text: "\uC624~\uD638\uD638\uD638. \uD638\uBC15 \uD5A5\uAE30\uAC00 \uBC8C\uC368\uBD80\uD130
+      \uC740\uC740\uD558\uAC8C \uD48D\uAE30\uB294 \uAC78\uC694?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC815\uB9D0 \uACE0\uB9C8\uC6CC\uC694. \uC5EC\uAE30 \uC0AC\uB840\uAE08\uC744
+      \uB4DC\uB9B4\uAC8C\uC694. \uB2F9\uC2E0\uC774 \uC900 \uD638\uBC15\uC744 \uBA39\uACE0
+      \uB354 \uC608\uBED0\uC9C8\uAC8C\uC694~"
+    NextDialogue: {fileID: 0}

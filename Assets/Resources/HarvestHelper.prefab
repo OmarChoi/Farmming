@@ -818,6 +818,8 @@ GameObject:
   - component: {fileID: 6695980083485624287}
   - component: {fileID: 7565693385116759200}
   - component: {fileID: 7847188916598362213}
+  - component: {fileID: 9185847749894884377}
+  - component: {fileID: 4370792154318029271}
   m_Layer: 7
   m_Name: HarvestHelper
   m_TagString: Untagged
@@ -987,6 +989,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HarvestActionAbility
   _harvestItem: {fileID: 11400000, guid: d59ceafad712dd942b7c164fbf7b3d4b, type: 2}
   _harvestExperience: 10
+--- !u!114 &9185847749894884377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6a41e7017428d54f8f0b96ee858598e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HarvestLegendaryVFXAbility
+  _auroraPrefab: {fileID: 0}
+  _tornadoPrefab: {fileID: 8164937988709842303, guid: 1927094644dc5584f8bd6084548f43d2, type: 3}
+  _tornadoSweepDistance: 1.5
+  _tornadoSweepDuration: 2
+  _tornadoSpawnHeight: 2.1
+--- !u!114 &4370792154318029271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07d67f9a829ac744093f44bca7acc794, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HarvestEpicVFXAbility
+  _sproutTornadoPrefab: {fileID: 7766320549157120268, guid: 25ba92d22214eed4698dd08656587a54, type: 3}
+  _totalDuration: 2
+  _tornadoLifetime: 1.5
+  _tornadoSpawnHeight: 2.1
 --- !u!1 &5410132598804558874
 GameObject:
   m_ObjectHideFlags: 0

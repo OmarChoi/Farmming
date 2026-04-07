@@ -819,6 +819,9 @@ GameObject:
   - component: {fileID: 2498730990899227308}
   - component: {fileID: 4367454080045414661}
   - component: {fileID: 2251510159385357850}
+  - component: {fileID: 4973909685477854158}
+  - component: {fileID: 7228437992528773148}
+  - component: {fileID: 4710113073220678109}
   m_Layer: 7
   m_Name: WaterHelper
   m_TagString: Untagged
@@ -987,7 +990,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaterActionAbility
   _mouthPoint: {fileID: 1982235181728634582}
-  _waterVfxPrefab: {fileID: 4881571040572222668, guid: 6a570f51b4cf2924cb95f91f3f9db821, type: 3}
   _iceVfxPrefab: {fileID: 6137449325422851024, guid: 9b0c4a3f931856d45bc0194eb434105d, type: 3}
   _secondaryEnergyCost: 25
   _iceSpawnOffset: 3.4
@@ -1006,6 +1008,58 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IceVFX
   _iceSmokePrefab: {fileID: 0}
   _effectDuration: 1
+--- !u!114 &4973909685477854158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f635e61782bbf04185fac74efe7be87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaterNormalVFXAbility
+  _waterVfxPrefab: {fileID: 4881571040572222668, guid: 6a570f51b4cf2924cb95f91f3f9db821, type: 3}
+--- !u!114 &7228437992528773148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9d962e5452881e4a80a294966e0fdef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaterLegendaryVFXAbility
+  _helperVfxPrefab: {fileID: 0}
+  _landVfxPrefab: {fileID: 4763949867957790656, guid: e2afc80c2b252a146abb95038d904ebc, type: 3}
+  _helperVfxDuration: 1
+  _landVfxDuration: 2.5
+  _rotationDuration: 2.5
+  _rotationSpeed: 720
+  _waterOpenDelay: 0.2
+--- !u!114 &4710113073220678109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dc8e9147a1a9ef4991fb70ebb3fc23b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaterEpicVFXAbility
+  _helperVfxPrefab: {fileID: 8230158754645587314, guid: 1870cd1467e0e9c488ed66330050f120, type: 3}
+  _landVfxPrefab: {fileID: 1310597095853728661, guid: 7004925bbe41739468be0f4244ba0cb5, type: 3}
+  _helperVfxDuration: 1
+  _landVfxDuration: 2.5
+  _actionCompletionDelay: 1
+  _landDelay: 0.1
+  _waterOpenDelay: 0.2
+  _jumpInterval: 0.6
 --- !u!1 &5410132598804558874
 GameObject:
   m_ObjectHideFlags: 0

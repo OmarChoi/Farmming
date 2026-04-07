@@ -22,4 +22,9 @@ public class CustomizeData : MonoBehaviour
     {
         Data = swapper.CreateSaveData();
     }
+
+    public void SetData(CustomizeSaveData data)
+    {
+        Data = data;
+    }
 }

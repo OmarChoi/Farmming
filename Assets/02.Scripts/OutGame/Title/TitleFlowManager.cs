@@ -100,6 +100,16 @@ public class TitleFlowManager : MonoBehaviour
     }
 
     /// 방 참가 확인: roomId 검증 → 접속 → 로비에서 재방문 체크 → 분기
+    public void OnClickRoomBack()
+    {
+        OnPanelChanged?.Invoke(ETitlePanel.Connecting);
+
+        RoomManager.Instance.LeaveRoom(
+            onLeftRoom: () => OnPanelChanged?.Invoke(ETitlePanel.Lobby),
+            loadTitleScene: false
+        );
+    }
+
     public void ConfirmJoin(string roomId)
     {
         if (string.IsNullOrEmpty(roomId))

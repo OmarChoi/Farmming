@@ -27,19 +27,17 @@ MonoBehaviour:
     Level: 1
     SpawnChance: 0.08
   DungeonName: "\uC815\uAE00"
-  TimeLimitSeconds: 180
-  EntryCost: 100
-  EntryRequirements:
-  - Item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
-    Amount: 1
-  - Item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
-    Amount: 1
+  TimeLimitSeconds: 30
+  EntryCost: 0
+  EntryRequirements: []
   CliffPrefab: {fileID: 0}
   TreePrefab: {fileID: 5130300574329225930, guid: aaea097398e8fd847b32e81f83888654, type: 3}
   RockPrefab: {fileID: 5182465649738605643, guid: 3e31cb771959b174eac42a22acfce587, type: 3}
+  SpawnMode: 0
+  AllowedSpawnTiles: 
   TileWeights: []
-  IsCave: 0
-  CaveFillPercent: 0.45
-  CaveSmoothIterations: 5
-  WallTileType: 3
+  ChestPrefab: {fileID: 1725259873546053907, guid: c195d47ad9b6dee41a802a02aff23963, type: 3}
+  ChestCount: 3
+  ChestLootTables:
+  - {fileID: 11400000, guid: 8d248e013d730ab46b8385229742ed03, type: 2}
   EnvironmentProfile: {fileID: 0}

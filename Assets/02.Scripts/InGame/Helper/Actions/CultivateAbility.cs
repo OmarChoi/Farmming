@@ -2,6 +2,7 @@ using DG.Tweening;
 using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
 using System.Collections;
+using System;
 
 public class CultivateAbility : HelperAbility
 {
@@ -18,8 +19,29 @@ public class CultivateAbility : HelperAbility
     [SerializeField] private float _rayOriginHeight = 3f;
     [SerializeField] private float _rayDistance = 5f;
 
+    [Header("Epic 방향 전환")]
+    [SerializeField] private float _epicInitialWait = 0.2f;
+    [SerializeField] private float _epicLookDuration = 0.8f;
+
+    [Header("Legendary 스핀")]
+    [SerializeField] private float _spinDuration = 2f;
+    [SerializeField] private float _spinDegreesPerSecond = 720f;
+
     private HelperAnimationAbility _animAbility;
     private bool _isJumping = false;
+
+    public class CultivationParams
+    {
+        public Action OnCultivate;
+        public bool Spin;
+        public bool EpicLook;
+        public bool EpicLookLeft = true;
+        public bool EpicLookRight = true;
+        public Action OnEpicLookLeft;
+        public Action OnEpicLookRight;
+        public float EpicRightLookDuration;
+        public Action OnEpicLookRightMid;
+    }
 
     private void Start()
     {
@@ -34,16 +56,13 @@ public class CultivateAbility : HelperAbility
         _owner?.transform.DOKill();
     }
 
-    public void JumpAndCultivate(TerrainCell cell, System.Action onCultivate = null)
+    public void JumpAndCultivate(TerrainCell cell, CultivationParams cultivationParams = null)
     {
-        if(_isJumping)
-        {
-            return;
-        }
+        if (_isJumping) return;
 
+        cultivationParams ??= new CultivationParams();
         Vector3 targetPos = GetTerrainLandPosition(cell);
-        StartCoroutine(JumpCoroutine(targetPos, onCultivate));
-        
+        StartCoroutine(JumpCoroutine(targetPos, cultivationParams));
     }
 
     private Vector3 GetTerrainLandPosition(TerrainCell cell)
@@ -59,23 +78,63 @@ public class CultivateAbility : HelperAbility
         return cell.transform.position;
     }
 
-    private IEnumerator JumpCoroutine(Vector3 targetPosition, System.Action onCultivate = null)
+    private IEnumerator JumpCoroutine(Vector3 targetPosition, CultivationParams cultivationParams)
     {
         _isJumping = true;
 
         Transform parentBackup = _owner.transform.parent;
         _owner.transform.SetParent(null);
 
-        Vector3 endPosition = targetPosition;
-
         _animAbility.Play(EHelperAnim.Jump);
-        yield return Move(_owner.transform, endPosition, _jumpHeight, _jumpDuration);
+        yield return Move(_owner.transform, targetPosition, _jumpHeight, _jumpDuration);
 
         _animAbility.Play(EHelperAnim.Cultivate);
         SpawnDustEffect();
-        onCultivate?.Invoke();
+        cultivationParams.OnCultivate?.Invoke();
 
-        yield return new WaitForSeconds(_cultivateDuration);
+        if (cultivationParams.EpicLook && _owner.PlayerOwner != null)
+        {
+            yield return new WaitForSeconds(_epicInitialWait);
+
+            Vector3 rightDir = _owner.PlayerOwner.transform.right;
+            Quaternion leftRotation = Quaternion.LookRotation(-rightDir, Vector3.up);
+            Quaternion rightRotation = Quaternion.LookRotation(rightDir, Vector3.up);
+
+            if (cultivationParams.EpicLookLeft)
+            {
+                yield return _owner.transform
+                    .DORotateQuaternion(leftRotation, _epicLookDuration)
+                    .SetEase(Ease.InOutQuad)
+                    .WaitForCompletion();
+                cultivationParams.OnEpicLookLeft?.Invoke();
+            }
+
+            if (cultivationParams.EpicLookRight)
+            {
+                float rightDuration = cultivationParams.EpicRightLookDuration > 0f ? cultivationParams.EpicRightLookDuration : _epicLookDuration;
+                var seq = DOTween.Sequence()
+                    .Append(_owner.transform.DORotateQuaternion(rightRotation, rightDuration).SetEase(Ease.InOutQuad));
+                if (cultivationParams.OnEpicLookRightMid != null)
+                    seq.InsertCallback(rightDuration * 0.5f, () => cultivationParams.OnEpicLookRightMid.Invoke());
+                yield return seq.WaitForCompletion();
+                cultivationParams.OnEpicLookRight?.Invoke();
+            }
+        }
+        else
+        {
+            yield return new WaitForSeconds(_cultivateDuration);
+        }
+
+        if (cultivationParams.Spin)
+        {
+            float elapsed = 0f;
+            while (elapsed < _spinDuration)
+            {
+                _owner.transform.Rotate(Vector3.up, _spinDegreesPerSecond * Time.deltaTime, Space.World);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
 
         Vector3 returnPosition = parentBackup != null ? parentBackup.position : _owner.PlayerOwner.transform.position;
 
