@@ -36,6 +36,12 @@ public class GameSceneInit : MonoBehaviour
                 _mapNavMeshController.BuildInitialNavMesh();
                 SpawnPlayer(spawnPos);
                 CacheVillageData();
+
+                var props = new Hashtable { { PropTerrainReady, true } };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+                LoadingProgress.Value = 1f;
+                LoadingProgress.Complete();
+
                 RoomManager.Instance.OpenRoom();
             }
             else
