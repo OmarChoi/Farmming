@@ -1564,6 +1564,7 @@ GameObject:
   - component: {fileID: 1012907082310678824}
   - component: {fileID: 8890283815802751499}
   - component: {fileID: 8484499773403390359}
+  - component: {fileID: 4078509730715069191}
   m_Layer: 7
   m_Name: WoodCuttingHelper
   m_TagString: Untagged
@@ -1724,6 +1725,7 @@ MonoBehaviour:
   _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
   _idleTransition: 0.5
+  _wideGatherOffset: 2
 --- !u!114 &8890283815802751499
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1761,6 +1763,18 @@ MonoBehaviour:
   _jumpCount: 1
   _rayOriginHeight: 3
   _rayDistance: 5
+--- !u!114 &4078509730715069191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7031329684245050430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 166fb58cdbf49ba479038374255f2a23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RangeBoostEffect
 --- !u!1 &7649335919829065423
 GameObject:
   m_ObjectHideFlags: 0

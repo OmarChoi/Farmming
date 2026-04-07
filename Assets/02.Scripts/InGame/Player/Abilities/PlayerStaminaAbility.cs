@@ -26,6 +26,8 @@ public class PlayerStaminaAbility : PlayerAbility
     }
 
     public bool TryConsume(float amount) => Stamina.TryConsume(amount);
+    public bool HasEnough(float amount) => Stamina.HasEnough(amount);
+    public void Consume(float amount) => Stamina.Consume(amount);
 
     private void HandleMorning() => Stamina.RecoverFull();
 }

@@ -17,7 +17,7 @@ MonoBehaviour:
       _hour: 0
       _minute: 0
     NpcLocationType: 3
-    LocationKey: Blacksmith_Smithy
+    LocationKey: Blacksmith_Smithy1
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -35,8 +35,17 @@ MonoBehaviour:
       _hour: 8
       _minute: 0
     NpcLocationType: 3
-    LocationKey: Blacksmith_Smithy
+    LocationKey: Blacksmith_Smithy1
     WanderingDirection: {x: 0, y: 0, z: 0}
+    WanderingDistance: 0
+    WanderingRadius: 0
+    WanderSearchStep: 0
+  - ScheduleTime:
+      _hour: 14
+      _minute: 30
+    NpcLocationType: 3
+    LocationKey: Blacksmith_Smithy2
+    WanderingDirection: {x: 0, y: 0, z: 0.5}
     WanderingDistance: 0
     WanderingRadius: 0
     WanderSearchStep: 0

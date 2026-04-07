@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,14 +16,28 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
 
     private void Awake()
     {
-        if (_ui == null)
-            _ui = FindFirstObjectByType<UI_DungeonPortal>();
+        ResolveUI();
+    }
+
+    private void Start()
+    {
+        if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient && MapSyncManager.Instance != null)
+            MapSyncManager.Instance.OnDungeonEntryRequested += OnMasterReceiveEntry;
+    }
+
+    private void OnDestroy()
+    {
+        if (MapSyncManager.Instance != null)
+            MapSyncManager.Instance.OnDungeonEntryRequested -= OnMasterReceiveEntry;
     }
 
     public void RequestInteract(Transform interactor)
     {
-        if (_ui == null)
-            _ui = FindFirstObjectByType<UI_DungeonPortal>();
+        if (!ResolveUI())
+        {
+            Debug.LogError("[DungeonPortal] UI_DungeonPortal not found.");
+            return;
+        }
 
         _playerController = interactor.GetComponentInParent<PlayerController>();
         _playerInteraction = interactor.GetComponentInChildren<PlayerNPCInteractionAbility>();
@@ -100,17 +115,12 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
     {
         if (PhotonNetwork.IsConnected)
         {
-            // 마스터든 클라이언트든 MapSyncManager를 통해 요청
-            // 마스터가 수신하면 저장 후 씬 전환
             if (MapSyncManager.Instance != null)
-            {
-                MapSyncManager.Instance.OnDungeonEntryRequested -= OnMasterReceiveEntry;
-                MapSyncManager.Instance.OnDungeonEntryRequested += OnMasterReceiveEntry;
                 MapSyncManager.Instance.RequestDungeonEntry(floor);
-            }
         }
         else
         {
+            VillageCache.CapturePlayerPositions();
             DungeonSceneInit.FloorOverride = floor;
             SceneManager.LoadScene(SceneName.Dungeon1);
         }
@@ -118,9 +128,6 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
 
     private void OnMasterReceiveEntry(int floor)
     {
-        if (MapSyncManager.Instance != null)
-            MapSyncManager.Instance.OnDungeonEntryRequested -= OnMasterReceiveEntry;
-
         MasterEnterDungeon(floor).Forget();
     }
 
@@ -134,7 +141,20 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
             await SaveManager.Instance.SaveAsync(slot);
         }
 
-        PhotonNetwork.LoadLevel(SceneName.Dungeon1);
+        SceneTransitionData.Type = ETransitionType.VillageToDungeon;
+        SceneTransitionData.DungeonFloor = floor;
+
+        if (PhotonNetwork.CurrentRoom != null)
+        {
+            var roomProps = new Hashtable
+            {
+                { SceneTransitionRoomProps.TransitionType, (int)ETransitionType.VillageToDungeon },
+                { SceneTransitionRoomProps.DungeonFloor, floor }
+            };
+            PhotonNetwork.CurrentRoom.SetCustomProperties(roomProps);
+        }
+
+        PhotonNetwork.LoadLevel(SceneName.Loading);
     }
 
     private bool AreAllPlayersNearby()
@@ -153,10 +173,19 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
 
     public void EndInteraction()
     {
-        _ui.Close();
+        _ui?.Close();
         _playerController?.ExitUIMode();
         _playerInteraction?.EndInteraction();
         _playerInteraction = null;
         _playerController = null;
+    }
+
+    private bool ResolveUI()
+    {
+        if (_ui != null)
+            return true;
+
+        _ui = FindFirstObjectByType<UI_DungeonPortal>(FindObjectsInactive.Include);
+        return _ui != null;
     }
 }

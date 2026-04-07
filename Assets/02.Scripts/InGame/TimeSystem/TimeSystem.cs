@@ -16,6 +16,11 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     private bool IsDayTime => _clock is { IsDayTime: true };
     private int ElapsedDays => _clock?.ElapsedDays ?? 0;
 
+    // 오프라인이거나 아직 룸에 입장하기 전이면 로컬 인스턴스를 권한 주체로 간주한다.
+    // 네트워크 통신이 없어도 시간 진행과 일자 기반 이벤트가 계속 동작해야 한다.
+    private bool HasTimeAuthority => !PhotonNetwork.IsConnected || !PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient;
+    private bool CanUseNetworkSync => PhotonNetwork.IsConnected && PhotonNetwork.InRoom && photonView != null;
+
     #region Lifecycle
     private void Awake()
     {
@@ -26,11 +31,12 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     {
         Tick(Time.deltaTime);
 
-        // Master Client 시간으로 동기화
-        if (!PhotonNetwork.IsMasterClient) return;
+        // 권한 주체만 일정 주기로 현재 시간을 원격 클라이언트에 동기화한다.
+        if (!HasTimeAuthority) return;
+        if (!CanUseNetworkSync) return;
 
         _syncTimer += Time.deltaTime;
-        if (!(_syncTimer >= SyncInterval)) return;
+        if (_syncTimer < SyncInterval) return;
 
         _syncTimer = 0f;
         SyncToRemote();
@@ -38,15 +44,18 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     #endregion
 
     #region Public API
+
     public void SkipToNextDay()
     {
-        if (!PhotonNetwork.IsMasterClient)
+        if (!HasTimeAuthority)
         {
+            if (!CanUseNetworkSync) return;
+
             photonView.RPC(nameof(RPC_RequestSkipToNextDay), RpcTarget.MasterClient);
             return;
         }
 
-        ExecuteMasterClientSkipToNextDay();
+        ExecuteAuthoritySkipToNextDay();
     }
     #endregion
 
@@ -83,6 +92,7 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         );
 
         _accumulatedGameMinutes = 0f;
+        _syncTimer = 0f;
         SyncLocalState();
         return true;
     }
@@ -96,12 +106,13 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     {
         int prevDay = CurrentDay;
         GameTime prevTime = CurrentTime;
+
         _clock.AdvanceMinutes(1);
         SyncLocalState();
         TimeEvents.InvokeMinuteChanged(_clock.CurrentTime);
 
-        // Master Client만 이벤트 발생 여부를 확인
-        if (!PhotonNetwork.IsMasterClient) return;
+        // 권한 주체만 일자/시간 경계 이벤트 발생 여부를 판정한다.
+        if (!HasTimeAuthority) return;
         CheckDayEvent(prevDay, prevTime);
     }
 
@@ -110,7 +121,6 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         if (_clock == null || _timeSettings == null) return;
 
         _clock.SetTime(_clock.CurrentDay + 1, _timeSettings.DayStartTime);
-
         _accumulatedGameMinutes = 0f;
 
         SyncLocalState();
@@ -137,12 +147,14 @@ public class TimeSystem : MonoBehaviourPunCallbacks
                 break;
         }
     }
+
     #endregion
 
-    #region Master Client Only
-    private void ExecuteMasterClientSkipToNextDay()
+    #region Authority
+
+    private void ExecuteAuthoritySkipToNextDay()
     {
-        if (!PhotonNetwork.IsMasterClient) return;
+        if (!HasTimeAuthority) return;
 
         int prevDay = CurrentDay;
         GameTime prevTime = CurrentTime;
@@ -157,12 +169,12 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     {
         bool dayChanged = prevDay != _clock.CurrentDay;
 
-        if (HasCrossed(prevTime, _timeSettings.SunriseTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.SunRise);
-        if (HasCrossed(prevTime, _timeSettings.SunsetTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.SunSet);
-        if (HasCrossed(prevTime, _timeSettings.DayEndTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.DayEnd);
+        if (HasCrossed(prevTime, _timeSettings.SunriseTime, dayChanged)) ExecuteAuthorityEvent(TimeEvents.EventType.SunRise);
+        if (HasCrossed(prevTime, _timeSettings.SunsetTime, dayChanged)) ExecuteAuthorityEvent(TimeEvents.EventType.SunSet);
+        if (HasCrossed(prevTime, _timeSettings.DayEndTime, dayChanged)) ExecuteAuthorityEvent(TimeEvents.EventType.DayEnd);
 
-        if (dayChanged) ExecuteMasterClientEvent(TimeEvents.EventType.DayChange);
-        if (HasCrossed(prevTime, _timeSettings.DayStartTime, dayChanged)) ExecuteMasterClientEvent(TimeEvents.EventType.DayStart);
+        if (dayChanged) ExecuteAuthorityEvent(TimeEvents.EventType.DayChange);
+        if (HasCrossed(prevTime, _timeSettings.DayStartTime, dayChanged)) ExecuteAuthorityEvent(TimeEvents.EventType.DayStart);
     }
 
     private bool HasCrossed(GameTime prevTime, GameTime targetTime, bool dayChanged)
@@ -176,17 +188,19 @@ public class TimeSystem : MonoBehaviourPunCallbacks
             return prevMinutes < targetMinutes && currentMinutes >= targetMinutes;
         }
 
-        // 날짜가 바뀐 경우, 두 구간을 합쳐서 판정:
-        //   1) prevMinutes < targetMinutes  → 이전 날에 아직 지나지 않은 이벤트 (예: 23:59에서 자정을 넘긴 경우 23:55 이벤트)
-        //   2) currentMinutes >= targetMinutes → 새 날에 이미 도달한 이벤트 (예: SkipToNextDay로 07:00에 도착 시 06:00 이벤트)
-        // 둘 다 false인 경우(prevMinutes >= target AND currentMinutes < target)는
-        // "이전 날에 이미 처리됐고 새 날에는 아직 안 된" 이벤트이므로 정확히 제외됨
+        // 날짜가 바뀐 경우, 두 구간을 함께 고려해서 판정한다.
+        // 1) prevMinutes < targetMinutes:
+        //    이전 날짜에서 아직 지나지 않은 이벤트인지 확인한다.
+        // 2) currentMinutes >= targetMinutes:
+        //    새 날짜에서 이미 도달한 이벤트인지 확인한다.
+        // 두 조건이 모두 false인 경우는
+        // "이전 날짜에서 이미 처리했고, 새 날짜에서는 아직 도달하지 않은 이벤트"이므로 제외한다.
         return prevMinutes < targetMinutes || currentMinutes >= targetMinutes;
     }
 
-    private void ExecuteMasterClientEvent(TimeEvents.EventType eventType)
+    private void ExecuteAuthorityEvent(TimeEvents.EventType eventType)
     {
-        if (!PhotonNetwork.IsMasterClient) return;
+        if (!HasTimeAuthority) return;
 
         ExecuteEvent(eventType);
         BroadcastEventToRemote(eventType);
@@ -197,33 +211,31 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RPC_RequestSkipToNextDay()
     {
-        if (!PhotonNetwork.IsMasterClient) return;
-        ExecuteMasterClientSkipToNextDay();
+        if (!HasTimeAuthority) return;
+        ExecuteAuthoritySkipToNextDay();
     }
 
-    // Master Client가 아닌 Client들이 Master Client 기준 시간으로 세팅하는 함수
     [PunRPC]
     private void RPC_SyncTime(int day, int hour, int minute)
     {
-        if (PhotonNetwork.IsMasterClient) return;
+        // 권한 주체가 아닌 클라이언트는 권한 주체 기준 시간으로 동기화한다.
+        if (HasTimeAuthority) return;
 
-        if (_clock == null)
+        if (_clock == null && !TryCreateClock())
         {
-            if (!TryCreateClock())
-            {
-                Debug.LogError("TimeSystem: TryCreateClock() failed");
-                return;
-            }
+            Debug.LogError("TimeSystem: TryCreateClock() failed");
+            return;
         }
 
         _clock.SetTime(day, new GameTime(hour, minute));
         _accumulatedGameMinutes = 0f;
+        _syncTimer = 0f;
         SyncLocalState();
     }
 
     private void SyncToRemote()
     {
-        if (!PhotonNetwork.InRoom) return;
+        if (!CanUseNetworkSync) return;
 
         photonView.RPC
         (
@@ -237,7 +249,7 @@ public class TimeSystem : MonoBehaviourPunCallbacks
 
     private void BroadcastEventToRemote(TimeEvents.EventType eventType)
     {
-        if (!PhotonNetwork.InRoom) return;
+        if (!CanUseNetworkSync) return;
 
         photonView.RPC(nameof(RPC_ExecuteEvent), RpcTarget.Others, (byte)eventType);
     }
@@ -245,9 +257,10 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RPC_ExecuteEvent(byte eventTypeByte)
     {
-        if (PhotonNetwork.IsMasterClient) return;
+        if (HasTimeAuthority) return;
         ExecuteEvent((TimeEvents.EventType)eventTypeByte);
     }
+
     #endregion
 
     public void ImportTimeSaveData(TimeSaveData timeSaveData)

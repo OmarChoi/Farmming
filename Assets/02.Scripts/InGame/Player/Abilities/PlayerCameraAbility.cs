@@ -1,4 +1,4 @@
-﻿using Unity.Cinemachine;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -59,6 +59,36 @@ public class PlayerCameraAbility : PlayerAbility
         var cinemachineCamera = followCamObj.GetComponent<CinemachineCamera>();
         if (cinemachineCamera != null)
             cinemachineCamera.Follow = _cameraRoot;
+    }
+
+    public void RebindFollowCamera()
+    {
+        if (!_owner.IsMine) return;
+        if (_cameraRoot == null) return;
+
+        var followCamObj = GameObject.Find("FollowCamera");
+        if (followCamObj == null) return;
+
+        var cinemachineCamera = followCamObj.GetComponent<CinemachineCamera>();
+        if (cinemachineCamera == null) return;
+
+        cinemachineCamera.Follow = null;
+        cinemachineCamera.Follow = _cameraRoot;
+        cinemachineCamera.PreviousStateIsValid = false;
+    }
+
+    public void SuspendFollowCamera()
+    {
+        if (!_owner.IsMine) return;
+
+        var followCamObj = GameObject.Find("FollowCamera");
+        if (followCamObj == null) return;
+
+        var cinemachineCamera = followCamObj.GetComponent<CinemachineCamera>();
+        if (cinemachineCamera == null) return;
+
+        cinemachineCamera.Follow = null;
+        cinemachineCamera.PreviousStateIsValid = false;
     }
 
     public void SetPreset(CameraPreset preset, Transform target = null)
@@ -150,5 +180,11 @@ public class PlayerCameraAbility : PlayerAbility
         Vector3 targetLocalPos = _defaultLocalPos + localOffset;
         _currentOffset = Vector3.Lerp(_currentOffset, targetLocalPos, speed * Time.deltaTime);
         _cameraRoot.localPosition = _currentOffset;
+    }
+
+    public void SnapYawToPlayerFrontView()
+    {
+        if (!_owner.IsMine) return;
+        _mx = Mathf.Repeat(_owner.transform.eulerAngles.y + 180f, 360f);
     }
 }

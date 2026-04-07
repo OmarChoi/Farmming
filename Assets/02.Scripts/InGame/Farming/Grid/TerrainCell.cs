@@ -20,6 +20,7 @@ public class TerrainCell : MonoBehaviour
     public Vector3Int GridPosition { get; private set; }
     public TerrainCellData Data => _data;
     public FarmTile FarmTile => _farmTile;
+    public bool HasObjectPoint => _objectPoint != null;
 
     public void Init(Vector3Int gridPos, TerrainCellData data)
     {

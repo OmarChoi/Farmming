@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
 
@@ -13,9 +14,14 @@ public class GameSceneInit : MonoBehaviour
     [SerializeField] private MapNavMeshController _mapNavMeshController;
     private const float MapSyncTimeoutSeconds = 10f;
     private const int MaxSpawnCheckHeight = 20;
-    
+    private const string PropTerrainReady = "tRdy";
+    private const float TerrainReadyTimeout = 15f;
+
     private void Start()
     {
+        if (ReturningFromDungeon)
+            FreezeExistingPlayers();
+
         if (PhotonNetwork.IsConnected)
             InitNetworkGame();
         else
@@ -28,29 +34,50 @@ public class GameSceneInit : MonoBehaviour
         {
             if (RoomManager.Instance.IsFirstVisit && !ReturningFromDungeon)
             {
-                Debug.Log("______________________________처음");
                 Vector3 spawnPos = _mapManager.GenerateVillage();
                 _mapNavMeshController.BuildInitialNavMesh();
                 SpawnPlayer(spawnPos);
+                CacheVillageData();
+
+                var props = new Hashtable { { PropTerrainReady, true } };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+                LoadingProgress.Value = 1f;
+                LoadingProgress.Complete();
+
                 RoomManager.Instance.OpenRoom();
                 OnCompleteInitialize?.Invoke();
             }
             else
             {
-                Debug.Log("______________________________아님");
                 LoadAndSpawnMaster().Forget();
             }
         }
         else
         {
             PhotonNetwork.AutomaticallySyncScene = true;
-            // 클라이언트: 맵 동기화 완료 후 스폰
             WaitForMapAndSpawn().Forget();
         }
     }
 
     private async UniTaskVoid WaitForMapAndSpawn()
     {
+        // 던전 복귀 시 캐시에서 마을 복원
+        if (ReturningFromDungeon && VillageCache.HasCache)
+        {
+            _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+
+            if (VillageCache.Buildings != null && BuildingManager.Instance != null)
+                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+
+            VillageCache.RestorePlayerPositions();
+            LoadingProgress.Value = 0.6f;
+            ReturningFromDungeon = false;
+
+            await WaitForAllTerrainReady();
+            return;
+        }
+
+        // 일반 입장: 마스터로부터 맵 동기화
         if (!PhotonNetwork.InRoom) return;
         if (MapSyncManager.Instance == null) return;
 
@@ -58,18 +85,33 @@ public class GameSceneInit : MonoBehaviour
         MapSyncManager.Instance.OnMapSynced += () => synced = true;
         MapSyncManager.Instance.RequestMapFromMaster();
 
-        float timeout = Time.time + MapSyncTimeoutSeconds;
-        await UniTask.WaitUntil(() => synced || Time.time > timeout);
+        float timeout = Time.realtimeSinceStartup + MapSyncTimeoutSeconds;
+        await UniTask.WaitUntil(() => synced || Time.realtimeSinceStartup > timeout);
 
-        if (!synced) return;
+        if (!synced)
+        {
+            Debug.LogError("[GameSceneInit] Map sync failed");
+            LoadingProgress.Value = 1f;
+            LoadingProgress.Complete();
+            UnfreezeExistingPlayers();
+            return;
+        }
 
-        // 던전 복귀 시 기존 DontDestroyOnLoad 플레이어가 있으면 중복 스폰 방지
+        LoadingProgress.Value = 0.6f;
+
         var existing = FindAnyObjectByType<PlayerController>();
         if (existing != null && existing.IsMine)
-            return;
+        {
+            // 기존 플레이어 사용 — 스폰 건너뜀
+        }
+        else
+        {
+            var pos = FindSpawnPosition();
+            SpawnPlayer(pos);
+        }
 
-        var pos = FindSpawnPosition();
-        SpawnPlayer(pos);
+        CacheVillageData();
+        await WaitForAllTerrainReady();
         OnCompleteInitialize?.Invoke();
     }
 
@@ -114,15 +156,15 @@ public class GameSceneInit : MonoBehaviour
     {
         if (ReturningFromDungeon)
         {
-            ReturningFromDungeon = false;
             LoadLocalVillage().Forget();
             return;
         }
 
         var existing = FindAnyObjectByType<PlayerController>();
 
-        Vector3 spawnPos = _mapManager.GenerateVillage(existing != null ? existing.transform : null);
+        _mapManager.GenerateVillage(existing != null ? existing.transform : null);
         _mapNavMeshController.BuildInitialNavMesh();
+        CacheVillageData();
 
         if (existing != null && CustomizeData.Instance != null)
             existing.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
@@ -132,64 +174,192 @@ public class GameSceneInit : MonoBehaviour
 
     private async UniTaskVoid LoadLocalVillage()
     {
-        int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
-        await SaveManager.Instance.LoadAsync(slot);
+        if (VillageCache.HasCache)
+        {
+            _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            _mapNavMeshController.BuildInitialNavMesh();
 
-        _mapNavMeshController.BuildInitialNavMesh();
+            if (VillageCache.Buildings != null && BuildingManager.Instance != null)
+                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+
+            VillageCache.RestorePlayerPositions();
+        }
+        else
+        {
+            int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+            await SaveManager.Instance.LoadAsync(slot);
+            _mapNavMeshController.BuildInitialNavMesh();
+            CacheVillageData();
+        }
 
         if (BuildingManager.Instance != null)
             BuildingManager.Instance.SpawnBuildingNpcs();
 
         var existing = FindAnyObjectByType<PlayerController>();
-        if (existing != null)
-        {
-            string playerId = existing.PlayerId;
-            SaveManager.Instance.RegisterPlayer(playerId, existing);
-        }
+        if (existing != null && SaveManager.Instance != null)
+            SaveManager.Instance.RegisterPlayer(existing.PlayerId, existing);
 
+        ReturningFromDungeon = false;
+        UnfreezeExistingPlayers();
+        SceneTransitionData.Clear();
         OnCompleteInitialize?.Invoke();
     }
 
     private async UniTaskVoid LoadAndSpawnMaster()
     {
         int slot = RoomManager.Instance.SelectedSlot;
+        bool returning = ReturningFromDungeon;
 
-        // 클라이언트가 로드 완료 전에 맵을 요청하는 것을 방지
-        if (MapSyncManager.Instance != null)
-            MapSyncManager.Instance.HoldRequests();
-
-        // 1. 맵·지형 데이터 로드 → _loadedData 보관
-        await SaveManager.Instance.LoadAsync(slot);
-
-        // 2. 맵 로드 후 NavMesh 빌드
-        _mapNavMeshController.BuildInitialNavMesh();
-        
-        // 3. 관련 NPC 빌드
-        if (BuildingManager.Instance != null)
-            BuildingManager.Instance.SpawnBuildingNpcs();
-
-        if (ReturningFromDungeon)
+        if (returning && VillageCache.HasCache)
         {
-            // 기존 DontDestroyOnLoad 플레이어를 재등록 → 저장된 위치 복원
+            // 캐시에서 마을 복원 (파일 I/O 없이)
+            _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            _mapNavMeshController.BuildInitialNavMesh();
+
+            if (VillageCache.Buildings != null && BuildingManager.Instance != null)
+                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+
+            VillageCache.RestorePlayerPositions();
             RestoreExistingPlayers();
             ReturningFromDungeon = false;
         }
         else
         {
-            SpawnPlayer(Vector3.zero);
+            // 세이브 파일에서 로드
+            if (MapSyncManager.Instance != null)
+                MapSyncManager.Instance.HoldRequests();
+
+            await SaveManager.Instance.LoadAsync(slot);
+            _mapNavMeshController.BuildInitialNavMesh();
+
+            if (ReturningFromDungeon)
+            {
+                RestoreExistingPlayers();
+                ReturningFromDungeon = false;
+            }
+            else
+            {
+                SpawnPlayer(Vector3.zero);
+            }
+
+            await UniTask.Yield();
+
+            if (MapSyncManager.Instance != null)
+                MapSyncManager.Instance.BroadcastMap();
+
+            CacheVillageData();
         }
 
-        // 4. 한 프레임 대기 → Start() 실행 보장
-        await UniTask.Yield();
-
-        // 5. 맵 로드 완료 → 클라이언트에 전송
-        if (MapSyncManager.Instance != null)
-            MapSyncManager.Instance.BroadcastMap();
-
-        // 6. 클라이언트 입장 허용
+        LoadingProgress.Value = 0.6f;
         RoomManager.Instance.OpenRoom();
-
+        await WaitForAllTerrainReady();
         OnCompleteInitialize?.Invoke();
+    }
+
+    private async UniTask WaitForAllTerrainReady()
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            SceneTransitionData.Clear();
+            return;
+        }
+
+        LockAllLocalPlayers();
+        LoadingProgress.Value = 0.7f;
+
+        var props = new Hashtable { { PropTerrainReady, true } };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        int totalCount = Mathf.Max(PhotonNetwork.PlayerList.Length, 1);
+        float progressTimeout = Time.realtimeSinceStartup + TerrainReadyTimeout;
+
+        while (!AllPlayersTerrainReady() && Time.realtimeSinceStartup <= progressTimeout)
+        {
+            int terrainReadyCount = CountTerrainReadyPlayers();
+            LoadingProgress.Value = 0.7f + (0.3f * terrainReadyCount / totalCount);
+            await UniTask.Yield();
+        }
+
+        if (!AllPlayersTerrainReady())
+            Debug.LogWarning("[GameSceneInit] Terrain ready timeout - proceeding");
+
+        LoadingProgress.Value = 1f;
+        LoadingProgress.Complete();
+
+        UnfreezeExistingPlayers();
+        ClearSceneTransitionRoomProps();
+        SceneTransitionData.Clear();
+    }
+
+    private bool AllPlayersTerrainReady()
+    {
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.CustomProperties.TryGetValue(PropTerrainReady, out object val))
+            {
+                if (val is bool b && b) continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private int CountTerrainReadyPlayers()
+    {
+        int terrainReadyCount = 0;
+
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.CustomProperties.TryGetValue(PropTerrainReady, out object val) &&
+                val is bool isReady &&
+                isReady)
+            {
+                terrainReadyCount++;
+            }
+        }
+
+        return terrainReadyCount;
+    }
+
+    private void FreezeExistingPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var p in players)
+        {
+            if (!p.IsMine) continue;
+
+            var cc = p.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
+            p.LockAction();
+            p.SetVisualsVisible(false);
+            p.GetAbility<PlayerCameraAbility>()?.SuspendFollowCamera();
+        }
+    }
+
+    private void UnfreezeExistingPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var p in players)
+        {
+            if (!p.IsMine) continue;
+
+            var cc = p.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = true;
+
+            p.SetVisualsVisible(true);
+            p.UnlockAction();
+            p.GetAbility<PlayerCameraAbility>()?.RebindFollowCamera();
+        }
+    }
+
+    private void LockAllLocalPlayers()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var p in players)
+        {
+            if (p.IsMine)
+                p.LockAction();
+        }
     }
 
     private void RestoreExistingPlayers()
@@ -200,5 +370,24 @@ public class GameSceneInit : MonoBehaviour
             if (SaveManager.Instance != null)
                 SaveManager.Instance.RegisterPlayer(player.PlayerId, player);
         }
+    }
+
+    private void CacheVillageData()
+    {
+        VillageCache.Capture(_mapManager.GridManager);
+    }
+
+    private void ClearSceneTransitionRoomProps()
+    {
+        if (!PhotonNetwork.IsConnected || !PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == null)
+            return;
+
+        var clearRoomProps = new Hashtable
+        {
+            { SceneTransitionRoomProps.TransitionType, null },
+            { SceneTransitionRoomProps.DungeonSeed, null },
+            { SceneTransitionRoomProps.DungeonFloor, null }
+        };
+        PhotonNetwork.CurrentRoom.SetCustomProperties(clearRoomProps);
     }
 }

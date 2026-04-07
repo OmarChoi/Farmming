@@ -38,6 +38,8 @@ public class UI_Inventory : MonoBehaviour
     private ItemDataSO _splitItem;
     private int _splitAmount;
 
+    private PlayerPotionAbility _potionAbility;
+
     private void Awake()
     {
         _panelRect = _panel.GetComponent<RectTransform>();
@@ -68,6 +70,7 @@ public class UI_Inventory : MonoBehaviour
         Unbind();
 
         _inventoryAbility = ability;
+        _potionAbility = ability.GetComponent<PlayerPotionAbility>();
         _inventoryAbility.OnToggle += OnToggle;
         _inventoryAbility.OnSlotChanged += RefreshSlot;
         _inventoryAbility.OnInventoryResized += SyncSlotCount;
@@ -84,6 +87,7 @@ public class UI_Inventory : MonoBehaviour
         _inventoryAbility.OnSlotChanged -= RefreshSlot;
         _inventoryAbility.OnInventoryResized -= SyncSlotCount;
         _inventoryAbility = null;
+        _potionAbility = null;
     }
 
     private void OnToggle(bool open)
@@ -276,6 +280,24 @@ public class UI_Inventory : MonoBehaviour
 
         if (_clickMode == EInventoryClickMode.Trading)
             HandleSellClick(clicked);
+    }
+
+    public void OnSlotRightClicked(UI_Slot clicked)
+    {
+        if (_isDragging) return;
+        if (clicked.CurrentItem == null) return;
+        if (!(clicked.CurrentItem is PotionDataSO)) return;
+
+        bool used = _potionAbility != null && _potionAbility.TryUsePotion(clicked.SlotIndex);
+
+        if (used)
+        {
+            Debug.Log($"물약 사용 성공 Slot: {clicked.SlotIndex}");
+        }
+        else
+        {
+            Debug.LogWarning($"물약 사용 실패");
+        }
     }
 
     // 판매

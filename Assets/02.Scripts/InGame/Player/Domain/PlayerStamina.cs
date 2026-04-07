@@ -37,6 +37,25 @@ public class PlayerStamina
         return true;
     }
 
+    public bool HasEnough(float amount) => Current >= amount;
+
+    public void Consume(float amount)
+    {
+        if (amount <= 0f)
+            return;
+
+        _current -= amount;
+        if (_current <= 0f)
+        {
+            _current = 0f;
+            OnChanged?.Invoke(Current);
+            OnExhausted?.Invoke();
+            return;
+        }
+
+        OnChanged?.Invoke(Current);
+    }
+
     public void SetMax(float newMax)
     {
         _max = newMax;

@@ -37,10 +37,36 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         }
     }
 
+    public List<HelperDataSO> GetOwnedHelpers()
+    {
+        return new List<HelperDataSO>(_helperDataList);
+    }
+
+    public bool TryGetSavedState(string helperId, out HelperSaveData saveData)
+    {
+        return _savedStates.TryGetValue(helperId, out saveData);
+    }
+
     public static event Action<PlayerHelperInventoryAbility> OnLocalPlayerReady;
 
     public event Action<int> OnSelectionChanged;
     public event Action<int> OnSummonChanged;
+
+    public int GetHelperExperience(HelperDataSO data)
+    {
+        if (data == null) return 0;
+
+        if (_activeMainHelper != null && _activeMainHelper.HelperId == data.HelperId)
+            return _activeMainHelper.Experience.CurrentExp;
+
+        if (_activeLightHelper != null && _activeLightHelper.HelperId == data.HelperId)
+            return _activeLightHelper.Experience.CurrentExp;
+
+        if (_savedStates.TryGetValue(data.HelperId, out var state))
+            return state.Experience;
+
+        return 0;
+    }
 
     public EHelperGrade GetHelperGrade(HelperDataSO data)
     {
@@ -158,10 +184,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 }
 
                 HelperController helper = InstantiateHelper(data);
-                RestoreHelperState(helper);
                 _activeLightHelper = helper;
                 _activeLightHelper.OnGradeChanged += OnLightHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
+                RestoreHelperState(helper);
                 _summonedLightIndex = _currentIndex;
             }
         }
@@ -187,10 +213,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 }
 
                 HelperController helper = InstantiateHelper(data);
-                RestoreHelperState(helper);
                 _activeMainHelper = helper;
                 _activeMainHelper.OnGradeChanged += OnMainHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
+                RestoreHelperState(helper);
                 _summonedMainIndex = _currentIndex;
             }
         }
@@ -272,7 +298,9 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 {
                     HelperId = data.HelperId,
                     Level = 1,
-                    Grade = 0
+                    Grade = 0,
+                    Energy = data.MaxEnergy,
+                    EnergySavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 });
             }
         }
@@ -297,5 +325,69 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             RestoreHelperState(_activeLightHelper);
 
         OnSelectionChanged?.Invoke(0);
+    }
+
+    public bool TryUpgradeHelper(HelperDataSO data)
+    {
+        if (data == null) return false;
+
+        HelperController activeHelper = FindActiveHelper(data.HelperId);
+
+        // 소환 중이면 실제 오브젝트 업그레이드
+        if (activeHelper != null)
+        {
+            if (!activeHelper.Experience.IsReadyToUpgrade)
+                return false;
+
+            activeHelper.PerformUpgrade();
+            SaveHelperState(activeHelper);
+            return true;
+        }
+
+        // 소환 중이 아니면 저장 데이터만 업그레이드
+        if (!_savedStates.TryGetValue(data.HelperId, out var state))
+            return false;
+
+        EHelperGrade currentGrade = (EHelperGrade)state.Grade;
+        if (currentGrade == EHelperGrade.Legendary)
+            return false;
+
+        int needExp = GetMaxExpByGrade(data, currentGrade);
+        if (state.Experience < needExp)
+            return false;
+
+        state.Experience -= needExp;
+        state.Grade += 1;
+
+        _savedStates[data.HelperId] = state;
+        return true;
+    }
+
+    private HelperController FindActiveHelper(string helperId)
+    {
+        if (_activeMainHelper != null && _activeMainHelper.HelperId == helperId)
+            return _activeMainHelper;
+
+        if (_activeLightHelper != null && _activeLightHelper.HelperId == helperId)
+            return _activeLightHelper;
+
+        return null;
+    }
+
+    public int GetMaxExpByGrade(HelperDataSO data, EHelperGrade grade)
+    {
+        if (data == null) return 0;
+
+        switch (grade)
+        {
+            case EHelperGrade.Normal:
+                return data.NormalMaxExp;
+            case EHelperGrade.Epic:
+                return data.EpicMaxExp;
+            case EHelperGrade.Legendary:
+                return 0;
+            default:
+                return 0;
+        }
     }
 }

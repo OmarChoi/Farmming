@@ -1,14 +1,42 @@
+using System.Collections.Generic;
+using DG.Tweening;
 using Photon.Pun;
 using UnityEngine;
+using System;
 
 public class GroundActionAbility : HelperAbility, IHelperAction
 {
+    [Serializable]
+    private struct GroundItemMapping
+    {
+        public ItemDataSO Item;
+        public ETileType TileType;
+    }
+
+    [Header("땅 제거")]
     [SerializeField] private ItemDataSO _dirtItem;
-    [SerializeField] private int _toolLevel = 1;
+    [SerializeField] private int _canDigLevel = 1;
     [SerializeField] private int _getDirtAmount = 1;
+
+    [Header("땅 생성")]
     [SerializeField] private int _generateDirtAmount = 1;
+    [SerializeField] private List<GroundItemMapping> _groundItemMappings;
+
+    [Header("땅제거 액션")]
+    [SerializeField] private Transform _mouthPoint;
+    [SerializeField] private float _absorbArcHeight = 2f; // 흡수할때 땅블록 튀는높이
+    [SerializeField] private float _absorbDuration = 0.5f; // 흡수 시간
+    [SerializeField] private float _absorbTargetScale = 0.05f;
+    [SerializeField] private float _digAnimDelay = 0.2f;
+
+    [Header("땅 생성 액션")]
+    [SerializeField] private float _placeAnimLeadTime = 0.3f; // cell움직임 보다 먼저 애니메이션 실행
+    [SerializeField] private float _placeHorizontalDuration = 0.1f;
+    [SerializeField] private float _placeHoverDuration = 0.2f; //땅이 잠깐 뜨는 시간
+    [SerializeField] private float _placeDropDuration = 0.15f;
 
     private HelperAnimationAbility _animAbility;
+    private GroundSelectAbility _groundSelector;
 
     protected override void Awake()
     {
@@ -18,6 +46,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     private void Start()
     {
         _animAbility = _owner.GetComponent<HelperAnimationAbility>();
+        _groundSelector = _owner.GetAbility<GroundSelectAbility>();
     }
 
     private PlayerInventoryAbility GetInventory()
@@ -27,115 +56,180 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
-        if (cell == null)
+        if (cell == null) return;
+
+        if (!CanRemoveCell(cell)) return;
+
+        bool isFarmLand = cell.Data.ObjectType == EGridObjectType.FarmLand;
+        if (isFarmLand)
         {
-            return;
+            cell.Data.RemoveObject();
+            cell.Refresh();
         }
 
-        if(cell.Data.ObjectType == EGridObjectType.FarmLand)
+        TerrainCell detachedCell = TerrainGridManager.Instance.TryDetachForAnimation(cell.GridPosition, _canDigLevel);
+        if (detachedCell == null)
         {
-            return;
-        }
-
-        if(!cell.Data.CanDig(_toolLevel))
-        {
+            if (isFarmLand)
+            {
+                cell.Data.SetObject(EGridObjectType.FarmLand);
+                cell.Refresh();
+            }
             return;
         }
 
         _owner.BeginAction();
 
-        _animAbility?.Play(EHelperAnim.EatGround);
+        AnimateCellToMouth(detachedCell);
 
-        bool dug = TerrainGridManager.Instance.TryDig(cell.GridPosition, _toolLevel);
-        if (dug)
+        var pos = cell.GridPosition;
+        if (isFarmLand)
         {
-            var pos = cell.GridPosition;
-            _owner.PhotonView.RpcSafe(
-                nameof(RPC_Dig), RpcTarget.Others,
-                pos.x, pos.y, pos.z, _toolLevel);
+            _owner.PhotonView.RpcSafe(nameof(RPC_DigFarmLandWithAnimation), RpcTarget.Others, pos.x, pos.y, pos.z, _canDigLevel);
+        }
+        else
+        {
+            _owner.PhotonView.RpcSafe(nameof(RPC_DigWithAnimation), RpcTarget.Others, pos.x, pos.y, pos.z, _canDigLevel);
+        }
 
             PlayerInventoryAbility inventory = GetInventory();
             if (inventory != null && _dirtItem != null)
             {
                 QuestReportItemHelper.AddItemAndReportQuest(inventory, _dirtItem, _getDirtAmount);
             }
-        }
-
         _owner.EndAction();
     }
 
     public void InteractSecondary(TerrainCell cell)
     {
-        if(cell == null)
-        {
-            return;
-        }
+        if (cell == null) return;
 
         PlayerInventoryAbility inventory = GetInventory();
-        if(inventory == null)
+        if (inventory == null) return;
+
+        ItemDataSO selectedGround = _groundSelector?.SelectedGround;
+        int groundSlotIndex = _groundSelector?.SelectedGroundSlotIndex ?? -1;
+
+        if (selectedGround == null || groundSlotIndex < 0)
         {
+            Debug.Log("인벤토리에 땅 아이템 없음");
             return;
         }
 
-        int dirtSlotIndex = FindDirtSlotIndex(inventory);
-        if(dirtSlotIndex < 0)
-        {
-            Debug.Log("인벤토리에 흙 없음");
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
             return;
-        }
+
+        ETileType tileType = GetTileTypeForItem(selectedGround, cell.Data.TileType);
+        Vector3Int targetGridPos = GetPlacePosition(cell);
+
+        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, _generateDirtAmount);
+        if (!placed) return;
 
         _owner.BeginAction();
-
         _animAbility?.Play(EHelperAnim.EatGround);
 
-        Vector3Int targetPos = GetPlacePosition(cell);
-        int tileType = (int)cell.Data.TileType;
-
-        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetPos, cell.Data.TileType, _generateDirtAmount);
-        if (!placed)
+        TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
+        if (newCell != null && _mouthPoint != null)
         {
-            _owner.EndAction();
-            return;
+            Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
+            StartPlaceCellAnimation(newCell, targetWorldPos);
         }
 
         _owner.PhotonView.RpcSafe(
-            nameof(RPC_PlaceBlock), RpcTarget.Others,
-            targetPos.x, targetPos.y, targetPos.z, tileType, _generateDirtAmount);
+            nameof(RPC_PlaceBlockWithAnimation), RpcTarget.Others,
+            targetGridPos.x, targetGridPos.y, targetGridPos.z, (int)tileType, _generateDirtAmount);
 
-        inventory.RemoveAt(dirtSlotIndex, _generateDirtAmount);
+        inventory.RemoveAt(groundSlotIndex, _generateDirtAmount);
 
         _owner.EndAction();
     }
 
-    private int FindDirtSlotIndex(PlayerInventoryAbility inventory)
+    private bool CanRemoveCell(TerrainCell cell)
     {
-        for(int i = 0; i<inventory.SlotCount; i++)
-        {
-            InventorySlot slot = inventory.GetSlot(i);
-            if(slot == null || slot.IsEmpty)
-            {
-                continue;
-            }
+        if (cell.Data.TileType == ETileType.Dungeon3Lava) return false;
 
-            if(slot.Item == _dirtItem)
-            {
-                return i;
-            }
+        if (cell.Data.ObjectType == EGridObjectType.FarmLand)
+        {
+            FarmTile farmTile = cell.FarmTile;
+            if (farmTile != null && farmTile.HasSeed) return false;
+            return cell.Data.CanDig(_canDigLevel);
         }
 
-        return -1;
+        return cell.Data.CanDig(_canDigLevel);
+    }
+
+    private void AnimateCellToMouth(TerrainCell cell)
+    {
+        if (_mouthPoint == null)
+        {
+            Destroy(cell.gameObject);
+            _animAbility?.Play(EHelperAnim.Idle);
+            return;
+        }
+
+        cell.transform.SetParent(null);
+        cell.transform.localScale = Vector3.one;
+
+        cell.transform.DOJump(_mouthPoint.position, _absorbArcHeight, 1, _absorbDuration)
+                      .SetEase(Ease.Linear)
+                      .OnComplete(() =>
+                      {
+                          Destroy(cell.gameObject);
+                          _animAbility?.Play(EHelperAnim.Idle);
+                      });
+
+        cell.transform.DOScale(_absorbTargetScale, _absorbDuration)
+                      .SetEase(Ease.Linear);
+
+        DOVirtual.DelayedCall(_digAnimDelay, () => _animAbility?.Play(EHelperAnim.EatGround));
+    }
+
+    private void StartPlaceCellAnimation(TerrainCell cell, Vector3 targetWorldPos)
+    {
+        cell.transform.position = _mouthPoint.position;
+        cell.transform.localScale = Vector3.zero;
+
+        DOVirtual.DelayedCall(_placeAnimLeadTime, () => AnimatePlaceCell(cell, targetWorldPos));
+    }
+
+    private void AnimatePlaceCell(TerrainCell cell, Vector3 targetWorldPos)
+    {
+        if (_mouthPoint == null) return;
+
+        Vector3 hoverPos = new Vector3(targetWorldPos.x, _mouthPoint.position.y, targetWorldPos.z);
+
+        DOTween.Sequence()
+            .Append(cell.transform.DOMove(hoverPos, _placeHorizontalDuration).SetEase(Ease.OutQuad))
+            .Join(cell.transform.DOScale(Vector3.one * _absorbTargetScale, _placeHorizontalDuration).SetEase(Ease.OutQuad))
+            .AppendInterval(_placeHoverDuration)
+            .Append(cell.transform.DOMove(targetWorldPos, _placeDropDuration).SetEase(Ease.InExpo))
+            .Join(cell.transform.DOScale(Vector3.one, _placeDropDuration).SetEase(Ease.OutExpo))
+            .OnComplete(() =>
+            {
+                cell.transform.DOPunchScale(Vector3.one * 0.2f, 0.2f, 5, 0.5f);
+                _animAbility?.Play(EHelperAnim.Idle);
+            });
+    }
+
+    private ETileType GetTileTypeForItem(ItemDataSO item, ETileType fallback)
+    {
+        if (_groundItemMappings == null) return fallback;
+
+        foreach (GroundItemMapping mapping in _groundItemMappings)
+        {
+            if (mapping.Item == item)
+                return mapping.TileType;
+        }
+
+        return fallback;
     }
 
     private Vector3Int GetPlacePosition(TerrainCell cell)
     {
-        Vector3Int cellPos = cell.GridPosition;
+        if (cell.Data.CellType == ECellType.Empty)
+            return cell.GridPosition;
 
-        if(cell.Data.CellType == ECellType.Empty)
-        {
-            return cellPos;
-        }
-
-        return cellPos + Vector3Int.up;
+        return cell.GridPosition + Vector3Int.up;
     }
 
     private void OnDisable()
@@ -144,15 +238,48 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     }
 
     [PunRPC]
-    internal void RPC_Dig(int gridX, int gridY, int gridZ, int toolLevel)
+    internal void RPC_DigWithAnimation(int gridX, int gridY, int gridZ, int toolLevel)
     {
-        TerrainGridManager.Instance?.TryDig(new Vector3Int(gridX, gridY, gridZ), toolLevel);
+        TerrainCell detachedCell = TerrainGridManager.Instance?.TryDetachForAnimation(
+            new Vector3Int(gridX, gridY, gridZ), toolLevel);
+        if (detachedCell == null) return;
+
+        AnimateCellToMouth(detachedCell);
     }
 
     [PunRPC]
-    internal void RPC_PlaceBlock(int gridX, int gridY, int gridZ, int tileType, int dirtLevel)
+    internal void RPC_DigFarmLandWithAnimation(int gridX, int gridY, int gridZ, int toolLevel)
     {
         var pos = new Vector3Int(gridX, gridY, gridZ);
-        TerrainGridManager.Instance?.TryPlaceBlock(pos, (ETileType)tileType, dirtLevel);
+        TerrainCell cell = TerrainGridManager.Instance?.GetCell(pos);
+        if (cell == null) return;
+
+        if (cell.Data.ObjectType == EGridObjectType.FarmLand)
+        {
+            cell.Data.RemoveObject();
+            cell.Refresh();
+        }
+
+        TerrainCell detachedCell = TerrainGridManager.Instance.TryDetachForAnimation(pos, toolLevel);
+        if (detachedCell == null) return;
+
+        AnimateCellToMouth(detachedCell);
+    }
+
+    [PunRPC]
+    internal void RPC_PlaceBlockWithAnimation(int gridX, int gridY, int gridZ, int tileType, int dirtLevel)
+    {
+        var targetGridPos = new Vector3Int(gridX, gridY, gridZ);
+        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, (ETileType)tileType, dirtLevel);
+        if (!placed) return;
+
+        _animAbility?.Play(EHelperAnim.EatGround);
+
+        TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
+        if (newCell != null && _mouthPoint != null)
+        {
+            Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
+            StartPlaceCellAnimation(newCell, targetWorldPos);
+        }
     }
 }

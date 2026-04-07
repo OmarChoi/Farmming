@@ -74,12 +74,18 @@ MonoBehaviour:
   - RPC_DungeonSeed
   - RPC_RequestDungeonSeed
   - RPC_RequestDungeonEntry
+  - RPC_DigFarmLand
+  - RPC_DigFarmLandWithAnimation
+  - RPC_DigWithAnimation
+  - RPC_PlaceBlockWithAnimation
   - RPC_RefundRemove
   - RPC_ConfirmBuild
   - RPC_RequestSkipToNextDay
   - RPC_SyncTime
   - RPC_ExecuteLevelUp
   - RPC_RequestLevelUp
+  - RPC_AnimTrigger
+  - RPC_StartTimer
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
