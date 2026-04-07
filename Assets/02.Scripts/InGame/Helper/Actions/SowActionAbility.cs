@@ -37,13 +37,6 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        float cost = _owner.Data.BaseEnergyCost;
-
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
-        {
-            return;
-        }
-
         switch (_owner.Grade.CurrentGrade)
         {
             case EHelperGrade.Epic:
@@ -245,18 +238,11 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        float cost = _owner.Data.BaseEnergyCost;
-
-        if (_owner.Energy == null || !_owner.Energy.TryConsume(cost))
-        {
-            return;
-        }
-
         SeedItemDataSO selectedSeed = _seedSelector?.SelectedSeed;
-        if(selectedSeed == null) return;
+        if (selectedSeed == null) return;
 
         List<FarmTile> farmTiles = GetSowableFarmTiles(cell);
-        if(farmTiles.Count == 0) return;
+        if (farmTiles.Count == 0) return;
 
         StartSow(farmTiles, selectedSeed);
 
@@ -266,9 +252,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
             pos.x, pos.y, pos.z, selectedSeed.Id);
     }
 
+    private bool _anySeedPlanted = false;
+
     private void StartSow(List<FarmTile> farmTiles, SeedItemDataSO seed)
     {
         _isActing = true;
+        _anySeedPlanted = false;
         _currentFarmTiles = farmTiles;
         _currentSeed = seed;
 
@@ -304,10 +293,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void SowClose()
     {
+        if (_anySeedPlanted) _owner.Experience.Add(_sowExperience);
         _animAbility?.Play(EHelperAnim.Idle);
         _currentFarmTiles = null;
         _currentSeed = null;
         _isActing = false;
+        _anySeedPlanted = false;
         _owner.EndAction();
     }
 
@@ -317,7 +308,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (farmTile == null) yield break;
 
         farmTile.PlantSeed(seed);
-        _owner.Experience.Add(_sowExperience);
+        _anySeedPlanted = true;
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)
