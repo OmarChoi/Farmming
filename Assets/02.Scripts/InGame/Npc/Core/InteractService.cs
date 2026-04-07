@@ -6,8 +6,9 @@ public class InteractService : MonoBehaviour
     [SerializeField] private NpcDialogueController _dialogueController;
     [SerializeField] private AiDialogueController _aiDialogueController;
     [SerializeField] private ShopController _shopController;
-    [SerializeField] private NpcQuestService _npcQuestService;
     [SerializeField] private HelperUpgradeService _helperUpgradeService;
+    [SerializeField] private StylingCustomizeService _stylingCustomizeService;
+    [SerializeField] private NpcQuestService _npcQuestService;
 
     private IDialogueHandler _scriptedHandler;
     private IDialogueHandler _aiHandler;
@@ -29,6 +30,10 @@ public class InteractService : MonoBehaviour
         if (_helperUpgradeService == null)
         {
             _helperUpgradeService = FindFirstObjectByType<HelperUpgradeService>();
+        }
+        if (_stylingCustomizeService == null)
+        {
+            _stylingCustomizeService = FindFirstObjectByType<StylingCustomizeService>();
         }
         if (_npcQuestService == null)
         {
@@ -59,6 +64,10 @@ public class InteractService : MonoBehaviour
 
             case ENpcInteractionType.Upgrade:
                 ExecuteUpgrade(context);
+                break;
+
+            case ENpcInteractionType.Styling:
+                ExecuteStyling(context);
                 break;
 
             case ENpcInteractionType.Quest:
@@ -116,6 +125,12 @@ public class InteractService : MonoBehaviour
     private void ExecuteUpgrade(NpcInteractionContext context)
     {
         _helperUpgradeService?.BeginUpgradeInteraction(context);
+    }
+
+    private void ExecuteStyling(NpcInteractionContext context)
+    {
+        _dialogueController.Close();
+        _stylingCustomizeService?.BeginStylingInteraction(context);
     }
 
     private void ExecuteQuest(NpcInteractionContext context)

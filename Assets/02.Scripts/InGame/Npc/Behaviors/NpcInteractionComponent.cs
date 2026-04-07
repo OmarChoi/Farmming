@@ -2,7 +2,9 @@ using UnityEngine;
 
 public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
 {
+    [Header("NpcDialogueController")]
     [SerializeField] private NpcDialogueController _dialogueController;
+
     private NpcController _npcController;
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;

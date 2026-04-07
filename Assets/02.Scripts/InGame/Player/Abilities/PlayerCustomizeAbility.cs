@@ -4,6 +4,7 @@ using UnityEngine;
 public class PlayerCustomizeAbility : PlayerAbility, ISaveableAbility
 {
     [SerializeField] private CharacterPartSwapper _partSwapper;
+    public CharacterPartSwapper PartSwapper => _partSwapper;
 
     private void Start()
     {
@@ -44,5 +45,11 @@ public class PlayerCustomizeAbility : PlayerAbility, ISaveableAbility
         var data = JsonUtility.FromJson<CustomizeSaveData>(json);
         if (_partSwapper != null)
             _partSwapper.ApplySaveData(data);
+    }
+
+    public CustomizeSaveData GetCurrentData()
+    {
+        if (_partSwapper == null) return new CustomizeSaveData();
+        return _partSwapper.CreateSaveData();
     }
 }
