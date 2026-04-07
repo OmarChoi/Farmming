@@ -13,5 +13,7 @@ public enum EHelperAnim
     Water = 31,
     EatGround = 32,
     Happy = 2,
-    EpicHarvest = 27,
+    EpicHarvest = 15,
+    LegendaryHarvest = 3,
+    NormalHarvest = 27,
 }

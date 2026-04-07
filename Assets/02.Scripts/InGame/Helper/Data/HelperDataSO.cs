@@ -6,7 +6,18 @@ public class HelperDataSO : ScriptableObject
     public string HelperId;
     public string HelperName;
     public Sprite HelperIcon;
-    public HelperController Prefab;
+    public HelperController Prefab;         
+    public HelperController EpicPrefab;     
+    public HelperController LegendaryPrefab;
+    public HelperController GetPrefabForGrade(EHelperGrade grade)
+    {
+        return grade switch
+        {
+            EHelperGrade.Epic      => EpicPrefab      != null ? EpicPrefab      : Prefab,
+            EHelperGrade.Legendary => LegendaryPrefab != null ? LegendaryPrefab : Prefab,
+            _                      => Prefab
+        };
+    }
 
     public float MaxEnergy = 100f;
     public float EnergyRecoveryPerSecond = 5f;

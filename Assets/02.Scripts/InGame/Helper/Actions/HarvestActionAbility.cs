@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +8,11 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private HarvestItemSO _harvestItem;
     [SerializeField] private int _harvestExperience = 10;
+    [SerializeField] private GameObject _normalVfxPrefab;
+    [SerializeField] private float _normalVfxSpawnHeight = 2.1f;
+    [SerializeField] private float _normalVfxLifetime = 2f;
+    [SerializeField] private float _harvestDelay = 1.5f;
+
 
     private HelperAnimationAbility _animAbility;
     private HarvestEpicVFXAbility _epicVFX;
@@ -62,12 +68,27 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (!cropGrowth.IsHarvestable) return;
 
         _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.Harvest);
+        _animAbility?.Play(EHelperAnim.NormalHarvest);
+
+        if (_normalVfxPrefab != null)
+        {
+            Vector3 spawnPos = cell.transform.position + Vector3.up * _normalVfxSpawnHeight;
+            GameObject vfx = Instantiate(_normalVfxPrefab, spawnPos, Quaternion.identity);
+            Destroy(vfx, _normalVfxLifetime);
+        }
+
+        StartCoroutine(HarvestAfterDelay(farmTile, _harvestDelay));
+    }
+
+    private IEnumerator HarvestAfterDelay(FarmTile farmTile, float delay)
+    {
+        yield return new WaitForSeconds(delay);
 
         if (HarvestCell(farmTile, farmTile.PlantedSeed))
             _owner.Experience.Add(_harvestExperience);
 
         farmTile.Interact();
+        _animAbility?.Play(EHelperAnim.Idle);
         _owner.EndAction();
     }
 
@@ -104,7 +125,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         List<TerrainCell> targetCells = GetLegendaryCells(centerCell);
 
         _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.Stun);
+        _animAbility?.Play(EHelperAnim.LegendaryHarvest);
 
         Vector3 rightDir = GetRightDirection();
         bool anyHarvested = false;

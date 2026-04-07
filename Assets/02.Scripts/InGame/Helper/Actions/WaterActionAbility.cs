@@ -48,7 +48,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private void Update()
     {
         if (!_isActing) return;
-        if (CurrentGrade != EHelperGrade.Normal && !_isSecondary) return;
+        if (!_isSecondary) return;
 
         var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.shortNameHash == WaterStateHash && stateInfo.normalizedTime >= 1f)
@@ -137,9 +137,10 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     private void OnCellLand(TerrainCell cell, bool isCenter)
     {
-        if (ApplyEffects(cell, _waterEffects))
+        if (ApplyEffects(cell, _waterEffects) && !_anyWatered)
         {
             _anyWatered = true;
+            _owner.Experience.Add(_waterExperience);
         }
     }
 
@@ -176,8 +177,6 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         if (!_isActing) return;
 
         GetCurrentGradeVFX().Cancel();
-
-        if (_anyWatered) _owner.Experience.Add(_waterExperience);
 
         _isActing = false;
         _isSecondary = false;
