@@ -120,7 +120,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         List<TerrainCell> targetCells = GetLegendaryCells(centerCell);
 
         _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.Stun);
+        _animAbility?.Play(EHelperAnim.LegendaryHarvest);
 
         Vector3 rightDir = GetRightDirection();
         bool anyHarvested = false;
