@@ -23,27 +23,27 @@ public class CurrencyManager : MonoBehaviour
         return _gold;
     }
 
-    public void AddGold(double amount)
+    public void AddGold(int amount)
     {
         if (amount <= 0) return;
 
         _gold += new Currency(amount);
-        _repository.Save((double)_gold);
+        _repository.Save((int)_gold);
         OnGoldChanged?.Invoke(_gold);
     }
 
-    public bool TrySpendGold(double amount)
+    public bool TrySpendGold(int amount)
     {
         if (amount <= 0) return false;
         if (!CanAfford(amount)) return false;
 
         _gold -= new Currency(amount);
-        _repository.Save((double)_gold);
+        _repository.Save((int)_gold);
         OnGoldChanged?.Invoke(_gold);
         return true;
     }
 
-    public bool CanAfford(double amount)
+    public bool CanAfford(int amount)
     {
         return _gold >= new Currency(amount);
     }

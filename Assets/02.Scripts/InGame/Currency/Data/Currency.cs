@@ -2,11 +2,12 @@ using System;
 
 public readonly struct Currency
 {
-    public readonly double Value;
+    public readonly int Value;
+    private const int MaxValue = 999999999;
 
-    public Currency(double value)
+    public Currency(int value)
     {
-        Value = Math.Max(0, value);
+        Value = Math.Clamp(value, 0, MaxValue);
     }
 
     public override string ToString() => Value.ToString("N0");
@@ -16,6 +17,6 @@ public readonly struct Currency
     public static bool operator <=(Currency a, Currency b) => a.Value <= b.Value;
     public static bool operator >(Currency a, Currency b) => a.Value > b.Value;
     public static bool operator <(Currency a, Currency b) => a.Value < b.Value;
-    public static explicit operator Currency(double value) => new Currency(value);
-    public static explicit operator double(Currency currency) => currency.Value;
+    public static explicit operator Currency(int value) => new Currency(value);
+    public static explicit operator int(Currency currency) => currency.Value;
 }
