@@ -12,17 +12,17 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     private HarvestEpicVFXAbility _epicVFX;
     private HarvestLegendaryVFXAbility _legendaryVFX;
 
-    private PlayerInventoryAbility GetInventory()
-    {
-        return _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
-    }
-
     protected override void Awake()
     {
         base.Awake();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
         _epicVFX = _owner.GetAbility<HarvestEpicVFXAbility>();
         _legendaryVFX = _owner.GetAbility<HarvestLegendaryVFXAbility>();
+    }
+
+    private PlayerInventoryAbility GetInventory()
+    {
+        return _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
     }
 
     private void OnDisable()
