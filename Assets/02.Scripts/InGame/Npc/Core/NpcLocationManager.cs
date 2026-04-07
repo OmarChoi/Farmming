@@ -75,4 +75,43 @@ public class NpcLocationManager : MonoBehaviour
         position = Vector3.zero;
         return false;
     }
+
+    public bool TryGetAnchor(string npcId, ENpcLocationType type, string locationKey, out NpcLocationAnchor anchor)
+    {
+        if (!string.IsNullOrEmpty(locationKey))
+        {
+            string key = MakeKey(npcId, type, locationKey);
+
+            if (_anchorMap.TryGetValue(key, out anchor) && anchor != null)
+            {
+                return true;
+            }
+        }
+
+        string defaultKey = MakeDefaultKey(npcId, type);
+
+        if (_anchorMap.TryGetValue(defaultKey, out anchor) && anchor != null)
+        {
+            return true;
+        }
+
+        anchor = null;
+        return false;
+    }
+
+    public bool TryGetFirstAnchor(string npcId, out NpcLocationAnchor anchor)
+    {
+        foreach (var pair in _anchorMap)
+        {
+            NpcLocationAnchor current = pair.Value;
+            if (current == null) continue;
+            if (current.NpcId != npcId) continue;
+
+            anchor = current;
+            return true;
+        }
+
+        anchor = null;
+        return false;
+    }
 }
