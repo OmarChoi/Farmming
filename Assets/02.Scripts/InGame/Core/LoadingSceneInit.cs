@@ -184,12 +184,12 @@ public class LoadingSceneInit : MonoBehaviourPunCallbacks
         if (SceneTransitionData.Type == ETransitionType.VillageToDungeon)
         {
             LoadingProgress.Value = 0.5f;
-            LoadingProgressUI.Instance?.TrackSceneLoad(0.5f, 0.2f);
+            LoadingProgress.TrackSceneLoad(0.5f, 0.2f);
         }
         else if (SceneTransitionData.Type == ETransitionType.DungeonToVillage)
         {
             LoadingProgress.Value = 0.3f;
-            LoadingProgressUI.Instance?.TrackSceneLoad(0.3f, 0.3f);
+            LoadingProgress.TrackSceneLoad(0.3f, 0.3f);
         }
 
         PhotonNetwork.LoadLevel(targetScene);
