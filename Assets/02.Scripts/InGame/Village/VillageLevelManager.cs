@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Photon.Pun;
 using UnityEngine;
 
@@ -66,6 +67,7 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
     {
         if (data == null) return;
         if (!_builtOnceIds.Add(data.BuildingId)) return;
+        
         if (data.FirstBuildGaugeContribution <= 0)
         {
             OnVillageStateChanged?.Invoke();
@@ -122,4 +124,29 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         if (idx < 0 || idx >= _levelThresholds.Length) return 0;
         return _levelThresholds[idx];
     }
+
+    #region Sync
+    
+    public void ImportSaveData(VillageSaveData saveData)
+    {
+        CurrentLevel = Math.Max(saveData.Level, 1);
+        CurrentGauge = saveData.Gauge;
+        foreach (string id in saveData.BuiltBuildings)
+        {
+            _builtOnceIds.Add(id);
+        }
+        OnVillageStateChanged?.Invoke();
+    }
+
+    public VillageSaveData ExportSaveData()
+    {
+        return new VillageSaveData
+        {
+            Level = CurrentLevel,
+            Gauge = CurrentGauge,
+            BuiltBuildings = _builtOnceIds.ToList()
+        };
+    }
+    #endregion
+
 }

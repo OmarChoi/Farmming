@@ -8,4 +8,5 @@ public class SaveData
     public List<PlayerSaveData> Players = new();
     public List<BuildingSaveData> Buildings = new();
     public TimeSaveData Time = new();
+    public VillageSaveData Village = new();
 }
