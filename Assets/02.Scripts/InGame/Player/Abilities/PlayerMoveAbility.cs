@@ -150,6 +150,7 @@ public class PlayerMoveAbility : PlayerAbility
 
     private void UpdateFootstepSound(bool isMoving, bool isSprinting)
     {
+        // todo. 애니메이션 Event 기반 SFX 실행 방식으로 수정 필요
         if (!isMoving || !_characterController.isGrounded)
         {
             // 다음 번에 최초 1회는 바로 시작할 수 있게 설정
