@@ -82,6 +82,7 @@ Shader "Custom/OcclusionDither"
         // ── 오클루전 디더 (C#에서 MaterialPropertyBlock으로 설정) ──
         [HideInInspector] _OcclusionDitherScreenPos ("Occlusion Screen Pos", Vector) = (0, 0, 0, 0)
         [HideInInspector] _OcclusionDitherRadius ("Occlusion Radius", Float) = 0
+        [HideInInspector] _OcclusionDitherStrength ("Occlusion Strength", Range(0.0, 1.0)) = 0
         _OcclusionDitherSoftness ("Dither Softness", Range(0.01, 0.5)) = 0.05
         _OcclusionDitherMinVisibility ("Dither Min Visibility", Range(0.0, 1.0)) = 0.2
     }
@@ -174,6 +175,7 @@ Shader "Custom/OcclusionDither"
             // ── 오클루전 디더 유니폼 (MaterialPropertyBlock으로 설정) ──
             float4 _OcclusionDitherScreenPos;
             float _OcclusionDitherRadius;
+            float _OcclusionDitherStrength;
             float _OcclusionDitherSoftness;
             float _OcclusionDitherMinVisibility;
 
@@ -191,13 +193,14 @@ Shader "Custom/OcclusionDither"
             )
             {
                 // ── 디더 클립 (원형 영역만) ──
-                if (_OcclusionDitherRadius > 0)
+                if (_OcclusionDitherRadius > 0 && _OcclusionDitherStrength > 0)
                 {
                     float2 screenUV = input.positionCS.xy / _ScreenParams.xy;
                     float2 aspectCorrectedDelta = (screenUV - _OcclusionDitherScreenPos.xy) * float2(_ScreenParams.x / _ScreenParams.y, 1.0);
                     float dist = length(aspectCorrectedDelta);
                     float fade = saturate((dist - _OcclusionDitherRadius + _OcclusionDitherSoftness) / _OcclusionDitherSoftness);
                     float visibility = lerp(_OcclusionDitherMinVisibility, 1.0, fade);
+                    visibility = lerp(1.0, visibility, _OcclusionDitherStrength);
                     clip(visibility - OcclusionIGN(input.positionCS.xy));
                 }
 
