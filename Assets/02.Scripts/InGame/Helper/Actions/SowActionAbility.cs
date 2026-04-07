@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Photon.Pun;
 using System;
 using System.Collections;
@@ -15,9 +16,19 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
 
+    [Header("Secondary - Float")]
+    [SerializeField] private float _floatAbovePlayerHeight = 2f;
+    [SerializeField] private float _floatMoveDuration = 0.5f;
+    [SerializeField] private float _floatDuration = 2f;
+    [SerializeField] private float _bobAmplitude = 0.3f;
+    [SerializeField] private float _bobDuration = 0.4f;
+    [SerializeField] private float _returnDuration = 0.5f;
+
     private CultivateAbility _cultivateAbility;
     private SeedSelectAbility _seedSelector;
     private HelperAnimationAbility _animAbility;
+    private SowEpicSecondaryVFXAbility _epicSecondaryVFX;
+    private SowLegendarySecondaryVFXAbility _legendarySecondaryVFX;
 
     private bool _isActing = false;
     private List<FarmTile> _currentFarmTiles;
@@ -28,6 +39,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _cultivateAbility = _owner.GetAbility<CultivateAbility>();
         _seedSelector = _owner.GetAbility<SeedSelectAbility>();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
+        _epicSecondaryVFX = _owner.GetAbility<SowEpicSecondaryVFXAbility>();
+        _legendarySecondaryVFX = _owner.GetAbility<SowLegendarySecondaryVFXAbility>();
     }
 
     public bool CanInteractPrimary(TerrainCell cell)
@@ -243,16 +256,32 @@ public class SowActionAbility : HelperAbility, IHelperAction
         FarmTile farmTile = GetFarmTile(cell);
         if (farmTile == null) return;
 
+        List<TerrainCell> lateralCells = GetLateralCells(cell);
+        bool anyLateralToConvert = lateralCells.Exists(c => c.FarmTile == null || !c.FarmTile.gameObject.activeSelf);
+
         _owner.BeginAction();
-        _cultivateAbility.JumpAndCultivate(cell, new CultivationParams { Spin = true });
+        _cultivateAbility.JumpAndCultivate(cell, new CultivationParams
+        {
+            OnCultivate = anyLateralToConvert ? () =>
+            {
+                bool anyConverted = false;
+                foreach (TerrainCell lateralCell in lateralCells)
+                {
+                    if (lateralCell.FarmTile == null || !lateralCell.FarmTile.gameObject.activeSelf)
+                    {
+                        lateralCell.TryConvertToFarm();
+                        anyConverted = true;
+                    }
+                }
+                if (anyConverted) _owner.Experience.Add(_cultivateExperience);
+            } : null,
+            Spin = true
+        });
     }
 
     public void InteractSecondary(TerrainCell cell)
     {
-        if (_owner.IsMine && _isActing)
-        {
-            return;
-        }
+        if (_owner.IsMine && _isActing) return;
 
         SeedItemDataSO selectedSeed = _seedSelector?.SelectedSeed;
         if (selectedSeed == null) return;
@@ -260,7 +289,14 @@ public class SowActionAbility : HelperAbility, IHelperAction
         List<FarmTile> farmTiles = GetSowableFarmTiles(cell);
         if (farmTiles.Count == 0) return;
 
-        StartSow(farmTiles, selectedSeed);
+        if (_owner.Grade.CurrentGrade == EHelperGrade.Normal)
+        {
+            StartSow(farmTiles, selectedSeed);
+        }
+        else
+        {
+            StartCoroutine(FloatAndSow(cell, selectedSeed, farmTiles));
+        }
 
         var pos = cell.GridPosition;
         _owner.PhotonView.RpcSafe(
@@ -269,6 +305,129 @@ public class SowActionAbility : HelperAbility, IHelperAction
     }
 
     private bool _anySeedPlanted = false;
+
+    private IEnumerator FloatAndSow(TerrainCell cell, SeedItemDataSO seed, List<FarmTile> farmTiles)
+    {
+        if (_owner.PlayerOwner == null) yield break;
+
+        _isActing = true;
+        _anySeedPlanted = false;
+        _owner.BeginAction();
+        _animAbility?.Play(EHelperAnim.EatGround);
+
+        HelperFollowAbility followAbility = _owner.GetAbility<HelperFollowAbility>();
+        if (followAbility != null) followAbility.enabled = false;
+
+        Vector3 originalPos = _owner.transform.position;
+
+        Vector3 floatPos = _owner.PlayerOwner.transform.position + Vector3.up * _floatAbovePlayerHeight;
+        yield return _owner.transform.DOMove(floatPos, _floatMoveDuration)
+            .SetEase(Ease.OutQuad).WaitForCompletion();
+
+        Tween bobTween = _owner.transform.DOMoveY(floatPos.y + _bobAmplitude, _bobDuration)
+            .SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
+
+        yield return new WaitForSeconds(_floatDuration);
+        bobTween.Kill();
+
+        bool done = false;
+        switch (_owner.Grade.CurrentGrade)
+        {
+            case EHelperGrade.Epic:
+                SpawnEpicSecondaryVFX(cell, seed, () => done = true);
+                break;
+            case EHelperGrade.Legendary:
+                SpawnLegendarySecondaryVFX(cell, seed, () => done = true);
+                break;
+            default:
+                SpawnNormalSecondaryVFX(farmTiles, seed, () => done = true);
+                break;
+        }
+
+        yield return new WaitUntil(() => done);
+
+        // 원래 위치로 부드럽게 복귀한 뒤 FollowAbility 재활성화
+        yield return _owner.transform.DOMove(originalPos, _returnDuration)
+            .SetEase(Ease.InOutQuad).WaitForCompletion();
+
+        if (followAbility != null) followAbility.enabled = true;
+        if (_anySeedPlanted) _owner.Experience.Add(_sowExperience);
+        _animAbility?.Play(EHelperAnim.Idle);
+        _isActing = false;
+        _anySeedPlanted = false;
+        _owner.EndAction();
+    }
+
+    private void SpawnNormalSecondaryVFX(List<FarmTile> farmTiles, SeedItemDataSO seed, Action onComplete)
+    {
+        foreach (FarmTile tile in farmTiles)
+        {
+            if (_mouthPoint != null && _seedVfxPrefab != null)
+            {
+                Vector3 spawnPos = _mouthPoint.position;
+                Vector3 targetPos = tile.CropSpawnPoint != null ? tile.CropSpawnPoint.position : tile.transform.position;
+                GameObject vfxObj = Instantiate(_seedVfxPrefab, spawnPos, Quaternion.identity);
+                SowVFX sowVfx = vfxObj.GetComponent<SowVFX>();
+                sowVfx?.Launch(targetPos, (targetPos - spawnPos).normalized);
+            }
+            tile.PlantSeed(seed);
+            _anySeedPlanted = true;
+        }
+        onComplete?.Invoke();
+    }
+
+    private void SpawnEpicSecondaryVFX(TerrainCell centerCell, SeedItemDataSO seed, Action onComplete)
+    {
+        // 플레이어 기준 왼쪽 → 가운데 → 오른쪽 순서
+        Vector3Int rightOffset = GetGridRightOffset();
+        var orderedCells = new List<TerrainCell>();
+
+        var leftCell  = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset);
+        var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset);
+
+        if (leftCell  != null) orderedCells.Add(leftCell);
+        orderedCells.Add(centerCell);
+        if (rightCell != null) orderedCells.Add(rightCell);
+
+        if (_epicSecondaryVFX == null)
+        {
+            foreach (TerrainCell cell in orderedCells)
+            {
+                FarmTile tile = GetFarmTile(cell);
+                if (tile != null && tile.IsReadyToSow) { tile.PlantSeed(seed); _anySeedPlanted = true; }
+            }
+            onComplete?.Invoke();
+            return;
+        }
+
+        _epicSecondaryVFX.SpawnEffects(_mouthPoint, orderedCells, cell =>
+        {
+            FarmTile tile = GetFarmTile(cell);
+            if (tile != null && tile.IsReadyToSow) { tile.PlantSeed(seed); _anySeedPlanted = true; }
+        }, onComplete, () => _animAbility?.Replay(EHelperAnim.EatGround));
+    }
+
+    private void SpawnLegendarySecondaryVFX(TerrainCell centerCell, SeedItemDataSO seed, Action onComplete)
+    {
+        List<TerrainCell> orderedCells = GetOrderedTargetCells(centerCell);
+
+        if (_legendarySecondaryVFX == null)
+        {
+            foreach (TerrainCell cell in orderedCells)
+            {
+                FarmTile tile = GetFarmTile(cell);
+                if (tile != null && tile.IsReadyToSow) { tile.PlantSeed(seed); _anySeedPlanted = true; }
+            }
+            onComplete?.Invoke();
+            return;
+        }
+
+        _legendarySecondaryVFX.SpawnEffects(_mouthPoint, orderedCells, cell =>
+        {
+            FarmTile tile = GetFarmTile(cell);
+            if (tile != null && tile.IsReadyToSow) { tile.PlantSeed(seed); _anySeedPlanted = true; }
+        }, onComplete);
+    }
 
     private void StartSow(List<FarmTile> farmTiles, SeedItemDataSO seed)
     {
@@ -346,6 +505,11 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _isActing = false;
         _currentFarmTiles = null;
         _currentSeed = null;
+
+        HelperFollowAbility followAbility = _owner?.GetAbility<HelperFollowAbility>();
+        if (followAbility != null) followAbility.enabled = true;
+
+        _owner?.transform.DOKill();
         _owner?.EndAction();
     }
 
@@ -394,7 +558,21 @@ public class SowActionAbility : HelperAbility, IHelperAction
     {
         var cells = new List<TerrainCell> { centerCell };
         cells.AddRange(GetLateralCells(centerCell));
-            return cells;
+        return cells;
+    }
+
+    // 왼쪽(-extension) → 오른쪽(+extension) 순서로 정렬된 cell 목록 반환 (Legendary sweep용)
+    private List<TerrainCell> GetOrderedTargetCells(TerrainCell centerCell)
+    {
+        Vector3Int rightOffset = GetGridRightOffset();
+        int extension = _owner.Grade.GetRange() - 1;
+        var cells = new List<TerrainCell>();
+        for (int i = -extension; i <= extension; i++)
+        {
+            var cell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
+            if (cell != null) cells.Add(cell);
+        }
+        return cells;
     }
 
     private List<FarmTile> GetSowableFarmTiles(TerrainCell centerCell)

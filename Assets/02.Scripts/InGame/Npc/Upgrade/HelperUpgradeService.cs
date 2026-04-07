@@ -172,6 +172,8 @@ public class HelperUpgradeService : MonoBehaviour
             return;
         }
 
+        _helperInventoryAbility.RespawnHelper(data);
+
 #if UNITY_EDITOR
         Debug.Log($"업그레이드 완료 - {data.HelperId}, 현재 등급: {_helperInventoryAbility.GetHelperGrade(data)}");
 #endif

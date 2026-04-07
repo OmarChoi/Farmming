@@ -6,6 +6,7 @@ public class WaterNormalVFXAbility : HelperAbility, IWaterGradeVFX
     [SerializeField] private GameObject _waterVfxPrefab;
 
     private HelperAnimationAbility _animAbility;
+    private Action _onComplete;
 
     private void Start()
     {
@@ -14,6 +15,7 @@ public class WaterNormalVFXAbility : HelperAbility, IWaterGradeVFX
 
     public void BeginAction(Action onWaterOpen, Action onComplete)
     {
+        _onComplete = onComplete;
         _animAbility?.Play(EHelperAnim.Water);
     }
 
@@ -36,8 +38,10 @@ public class WaterNormalVFXAbility : HelperAbility, IWaterGradeVFX
         waterVfx?.Launch(targetPos, direction, () =>
         {
             onCellLand?.Invoke(capturedCell, capturedIsCenter);
+            _onComplete?.Invoke();
+            _onComplete = null;
         });
     }
 
-    public void Cancel() { }
+    public void Cancel() { _onComplete = null; }
 }
