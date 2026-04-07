@@ -54,6 +54,7 @@ GameObject:
   - component: {fileID: 2097310397374882297}
   - component: {fileID: 2155480617688705000}
   - component: {fileID: 3687428902528433680}
+  - component: {fileID: 6003655954720563584}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -287,6 +288,26 @@ MonoBehaviour:
   _rightFoot: {fileID: 7936902920121645320}
   _walkScale: 2
   _runScale: 3
+--- !u!114 &6003655954720563584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce58cbd8eb4ea364181385e27b26ea8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerOcclusionAbility
+  _fadeRadius: 0.3
+  _castRadius: 1.2
+  _candidateRefreshInterval: 1
+  _ditherMinVisibility: 0
+  _occlusionLayer:
+    serializedVersion: 2
+    m_Bits: 2048
+  _playerOffset: {x: 0, y: 1.5, z: 0}
 --- !u!1 &2101610759984280812
 GameObject:
   m_ObjectHideFlags: 0
