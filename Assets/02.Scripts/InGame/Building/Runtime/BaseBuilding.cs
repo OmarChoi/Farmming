@@ -64,7 +64,10 @@ public abstract class BaseBuilding : MonoBehaviour
     
     protected virtual void OnDestroy()
     {
-        NpcSpawnManager.Instance.Despawn(_buildingNpc);
+        if (NpcSpawnManager.Instance != null)
+        {
+            NpcSpawnManager.Instance.Despawn(_buildingNpc);
+        }
         GameSceneInit.OnCompleteInitialize -= OnLoadingFinished;
         
         if (!_isDayBound) return;

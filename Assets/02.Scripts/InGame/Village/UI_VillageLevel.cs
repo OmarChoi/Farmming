@@ -26,8 +26,7 @@ public class UI_VillageLevel : MonoBehaviour
         int level = VillageLevelManager.Instance.CurrentLevel;
         int currentGauge = VillageLevelManager.Instance.CurrentGauge;
         int totalGauge = VillageLevelManager.Instance.CurrentThreshold;
-        
-        _fillImage.fillAmount = (float)currentGauge / totalGauge;
+        _fillImage.fillAmount = totalGauge > 0 ? (float)currentGauge / totalGauge : 1f;
         _levelText.text = $"LV.{level.ToString().PadLeft(2, '0')}";
     }
 }
