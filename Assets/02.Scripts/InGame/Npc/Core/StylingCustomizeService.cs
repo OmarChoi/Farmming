@@ -7,10 +7,14 @@ public class StylingCustomizeService : MonoBehaviour
     [Header("UI")]
     [SerializeField] private CharacterCustomizeUI _customizeUI;
 
+    [Header("Camera")]
+    [SerializeField] private CameraPreset _stylingCameraPreset;
+
     private NpcInteractionContext _currentContext;
     private PlayerController _localPlayer;
     private PlayerCustomizeAbility _customizeAbility;
     private CustomizeSaveData _originalData;
+    private PlayerCameraAbility _cameraAbility;
     private bool _isStyling;
 
     private void OnEnable()
@@ -67,13 +71,17 @@ public class StylingCustomizeService : MonoBehaviour
 #endif
             return;
         }
-
+        _cameraAbility = _localPlayer.GetAbility<PlayerCameraAbility>();
         _originalData = _customizeAbility.GetCurrentData();
         _isStyling = true;
 
         _localPlayer.EnterUIMode();
         _localPlayer.LockAction();
-
+        if (_cameraAbility != null && _stylingCameraPreset != null)
+        {
+            _cameraAbility.SnapYawToPlayerFrontView();
+            _cameraAbility.SetPreset(_stylingCameraPreset);
+        }
         _customizeUI.OpenForStyling(swapper, _originalData);
     }
 
@@ -119,7 +127,6 @@ public class StylingCustomizeService : MonoBehaviour
         {
             _customizeUI.CloseForStyling();
         }
-
         if (_localPlayer != null)
         {
             _localPlayer.UnlockAction();
