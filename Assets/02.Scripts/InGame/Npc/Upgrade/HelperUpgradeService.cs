@@ -13,6 +13,11 @@ public class HelperUpgradeService : MonoBehaviour
 
     public event Action<HelperDataSO> OnHelperUpgraded;
 
+    public event Action<HelperDataSO> OnUpgradeSucceeded;
+    public event Action<HelperDataSO> OnUpgradeFailed;
+    public event Action OnUpgradeUiCloseRequested;
+    public event Action<List<HelperDataSO>> OnUpgradeUiOpened;
+
     private void Awake()
     {
         if (_uiHelperUpgrade == null)
@@ -81,7 +86,7 @@ public class HelperUpgradeService : MonoBehaviour
         SortHelpers(helpers);
 
         _dialogueController?.Close();
-        _uiHelperUpgrade?.OpenUpgradeUi(helpers);
+        OnUpgradeUiOpened?.Invoke(helpers);
     }
 
     public List<HelperDataSO> GetUpgradeableTargetList()
@@ -115,19 +120,19 @@ public class HelperUpgradeService : MonoBehaviour
         return exp >= maxExp;
     }
 
-    public string GetBlockReason(HelperDataSO data)
+    public EHelperUpgradeBlockReason GetBlockReasonType(HelperDataSO data)
     {
-        if (data == null) return "helper 정보가 없습니다.";
+        if (data == null) return EHelperUpgradeBlockReason.InvalidData;
 
-        if (_helperInventoryAbility == null) return "helper 인벤토리 정보를 확인할 수 없습니다.";
+        if (_helperInventoryAbility == null) return EHelperUpgradeBlockReason.InventoryNotReady;
 
         EHelperGrade grade = _helperInventoryAbility.GetHelperGrade(data);
 
-        if (grade == EHelperGrade.Legendary) return "이미 최고 등급입니다.";
+        if (grade == EHelperGrade.Legendary) return EHelperUpgradeBlockReason.MaxGrade;
 
-        if (!CanUpgrade(data)) return "경험치가 부족합니다.";
+        if (!CanUpgrade(data)) return EHelperUpgradeBlockReason.NotEnoughExperience;
 
-        return string.Empty;
+        return EHelperUpgradeBlockReason.None;
     }
 
     public void TryUpgrade(HelperDataSO data)
@@ -151,10 +156,9 @@ public class HelperUpgradeService : MonoBehaviour
         if (!CanUpgrade(data))
         {
 #if UNITY_EDITOR
-            Debug.LogWarning($"업그레이드 불가 - {GetBlockReason(data)}");
+            Debug.LogWarning($"업그레이드 불가");
 #endif
-            _uiHelperUpgrade?.RefreshSelectedHelperDetail();
-            _uiHelperUpgrade?.RefreshSlots();
+            OnUpgradeFailed?.Invoke(data);
             return;
         }
 
@@ -164,8 +168,7 @@ public class HelperUpgradeService : MonoBehaviour
 #if UNITY_EDITOR
             Debug.LogWarning($"업그레이드 실패 - {data.HelperId}");
 #endif
-            _uiHelperUpgrade?.RefreshSelectedHelperDetail();
-            _uiHelperUpgrade?.RefreshSlots();
+            OnUpgradeFailed?.Invoke(data);
             return;
         }
 
@@ -174,7 +177,7 @@ public class HelperUpgradeService : MonoBehaviour
 #endif
 
         OnHelperUpgraded?.Invoke(data);
-        _uiHelperUpgrade?.RefreshAfterUpgrade(data);
+        OnUpgradeSucceeded?.Invoke(data);
     }
 
     public EHelperGrade GetGrade(HelperDataSO data)
@@ -253,7 +256,7 @@ public class HelperUpgradeService : MonoBehaviour
 
     private void CloseUpgradeUi()
     {
-        _uiHelperUpgrade?.CloseUpgradeUi();
+        OnUpgradeUiCloseRequested?.Invoke();
         _currentContext?.InteractionComponent?.EndInteraction();
         _currentContext = null;
     }
