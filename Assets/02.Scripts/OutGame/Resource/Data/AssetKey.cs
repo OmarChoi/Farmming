@@ -60,4 +60,12 @@ public static class AssetKey
             return _registered.GetValueOrDefault(typeof(T));
         }
     }
+    
+    public static class SFX
+    {
+        #region Player
+        public const string Move = "SFX_Move";
+        
+        #endregion
+    }
 }
