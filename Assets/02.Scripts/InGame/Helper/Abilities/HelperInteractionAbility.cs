@@ -35,7 +35,17 @@ public class HelperInteractionAbility : HelperAbility
     {
         if (!CanInteract()) return;
 
-        ConsumeResources();
+        float secondaryCost = _action.GetSecondaryCost();
+        if (secondaryCost >= 0)
+        {
+            if (!_owner.Energy.HasEnough(secondaryCost)) return;
+            _owner.Energy.TryConsume(secondaryCost);
+            _playerStamina?.TryConsume(_owner.Data.StaminaCost);
+        }
+        else
+        {
+            ConsumeResources();
+        }
 
         _action.InteractSecondary(cell);
 

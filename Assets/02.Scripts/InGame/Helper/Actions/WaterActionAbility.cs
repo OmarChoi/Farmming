@@ -26,6 +26,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private bool _anyWatered;
     private TerrainCell _currentCell;
 
+    public float GetSecondaryCost() => _secondaryEnergyCost;
+
     private EHelperGrade CurrentGrade => _owner.Grade.CurrentGrade;
 
     protected override void Awake()
@@ -73,9 +75,6 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         if (cell == null) return;
         if (_owner.Grade.CurrentGrade < _owner.Data.SecondaryUnlockGrade) return;
         if (_owner.IsMine && _isActing) return;
-
-        float extraCost = _secondaryEnergyCost - _owner.Level.GetEnergyCost();
-        if (extraCost > 0 && !_owner.Energy.TryConsume(extraCost)) return;
 
         StartWaterAction(cell, isSecondary: true);
     }
