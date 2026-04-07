@@ -7,6 +7,7 @@ public class StylingCustomizeService : MonoBehaviour
     [Header("UI")]
     [SerializeField] private CharacterCustomizeUI _customizeUI;
 
+    private NpcInteractionContext _currentContext;
     private PlayerController _localPlayer;
     private PlayerCustomizeAbility _customizeAbility;
     private CustomizeSaveData _originalData;
@@ -32,6 +33,7 @@ public class StylingCustomizeService : MonoBehaviour
 
     public void BeginStylingInteraction(NpcInteractionContext context)
     {
+        _currentContext = context;
         BeginStyling();
     }
 
@@ -123,7 +125,7 @@ public class StylingCustomizeService : MonoBehaviour
             _localPlayer.UnlockAction();
             _localPlayer.ExitUIMode();
         }
-
+        _currentContext?.InteractionComponent?.EndInteraction();
         _localPlayer = null;
         _customizeAbility = null;
         _originalData = null;
