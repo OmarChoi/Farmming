@@ -21,6 +21,8 @@ public class HelperInteractionAbility : HelperAbility
     {
         if (!CanInteract()) return;
 
+        ConsumeResources();
+
         _action.InteractPrimary(cell);
 
         var pos = cell.GridPosition;
@@ -32,6 +34,8 @@ public class HelperInteractionAbility : HelperAbility
     public void InteractSecondary(TerrainCell cell)
     {
         if (!CanInteract()) return;
+
+        ConsumeResources();
 
         _action.InteractSecondary(cell);
 
@@ -55,9 +59,15 @@ public class HelperInteractionAbility : HelperAbility
     {
         if (_owner.IsActing) return false;
         if (_action == null) return false;
-        if (!_owner.Energy.TryConsume(_owner.Level.GetEnergyCost())) return false;
-        if (_playerStamina != null && !_playerStamina.TryConsume(_owner.Data.StaminaCost)) return false;
+        if (!_owner.Energy.HasEnough(_owner.Level.GetEnergyCost())) return false;
+        if (_playerStamina != null && !_playerStamina.HasEnough(_owner.Data.StaminaCost)) return false;
         return true;
+    }
+
+    private void ConsumeResources()
+    {
+        _owner.Energy.TryConsume(_owner.Level.GetEnergyCost());
+        _playerStamina?.TryConsume(_owner.Data.StaminaCost);
     }
 
     [PunRPC]

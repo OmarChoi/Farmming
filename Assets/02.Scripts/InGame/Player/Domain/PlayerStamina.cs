@@ -37,6 +37,8 @@ public class PlayerStamina
         return true;
     }
 
+    public bool HasEnough(float amount) => Current >= amount;
+
     public void Consume(float amount)
     {
         if (amount <= 0f)
