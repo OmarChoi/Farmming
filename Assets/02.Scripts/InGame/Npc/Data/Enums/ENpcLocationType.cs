@@ -5,5 +5,6 @@ public enum ENpcLocationType
     Shop,
     Wandering,
     Smithy,
-    HairShop
+    HairShop,
+    Dungeon,
 }
