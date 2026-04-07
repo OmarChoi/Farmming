@@ -17,9 +17,9 @@ MonoBehaviour:
   HelperIcon: {fileID: 21300000, guid: 9b0e8b1c27f164f4c9c0cea9a5887a3d, type: 3}
   Prefab: {fileID: 350823004175790314, guid: 1c8d89a9e58b0ca46b8b719413e66fb6, type: 3}
   EpicPrefab: {fileID: 350823004175790314, guid: 766afbc23d7837143ac7b4a6ec1f8c3b, type: 3}
-  LegendaryPrefab: {fileID: 0}
+  LegendaryPrefab: {fileID: 350823004175790314, guid: 5cd8f8312c13fbf478f83d764cbea195, type: 3}
   MaxEnergy: 100
-  EnergyRecoveryPerSecond: 0.5
+  EnergyRecoveryPerSecond: 5
   GatherDamage: 10
   StaminaCost: 5
   MaxLevel: 10
