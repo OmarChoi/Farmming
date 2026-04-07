@@ -9,6 +9,7 @@ public class SaveManager : MonoBehaviour
 
     [SerializeField] private TerrainGridManager _terrainGridManager;
     [SerializeField] private MapManager _mapManager;
+    [SerializeField] private TimeSystem _timeSystem;
 
     private readonly Dictionary<string, PlayerController> _players = new();
     private ISaveRepository _repository;
@@ -99,6 +100,12 @@ public class SaveManager : MonoBehaviour
             if (BuildingManager.Instance != null)
                 data.Buildings = BuildingManager.Instance.ExportBuildings();
 
+            if (_timeSystem != null)
+                data.Time = _timeSystem.ExportSaveData();
+            
+            if (VillageLevelManager.Instance != null)
+                data.Village = VillageLevelManager.Instance.ExportSaveData();
+            
             _receivedSaveData.Clear();
             _expectedResponses = 0;
 
@@ -175,15 +182,18 @@ public class SaveManager : MonoBehaviour
 
         _mapManager.ImportVillageSaveData(_loadedData.Terrain);
 
-        Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
-    }
-
-    public async UniTask LoadBuildingAsync()
-    {
+        if (VillageLevelManager.Instance != null)
+            VillageLevelManager.Instance.ImportSaveData(_loadedData.Village);
+        
         if (BuildingManager.Instance != null && _loadedData.Buildings != null)
             await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
-    }
+        
+        if (_timeSystem != null)
+            _timeSystem.ImportTimeSaveData(_loadedData.Time);
 
+        Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
+    }
+    
     public UniTask<bool> HasSaveAsync(int slot = 0) => _repository.HasSaveAsync(slot);
 
     public bool HasPlayerData(string playerId)

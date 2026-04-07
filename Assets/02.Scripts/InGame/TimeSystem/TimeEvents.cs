@@ -26,7 +26,6 @@ public static class TimeEvents
     
     // 하루가 끝나는 기준 시간이 됐는지 알리기 위한 이벤트입니다.
     public static event Action OnNetDayEnded;
-
     public static event Action OnNetSunRise;
     public static event Action OnNetSunSet;
 
@@ -37,7 +36,6 @@ public static class TimeEvents
         IsDayTime = isDayTime;
         ElapsedDays = elapsedDays;
     }
-
     internal static void InvokeMinuteChanged(GameTime time) => OnMinuteChanged?.Invoke(time);
     internal static void InvokeNetDayChanged() => OnNetDayChanged?.Invoke();
     internal static void InvokeNetDayStarted() => OnNetDayStarted?.Invoke();

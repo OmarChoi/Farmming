@@ -69,8 +69,7 @@ public class PlayerBuildSession
         if (cell == null || _selectedBuilding == null) return;
 
         int direction = _rotationQuarterTurns;
-        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(
-            cell.GridPosition, _selectedBuilding, direction);
+        BuildingPreviewInfo preview = _buildingManager.GetPreviewInfo(cell.GridPosition, _selectedBuilding, direction);
 
         if (!preview.CanPlace) return;
         if (_resourceHandler == null || !_resourceHandler.HasRequired(_selectedBuilding)) return;
@@ -121,7 +120,8 @@ public class PlayerBuildSession
     #region Internal
 
     private void OnBuildingSelectedFromUI(BuildingDataSO data)
-    {
+    {   
+        if (!VillageLevelManager.Instance.IsBuildingUnlocked(data)) return;
         _resourceHandler?.MarkDirty();
 
         if (_ghost?.Instance != null && _ghostBuildingId != data?.BuildingId)
