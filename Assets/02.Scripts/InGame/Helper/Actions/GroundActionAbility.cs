@@ -116,7 +116,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        if (cell.Data.ObjectType == EGridObjectType.Tree || cell.Data.ObjectType == EGridObjectType.Rock)
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
             return;
 
         ETileType tileType = GetTileTypeForItem(selectedGround, cell.Data.TileType);
