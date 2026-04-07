@@ -13,13 +13,17 @@ public class PlayerVFXEventRelay : MonoBehaviour
     public void OnLeftFootstep()
     {
         if (_vfx != null)
+        {
             _vfx.PlayFootstepDust(true);
+        }
     }
 
     // Animation Event
     public void OnRightFootstep()
     {
         if (_vfx != null)
+        {
             _vfx.PlayFootstepDust(false);
+        }
     }
 }
