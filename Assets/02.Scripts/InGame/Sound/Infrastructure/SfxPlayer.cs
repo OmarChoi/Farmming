@@ -60,7 +60,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
         source.Play();
 
         // 재생 완료 대기 후 풀 반환
-        await WaitAndReturnAsync(source);
+        await WaitAndReturnAsync(source, request.ESpatialMode == ESpatialMode.FollowTransform ? request.FollowTarget : null);
     }
 
     private void ConfigureSpatial(AudioSource source, SfxPlayRequest request)
@@ -81,30 +81,29 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
 
             case ESpatialMode.FollowTransform:
                 source.spatialBlend = 1f;
+                source.transform.SetParent(_poolRoot);
                 if (request.FollowTarget != null)
-                {
-                    source.transform.SetParent(request.FollowTarget);
-                    source.transform.localPosition = Vector3.zero;
-                }
-                else
-                {
-                    source.transform.SetParent(_poolRoot);
-                }
+                    source.transform.position = request.FollowTarget.position;
                 break;
         }
     }
 
-    private async UniTask WaitAndReturnAsync(AudioSource source)
+    private async UniTask WaitAndReturnAsync(AudioSource source, Transform followTarget)
     {
-        // 재생이 끝날 때까지 대기
+        bool isFollowing = !ReferenceEquals(followTarget, null);
+
         while (source != null && source.isPlaying)
         {
+            // FollowTarget 위치 동기화 (타겟 파괴 시 마지막 위치에서 잔여 재생)
+            if (isFollowing && followTarget != null)
+            {
+                source.transform.position = followTarget.position;
+            }
             await UniTask.Yield();
         }
 
         if (source == null) return;
 
-        // 풀에 반환
         source.clip = null;
         source.transform.SetParent(_poolRoot);
         _pool.Release(source);
