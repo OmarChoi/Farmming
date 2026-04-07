@@ -103,6 +103,9 @@ public class SaveManager : MonoBehaviour
             if (_timeSystem != null)
                 data.Time = _timeSystem.ExportSaveData();
             
+            if (VillageLevelManager.Instance != null)
+                data.Village = VillageLevelManager.Instance.ExportSaveData();
+            
             _receivedSaveData.Clear();
             _expectedResponses = 0;
 
@@ -179,6 +182,9 @@ public class SaveManager : MonoBehaviour
 
         _mapManager.ImportVillageSaveData(_loadedData.Terrain);
 
+        if (VillageLevelManager.Instance != null)
+            VillageLevelManager.Instance.ImportSaveData(_loadedData.Village);
+        
         if (BuildingManager.Instance != null && _loadedData.Buildings != null)
             await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
         
