@@ -9,27 +9,32 @@ public class PlayerVFXAbility : PlayerAbility
     [SerializeField] private float _walkScale = 2f;
     [SerializeField] private float _runScale = 3f;
 
+    private static readonly int MoveHash = Animator.StringToHash("Move");
+
     private ParticleSystem _leftDust;
     private ParticleSystem _rightDust;
-    private PlayerMoveAbility _move;
+    private Animator _animator;
 
     private void Start()
     {
         if (_dustPrefab == null) return;
 
-        _move = _owner.GetAbility<PlayerMoveAbility>();
+        _animator = _owner.GetComponentInChildren<Animator>();
         _leftDust = CreateDust(_leftFoot);
         _rightDust = CreateDust(_rightFoot);
     }
 
     public void PlayFootstepDust(bool isLeft)
     {
-        if (_move == null || !_move.IsMoving) return;
+        if (_animator == null) return;
+
+        float moveValue = _animator.GetFloat(MoveHash);
+        if (moveValue < 0.1f) return;
 
         var dust = isLeft ? _leftDust : _rightDust;
         if (dust == null) return;
 
-        float scale = _move.IsSprinting ? _runScale : _walkScale;
+        float scale = moveValue > 0.75f ? _runScale : _walkScale;
         dust.transform.localScale = Vector3.one * scale;
 
         dust.Stop(true, ParticleSystemStopBehavior.StopEmitting);
