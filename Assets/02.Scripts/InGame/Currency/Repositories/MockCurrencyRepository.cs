@@ -1,13 +1,13 @@
 public class MockCurrencyRepository : ICurrencyRepository
 {
-    private double _gold;
+    private int _gold;
 
-    public void Save(double gold)
+    public void Save(int gold)
     {
         _gold = gold;
     }
 
-    public double Load()
+    public int Load()
     {
         return _gold;
     }
