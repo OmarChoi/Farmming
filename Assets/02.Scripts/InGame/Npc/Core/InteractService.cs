@@ -7,6 +7,7 @@ public class InteractService : MonoBehaviour
     [SerializeField] private AiDialogueController _aiDialogueController;
     [SerializeField] private ShopController _shopController;
     [SerializeField] private NpcQuestService _npcQuestService;
+    [SerializeField] private HelperUpgradeService _helperUpgradeService;
 
     private IDialogueHandler _scriptedHandler;
     private IDialogueHandler _aiHandler;
@@ -24,6 +25,10 @@ public class InteractService : MonoBehaviour
         if (_shopController == null)
         {
             _shopController = FindFirstObjectByType<ShopController>();
+        }
+        if (_helperUpgradeService == null)
+        {
+            _helperUpgradeService = FindFirstObjectByType<HelperUpgradeService>();
         }
         if (_npcQuestService == null)
         {
@@ -110,7 +115,7 @@ public class InteractService : MonoBehaviour
 
     private void ExecuteUpgrade(NpcInteractionContext context)
     {
-        // todo.업그레이드 기능 연결
+        _helperUpgradeService?.BeginUpgradeInteraction(context);
     }
 
     private void ExecuteQuest(NpcInteractionContext context)

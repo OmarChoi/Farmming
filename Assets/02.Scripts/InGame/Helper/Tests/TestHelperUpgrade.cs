@@ -24,6 +24,14 @@ public class TestHelperUpgrade : MonoBehaviour
     [Tooltip("true면 BackHelper(light helper) 대상, false면 CurrentHelper(일반 helper) 대상")]
     [SerializeField] private bool _targetBackHelper = false;
 
+    private void Start()
+    {
+        if (_playerHelperInteraction == null)
+        {
+            _playerHelperInteraction = FindFirstObjectByType<PlayerHelperInteractionAbility>();
+        }
+    }
+
     private HelperController GetTarget()
     {
         if (_playerHelperInteraction == null) return null;
