@@ -63,7 +63,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (!cropGrowth.IsHarvestable) return;
 
         _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.EpicHarvest);
+        _animAbility?.Play(EHelperAnim.NormalHarvest);
 
         if (_normalVfxPrefab != null)
         {
