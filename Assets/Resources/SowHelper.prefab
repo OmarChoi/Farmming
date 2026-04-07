@@ -820,6 +820,8 @@ GameObject:
   - component: {fileID: 6342578164553478334}
   - component: {fileID: 8272496360717157254}
   - component: {fileID: 4642191277865818875}
+  - component: {fileID: 6875171982301534196}
+  - component: {fileID: 3549005156338155432}
   m_Layer: 7
   m_Name: SowHelper
   m_TagString: Untagged
@@ -1003,8 +1005,15 @@ MonoBehaviour:
   _mouthPoint: {fileID: 1982235181728634582}
   _seedVfxPrefab: {fileID: 3796885633913593696, guid: b4c4fb9801e93434d809d1505d55675f, type: 3}
   _sowDelay: 0.5
+  _epicThreeTileLookDuration: 1.6
   _cultivateExperience: 10
   _sowExperience: 10
+  _floatAbovePlayerHeight: 3
+  _floatMoveDuration: 0.5
+  _floatDuration: 2
+  _bobAmplitude: 0.3
+  _bobDuration: 0.4
+  _returnDuration: 0.5
 --- !u!114 &4642191277865818875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1028,6 +1037,46 @@ MonoBehaviour:
   _jumpCount: 1
   _rayOriginHeight: 3
   _rayDistance: 5
+  _epicInitialWait: 0.2
+  _epicLookDuration: 0.8
+  _spinDuration: 2
+  _spinDegreesPerSecond: 720
+--- !u!114 &6875171982301534196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84bf3a2eb29a26e4c8fb0b0c71f6b1ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SowEpicSecondaryVFXAbility
+  _sowEpicParticlePrefab: {fileID: 5976791930037550301, guid: 2840671855aec5d4da925a57a010f9a6, type: 3}
+  _arcHeight: 3
+  _flightDuration: 0.6
+  _particleLifetime: 1
+  _totalDuration: 2
+--- !u!114 &3549005156338155432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5358294730268913053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 810a33f8eb07d81429f108cf8b8f0a8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SowLegendarySecondaryVFXAbility
+  _seedParticlePrefab: {fileID: 3441225727447022762, guid: 0865faf354dd027478a3a41e5c44d55f, type: 3}
+  _sweepDuration: 2
+  _spawnInterval: 0.08
+  _arcHeight: 2.5
+  _flightDuration: 0.4
+  _particleLifetime: 0.5
+  _targetHeight: 0.1
 --- !u!1 &5410132598804558874
 GameObject:
   m_ObjectHideFlags: 0
