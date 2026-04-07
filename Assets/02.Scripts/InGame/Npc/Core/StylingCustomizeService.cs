@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 
@@ -16,6 +17,9 @@ public class StylingCustomizeService : MonoBehaviour
     private CustomizeSaveData _originalData;
     private PlayerCameraAbility _cameraAbility;
     private bool _isStyling;
+
+    private readonly List<Renderer> _hiddenRenderers = new();
+    private readonly List<Collider> _hiddenColliders = new();
 
     private void OnEnable()
     {
@@ -82,6 +86,8 @@ public class StylingCustomizeService : MonoBehaviour
             _cameraAbility.SnapYawToPlayerFrontView();
             _cameraAbility.SetPreset(_stylingCameraPreset);
         }
+
+        HideStylingTargets();
         _customizeUI.OpenForStyling(swapper, _originalData);
     }
 
@@ -127,6 +133,9 @@ public class StylingCustomizeService : MonoBehaviour
         {
             _customizeUI.CloseForStyling();
         }
+
+        RestoreHiddenTargets();
+
         if (_localPlayer != null)
         {
             _localPlayer.UnlockAction();
@@ -137,6 +146,80 @@ public class StylingCustomizeService : MonoBehaviour
         _customizeAbility = null;
         _originalData = null;
         _isStyling = false;
+    }
+    private void HideStylingTargets()
+    {
+        if (_currentContext == null) return;
+
+        if (_currentContext.Npc != null)
+        {
+            HideTarget(_currentContext.Npc.gameObject);
+        }
+
+        GameObject buildingHideTarget = FindBuildingHideTargetFromContext();
+        if (buildingHideTarget != null)
+        {
+            HideTarget(buildingHideTarget);
+        }
+    }
+
+    private GameObject FindBuildingHideTargetFromContext()
+    {
+        if (_currentContext == null) return null;
+        if (string.IsNullOrEmpty(_currentContext.NpcId)) return null;
+        if (NpcLocationManager.Instance == null) return null;
+
+        if (NpcLocationManager.Instance.TryGetFirstAnchor(_currentContext.NpcId, out NpcLocationAnchor anchor))
+        {
+            if (anchor != null)
+            {
+                return anchor.StylingHideRoot;
+            }
+        }
+
+        return null;
+    }
+
+    private void HideTarget(GameObject target)
+    {
+        if (target == null) return;
+
+        Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer r in renderers)
+        {
+            if (r == null || !r.enabled) continue;
+            r.enabled = false;
+            _hiddenRenderers.Add(r);
+        }
+
+        Collider[] colliders = target.GetComponentsInChildren<Collider>(true);
+        foreach (Collider c in colliders)
+        {
+            if (c == null || !c.enabled) continue;
+            c.enabled = false;
+            _hiddenColliders.Add(c);
+        }
+    }
+
+    private void RestoreHiddenTargets()
+    {
+        foreach (Renderer r in _hiddenRenderers)
+        {
+            if (r != null)
+            {
+                r.enabled = true;
+            }
+        }
+        _hiddenRenderers.Clear();
+
+        foreach (Collider c in _hiddenColliders)
+        {
+            if (c != null)
+            {
+                c.enabled = true;
+            }
+        }
+        _hiddenColliders.Clear();
     }
 
     private async UniTask TrySaveAsync()
