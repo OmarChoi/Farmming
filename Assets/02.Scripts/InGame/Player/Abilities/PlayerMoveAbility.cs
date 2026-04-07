@@ -21,6 +21,9 @@ public class PlayerMoveAbility : PlayerAbility
     private float _currentMoveParam;
     private bool _wasGrounded = true;
 
+    public bool IsMoving { get; private set; }
+    public bool IsSprinting { get; private set; }
+
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -57,6 +60,8 @@ public class PlayerMoveAbility : PlayerAbility
 
         if (!_owner.CanMove)
         {
+            IsMoving = false;
+            IsSprinting = false;
             UpdateAnimation(false, false);
             UpdateGravity();
             _characterController.Move(new Vector3(0f, _yVelocity, 0f) * Time.deltaTime);
@@ -68,6 +73,8 @@ public class PlayerMoveAbility : PlayerAbility
         bool isHelperEquipped = _helperInteraction.CurrentHelper != null
             && _helperInteraction.CurrentHelper.State == EHelperState.Equipped;
         bool isSprinting = isMoving && Input.GetKey(_sprintKey) && !isHelperEquipped;
+        IsMoving = isMoving;
+        IsSprinting = isSprinting;
 
         UpdateAnimation(isMoving, isSprinting);
         FaceMovementDirection(direction, isMoving);
