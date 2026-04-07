@@ -29,7 +29,11 @@ MonoBehaviour:
   DungeonName: "\uC815\uAE00"
   TimeLimitSeconds: 30
   EntryCost: 0
-  EntryRequirements: []
+  EntryRequirements:
+  - Item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+    Amount: 4
+  - Item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
+    Amount: 0
   CliffPrefab: {fileID: 0}
   TreePrefab: {fileID: 5130300574329225930, guid: aaea097398e8fd847b32e81f83888654, type: 3}
   RockPrefab: {fileID: 5182465649738605643, guid: 3e31cb771959b174eac42a22acfce587, type: 3}
