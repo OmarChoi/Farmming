@@ -6,6 +6,7 @@ public class NpcLocationManager : MonoBehaviour
     public static NpcLocationManager Instance { get; private set; }
 
     private readonly Dictionary<string, NpcLocationAnchor> _anchorMap = new();
+    private readonly Dictionary<string, List<NpcLocationAnchor>> _anchorsByNpcId = new();
 
     private void Awake()
     {
@@ -32,6 +33,19 @@ public class NpcLocationManager : MonoBehaviour
 
         string key = MakeKey(anchor.NpcId, anchor.LocationType, anchor.LocationKey);
         _anchorMap[key] = anchor;
+
+        if (string.IsNullOrEmpty(anchor.NpcId)) return;
+
+        if (!_anchorsByNpcId.TryGetValue(anchor.NpcId, out List<NpcLocationAnchor> list))
+        {
+            list = new List<NpcLocationAnchor>();
+            _anchorsByNpcId.Add(anchor.NpcId, list);
+        }
+
+        if (!list.Contains(anchor))
+        {
+            list.Add(anchor);
+        }
     }
 
     public void Unregister(NpcLocationAnchor anchor)
@@ -45,6 +59,18 @@ public class NpcLocationManager : MonoBehaviour
             if (current == anchor)
             {
                 _anchorMap.Remove(key);
+            }
+        }
+
+        if (string.IsNullOrEmpty(anchor.NpcId)) return;
+
+        if (_anchorsByNpcId.TryGetValue(anchor.NpcId, out List<NpcLocationAnchor> list))
+        {
+            list.Remove(anchor);
+
+            if (list.Count == 0)
+            {
+                _anchorsByNpcId.Remove(anchor.NpcId);
             }
         }
     }
@@ -82,18 +108,12 @@ public class NpcLocationManager : MonoBehaviour
         {
             string key = MakeKey(npcId, type, locationKey);
 
-            if (_anchorMap.TryGetValue(key, out anchor) && anchor != null)
-            {
-                return true;
-            }
+            if (_anchorMap.TryGetValue(key, out anchor) && anchor != null) return true;
         }
 
         string defaultKey = MakeDefaultKey(npcId, type);
 
-        if (_anchorMap.TryGetValue(defaultKey, out anchor) && anchor != null)
-        {
-            return true;
-        }
+        if (_anchorMap.TryGetValue(defaultKey, out anchor) && anchor != null) return true;
 
         anchor = null;
         return false;
@@ -101,14 +121,15 @@ public class NpcLocationManager : MonoBehaviour
 
     public bool TryGetFirstAnchor(string npcId, out NpcLocationAnchor anchor)
     {
-        foreach (var pair in _anchorMap)
+        if (!string.IsNullOrEmpty(npcId) && _anchorsByNpcId.TryGetValue(npcId, out List<NpcLocationAnchor> list))
         {
-            NpcLocationAnchor current = pair.Value;
-            if (current == null) continue;
-            if (current.NpcId != npcId) continue;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] == null) continue;
 
-            anchor = current;
-            return true;
+                anchor = list[i];
+                return true;
+            }
         }
 
         anchor = null;

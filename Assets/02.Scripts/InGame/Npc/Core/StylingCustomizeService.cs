@@ -91,9 +91,9 @@ public class StylingCustomizeService : MonoBehaviour
         _customizeUI.OpenForStyling(swapper, _originalData);
     }
 
-    private async void HandleConfirmRequested(CustomizeSaveData finalData)
+    private void HandleConfirmRequested(CustomizeSaveData finalData)
     {
-        await ConfirmAsync(finalData);
+        ConfirmAsync(finalData).Forget();
     }
 
     private void HandleCancelRequested()
