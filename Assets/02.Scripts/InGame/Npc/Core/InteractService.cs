@@ -129,6 +129,7 @@ public class InteractService : MonoBehaviour
 
     private void ExecuteStyling(NpcInteractionContext context)
     {
+        _dialogueController.Close();
         _stylingCustomizeService?.BeginStylingInteraction(context);
     }
 
