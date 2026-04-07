@@ -35,6 +35,18 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         _owner?.EndAction();
     }
 
+    public bool CanInteractPrimary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        return cell.Data.ObjectType == EGridObjectType.Tree;
+    }
+
+    public bool CanInteractSecondary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        return cell.Data.ObjectType == EGridObjectType.Rock;
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         _owner.BeginAction();
