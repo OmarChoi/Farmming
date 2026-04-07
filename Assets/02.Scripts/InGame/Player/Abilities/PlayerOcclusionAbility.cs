@@ -21,18 +21,20 @@ public class PlayerOcclusionAbility : PlayerAbility
     private MaterialPropertyBlock _block;
     private readonly Dictionary<Renderer, float> _occluderStrengths = new();
     private readonly HashSet<Renderer> _currentFrameOccluders = new();
-    private readonly List<Renderer> _candidateRenderers = new();
+    private readonly HashSet<Renderer> _candidateRenderers = new();
     private readonly List<Renderer> _removeBuffer = new();
     private readonly List<Renderer> _updateRendererBuffer = new();
     private readonly List<float> _updateStrengthBuffer = new();
     private readonly Dictionary<Collider, Renderer[]> _colliderRenderersCache = new();
     private readonly Dictionary<Renderer, bool> _supportsOcclusionCache = new();
     private readonly Collider[] _overlapBuffer = new Collider[32];
+    private Transform _rootTransform;
 
     protected override void Awake()
     {
         base.Awake();
         _block = new MaterialPropertyBlock();
+        _rootTransform = transform.root;
     }
 
     private void OnEnable()
@@ -119,10 +121,9 @@ public class PlayerOcclusionAbility : PlayerAbility
         {
             Renderer renderer = renderers[i];
             if (renderer == null) continue;
-            if (renderer.transform.IsChildOf(transform.root)) continue;
+            if (renderer.transform.IsChildOf(_rootTransform)) continue;
             if (((1 << renderer.gameObject.layer) & _occlusionLayer.value) == 0) continue;
             if (!SupportsOcclusionCached(renderer)) continue;
-            if (_candidateRenderers.Contains(renderer)) continue;
 
             _candidateRenderers.Add(renderer);
         }
@@ -133,19 +134,15 @@ public class PlayerOcclusionAbility : PlayerAbility
         Vector3 vp = _mainCamera.WorldToViewportPoint(playerPos);
         Vector4 screenPos = new Vector4(vp.x, vp.y, 0f, 0f);
 
-        for (int i = 0; i < _candidateRenderers.Count; i++)
+        foreach (Renderer renderer in _candidateRenderers)
         {
-            Renderer renderer = _candidateRenderers[i];
             if (renderer == null) continue;
             if (!renderer.enabled) continue;
             if (!IsRendererOccluding(renderer, vp, dist)) continue;
 
             _currentFrameOccluders.Add(renderer);
 
-            if (!_occluderStrengths.ContainsKey(renderer))
-            {
-                _occluderStrengths.Add(renderer, 0f);
-            }
+            _occluderStrengths.TryAdd(renderer, 0f);
 
             renderer.GetPropertyBlock(_block);
             _block.SetVector(OcclusionScreenPos, screenPos);
