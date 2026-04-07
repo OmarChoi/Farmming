@@ -5,23 +5,24 @@ public class PlayerOcclusionAbility : PlayerAbility
 {
     [SerializeField] private float _fadeRadius = 0.12f;
     [SerializeField] private float _castRadius = 0.5f;
-    [SerializeField] private float _candidateRefreshInterval = 1f;
+    [SerializeField] private float _candidateSearchPadding = 2f;
+    [SerializeField] private float _fadeStrengthLerpSpeed = 8f;
     [SerializeField, Range(0f, 1f)] private float _ditherMinVisibility = 0.2f;
     [SerializeField] private LayerMask _occlusionLayer;
     [SerializeField] private Vector3 _playerOffset = Vector3.up;
 
     private static readonly int OcclusionScreenPos = Shader.PropertyToID("_OcclusionDitherScreenPos");
     private static readonly int OcclusionRadiusProp = Shader.PropertyToID("_OcclusionDitherRadius");
+    private static readonly int OcclusionStrengthProp = Shader.PropertyToID("_OcclusionDitherStrength");
     private static readonly int OcclusionMinVisibilityProp = Shader.PropertyToID("_OcclusionDitherMinVisibility");
 
     private Camera _mainCamera;
     private MaterialPropertyBlock _block;
-    private readonly Dictionary<Renderer, float> _occluderRadii = new();
+    private readonly Dictionary<Renderer, float> _occluderStrengths = new();
     private readonly HashSet<Renderer> _currentFrameOccluders = new();
     private readonly List<Renderer> _rendererBuffer = new();
     private readonly List<Renderer> _candidateRenderers = new();
-
-    private float _nextCandidateRefreshTime;
+    private readonly Collider[] _overlapBuffer = new Collider[32];
 
     protected override void Awake()
     {
@@ -32,7 +33,6 @@ public class PlayerOcclusionAbility : PlayerAbility
     private void Start()
     {
         _mainCamera = Camera.main;
-        RefreshCandidateRenderers();
     }
 
     private void LateUpdate()
@@ -52,25 +52,46 @@ public class PlayerOcclusionAbility : PlayerAbility
 
         _currentFrameOccluders.Clear();
 
-        if (Time.unscaledTime >= _nextCandidateRefreshTime)
-        {
-            RefreshCandidateRenderers();
-        }
-
         if (dist >= 0.1f)
         {
-            CollectOccluders(cameraPos, playerPos, dist);
+            CollectCandidateRenderers(playerPos, dist);
+            CollectOccluders(playerPos, dist);
         }
 
         UpdateOccluders();
     }
 
-    private void RefreshCandidateRenderers()
+    private void CollectCandidateRenderers(Vector3 playerPos, float playerDistance)
     {
         _candidateRenderers.Clear();
-        _nextCandidateRefreshTime = Time.unscaledTime + Mathf.Max(0.1f, _candidateRefreshInterval);
 
-        Renderer[] renderers = FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        float searchRadius = Mathf.Max(_castRadius, playerDistance + _candidateSearchPadding);
+        int overlapCount = Physics.OverlapSphereNonAlloc(
+            playerPos,
+            searchRadius,
+            _overlapBuffer,
+            _occlusionLayer,
+            QueryTriggerInteraction.Collide);
+
+        for (int i = 0; i < overlapCount; i++)
+        {
+            Collider collider = _overlapBuffer[i];
+            if (collider == null) continue;
+
+            AddCandidateRenderers(collider);
+            _overlapBuffer[i] = null;
+        }
+    }
+
+    private void AddCandidateRenderers(Collider collider)
+    {
+        Transform scope = collider.transform;
+        while (scope.parent != null && ((_occlusionLayer.value & (1 << scope.parent.gameObject.layer)) != 0))
+        {
+            scope = scope.parent;
+        }
+
+        Renderer[] renderers = scope.GetComponentsInChildren<Renderer>();
         for (int i = 0; i < renderers.Length; i++)
         {
             Renderer renderer = renderers[i];
@@ -78,12 +99,13 @@ public class PlayerOcclusionAbility : PlayerAbility
             if (renderer.transform.IsChildOf(transform.root)) continue;
             if (((1 << renderer.gameObject.layer) & _occlusionLayer.value) == 0) continue;
             if (!SupportsOcclusion(renderer)) continue;
+            if (_candidateRenderers.Contains(renderer)) continue;
 
             _candidateRenderers.Add(renderer);
         }
     }
 
-    private void CollectOccluders(Vector3 cameraPos, Vector3 playerPos, float dist)
+    private void CollectOccluders(Vector3 playerPos, float dist)
     {
         Vector3 vp = _mainCamera.WorldToViewportPoint(playerPos);
         Vector4 screenPos = new Vector4(vp.x, vp.y, 0f, 0f);
@@ -97,9 +119,9 @@ public class PlayerOcclusionAbility : PlayerAbility
 
             _currentFrameOccluders.Add(renderer);
 
-            if (!_occluderRadii.ContainsKey(renderer))
+            if (!_occluderStrengths.ContainsKey(renderer))
             {
-                _occluderRadii.Add(renderer, 0f);
+                _occluderStrengths.Add(renderer, 0f);
             }
 
             renderer.GetPropertyBlock(_block);
@@ -169,6 +191,7 @@ public class PlayerOcclusionAbility : PlayerAbility
             if (material == null) continue;
             if (!material.HasProperty(OcclusionRadiusProp)) continue;
             if (!material.HasProperty(OcclusionScreenPos)) continue;
+            if (!material.HasProperty(OcclusionStrengthProp)) continue;
             return true;
         }
 
@@ -177,36 +200,44 @@ public class PlayerOcclusionAbility : PlayerAbility
 
     private void UpdateOccluders()
     {
-        if (_occluderRadii.Count == 0) return;
+        if (_occluderStrengths.Count == 0) return;
 
         _rendererBuffer.Clear();
-        _rendererBuffer.AddRange(_occluderRadii.Keys);
+        _rendererBuffer.AddRange(_occluderStrengths.Keys);
+
+        float lerpFactor = 1f - Mathf.Exp(-_fadeStrengthLerpSpeed * Time.deltaTime);
 
         for (int i = 0; i < _rendererBuffer.Count; i++)
         {
             Renderer renderer = _rendererBuffer[i];
             if (renderer == null)
             {
-                _occluderRadii.Remove(renderer);
+                _occluderStrengths.Remove(renderer);
                 continue;
             }
 
-            float currentRadius = _occluderRadii[renderer];
-            float targetRadius = _currentFrameOccluders.Contains(renderer) ? _fadeRadius : 0f;
-            float nextRadius = targetRadius;
+            float currentStrength = _occluderStrengths[renderer];
+            float targetStrength = _currentFrameOccluders.Contains(renderer) ? 1f : 0f;
+            float nextStrength = Mathf.Lerp(currentStrength, targetStrength, lerpFactor);
+
+            if (Mathf.Abs(nextStrength - targetStrength) < 0.001f)
+            {
+                nextStrength = targetStrength;
+            }
 
             renderer.GetPropertyBlock(_block);
-            _block.SetFloat(OcclusionRadiusProp, nextRadius);
+            _block.SetFloat(OcclusionRadiusProp, nextStrength > 0f ? _fadeRadius : 0f);
+            _block.SetFloat(OcclusionStrengthProp, nextStrength);
             _block.SetFloat(OcclusionMinVisibilityProp, _ditherMinVisibility);
             renderer.SetPropertyBlock(_block);
 
-            if (targetRadius <= 0f && nextRadius <= 0f)
+            if (targetStrength <= 0f && nextStrength <= 0f)
             {
-                _occluderRadii.Remove(renderer);
+                _occluderStrengths.Remove(renderer);
                 continue;
             }
 
-            _occluderRadii[renderer] = nextRadius;
+            _occluderStrengths[renderer] = nextStrength;
         }
     }
 

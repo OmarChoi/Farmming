@@ -301,8 +301,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerOcclusionAbility
   _fadeRadius: 0.3
-  _castRadius: 1.2
-  _candidateRefreshInterval: 1
+  _castRadius: 1.4
+  _candidateSearchPadding: 2
   _ditherMinVisibility: 0
   _occlusionLayer:
     serializedVersion: 2
