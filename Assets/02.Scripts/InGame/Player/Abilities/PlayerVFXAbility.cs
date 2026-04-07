@@ -30,7 +30,7 @@ public class PlayerVFXAbility : PlayerAbility
         if (dust == null) return;
 
         float scale = _move.IsSprinting ? _runScale : _walkScale;
-        dust.transform.localScale = new Vector3(scale, scale, scale);
+        dust.transform.localScale = Vector3.one * scale;
 
         dust.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         dust.Play();

@@ -427,7 +427,7 @@ GameObject:
   - component: {fileID: 7049970476380551838}
   - component: {fileID: -8594337761533760552}
   - component: {fileID: 4912140031319917065}
-  - component: {fileID: 7477929756603756110}
+  - component: {fileID: 6957052209044821639}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -595,7 +595,7 @@ MonoBehaviour:
   m_SynchronizeLayers:
   - SynchronizeType: 1
     LayerIndex: 0
---- !u!114 &7477929756603756110
+--- !u!114 &6957052209044821639
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -606,8 +606,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e4f984e833ade0c489537c9f8c67e721, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FootstepEventRelay
-  _vfx: {fileID: 3687428902528433680}
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVFXEventRelay
 --- !u!1001 &5139120670093869900
 PrefabInstance:
   m_ObjectHideFlags: 0
