@@ -12,7 +12,7 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     private float _syncTimer;
 
     private int CurrentDay => _clock?.CurrentDay ?? 0;
-    private GameTime CurrentTime => _clock?.CurrentTime ?? default;
+    public GameTime CurrentTime => _clock?.CurrentTime ?? default;
     private bool IsDayTime => _clock is { IsDayTime: true };
     private int ElapsedDays => _clock?.ElapsedDays ?? 0;
 
@@ -22,7 +22,6 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     private bool CanUseNetworkSync => PhotonNetwork.IsConnected && PhotonNetwork.InRoom && photonView != null;
 
     #region Lifecycle
-
     private void Awake()
     {
         TryCreateClock();
@@ -42,7 +41,6 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         _syncTimer = 0f;
         SyncToRemote();
     }
-
     #endregion
 
     #region Public API
@@ -59,11 +57,9 @@ public class TimeSystem : MonoBehaviourPunCallbacks
 
         ExecuteAuthoritySkipToNextDay();
     }
-
     #endregion
 
     #region Local
-
     private void Tick(float deltaTime)
     {
         if (!TryCreateClock()) return;
@@ -209,11 +205,9 @@ public class TimeSystem : MonoBehaviourPunCallbacks
         ExecuteEvent(eventType);
         BroadcastEventToRemote(eventType);
     }
-
     #endregion
 
     #region Network
-
     [PunRPC]
     private void RPC_RequestSkipToNextDay()
     {
@@ -268,4 +262,25 @@ public class TimeSystem : MonoBehaviourPunCallbacks
     }
 
     #endregion
+
+    public void ImportTimeSaveData(TimeSaveData timeSaveData)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        _clock.SetTime
+        (
+            timeSaveData.Day,
+            new GameTime(timeSaveData.Hour, timeSaveData.Minute)
+        );
+        SyncLocalState();
+    }
+
+    public TimeSaveData ExportSaveData()
+    {
+        return new TimeSaveData
+        {
+            Day = CurrentDay,
+            Hour = CurrentTime.Hour,
+            Minute = CurrentTime.Minute
+        };
+    }
 }
