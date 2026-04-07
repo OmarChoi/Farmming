@@ -30,6 +30,11 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         _owner?.EndAction();
     }
 
+    public bool CanInteractPrimary(TerrainCell cell)
+    {
+        return IsHarvestableCell(cell);
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         switch (_owner.Grade.CurrentGrade)

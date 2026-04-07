@@ -1003,6 +1003,7 @@ MonoBehaviour:
   _mouthPoint: {fileID: 1982235181728634582}
   _seedVfxPrefab: {fileID: 3796885633913593696, guid: b4c4fb9801e93434d809d1505d55675f, type: 3}
   _sowDelay: 0.5
+  _epicThreeTileLookDuration: 1.6
   _cultivateExperience: 10
   _sowExperience: 10
 --- !u!114 &4642191277865818875
@@ -1028,6 +1029,10 @@ MonoBehaviour:
   _jumpCount: 1
   _rayOriginHeight: 3
   _rayDistance: 5
+  _epicInitialWait: 0.2
+  _epicLookDuration: 0.8
+  _spinDuration: 2
+  _spinDegreesPerSecond: 720
 --- !u!1 &5410132598804558874
 GameObject:
   m_ObjectHideFlags: 0

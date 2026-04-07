@@ -3,6 +3,15 @@ using UnityEngine;
 // 개간 곡룡: Ground -> FarmDry
 public class TillActionAbility : FarmBaseAbility
 {
+    public override bool CanInteractPrimary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (cell.Data.CellType != ECellType.Dirt) return false;
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return false;
+        return true;
+    }
+
     public override void InteractPrimary(TerrainCell cell)
     {
         if(cell.FarmTile == null)
