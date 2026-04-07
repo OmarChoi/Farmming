@@ -37,6 +37,30 @@ public class NpcLocationAnchor : MonoBehaviour
         }
     }
 
+    public void Initialize(
+        NpcDataSO npcData,
+        ENpcLocationType locationType,
+        string locationKey,
+        Transform point = null,
+        GameObject stylingHideRoot = null)
+    {
+        if (NpcLocationManager.Instance != null)
+        {
+            NpcLocationManager.Instance.Unregister(this);
+        }
+
+        _npcData = npcData;
+        _locationType = locationType;
+        _locationKey = locationKey;
+        _point = point != null ? point : transform;
+        _stylingHideRoot = stylingHideRoot;
+
+        if (NpcLocationManager.Instance != null)
+        {
+            NpcLocationManager.Instance.Register(this);
+        }
+    }
+
     public GameObject StylingHideRoot
     {
         get
