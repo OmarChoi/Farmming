@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
@@ -5,6 +6,7 @@ using UnityEngine;
 public class GameSceneInit : MonoBehaviour
 {
     public static bool ReturningFromDungeon{ get; set; }
+    public static event Action OnCompleteInitialize;
 
     [SerializeField] private string _playerPrefabName = "Player";
     [SerializeField] private MapManager _mapManager;
@@ -31,6 +33,7 @@ public class GameSceneInit : MonoBehaviour
                 _mapNavMeshController.BuildInitialNavMesh();
                 SpawnPlayer(spawnPos);
                 RoomManager.Instance.OpenRoom();
+                OnCompleteInitialize?.Invoke();
             }
             else
             {
@@ -67,6 +70,7 @@ public class GameSceneInit : MonoBehaviour
 
         var pos = FindSpawnPosition();
         SpawnPlayer(pos);
+        OnCompleteInitialize?.Invoke();
     }
 
     private Vector3 FindSpawnPosition()
@@ -122,6 +126,8 @@ public class GameSceneInit : MonoBehaviour
 
         if (existing != null && CustomizeData.Instance != null)
             existing.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
+
+        OnCompleteInitialize?.Invoke();
     }
 
     private async UniTaskVoid LoadLocalVillage()
@@ -140,6 +146,8 @@ public class GameSceneInit : MonoBehaviour
             string playerId = existing.PlayerId;
             SaveManager.Instance.RegisterPlayer(playerId, existing);
         }
+
+        OnCompleteInitialize?.Invoke();
     }
 
     private async UniTaskVoid LoadAndSpawnMaster()
@@ -155,8 +163,10 @@ public class GameSceneInit : MonoBehaviour
 
         // 2. 맵 로드 후 NavMesh 빌드
         _mapNavMeshController.BuildInitialNavMesh();
-
-        await SaveManager.Instance.LoadBuildingAsync();
+        
+        // 3. 관련 NPC 빌드
+        if (BuildingManager.Instance != null)
+            BuildingManager.Instance.SpawnBuildingNpcs();
 
         if (ReturningFromDungeon)
         {
@@ -178,6 +188,8 @@ public class GameSceneInit : MonoBehaviour
 
         // 6. 클라이언트 입장 허용
         RoomManager.Instance.OpenRoom();
+
+        OnCompleteInitialize?.Invoke();
     }
 
     private void RestoreExistingPlayers()

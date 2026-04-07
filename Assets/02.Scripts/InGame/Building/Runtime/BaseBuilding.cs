@@ -14,16 +14,24 @@ public abstract class BaseBuilding : MonoBehaviour
     public bool IsConstructionComplete => SaveData == null || SaveData.RemainingDays <= 0;
 
     private bool _isDayBound;
+    private NpcController _buildingNpc;
     private bool _constructionCompletedHandled;
+    private bool _onLoading;
 
     public void Initialize(
         BuildingDataSO buildingData, 
         BuildingSaveData saveData, 
-        BuildingConstructionContext constructionContext)
+        BuildingConstructionContext constructionContext,
+        bool onLoading = false)
     {
         BuildingData = buildingData;
         SaveData = saveData;
         ConstructionContext = constructionContext;
+        if (onLoading)
+        {
+            _onLoading = true;
+            GameSceneInit.OnCompleteInitialize += OnLoadingFinished;
+        }
         ConstructionProgress = CalculateConstructionProgress();
         if (!IsConstructionComplete)
         {
@@ -48,12 +56,22 @@ public abstract class BaseBuilding : MonoBehaviour
         }
     }
 
+    private void OnLoadingFinished()
+    {
+        _onLoading = false;
+        GameSceneInit.OnCompleteInitialize -= OnLoadingFinished;
+    }
+    
     protected virtual void OnDestroy()
     {
+        NpcSpawnManager.Instance.Despawn(_buildingNpc);
+        GameSceneInit.OnCompleteInitialize -= OnLoadingFinished;
+        
         if (!_isDayBound) return;
 
         TimeEvents.OnNetDayStarted -= AdvanceDay;
         _isDayBound = false;
+        
     }
 
     private void AdvanceDay()
@@ -70,15 +88,25 @@ public abstract class BaseBuilding : MonoBehaviour
         }
     }
 
+    public void SetNpc(NpcController npc)
+    {
+        _buildingNpc = npc;
+    }
+    
     public void HandleConstructionCompleted()
     {
+        // Loading 중에는 NPC 생성을 하지 않게 설정
         // NPC 생성은 마스터에서만 실행 (멀티 시 마스터가 NPC를 관리)
-        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
+        if (!_onLoading && (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient))
         {
             BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
             if (spawner != null && spawner.HasValidData)
             {
-                spawner.SpawnNpc();
+                NpcController npc = spawner.SpawnNpc();
+                if (npc != null)
+                {
+                    _buildingNpc = npc;
+                }
             }
         }
 

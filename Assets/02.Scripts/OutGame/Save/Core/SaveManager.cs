@@ -179,18 +179,15 @@ public class SaveManager : MonoBehaviour
 
         _mapManager.ImportVillageSaveData(_loadedData.Terrain);
 
+        if (BuildingManager.Instance != null && _loadedData.Buildings != null)
+            await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
+        
         if (_timeSystem != null)
             _timeSystem.ImportTimeSaveData(_loadedData.Time);
 
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
     }
-
-    public async UniTask LoadBuildingAsync()
-    {
-        if (BuildingManager.Instance != null && _loadedData.Buildings != null)
-            await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
-    }
-
+    
     public UniTask<bool> HasSaveAsync(int slot = 0) => _repository.HasSaveAsync(slot);
 
     public bool HasPlayerData(string playerId)
