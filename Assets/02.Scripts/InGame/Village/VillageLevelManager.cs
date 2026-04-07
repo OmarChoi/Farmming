@@ -120,8 +120,8 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
 
     private int GetThresholdForLevel(int level)
     {
-        int idx = level - 1;
-        if (idx < 0 || idx >= _levelThresholds.Length) return 0;
+        if (_levelThresholds.Length == 0) return 0;
+        int idx = Math.Clamp(level - 1, 0, _levelThresholds.Length - 1);
         return _levelThresholds[idx];
     }
 
