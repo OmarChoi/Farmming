@@ -116,7 +116,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
         }
 
-        if (cell.Data.ObjectType == EGridObjectType.Tree || cell.Data.ObjectType == EGridObjectType.Rock)
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
             return;
 
         ETileType tileType = GetTileTypeForItem(selectedGround, cell.Data.TileType);
@@ -142,6 +142,25 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         inventory.RemoveAt(groundSlotIndex, _generateDirtAmount);
 
         _owner.EndAction();
+    }
+
+    public bool CanInteractPrimary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        return CanRemoveCell(cell);
+    }
+
+    public bool CanInteractSecondary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return false;
+
+        PlayerInventoryAbility inventory = GetInventory();
+        if (inventory == null) return false;
+
+        ItemDataSO selectedGround = _groundSelector?.SelectedGround;
+        return selectedGround != null;
     }
 
     private bool CanRemoveCell(TerrainCell cell)

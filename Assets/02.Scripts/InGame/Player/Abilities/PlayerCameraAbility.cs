@@ -1,4 +1,4 @@
-﻿using Unity.Cinemachine;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -180,5 +180,11 @@ public class PlayerCameraAbility : PlayerAbility
         Vector3 targetLocalPos = _defaultLocalPos + localOffset;
         _currentOffset = Vector3.Lerp(_currentOffset, targetLocalPos, speed * Time.deltaTime);
         _cameraRoot.localPosition = _currentOffset;
+    }
+
+    public void SnapYawToPlayerFrontView()
+    {
+        if (!_owner.IsMine) return;
+        _mx = Mathf.Repeat(_owner.transform.eulerAngles.y + 180f, 360f);
     }
 }

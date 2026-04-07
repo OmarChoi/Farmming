@@ -808,6 +808,60 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4350978652547750289, guid: e4472e8bb98033b42ad7a8df9f5dc739, type: 3}
   m_PrefabInstance: {fileID: 4846601910399759318}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &315043158
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 315043160}
+  - component: {fileID: 315043159}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &315043159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 315043158}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c0ff8f6d6fd65245815e3d655be1e92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TestHelperUpgrade
+  _playerHelperInteraction: {fileID: 0}
+  _fillExpKey: 117
+  _upgradeKey: 105
+  _addExpKey: 106
+  _printStatusKey: 107
+  _setNormalKey: 55
+  _setEpicKey: 56
+  _setLegendaryKey: 57
+  _expAddAmount: 100
+  _targetBackHelper: 0
+--- !u!4 &315043160
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 315043158}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &361385549
 GameObject:
   m_ObjectHideFlags: 0
@@ -3882,11 +3936,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7549689506291292020, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 16
+      value: 146
       objectReference: {fileID: 0}
     - target: {fileID: 7549689506291292020, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -20
+      value: -66.36
       objectReference: {fileID: 0}
     - target: {fileID: 8329026342996655254, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
       propertyPath: m_IsActive
@@ -4556,11 +4610,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3137963257264271397, guid: 3da955a6a3606f34695344244204b4e6, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 16
+      value: 146
       objectReference: {fileID: 0}
     - target: {fileID: 3137963257264271397, guid: 3da955a6a3606f34695344244204b4e6, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -20
+      value: -66.36
       objectReference: {fileID: 0}
     - target: {fileID: 5233919514557306654, guid: 3da955a6a3606f34695344244204b4e6, type: 3}
       propertyPath: m_AnchorMax.y
@@ -5039,3 +5093,4 @@ SceneRoots:
   - {fileID: 1600211005}
   - {fileID: 1857056278}
   - {fileID: 1523245614}
+  - {fileID: 315043160}

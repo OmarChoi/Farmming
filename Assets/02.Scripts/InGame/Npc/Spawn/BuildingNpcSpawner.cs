@@ -10,7 +10,7 @@ public class BuildingNpcSpawner : MonoBehaviour
 
     public bool HasValidData => _npcData != null && SpawnPoint != null;
 
-    public void SpawnNpc() => NpcSpawnManager.Instance.GetOrSpawn(CreateRequest());
+    public NpcController SpawnNpc() => NpcSpawnManager.Instance.GetOrSpawn(CreateRequest());
     
     public NpcSpawnRequest CreateRequest()
     {

@@ -8,6 +8,8 @@ public class PlayerTerrainAbility : PlayerAbility
     private Vector3Int _lastGridPos;
     private bool _hasTarget;
 
+    public Vector3Int FrontGridPos => _lastGridPos;
+
     private TerrainGridManager GridManager => TerrainGridManager.Instance;
 
     /// 플레이어 앞에 있는 셀을 반환. 없으면 아래 셀을 탐색. 둘 다 없으면 null.

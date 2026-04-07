@@ -27,6 +27,8 @@ public class LoadingProgressUI : MonoBehaviour
 
     private void Update()
     {
+        LoadingProgress.Tick();
+
         if (_fillBar != null)
         {
             float targetFill = Mathf.Clamp01(LoadingProgress.Value);
