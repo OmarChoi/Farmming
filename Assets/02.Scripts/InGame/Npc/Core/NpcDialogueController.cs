@@ -80,6 +80,10 @@ public class NpcDialogueController : MonoBehaviour
         if (_uiFriendshipBar != null)
         {
             _uiFriendshipBar.BindNpc(npc.Data.NpcId, true);
+            if (npc.Data.AutoStartQuestOnInteract == true)
+            {
+                _uiFriendshipBar.gameObject.SetActive(false);
+            }
         }
 
         QuestManager.Instance?.ReportNpcTalked(npc.Data.NpcId);
@@ -105,6 +109,7 @@ public class NpcDialogueController : MonoBehaviour
 
         if (_uiFriendshipBar != null)
         {
+            _uiFriendshipBar.gameObject.SetActive(true);
             _uiFriendshipBar.Clear();
         }
 

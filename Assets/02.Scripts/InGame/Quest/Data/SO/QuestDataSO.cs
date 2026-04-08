@@ -11,6 +11,7 @@ public class QuestDataSO : ScriptableObject
 
     [Header("퀘스트 종류")]
     public EQuestCategory QuestCategory;
+    public bool IsTutorial = false;
 
     [Header("수락 / 완료 NPC")]
     public string StartNpcId;       // 이 퀘스트를 주는 NPC입니다.

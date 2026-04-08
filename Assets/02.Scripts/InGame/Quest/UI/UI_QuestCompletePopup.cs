@@ -55,6 +55,7 @@ public class UI_QuestCompletePopup : MonoBehaviour
     private async void ShowCompletePopup(QuestRuntimeData quest)
     {
         if (quest == null || quest.QuestData == null || quest.QuestData.Reward == null) return;
+        if (quest.QuestData.IsTutorial == true) return;
 
         string rewardText = QuestRewardTextFormatter.BuildQuestReward(quest.QuestData.Reward);
         _completeRewardText.text = rewardText;
