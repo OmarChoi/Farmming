@@ -43,9 +43,9 @@ public class UI_HelperExperience : MonoBehaviour
         _ability = ability;
         _ability.OnSummonChanged += OnSummonChanged;
 
-        if (_ability.ActiveHelper != null)
+        if (_ability.ActiveMainHelper != null)
         {
-            BindExperience(_ability.ActiveHelper.Experience);
+            BindExperience(_ability.ActiveMainHelper.Experience);
         }
     }
 
@@ -65,9 +65,9 @@ public class UI_HelperExperience : MonoBehaviour
     {
         UnbindExperience();
 
-        if (summonedIndex >= 0 && _ability?.ActiveHelper != null)
+        if (_ability?.ActiveMainHelper != null)
         {
-            BindExperience(_ability.ActiveHelper.Experience);
+            BindExperience(_ability.ActiveMainHelper.Experience);
         }
         else
         {
