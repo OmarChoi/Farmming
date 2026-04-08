@@ -16,9 +16,6 @@ public class TutorialManager : MonoBehaviour
 
     private Transform _playerTransform;
     private NpcController _tutorialNpcController;
-
-    private bool _isMapReady;
-    private bool _isPlayerReady;
     private bool _isTutorialStarted;
 
     private void Awake()
@@ -36,31 +33,23 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    public void NotifyMapReady()
-    {
-        _isMapReady = true;
-        TryStartTutorial();
-    }
-
-    public void NotifyPlayerReady(Transform playerTransform)
-    {
-        _playerTransform = playerTransform;
-        _isPlayerReady = true;
-        TryStartTutorial();
-    }
-
-    private void TryStartTutorial()
+    public void TryStartTutorial(Transform playerTransform)
     {
         if (_isTutorialStarted) return;
-        if (!_isMapReady) return;
-        if (!_isPlayerReady) return;
+        if (playerTransform == null) return;
+        if (_tutorialNpc == null)
+        {
+            Debug.LogWarning("튜토리얼 NPC 데이터가 없습니다.");
+            return;
+        }
 
-        StartTutorial(_playerTransform);
+        _playerTransform = playerTransform;
+        StartTutorial();
     }
 
-    private void StartTutorial(Transform playerTransform)
+    private void StartTutorial()
     {
-        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, playerTransform);
+        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, _playerTransform);
 
         if (_tutorialNpcController == null)
         {
