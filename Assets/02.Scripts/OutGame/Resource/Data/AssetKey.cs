@@ -48,11 +48,13 @@ public static class AssetKey
         public const string Stamina = "UI_Stamina";
         public const string BuildingList = "UI_BuildingList";
         public const string BuildInfo = "UI_BuildInfo";
+        public const string VillageState = "UI_VillageState";
 
         private static readonly Dictionary<Type, string> _registered = new Dictionary<Type, string>
         {
             {typeof(UI_BuildingList), BuildingList},
             {typeof(UI_BuildInfo), BuildInfo},
+            {typeof(UI_VillageState), VillageState},
         };
 
         public static string GetKey<T>() where T : UIBase
