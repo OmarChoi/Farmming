@@ -22,6 +22,8 @@ public class CultivateAbility : HelperAbility
     [Header("Epic 방향 전환")]
     [SerializeField] private float _epicInitialWait = 0.2f;
     [SerializeField] private float _epicLookDuration = 0.8f;
+    [Tooltip("경작 애니메이션의 % 시점에 이펙트를 생성")]
+    [SerializeField][Range(0f, 1f)] private float _vfxTriggerNormalizedTime = 0.5f;
 
     [Header("Legendary 스핀")]
     [SerializeField] private float _spinDuration = 2f;
@@ -39,6 +41,7 @@ public class CultivateAbility : HelperAbility
         public bool EpicLookRight = true;
         public Action OnEpicLookLeft;
         public Action OnEpicLookRight;
+        public Func<IEnumerator> OnEpicLookRightRoutine;
         public float EpicRightLookDuration;
         public Action OnEpicLookRightMid;
     }
@@ -88,7 +91,7 @@ public class CultivateAbility : HelperAbility
         _animAbility.Play(EHelperAnim.Jump);
         yield return Move(_owner.transform, targetPosition, _jumpHeight, _jumpDuration);
 
-        _animAbility.Play(EHelperAnim.Cultivate);
+        //_animAbility.Play(EHelperAnim.Cultivate);
         SpawnDustEffect();
         cultivationParams.OnCultivate?.Invoke();
 
@@ -118,6 +121,8 @@ public class CultivateAbility : HelperAbility
                     seq.InsertCallback(rightDuration * 0.5f, () => cultivationParams.OnEpicLookRightMid.Invoke());
                 yield return seq.WaitForCompletion();
                 cultivationParams.OnEpicLookRight?.Invoke();
+                if (cultivationParams.OnEpicLookRightRoutine != null)
+                    yield return StartCoroutine(cultivationParams.OnEpicLookRightRoutine());
             }
         }
         else
@@ -148,6 +153,12 @@ public class CultivateAbility : HelperAbility
         _animAbility.Play(EHelperAnim.Idle);
         _isJumping = false;
         _owner.EndAction();
+    }
+
+    private IEnumerator ReplayEpicSowAndWait()
+    {
+        if (_animAbility == null) yield break;
+        yield return StartCoroutine(_animAbility.ForceReplayAndWait(EHelperAnim.Cultivate, _vfxTriggerNormalizedTime));
     }
 
     private YieldInstruction Move(Transform target, Vector3 to, float height, float duration)

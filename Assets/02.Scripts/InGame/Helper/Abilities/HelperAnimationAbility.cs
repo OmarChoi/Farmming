@@ -1,5 +1,6 @@
 using Photon.Pun;
 using UnityEngine;
+using System.Collections;
 
 public class HelperAnimationAbility : HelperAbility
 {
@@ -12,6 +13,11 @@ public class HelperAnimationAbility : HelperAbility
     protected override void Awake()
     {
         base.Awake();
+        _animator = GetComponentInChildren<Animator>();
+    }
+
+    public void InitAnimator()
+    {
         _animator = GetComponentInChildren<Animator>();
     }
 
@@ -46,5 +52,56 @@ public class HelperAnimationAbility : HelperAbility
         _currentAnim = anim;
         _animator.SetInteger(AnimHash, (int)anim);
         return true;
+    }
+
+    public IEnumerator WaitForNormalizedTime(float normalizedThreshold, float timeout = 3f, int layerIndex = 0)
+    {
+        yield return null;
+
+        float elapsed = 0f;
+        while (elapsed < timeout)
+        {
+            if (_animator == null) yield break;
+            var stateInfo = _animator.GetCurrentAnimatorStateInfo(layerIndex);
+            if (stateInfo.normalizedTime >= normalizedThreshold)
+                yield break;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    public IEnumerator ForceReplayAndWait(EHelperAnim anim, float normalizedThreshold, float timeout = 5f, int layerIndex = 0)
+    {
+        if (_animator == null) yield break;
+
+        _currentAnim = anim;
+        _animator.SetInteger(AnimHash, (int)anim);
+
+        if (_owner.IsMine)
+            _owner.PhotonView.RpcSafe(nameof(RPC_PlayAnimation), RpcTarget.Others, (int)anim);
+
+        // 전환(transition) 완료까지 대기 (최대 1초)
+        float transWait = 0f;
+        while (_animator.IsInTransition(layerIndex) && transWait < 1f)
+        {
+            transWait += Time.deltaTime;
+            yield return null;
+        }
+
+        // 현재 상태를 normalizedTime=0부터 강제 재시작
+        int stateHash = _animator.GetCurrentAnimatorStateInfo(layerIndex).fullPathHash;
+        _animator.Play(stateHash, layerIndex, 0f);
+
+        yield return null;
+
+        float elapsed = 0f;
+        while (elapsed < timeout)
+        {
+            if (_animator == null) yield break;
+            if (_animator.GetCurrentAnimatorStateInfo(layerIndex).normalizedTime >= normalizedThreshold)
+                yield break;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
     }
 }

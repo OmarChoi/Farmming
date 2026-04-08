@@ -114,7 +114,15 @@ public class HelperController : MonoBehaviour
             transform.localScale = _originalScale * equipOverride.GetEquipScale();
         }
 
-        GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
+        if(Grade.CurrentGrade >= EHelperGrade.Epic)
+        {
+            GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Idle);
+        }
+        else
+        {
+            GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
+        }
+        
     }
 
     public void Unequip()
