@@ -46,9 +46,9 @@ public class UI_HelperEnergy : MonoBehaviour
         _ability = ability;
         _ability.OnSummonChanged += OnSummonChanged;
 
-        if (_ability.ActiveHelper != null)
+        if (_ability.ActiveMainHelper != null)
         {
-            BindEnergy(_ability.ActiveHelper.Energy);
+            BindEnergy(_ability.ActiveMainHelper.Energy);
         }
     }
 
@@ -65,9 +65,9 @@ public class UI_HelperEnergy : MonoBehaviour
     {
         UnbindEnergy();
 
-        if (summonedIndex >= 0 && _ability?.ActiveHelper != null)
+        if (_ability?.ActiveMainHelper != null)
         {
-            BindEnergy(_ability.ActiveHelper.Energy);
+            BindEnergy(_ability.ActiveMainHelper.Energy);
         }
         else
         {

@@ -28,6 +28,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     public int SummonedIndex => _summonedMainIndex >= 0 ? _summonedMainIndex : _summonedLightIndex;
     public bool IsCurrentIndexSummoned => _currentIndex == _summonedMainIndex || _currentIndex == _summonedLightIndex;
     public HelperController ActiveHelper => _activeMainHelper != null ? _activeMainHelper : _activeLightHelper;
+    public HelperController ActiveMainHelper => _activeMainHelper;
+    public bool HasActiveMainHelper => _activeMainHelper != null;
 
     public HelperDataSO SummonedData
     {
@@ -104,7 +106,13 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     private void Start()
     {
         if (!_owner.IsMine) return;
+        TimeEvents.OnNetDayStarted += HandleMorning;
         OnLocalPlayerReady?.Invoke(this);
+    }
+
+    private void OnDestroy()
+    {
+        TimeEvents.OnNetDayStarted -= HandleMorning;
     }
 
     private void Update()
@@ -242,6 +250,11 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void SaveHelperState(HelperController helper)
     {
+        SaveHelperState(helper, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+    }
+
+    private void SaveHelperState(HelperController helper, long savedAt)
+    {
         if (helper == null) return;
         _savedStates[helper.HelperId] = new HelperSaveData
         {
@@ -250,7 +263,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             Grade = (int)helper.Grade.CurrentGrade,
             Experience = helper.Experience.CurrentExp,
             Energy = helper.Energy.Current,
-            EnergySavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            EnergySavedAt = savedAt
         };
     }
 
@@ -276,6 +289,45 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         if (_savedStates.TryGetValue(helper.HelperId, out var state))
             helper.LoadState(state);
+    }
+
+    private void HandleMorning()
+    {
+        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        RecoverActiveHelper(_activeMainHelper, now);
+        RecoverActiveHelper(_activeLightHelper, now);
+        RecoverSavedHelpers(now);
+    }
+
+    private void RecoverActiveHelper(HelperController helper, long savedAt)
+    {
+        if (helper == null) return;
+
+        helper.Energy.RecoverFull();
+        SaveHelperState(helper, savedAt);
+    }
+
+    private void RecoverSavedHelpers(long savedAt)
+    {
+        foreach (HelperDataSO data in _helperDataList)
+        {
+            if (data == null) continue;
+            if (IsActiveHelper(data.HelperId)) continue;
+
+            if (_savedStates.TryGetValue(data.HelperId, out HelperSaveData state))
+            {
+                state.Energy = data.MaxEnergy;
+                state.EnergySavedAt = savedAt;
+                _savedStates[data.HelperId] = state;
+            }
+        }
+    }
+
+    private bool IsActiveHelper(string helperId)
+    {
+        return (_activeMainHelper != null && _activeMainHelper.HelperId == helperId)
+            || (_activeLightHelper != null && _activeLightHelper.HelperId == helperId);
     }
 
     public void AddHelper(HelperDataSO data)
