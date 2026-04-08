@@ -24,6 +24,14 @@ public class PlayerController : MonoBehaviour
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
     private Renderer[] _cachedRenderers;
 
+    private ETutorialState _tutorialState = ETutorialState.None;
+    public ETutorialState TutorialState => _tutorialState;
+
+    public void SetTutorialState(ETutorialState state)
+    {
+        _tutorialState = state;
+    }
+
     private void Awake()
     {
         PhotonView = GetComponent<PhotonView>();
@@ -119,7 +127,8 @@ public class PlayerController : MonoBehaviour
             PosX = transform.position.x,
             PosY = transform.position.y,
             PosZ = transform.position.z,
-            RotY = transform.eulerAngles.y
+            RotY = transform.eulerAngles.y,
+            TutorialState = _tutorialState
         };
 
         foreach (var saveable in GetComponentsInChildren<ISaveableAbility>())
@@ -137,6 +146,8 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, saveData.RotY, 0f);
 
         if (cc != null) cc.enabled = true;
+
+        _tutorialState = saveData.TutorialState;
 
         foreach (var saveable in GetComponentsInChildren<ISaveableAbility>())
             saveable.ImportFrom(saveData);

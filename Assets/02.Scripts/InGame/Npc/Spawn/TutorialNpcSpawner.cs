@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class TutorialNpcSpawner
 {
-    private const float SpawnRadius = 2.8f;
+    private const float SpawnRadius = 3.2f;
 
     public static NpcController SpawnNearPlayer(NpcDataSO data, Transform player)
     {

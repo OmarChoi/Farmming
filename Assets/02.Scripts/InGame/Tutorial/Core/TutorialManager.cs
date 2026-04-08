@@ -14,6 +14,7 @@ public class TutorialManager : MonoBehaviour
     [Header("NpcQuestService")]
     [SerializeField] private NpcQuestService _npcQuestService;
 
+    private PlayerController _currentPlayer;
     private Transform _playerTransform;
     private NpcController _tutorialNpcController;
     private bool _isTutorialStarted;
@@ -33,22 +34,28 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    public void TryStartTutorial(Transform playerTransform)
+    public void TryStartTutorial(PlayerController player)
     {
-        if (_isTutorialStarted) return;
-        if (playerTransform == null) return;
-        if (_tutorialNpc == null)
+        if (_isTutorialStarted || player == null || _tutorialNpc == null) return;
+        if (player.TutorialState == ETutorialState.Completed) return;
+
+        _currentPlayer = player;
+        _playerTransform = player.transform;
+
+        if (_currentPlayer.TutorialState == ETutorialState.None)
         {
-            Debug.LogWarning("튜토리얼 NPC 데이터가 없습니다.");
-            return;
+            _currentPlayer.SetTutorialState(ETutorialState.InProgress);
         }
 
-        _playerTransform = playerTransform;
         StartTutorial();
     }
 
     private void StartTutorial()
     {
+        if (_playerTransform == null) return;
+
+        DespawnTutorialNpc();
+
         _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, _playerTransform);
 
         if (_tutorialNpcController == null)
@@ -66,11 +73,20 @@ public class TutorialManager : MonoBehaviour
         // NPC가 완전히 스폰되고 초기화될 때까지 잠시 대기합니다.
         yield return null;
 
-        if (_tutorialNpcController == null || _playerTransform == null) yield break;
+        if (_tutorialNpcController == null || _playerTransform == null)
+        {
+            ResetRuntimeStateOnly();
+            yield break;
+        }
 
         NpcInteractionComponent npcInteraction = _tutorialNpcController.GetComponent<NpcInteractionComponent>();
         PlayerNPCInteractionAbility playerInteraction = _playerTransform.GetComponentInChildren<PlayerNPCInteractionAbility>();
-        if (npcInteraction == null || playerInteraction == null) yield break;
+
+        if (npcInteraction == null || playerInteraction == null)
+        {
+            ResetRuntimeStateOnly();
+            yield break;
+        }
 
         // 1. 자동으로 상호작용을 시작합니다.
         playerInteraction.BeginAutoInteraction(npcInteraction);
@@ -84,5 +100,43 @@ public class TutorialManager : MonoBehaviour
             npcInteraction);
 
         _npcQuestService?.ExecuteTutorialQuestInteraction(context, _tutorialQuestData);
+    }
+
+    public void CompleteTutorial()
+    {
+        if (_currentPlayer != null)
+        {
+            _currentPlayer.SetTutorialState(ETutorialState.Completed);
+        }
+
+        DespawnTutorialNpc();
+        _isTutorialStarted = false;
+        _currentPlayer = null;
+        _playerTransform = null;
+    }
+
+    public void ResetRuntimeStateOnly()
+    {
+        _isTutorialStarted = false;
+        _tutorialNpcController = null;
+        _currentPlayer = null;
+        _playerTransform = null;
+    }
+
+    // 기존에 존재하는 튜토리얼 NPC가 있다면 제거합니다.
+    private void DespawnTutorialNpc()
+    {
+        if (_tutorialNpcController != null)
+        {
+            if (NpcSpawnManager.Instance != null)
+            {
+                NpcSpawnManager.Instance.Despawn(_tutorialNpcController);
+            }
+            else
+            {
+                Destroy(_tutorialNpcController.gameObject);
+            }
+            _tutorialNpcController = null;
+        }
     }
 }

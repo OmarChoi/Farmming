@@ -415,21 +415,15 @@ public class GameSceneInit : MonoBehaviour
         return null;
     }
 
-    private bool ShouldStartTutorial()
+    private bool ShouldStartTutorial(PlayerController player)
     {
-        if (ReturningFromDungeon) return false;
-        if (RoomManager.Instance == null) return false;
-        if (!RoomManager.Instance.IsFirstVisit) return false;
-
-        return true;
+        if (player == null || ReturningFromDungeon || TutorialManager.Instance == null) return false;
+        return player.TutorialState == ETutorialState.None || player.TutorialState == ETutorialState.InProgress;
     }
 
     private void TryStartTutorial(PlayerController player)
     {
-        if (player == null) return;
-        if (!ShouldStartTutorial()) return;
-        if (TutorialManager.Instance == null) return;
-
-        TutorialManager.Instance.TryStartTutorial(player.transform);
+        if (!ShouldStartTutorial(player)) return;
+        TutorialManager.Instance.TryStartTutorial(player);
     }
 }
