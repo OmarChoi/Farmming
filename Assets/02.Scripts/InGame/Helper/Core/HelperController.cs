@@ -210,21 +210,10 @@ public class HelperController : MonoBehaviour
         var interaction = ownerView.GetComponentInChildren<PlayerHelperInteractionAbility>();
         if (interaction == null) return;
 
-        var equipSlot = isBack ? interaction.BackEquipSlot : interaction.EquipSlot;
+        var equipSlot = (isBack && interaction.BackEquipSlot != null) ? interaction.BackEquipSlot : interaction.EquipSlot;
         if (equipSlot == null) return;
 
-        SetTransformSync(false);
-        State = EHelperState.Equipped;
-        transform.SetParent(equipSlot);
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.identity;
-
-        IEquipOverride equipOverride = GetComponentInChildren<IEquipOverride>();
-        if (equipOverride != null)
-        {
-            transform.localRotation = Quaternion.Euler(equipOverride.GetEquipRotation());
-            transform.localScale = _originalScale * equipOverride.GetEquipScale();
-        }
+        Equip(equipSlot);
     }
 
     [PunRPC]
