@@ -14,6 +14,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     public HelperController CurrentHelper => _currentHelper;
     public HelperController BackHelper => _backHelper;
     public Transform EquipSlot => _equipSlot;
+    public Transform BackEquipSlot => _backEquipSlot;
 
     protected override void Awake()
     {
@@ -169,7 +170,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             {
                 _currentHelper.Equip(_equipSlot);
                 _currentHelper.PhotonView.RpcSafe(
-                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID, false);
             }
             return;
         }
@@ -187,7 +188,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             {
                 _backHelper.Equip(slot);
                 _backHelper.PhotonView.RpcSafe(
-                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID);
+                    nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID, true);
             }
         }
     }
