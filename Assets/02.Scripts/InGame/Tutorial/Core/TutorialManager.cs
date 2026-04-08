@@ -79,11 +79,12 @@ public class TutorialManager : MonoBehaviour
 
         if (_tutorialNpcController == null || _playerTransform == null) yield break;
 
-        NpcInteractionComponent interaction = _tutorialNpcController.GetComponent<NpcInteractionComponent>();
-        if (interaction == null) yield break;
+        NpcInteractionComponent npcInteraction = _tutorialNpcController.GetComponent<NpcInteractionComponent>();
+        PlayerNPCInteractionAbility playerInteraction = _playerTransform.GetComponentInChildren<PlayerNPCInteractionAbility>();
+        if (npcInteraction == null || playerInteraction == null) yield break;
 
         // 1. 자동으로 상호작용을 시작합니다.
-        interaction.RequestInteract(_playerTransform);
+        playerInteraction.BeginAutoInteraction(npcInteraction);
 
         // 2. 대화 UI가 열린 다음 프레임에 튜토리얼 퀘스트 시작합니다.
         yield return null;
@@ -91,7 +92,7 @@ public class TutorialManager : MonoBehaviour
         NpcInteractionContext context = new NpcInteractionContext(
             _tutorialNpcController,
             _playerTransform,
-            interaction);
+            npcInteraction);
 
         _npcQuestService?.ExecuteTutorialQuestInteraction(context, _tutorialQuestData);
     }

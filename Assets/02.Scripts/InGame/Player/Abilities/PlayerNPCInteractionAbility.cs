@@ -85,4 +85,18 @@ public class PlayerNPCInteractionAbility : PlayerAbility
         _owner.transform.rotation = Quaternion.Slerp(
             _owner.transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
     }
+
+    public void BeginAutoInteraction(INpcInteraction target)
+    {
+        if (target == null) return;
+
+        Component targetComponent = target as Component;
+        if (targetComponent == null) return;
+
+        _faceTarget = targetComponent.transform;
+        _owner.LockAction();
+        _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
+
+        target.RequestInteract(transform);
+    }
 }
