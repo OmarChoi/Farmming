@@ -11,7 +11,11 @@ public class HarvestEpicVFXAbility : HelperAbility
     [SerializeField] private float _tornadoSpawnHeight = 0.5f;
 
     // 순서: 가운데 → 왼쪽 → 오른쪽, 모두 _totalDuration 안에 완료
-    public void SpawnEffects(TerrainCell centerCell, Action<TerrainCell> onCellHarvest, Action onComplete)
+    public void SpawnEffects(
+        TerrainCell centerCell,
+        Action<TerrainCell> onCellHarvest,
+        Action onComplete,
+        Action<TerrainCell> onTornadoSpawn = null)
     {
         Vector3Int rightOffset = GetGridRightOffset();
 
@@ -20,21 +24,23 @@ public class HarvestEpicVFXAbility : HelperAbility
 
         float interval = _totalDuration / 3f;
 
-        StartCoroutine(SpawnSequence(centerCell, leftCell, rightCell, interval, onCellHarvest, onComplete));
+        StartCoroutine(SpawnSequence(centerCell, leftCell, rightCell, interval, onCellHarvest, onComplete, onTornadoSpawn));
     }
 
     private IEnumerator SpawnSequence(
         TerrainCell centerCell, TerrainCell leftCell, TerrainCell rightCell,
-        float interval, Action<TerrainCell> onCellHarvest, Action onComplete)
+        float interval, Action<TerrainCell> onCellHarvest, Action onComplete, Action<TerrainCell> onTornadoSpawn)
     {
-        SpawnTornadoAt(centerCell);
+        if (SpawnTornadoAt(centerCell))
+            onTornadoSpawn?.Invoke(centerCell);
         onCellHarvest?.Invoke(centerCell);
 
         yield return new WaitForSeconds(interval);
 
         if (leftCell != null && leftCell.Data.IsTop)
         {
-            SpawnTornadoAt(leftCell);
+            if (SpawnTornadoAt(leftCell))
+                onTornadoSpawn?.Invoke(leftCell);
             onCellHarvest?.Invoke(leftCell);
         }
 
@@ -42,7 +48,8 @@ public class HarvestEpicVFXAbility : HelperAbility
 
         if (rightCell != null && rightCell.Data.IsTop)
         {
-            SpawnTornadoAt(rightCell);
+            if (SpawnTornadoAt(rightCell))
+                onTornadoSpawn?.Invoke(rightCell);
             onCellHarvest?.Invoke(rightCell);
         }
 
@@ -51,13 +58,14 @@ public class HarvestEpicVFXAbility : HelperAbility
         onComplete?.Invoke();
     }
 
-    private void SpawnTornadoAt(TerrainCell cell)
+    private bool SpawnTornadoAt(TerrainCell cell)
     {
-        if (_sproutTornadoPrefab == null) return;
+        if (_sproutTornadoPrefab == null || cell == null) return false;
 
         Vector3 pos = cell.transform.position + Vector3.up * _tornadoSpawnHeight;
         GameObject tornado = Instantiate(_sproutTornadoPrefab, pos, Quaternion.identity);
         Destroy(tornado, _tornadoLifetime);
+        return true;
     }
 
     private Vector3Int GetGridRightOffset()
