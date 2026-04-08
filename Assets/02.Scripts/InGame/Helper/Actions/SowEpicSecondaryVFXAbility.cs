@@ -36,7 +36,12 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
 
             // 이펙트 생성 직전 — 애니메이션 재생 및 트리거 지점까지 대기
             if (onEachSpawn != null)
-                yield return StartCoroutine(onEachSpawn());
+            {
+                if (i == 0)
+                    StartCoroutine(onEachSpawn());
+                else
+                    yield return StartCoroutine(onEachSpawn());
+            }
 
             if (_sowEpicParticlePrefab == null || mouthPoint == null)
             {

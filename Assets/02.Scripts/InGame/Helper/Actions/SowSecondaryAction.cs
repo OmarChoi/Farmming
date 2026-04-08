@@ -71,43 +71,47 @@ public sealed class SowSecondaryAction
         Vector3 originalPos = _owner.transform.position;
 
         Vector3 floatPos = _owner.PlayerOwner.transform.position + Vector3.up * _config.FloatAbovePlayerHeight;
-        yield return _owner.transform.DOMove(floatPos, _config.FloatMoveDuration)
-            .SetEase(Ease.OutQuad).WaitForCompletion();
-
-        Tween bobTween = _owner.transform.DOMoveY(floatPos.y + _config.BobAmplitude, _config.BobDuration)
-            .SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
-
-        yield return new WaitForSeconds(_config.FloatDuration);
-        bobTween.Kill();
-
-        if (_owner.Grade.CurrentGrade == EHelperGrade.Legendary)
-        {
-            _animAbility?.Replay(EHelperAnim.LegendarySow);
-            if (_animAbility != null)
-                yield return _coroutineHost.StartCoroutine(_animAbility.WaitForNormalizedTime(_config.VfxTriggerNormalizedTime));
-        }
+        Tween floatMoveTween = _owner.transform.DOMove(floatPos, _config.FloatMoveDuration)
+            .SetEase(Ease.OutQuad);
 
         bool done = false;
-        switch (_owner.Grade.CurrentGrade)
+        StartGradeSecondaryVFX(cell, seed, farmTiles, () => done = true);
+
+        yield return floatMoveTween.WaitForCompletion();
+
+        Tween bobTween = null;
+        if (!done && _config.FloatDuration > 0f)
         {
-            case EHelperGrade.Epic:
-                SpawnEpicSecondaryVFX(cell, seed, () => done = true);
-                break;
-            case EHelperGrade.Legendary:
-                SpawnLegendarySecondaryVFX(cell, seed, () => done = true);
-                break;
-            default:
-                SpawnNormalSecondaryVFX(farmTiles, seed, () => done = true);
-                break;
+            bobTween = _owner.transform.DOMoveY(floatPos.y + _config.BobAmplitude, _config.BobDuration)
+                .SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
         }
 
         yield return new WaitUntil(() => done);
+
+        bobTween?.Kill();
 
         yield return _owner.transform.DOMove(originalPos, _config.ReturnDuration)
             .SetEase(Ease.InOutQuad).WaitForCompletion();
 
         if (followAbility != null) followAbility.enabled = true;
         CompleteAction();
+    }
+
+    private void StartGradeSecondaryVFX(TerrainCell cell, SeedItemDataSO seed, List<FarmTile> farmTiles, Action onComplete)
+    {
+        switch (_owner.Grade.CurrentGrade)
+        {
+            case EHelperGrade.Epic:
+                SpawnEpicSecondaryVFX(cell, seed, onComplete);
+                break;
+            case EHelperGrade.Legendary:
+                _animAbility?.Replay(EHelperAnim.LegendarySow);
+                SpawnLegendarySecondaryVFX(cell, seed, onComplete);
+                break;
+            default:
+                SpawnNormalSecondaryVFX(farmTiles, seed, onComplete);
+                break;
+        }
     }
 
     public void StartNormal(List<FarmTile> farmTiles, SeedItemDataSO seed)
