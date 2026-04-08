@@ -34,12 +34,15 @@ public class PlayerOcclusionAbility : PlayerAbility
         private static readonly int SrcBlendId = Shader.PropertyToID("_SrcBlend");
         private static readonly int DstBlendId = Shader.PropertyToID("_DstBlend");
         private static readonly int ZWriteId = Shader.PropertyToID("_ZWrite");
+        private static readonly int AlphaClipId = Shader.PropertyToID("_AlphaClip");
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
 
         private readonly Renderer _renderer;
         private readonly Material[] _originalMaterials;
         private readonly Material[] _transparentMaterials;
+        private readonly Color[] _baseColors;
+        private readonly Color[] _colorColors;
         private float _currentAlpha = 1f;
         private float _targetAlpha = 1f;
         private bool _isUsingTransparentMaterials;
@@ -49,6 +52,8 @@ public class PlayerOcclusionAbility : PlayerAbility
             _renderer = renderer;
             _originalMaterials = renderer != null ? renderer.sharedMaterials : System.Array.Empty<Material>();
             _transparentMaterials = new Material[_originalMaterials.Length];
+            _baseColors = new Color[_originalMaterials.Length];
+            _colorColors = new Color[_originalMaterials.Length];
 
             for (int i = 0; i < _originalMaterials.Length; i++)
             {
@@ -57,7 +62,8 @@ public class PlayerOcclusionAbility : PlayerAbility
 
                 Material transparent = new Material(source);
                 transparent.name = source.name + "_OcclusionRuntime";
-                ConfigureTransparentMaterial(transparent, alpha);
+                CacheColors(source, i);
+                ConfigureTransparentMaterial(transparent);
                 _transparentMaterials[i] = transparent;
             }
         }
@@ -121,12 +127,18 @@ public class PlayerOcclusionAbility : PlayerAbility
                 Material material = _transparentMaterials[i];
                 if (material == null) continue;
 
-                SetAlpha(material, BaseColorId, alpha);
-                SetAlpha(material, ColorId, alpha);
+                SetColorAlpha(material, BaseColorId, _baseColors[i], alpha);
+                SetColorAlpha(material, ColorId, _colorColors[i], alpha);
             }
         }
 
-        private static void ConfigureTransparentMaterial(Material material, float alpha)
+        private void CacheColors(Material source, int index)
+        {
+            _baseColors[index] = source.HasProperty(BaseColorId) ? source.GetColor(BaseColorId) : Color.white;
+            _colorColors[index] = source.HasProperty(ColorId) ? source.GetColor(ColorId) : Color.white;
+        }
+
+        private static void ConfigureTransparentMaterial(Material material)
         {
             material.SetOverrideTag("RenderType", "Transparent");
 
@@ -135,20 +147,18 @@ public class PlayerOcclusionAbility : PlayerAbility
             if (material.HasProperty(SrcBlendId)) material.SetFloat(SrcBlendId, (float)BlendMode.SrcAlpha);
             if (material.HasProperty(DstBlendId)) material.SetFloat(DstBlendId, (float)BlendMode.OneMinusSrcAlpha);
             if (material.HasProperty(ZWriteId)) material.SetFloat(ZWriteId, 0f);
+            if (material.HasProperty(AlphaClipId)) material.SetFloat(AlphaClipId, 0f);
 
             material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             material.DisableKeyword("_ALPHATEST_ON");
             material.renderQueue = (int)RenderQueue.Transparent;
-
-            SetAlpha(material, BaseColorId, alpha);
-            SetAlpha(material, ColorId, alpha);
         }
 
-        private static void SetAlpha(Material material, int colorPropertyId, float alpha)
+        private static void SetColorAlpha(Material material, int colorPropertyId, Color sourceColor, float alpha)
         {
             if (!material.HasProperty(colorPropertyId)) return;
 
-            Color color = material.GetColor(colorPropertyId);
+            Color color = sourceColor;
             color.a = alpha;
             material.SetColor(colorPropertyId, color);
         }
