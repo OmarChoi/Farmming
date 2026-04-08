@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 6696131414599491704}
   - component: {fileID: 1942919919115290716}
   - component: {fileID: 7115555209622757708}
-  m_Layer: 0
+  - component: {fileID: 7621434863162661964}
+  m_Layer: 11
   m_Name: AutumnRed02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,4 +89,26 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &7621434863162661964
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7482640999227550969}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.9018183, y: 9.8930435, z: 2.4640656}
+  m_Center: {x: -0.008690119, y: 4.9470797, z: -0.11260486}
