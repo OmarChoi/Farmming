@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -37,30 +38,21 @@ public abstract class TreeFadeState
 
     private sealed class SingleRendererTreeFadeState : TreeFadeState
     {
-        private static readonly int SurfaceId = Shader.PropertyToID("_Surface");
-        private static readonly int BlendId = Shader.PropertyToID("_Blend");
-        private static readonly int SrcBlendId = Shader.PropertyToID("_SrcBlend");
-        private static readonly int DstBlendId = Shader.PropertyToID("_DstBlend");
-        private static readonly int ZWriteId = Shader.PropertyToID("_ZWrite");
-        private static readonly int AlphaClipId = Shader.PropertyToID("_AlphaClip");
-        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
-        private static readonly int ColorId = Shader.PropertyToID("_Color");
-
         private readonly Renderer _renderer;
         private readonly Material[] _originalMaterials;
-        private readonly Material[] _transparentMaterials;
+        private readonly Material[] _pooledMaterials;
         private readonly Color[] _baseColors;
         private readonly Color[] _colorColors;
 
         private float _currentAlpha = 1f;
         private float _targetAlpha = 1f;
-        private bool _isUsingTransparentMaterials;
+        private bool _isUsingPooledMaterials;
 
         public SingleRendererTreeFadeState(Renderer renderer)
         {
             _renderer = renderer;
             _originalMaterials = renderer != null ? renderer.sharedMaterials : System.Array.Empty<Material>();
-            _transparentMaterials = new Material[_originalMaterials.Length];
+            _pooledMaterials = new Material[_originalMaterials.Length];
             _baseColors = new Color[_originalMaterials.Length];
             _colorColors = new Color[_originalMaterials.Length];
 
@@ -69,30 +61,28 @@ public abstract class TreeFadeState
                 Material source = _originalMaterials[i];
                 if (source == null) continue;
 
-                Material transparent = new Material(source);
-                transparent.name = source.name + "_OcclusionRuntime";
-                CacheSourceColors(source, i);
-                ConfigureTransparentMaterial(transparent);
-                _transparentMaterials[i] = transparent;
+                _baseColors[i] = MaterialAlphaPool.GetMaterialColor(source, MaterialAlphaPool.BaseColorId);
+                _colorColors[i] = MaterialAlphaPool.GetMaterialColor(source, MaterialAlphaPool.ColorId);
+                _pooledMaterials[i] = MaterialAlphaPool.Rent(source);
             }
         }
 
         public override void BeginFade(float transparentAlpha)
         {
             _targetAlpha = transparentAlpha;
-            EnsureTransparentMaterialsApplied();
+            EnsurePooledMaterialsApplied();
         }
 
         public override void Tick(float fadeStep)
         {
             if (_renderer == null) return;
 
-            if (!_isUsingTransparentMaterials && Mathf.Approximately(_targetAlpha, 1f))
+            if (!_isUsingPooledMaterials && Mathf.Approximately(_targetAlpha, 1f))
             {
                 return;
             }
 
-            EnsureTransparentMaterialsApplied();
+            EnsurePooledMaterialsApplied();
             _currentAlpha = Mathf.MoveTowards(_currentAlpha, _targetAlpha, fadeStep);
             ApplyAlpha(_currentAlpha);
 
@@ -109,71 +99,41 @@ public abstract class TreeFadeState
             if (_renderer == null) return;
 
             _renderer.sharedMaterials = _originalMaterials;
-            _isUsingTransparentMaterials = false;
+            _isUsingPooledMaterials = false;
         }
 
         public override void Dispose()
         {
             Restore();
 
-            for (int i = 0; i < _transparentMaterials.Length; i++)
+            for (int i = 0; i < _pooledMaterials.Length; i++)
             {
-                Material material = _transparentMaterials[i];
-                if (material == null) continue;
-                Object.Destroy(material);
+                Material pooledMaterial = _pooledMaterials[i];
+                if (pooledMaterial == null) continue;
+
+                MaterialAlphaPool.Return(_originalMaterials[i], pooledMaterial);
+                _pooledMaterials[i] = null;
             }
         }
 
-        private void EnsureTransparentMaterialsApplied()
+        private void EnsurePooledMaterialsApplied()
         {
-            if (_renderer == null || _isUsingTransparentMaterials) return;
+            if (_renderer == null || _isUsingPooledMaterials) return;
 
-            _renderer.sharedMaterials = _transparentMaterials;
-            _isUsingTransparentMaterials = true;
+            _renderer.sharedMaterials = _pooledMaterials;
+            _isUsingPooledMaterials = true;
             ApplyAlpha(_currentAlpha);
         }
 
         private void ApplyAlpha(float alpha)
         {
-            for (int i = 0; i < _transparentMaterials.Length; i++)
+            for (int i = 0; i < _pooledMaterials.Length; i++)
             {
-                Material material = _transparentMaterials[i];
-                if (material == null) continue;
+                Material pooledMaterial = _pooledMaterials[i];
+                if (pooledMaterial == null) continue;
 
-                ApplyColorAlpha(material, BaseColorId, _baseColors[i], alpha);
-                ApplyColorAlpha(material, ColorId, _colorColors[i], alpha);
+                MaterialAlphaPool.ApplyAlpha(pooledMaterial, _baseColors[i], _colorColors[i], alpha);
             }
-        }
-
-        private void CacheSourceColors(Material source, int index)
-        {
-            _baseColors[index] = source.HasProperty(BaseColorId) ? source.GetColor(BaseColorId) : Color.white;
-            _colorColors[index] = source.HasProperty(ColorId) ? source.GetColor(ColorId) : Color.white;
-        }
-
-        private static void ConfigureTransparentMaterial(Material material)
-        {
-            material.SetOverrideTag("RenderType", "Transparent");
-
-            if (material.HasProperty(SurfaceId)) material.SetFloat(SurfaceId, 1f);
-            if (material.HasProperty(BlendId)) material.SetFloat(BlendId, 0f);
-            if (material.HasProperty(SrcBlendId)) material.SetFloat(SrcBlendId, (float)BlendMode.SrcAlpha);
-            if (material.HasProperty(DstBlendId)) material.SetFloat(DstBlendId, (float)BlendMode.OneMinusSrcAlpha);
-            if (material.HasProperty(ZWriteId)) material.SetFloat(ZWriteId, 0f);
-            if (material.HasProperty(AlphaClipId)) material.SetFloat(AlphaClipId, 0f);
-
-            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            material.DisableKeyword("_ALPHATEST_ON");
-            material.renderQueue = (int)RenderQueue.Transparent;
-        }
-
-        private static void ApplyColorAlpha(Material material, int propertyId, Color sourceColor, float alpha)
-        {
-            if (!material.HasProperty(propertyId)) return;
-
-            Color color = sourceColor;
-            color.a = alpha;
-            material.SetColor(propertyId, color);
         }
     }
 
@@ -233,6 +193,95 @@ public abstract class TreeFadeState
             {
                 _states[i].Dispose();
             }
+        }
+    }
+
+    private static class MaterialAlphaPool
+    {
+        public static readonly int SurfaceId = Shader.PropertyToID("_Surface");
+        public static readonly int BlendId = Shader.PropertyToID("_Blend");
+        public static readonly int SrcBlendId = Shader.PropertyToID("_SrcBlend");
+        public static readonly int DstBlendId = Shader.PropertyToID("_DstBlend");
+        public static readonly int ZWriteId = Shader.PropertyToID("_ZWrite");
+        public static readonly int AlphaClipId = Shader.PropertyToID("_AlphaClip");
+        public static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        public static readonly int ColorId = Shader.PropertyToID("_Color");
+
+        private static readonly Dictionary<Material, Stack<Material>> Pool = new();
+
+        public static Material Rent(Material source)
+        {
+            if (source == null) return null;
+
+            if (Pool.TryGetValue(source, out Stack<Material> stack) && stack.Count > 0)
+            {
+                return stack.Pop();
+            }
+
+            Material material = new Material(source);
+            material.name = source.name + "_OcclusionPooled";
+            ConfigureTransparent(material);
+            return material;
+        }
+
+        public static void Return(Material source, Material instance)
+        {
+            if (source == null || instance == null) return;
+
+            ApplyAlpha(instance, GetMaterialColor(source, BaseColorId), GetMaterialColor(source, ColorId), 1f);
+
+            if (!Pool.TryGetValue(source, out Stack<Material> stack))
+            {
+                stack = new Stack<Material>();
+                Pool.Add(source, stack);
+            }
+
+            stack.Push(instance);
+        }
+
+        public static void ApplyAlpha(Material material, Color baseColor, Color color, float alpha)
+        {
+            if (material == null) return;
+
+            if (material.HasProperty(BaseColorId))
+            {
+                Color nextBaseColor = baseColor;
+                nextBaseColor.a = alpha;
+                material.SetColor(BaseColorId, nextBaseColor);
+            }
+
+            if (material.HasProperty(ColorId))
+            {
+                Color nextColor = color;
+                nextColor.a = alpha;
+                material.SetColor(ColorId, nextColor);
+            }
+        }
+
+        public static Color GetMaterialColor(Material material, int colorPropertyId)
+        {
+            if (material == null || !material.HasProperty(colorPropertyId))
+            {
+                return Color.white;
+            }
+
+            return material.GetColor(colorPropertyId);
+        }
+
+        private static void ConfigureTransparent(Material material)
+        {
+            material.SetOverrideTag("RenderType", "Transparent");
+
+            if (material.HasProperty(SurfaceId)) material.SetFloat(SurfaceId, 1f);
+            if (material.HasProperty(BlendId)) material.SetFloat(BlendId, 0f);
+            if (material.HasProperty(SrcBlendId)) material.SetFloat(SrcBlendId, (float)BlendMode.SrcAlpha);
+            if (material.HasProperty(DstBlendId)) material.SetFloat(DstBlendId, (float)BlendMode.OneMinusSrcAlpha);
+            if (material.HasProperty(ZWriteId)) material.SetFloat(ZWriteId, 0f);
+            if (material.HasProperty(AlphaClipId)) material.SetFloat(AlphaClipId, 1f);
+
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.DisableKeyword("_ALPHATEST_ON");
+            material.renderQueue = (int)RenderQueue.Transparent;
         }
     }
 }
