@@ -1,28 +1,29 @@
 using UnityEngine;
 
-public class TutorialNpcSpawner
+public static class TutorialNpcSpawner
 {
-    public static void SpawnNearPlayer(NpcDataSO data, Transform player)
-    {
-        if (data == null || player == null) return;
+    private const float SpawnRadius = 2.8f;
 
-        Vector3 spawnPos = player.position + GetRandomOffset();
+    public static NpcController SpawnNearPlayer(NpcDataSO data, Transform player)
+    {
+        if (data == null || player == null) return null;
+
+        Vector3 spawnPosition = player.position + GetRandomOffset();
 
         var request = new NpcSpawnRequest(
             data,
-            spawnPos,
+            spawnPosition,
             Quaternion.identity,
             null,
             false,
             "TutorialNpc");
 
-        NpcSpawnManager.Instance.GetOrSpawn(request);
+        return NpcSpawnManager.Instance.GetOrSpawn(request);
     }
 
     private static Vector3 GetRandomOffset()
     {
-        float spawnRadius = 2.8f;
-        Vector2 circle = Random.insideUnitCircle * spawnRadius;
+        Vector2 circle = Random.insideUnitCircle * SpawnRadius;
         return new Vector3(circle.x, 0f, circle.y);
     }
 }

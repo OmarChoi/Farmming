@@ -269,6 +269,11 @@ public class NpcQuestService : MonoBehaviour
     {
         if (questData == null || _dialogueController == null) return;
 
+        if (questData.IsForcedAccept)
+        {
+            AcceptQuestWithResultDialogue(context, questData);
+            return;
+        }
         if (questData.AcceptDialogue != null)
         {
             _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest,
@@ -300,18 +305,9 @@ public class NpcQuestService : MonoBehaviour
         bool accepted = _questProgressService.AcceptQuest(questData);
         if (!accepted) return;
 
-        if (_dialogueController != null)
+        if (_dialogueController != null && questData.AcceptResultDialogue != null)
         {
-            if (questData.AcceptResultDialogue != null)
-            {
-                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest);
-            }
-            else
-            {
-#if UNITY_EDITOR
-                Debug.Log($"퀘스트 수락: {questData.QuestName}");
-#endif
-            }
+            _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest);
         }
     }
 
@@ -337,18 +333,9 @@ public class NpcQuestService : MonoBehaviour
         bool completed = _questProgressService.CompleteQuest(questId);
         if (!completed) return;
 
-        if (_dialogueController != null)
+        if (_dialogueController != null && quest.QuestData.CompleteDialogue != null)
         {
-            if (quest.QuestData.CompleteDialogue != null)
-            {
-                _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue, EDialogueUiState.Quest);
-            }
-            else
-            {
-#if UNITY_EDITOR
-                Debug.Log($"퀘스트 완료: {quest.QuestData.QuestName}");
-#endif
-            }
+            _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue, EDialogueUiState.Quest);
         }
     }
 
@@ -367,18 +354,9 @@ public class NpcQuestService : MonoBehaviour
             }
         }
 
-        if (_dialogueController != null)
+        if (_dialogueController != null && quest.QuestData.InProgressDialogue != null)
         {
-            if (quest.QuestData.InProgressDialogue != null)
-            {
-                _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
-            }
-            else
-            {
-#if UNITY_EDITOR
-                Debug.Log($"진행 중 퀘스트: {quest.QuestData.QuestName}");
-#endif
-            }
+            _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
         }
     }
 
@@ -398,8 +376,18 @@ public class NpcQuestService : MonoBehaviour
                 return;
             }
         }
-#if UNITY_EDITOR
-        Debug.Log("관련된 퀘스트가 없습니다.");
-#endif
+    }
+
+    public void ExecuteTutorialQuestInteraction(NpcInteractionContext context, QuestDataSO questData)
+    {
+        if (context == null || context.Npc == null || questData == null || _questProgressService == null) return;
+
+        if (!CanOfferQuest(context, questData))
+        {
+            HandleNoQuest(context);
+            return;
+        }
+
+        HandleAcceptQuestEntry(context, questData);
     }
 }

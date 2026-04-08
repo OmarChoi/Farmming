@@ -15,6 +15,7 @@ public class QuestDataSO : ScriptableObject
     [Header("수락 / 완료 NPC")]
     public string StartNpcId;       // 이 퀘스트를 주는 NPC입니다.
     public string CompleteNpcId;    // 이 퀘스트를 완료 처리하는 NPC입니다.
+    public bool IsForcedAccept = false;  // true면 플레이어가 퀘스트를 강제로 수락하도록 합니다.
 
     [Header("목표")]
     public EQuestObjectiveType ObjectiveType;
