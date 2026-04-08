@@ -15,7 +15,7 @@ public sealed class TreeTransparencyController
         _fadeSpeed = fadeSpeed;
     }
 
-    public void Update(IReadOnlyCollection<Transform> visibleOccluders, float deltaTime)
+    public void Update(HashSet<Transform> visibleOccluders, float deltaTime)
     {
         foreach (Transform tree in visibleOccluders)
         {
@@ -35,11 +35,12 @@ public sealed class TreeTransparencyController
                 continue;
             }
 
-            float targetAlpha = visibleOccluders.Contains(tree) ? _transparentAlpha : 1f;
+            bool isVisible = visibleOccluders.Contains(tree);
+            float targetAlpha = isVisible ? _transparentAlpha : 1f;
             state.BeginFade(targetAlpha);
             state.Tick(_fadeSpeed * deltaTime);
 
-            if (!visibleOccluders.Contains(tree) && state.IsFullyOpaque)
+            if (!isVisible && state.IsFullyOpaque)
             {
                 _removeBuffer.Add(tree);
             }
