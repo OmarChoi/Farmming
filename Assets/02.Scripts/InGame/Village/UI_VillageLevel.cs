@@ -27,15 +27,14 @@ public class UI_VillageLevel : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private void UpdateGauge()
     {
         int level = VillageLevelManager.Instance.CurrentLevel;
-        int currentGauge = VillageLevelManager.Instance.CurrentGauge;
-        int totalGauge = VillageLevelManager.Instance.CurrentThreshold;
-        _fillImage.fillAmount = totalGauge > 0 ? (float)currentGauge / totalGauge : 1f;
+        int currentGauge = VillageLevelManager.Instance.CurrentVitality;
+        int totalGauge = VillageLevelManager.Instance.CurrentVitalityThreshold;
+        _fillImage.fillAmount = (float)currentGauge / totalGauge;
         _levelText.text = $"LV.{level.ToString().PadLeft(2, '0')}";
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        // todo. Tooltip 활성화
         UIController.Instance.OpenAsync<UI_VillageState>
         (
             ui => ui.transform.position = eventData.position
@@ -44,7 +43,6 @@ public class UI_VillageLevel : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        // todo. Tooltip 비활성화
         UIController.Instance.CloseAsync<UI_VillageState>().Forget();
     }
 }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VillageLevelRequirementSO
   _maxLevel: 3
   _requirements:
-  - GaugeThreshold: 100
+  - VitalityThreshold: 100
     BuildingCountThreshold: 3
-  - GaugeThreshold: 20
+  - VitalityThreshold: 20
     BuildingCountThreshold: 3

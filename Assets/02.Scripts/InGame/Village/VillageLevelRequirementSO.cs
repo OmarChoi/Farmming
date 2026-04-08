@@ -4,8 +4,14 @@ using UnityEngine;
 [Serializable]
 public struct LevelUpRequirement
 {
-    public int GaugeThreshold;
+    public int VitalityThreshold;
     public int BuildingCountThreshold;
+
+    public float GetVitalityRatio(int current) =>
+        VitalityThreshold > 0 ? (float)current / VitalityThreshold : 1f;
+
+    public float GetBuildingRatio(int current) =>
+        BuildingCountThreshold > 0 ? (float)current / BuildingCountThreshold : 1f;
 }
 
 [CreateAssetMenu(fileName = "Settings", menuName = "VillageLevelRequirement")]
@@ -22,7 +28,7 @@ public class VillageLevelRequirementSO : ScriptableObject
         {
             return new LevelUpRequirement
             {
-                GaugeThreshold = int.MaxValue,
+                VitalityThreshold = int.MaxValue,
                 BuildingCountThreshold = int.MaxValue
             };
         }
@@ -42,6 +48,18 @@ public class VillageLevelRequirementSO : ScriptableObject
         {
             Debug.LogWarning($"{name}: Requirements length should be {expected} (MaxLevel - 1), but is {_requirements?.Length ?? 0}.", this);
             Array.Resize(ref _requirements, expected);
+        }
+
+        for (int i = 0; i < _requirements.Length; i++)
+        {
+            if (_requirements[i].VitalityThreshold <= 0)
+            {
+                _requirements[i].VitalityThreshold = 1;
+            }
+            if (_requirements[i].BuildingCountThreshold <= 0)
+            {
+                _requirements[i].BuildingCountThreshold = 1;
+            }
         }
     }
 }

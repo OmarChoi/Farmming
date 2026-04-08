@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7216625263778941346}
   m_Layer: 5
-  m_Name: Exp
+  m_Name: VitalityGauge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,7 +47,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 398721879042208804}
-  - component: {fileID: 3755688369169478416}
   - component: {fileID: 7446051149615714921}
   - component: {fileID: 4455985235989884699}
   m_Layer: 5
@@ -79,18 +78,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 400, y: 200}
   m_Pivot: {x: 0, y: 1}
---- !u!225 &3755688369169478416
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 452504285990356689}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 0
-  m_IgnoreParentGroups: 0
 --- !u!114 &7446051149615714921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -131,6 +118,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI_VillageState
   _config:
     Layer: 100
+  _currentLevelText: {fileID: 2182121293328529851}
+  _vitalityGaugeImage: {fileID: 102635318642923896}
+  _vitalityGaugeText: {fileID: 5401428463424864058}
+  _buildingCountGaugeImage: {fileID: 7650078227346572121}
+  _buildingCountText: {fileID: 1209055863177169487}
   _animationDuration: 0.25
 --- !u!1 &1032122011827478010
 GameObject:
