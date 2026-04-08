@@ -13,4 +13,6 @@ public class PlayerSaveData
     public List<InventorySlotSaveData> Inventory = new();
     public List<HelperSaveData> Helpers = new();
     public CustomizeSaveData Customize = new();
+
+    public ETutorialState TutorialState = ETutorialState.None;
 }
