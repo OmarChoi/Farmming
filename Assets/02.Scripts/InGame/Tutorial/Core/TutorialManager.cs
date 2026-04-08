@@ -1,15 +1,31 @@
-using Photon.Pun;
 using UnityEngine;
+using System.Collections;
 
 public class TutorialManager : MonoBehaviour
 {
+    [Header("튜토리얼 NPC")]
+    [SerializeField] private NpcDataSO _tutorialNpc;
+
+    [Header("튜토리얼 퀘스트")]
+    [SerializeField] private QuestDataSO _tutorialQuestData;
+
+    [Header("NpcQuestService")]
+    [SerializeField] private NpcQuestService _npcQuestService;
+
+    private Transform _playerTransform;
+    private NpcController _tutorialNpcController;
+
     private bool _isMapReady;
     private bool _isPlayerReady;
     private bool _isTutorialStarted;
 
-    private Transform _playerTransform;
-    
-    [SerializeField] private NpcDataSO _tutorialNpc;
+    private void Awake()
+    {
+        if (_npcQuestService == null)
+        {
+            _npcQuestService = FindFirstObjectByType<NpcQuestService>();
+        }
+    }
 
     public void NotifyMapReady()
     {
@@ -30,12 +46,44 @@ public class TutorialManager : MonoBehaviour
         if (!_isMapReady) return;
         if (!_isPlayerReady) return;
 
-        _isTutorialStarted = true;
         StartTutorial(_playerTransform);
     }
 
     private void StartTutorial(Transform playerTransform)
     {
-        TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, playerTransform);
+        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, playerTransform);
+
+        if (_tutorialNpcController == null)
+        {
+            Debug.LogWarning("튜토리얼 NPC 스폰 실패");
+            return;
+        }
+
+        _isTutorialStarted = true;
+        StartCoroutine(BeginTutorialInteraction());
+    }
+
+    private IEnumerator BeginTutorialInteraction()
+    {
+        // NPC가 완전히 스폰되고 초기화될 때까지 잠시 대기합니다.
+        yield return null;
+
+        if (_tutorialNpcController == null || _playerTransform == null) yield break;
+
+        NpcInteractionComponent interaction = _tutorialNpcController.GetComponent<NpcInteractionComponent>();
+        if (interaction == null) yield break;
+
+        // 1. 자동으로 상호작용을 시작합니다.
+        interaction.RequestInteract(_playerTransform);
+
+        // 2. 대화 UI가 열린 다음 프레임에 튜토리얼 퀘스트 시작합니다.
+        yield return null;
+
+        NpcInteractionContext context = new NpcInteractionContext(
+            _tutorialNpcController,
+            _playerTransform,
+            interaction);
+
+        _npcQuestService?.ExecuteTutorialQuestInteraction(context, _tutorialQuestData);
     }
 }
