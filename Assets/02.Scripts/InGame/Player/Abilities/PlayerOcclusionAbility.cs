@@ -10,7 +10,7 @@ public class PlayerOcclusionAbility : PlayerAbility
     [SerializeField, Range(0.1f, 1f)] private float _transparentAlpha = 0.35f;
     [SerializeField] private float _fadeSpeed = 4f;
 
-    private readonly HashSet<Wood> _currentHits = new();
+    private readonly HashSet<Transform> _currentHits = new();
     private readonly RaycastHit[] _hitBuffer = new RaycastHit[32];
 
     private Camera _mainCamera;
@@ -83,24 +83,19 @@ public class PlayerOcclusionAbility : PlayerAbility
             Collider collider = _hitBuffer[i].collider;
             _hitBuffer[i] = default;
 
-            Wood tree = ResolveTree(collider);
-            if (tree != null)
+            Transform occluder = ResolveOccluder(collider);
+            if (occluder != null)
             {
-                _currentHits.Add(tree);
+                _currentHits.Add(occluder);
             }
         }
     }
 
-    private Wood ResolveTree(Collider collider)
+    private Transform ResolveOccluder(Collider collider)
     {
         if (collider == null) return null;
         if (collider.transform.IsChildOf(_rootTransform)) return null;
-
-        Wood tree = collider.GetComponentInParent<Wood>();
-        if (tree == null) return null;
-        if (tree.transform.IsChildOf(_rootTransform)) return null;
-
-        return tree;
+        return collider.transform;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

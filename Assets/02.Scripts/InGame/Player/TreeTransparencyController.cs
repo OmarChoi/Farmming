@@ -6,8 +6,8 @@ public sealed class TreeTransparencyController
 {
     private readonly float _transparentAlpha;
     private readonly float _fadeSpeed;
-    private readonly Dictionary<Wood, TreeFadeState> _treeStates = new();
-    private readonly List<Wood> _removeBuffer = new();
+    private readonly Dictionary<Transform, TreeFadeState> _treeStates = new();
+    private readonly List<Transform> _removeBuffer = new();
 
     public TreeTransparencyController(float transparentAlpha, float fadeSpeed)
     {
@@ -15,18 +15,18 @@ public sealed class TreeTransparencyController
         _fadeSpeed = fadeSpeed;
     }
 
-    public void Update(IReadOnlyCollection<Wood> visibleOccluders, float deltaTime)
+    public void Update(IReadOnlyCollection<Transform> visibleOccluders, float deltaTime)
     {
-        foreach (Wood tree in visibleOccluders)
+        foreach (Transform tree in visibleOccluders)
         {
             EnsureState(tree);
         }
 
         _removeBuffer.Clear();
 
-        foreach (KeyValuePair<Wood, TreeFadeState> pair in _treeStates)
+        foreach (KeyValuePair<Transform, TreeFadeState> pair in _treeStates)
         {
-            Wood tree = pair.Key;
+            Transform tree = pair.Key;
             TreeFadeState state = pair.Value;
 
             if (tree == null)
@@ -50,7 +50,7 @@ public sealed class TreeTransparencyController
 
     public void RestoreAll()
     {
-        foreach (KeyValuePair<Wood, TreeFadeState> pair in _treeStates)
+        foreach (KeyValuePair<Transform, TreeFadeState> pair in _treeStates)
         {
             pair.Value.Restore();
         }
@@ -58,7 +58,7 @@ public sealed class TreeTransparencyController
 
     public void Dispose()
     {
-        foreach (KeyValuePair<Wood, TreeFadeState> pair in _treeStates)
+        foreach (KeyValuePair<Transform, TreeFadeState> pair in _treeStates)
         {
             pair.Value.Dispose();
         }
@@ -67,7 +67,7 @@ public sealed class TreeTransparencyController
         _removeBuffer.Clear();
     }
 
-    private void EnsureState(Wood tree)
+    private void EnsureState(Transform tree)
     {
         if (tree == null) return;
         if (_treeStates.ContainsKey(tree)) return;
@@ -82,7 +82,7 @@ public sealed class TreeTransparencyController
     {
         for (int i = 0; i < _removeBuffer.Count; i++)
         {
-            Wood tree = _removeBuffer[i];
+            Transform tree = _removeBuffer[i];
             if (tree != null && _treeStates.TryGetValue(tree, out TreeFadeState state))
             {
                 state.Dispose();
