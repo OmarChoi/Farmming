@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002c5ad1e0e02f74784441da1d9fa045, type: 3}
+  m_Name: TutorialQuestData1
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
+  QuestId: TutorialQuestData1
+  QuestName: "\uD31C\uBC0D\uC5D0 \uC628 \uAC78 \uD658\uC601\uD574!"
+  Description: "\uBC8C\uBAA9/\uCC44\uAD74 \uACE1\uB8E1\uACFC \uB098\uBB34\uC640 \uB3CC\uC744
+    2\uAC1C\uC529 \uBAA8\uC544\uBCF4\uC790."
+  QuestCategory: 0
+  StartNpcId: TutorialNpc
+  CompleteNpcId: TutorialNpc
+  IsForcedAccept: 1
+  ObjectiveType: 2
+  TargetObjectId: 
+  ItemRequirements:
+  - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
+    _amount: 2
+  - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+    _amount: 2
+  TargetNpcId: TutorialNpc
+  RequiredAmount: 1
+  PrerequisiteQuests: []
+  RequiredFriendship: 0
+  Reward:
+    Rewards: []
+  AcceptDialogue: {fileID: 0}
+  AcceptResultDialogue: {fileID: 11400000, guid: 49e3deedea2aa9c48aaee3adbec505a6, type: 2}
+  DeclineDialogue: {fileID: 0}
+  InProgressDialogue: {fileID: 11400000, guid: 9826b4d0682665341af7ca0d09ae6025, type: 2}
+  CompleteDialogue: {fileID: 11400000, guid: 3a8fe6a7f68fe1d458a4ace896c0ce45, type: 2}
+  NoQuestDialogue: {fileID: 0}
