@@ -104,6 +104,34 @@ public class NpcQuestService : MonoBehaviour
         return result;
     }
 
+    private NpcQuestEntry FindHighestPriorityEntry(NpcInteractionContext context)
+    {
+        List<NpcQuestEntry> entries = FindQuestEntries(context);
+        if (entries == null || entries.Count == 0) return null;
+
+        NpcQuestEntry acceptable = null;
+
+        foreach (NpcQuestEntry entry in entries)
+        {
+            if (entry == null || entry.QuestData == null) continue;
+
+            switch (entry.EntryType)
+            {
+                case ENpcQuestEntryType.Completable:
+                    return entry;
+
+                case ENpcQuestEntryType.InProgress:
+                    return entry;
+
+                case ENpcQuestEntryType.Acceptable:
+                    acceptable ??= entry;
+                    break;
+            }
+        }
+
+        return acceptable;
+    }
+
     private bool IsQuestRelatedToNpc(QuestDataSO questData, string npcId)
     {
         if (questData == null || string.IsNullOrEmpty(npcId)) return false;
@@ -389,5 +417,20 @@ public class NpcQuestService : MonoBehaviour
         }
 
         HandleAcceptQuestEntry(context, questData);
+    }
+
+    public void ExecuteAutoQuestInteraction(NpcInteractionContext context)
+    {
+        if (context == null || context.Npc == null || _questProgressService == null) return;
+
+        NpcQuestEntry entry = FindHighestPriorityEntry(context);
+
+        if (entry == null || entry.QuestData == null)
+        {
+            HandleNoQuest(context);
+            return;
+        }
+
+        OnClickQuestEntry(context, entry);
     }
 }

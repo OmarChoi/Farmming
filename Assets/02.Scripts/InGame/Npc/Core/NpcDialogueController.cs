@@ -82,8 +82,16 @@ public class NpcDialogueController : MonoBehaviour
             _uiFriendshipBar.BindNpc(npc.Data.NpcId, true);
         }
 
-        StartGreeting();
         QuestManager.Instance?.ReportNpcTalked(npc.Data.NpcId);
+
+        if (npc.Data != null && npc.Data.AutoStartQuestOnInteract)
+        {
+            _dialogueState = EDialogueUiState.Quest;
+            _interactionService.Execute(ENpcInteractionType.Quest, CreateContext());
+            return;
+        }
+
+        StartGreeting();
     }
 
     public void Close()
