@@ -9,12 +9,15 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
 {
     public static VillageLevelManager Instance { get; private set; }
 
-    [SerializeField] private int[] _levelThresholds = { 100, 150, 200 };
+    [SerializeField] private VillageLevelRequirementSO _requirementSO;
 
     public int CurrentLevel { get; private set; } = 1;
     public int CurrentGauge { get; private set; }
     public int CurrentThreshold => GetThresholdForLevel(CurrentLevel);
-    public bool CanLevelUp => CurrentThreshold > 0 && CurrentGauge >= CurrentThreshold;
+    private bool CanLevelUp => !_requirementSO.IsMaxLevel(CurrentLevel)
+                               && CurrentGauge >= CurrentThreshold
+                               && BuildingManager.Instance != null
+                               && BuildingManager.Instance.BuildingCount >= GetBuildingCountForLevel(CurrentLevel);
 
     public event Action OnVillageStateChanged;
 
@@ -31,7 +34,7 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         Instance = this;
     }
 
-    private void OnEnable()
+    public override void OnEnable()
     {
         TrySubscribe();
     }
@@ -41,7 +44,7 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         TrySubscribe();
     }
 
-    private void OnDisable()
+    public override void OnDisable()
     {
         if (_subscribed && BuildingManager.Instance != null)
         {
@@ -66,15 +69,14 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
     private void HandleBuildingBuilt(BuildingDataSO data)
     {
         if (data == null) return;
-        if (!_builtOnceIds.Add(data.BuildingId)) return;
-        
-        if (data.FirstBuildGaugeContribution <= 0)
+
+        bool isFirst = _builtOnceIds.Add(data.BuildingId);
+        if (isFirst && data.FirstBuildGaugeContribution > 0)
         {
-            OnVillageStateChanged?.Invoke();
-            return;
+            CurrentGauge += data.FirstBuildGaugeContribution;
         }
-        CurrentGauge += data.FirstBuildGaugeContribution;
-        if (CurrentGauge >= CurrentThreshold)
+
+        if (CanLevelUp)
         {
             RequestLevelUp();
         }
@@ -89,7 +91,9 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
 
         if (!PhotonNetwork.IsConnected)
         {
-            ExecuteLevelUp();
+            CurrentGauge -= CurrentThreshold;
+            CurrentLevel++;
+            OnVillageStateChanged?.Invoke();
             return;
         }
 
@@ -102,27 +106,30 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         if (!PhotonNetwork.IsMasterClient) return;
         if (!CanLevelUp) return;
 
-        photonView.RpcSafe(nameof(RPC_ExecuteLevelUp), RpcTarget.All);
+        int threshold = CurrentThreshold;
+        CurrentGauge -= threshold;
+        CurrentLevel++;
+
+        photonView.RpcSafe(nameof(RPC_SetVillageLevel), RpcTarget.Others, CurrentLevel, CurrentGauge);
+        OnVillageStateChanged?.Invoke();
     }
 
     [PunRPC]
-    private void RPC_ExecuteLevelUp() => ExecuteLevelUp();
-
-    private void ExecuteLevelUp()
+    private void RPC_SetVillageLevel(int level, int gauge)
     {
-        int threshold = CurrentThreshold;
-        if (threshold <= 0 || CurrentGauge < threshold) return;
-
-        CurrentGauge -= threshold;
-        CurrentLevel++;
+        CurrentLevel = level;
+        CurrentGauge = gauge;
         OnVillageStateChanged?.Invoke();
     }
 
     private int GetThresholdForLevel(int level)
     {
-        if (_levelThresholds.Length == 0) return 0;
-        int idx = Math.Clamp(level - 1, 0, _levelThresholds.Length - 1);
-        return _levelThresholds[idx];
+        return _requirementSO.GetRequirement(level).GaugeThreshold;
+    }
+
+    private int GetBuildingCountForLevel(int level)
+    {
+        return _requirementSO.GetRequirement(level).BuildingCountThreshold;
     }
 
     #region Sync

@@ -29,6 +29,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     private BuildingPlacementService _placement;
     private BuildingInstanceFactory _factory;
 
+    public int BuildingCount => _registry.Count;
     public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
     public GhostConfig GhostConfig => new GhostConfig(_ghostMaterial, _ghostValidColor, _ghostInvalidColor);
 
