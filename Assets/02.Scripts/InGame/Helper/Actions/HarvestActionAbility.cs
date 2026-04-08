@@ -95,7 +95,6 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     private void InteractPrimaryEpic(TerrainCell centerCell)
     {
         _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.EpicHarvest);
 
         bool anyHarvested = false;
 
@@ -109,15 +108,22 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
                 if (anyHarvested) _owner.Experience.Add(_harvestExperience);
                 _animAbility?.Play(EHelperAnim.Idle);
                 _owner.EndAction();
-            });
+            }, _ => ReplayEpicHarvest());
         }
         else
         {
+            ReplayEpicHarvest();
             if (TryHarvestCell(centerCell)) anyHarvested = true;
             if (anyHarvested) _owner.Experience.Add(_harvestExperience);
             _animAbility?.Play(EHelperAnim.Idle);
             _owner.EndAction();
         }
+    }
+
+    private void ReplayEpicHarvest()
+    {
+        if (_animAbility == null) return;
+        StartCoroutine(_animAbility.ForceReplayAndWait(EHelperAnim.EpicHarvest, 0f));
     }
 
     private void InteractPrimaryLegendary(TerrainCell centerCell)
