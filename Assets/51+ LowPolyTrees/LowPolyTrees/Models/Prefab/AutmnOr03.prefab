@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 789048847747998210}
   - component: {fileID: 3071740190012418592}
   - component: {fileID: 217700394621824075}
-  m_Layer: 0
+  - component: {fileID: 5033684407435866411}
+  m_Layer: 11
   m_Name: AutmnOr03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,4 +89,26 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &5033684407435866411
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3076831986990018374}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.405175, y: 5.0259204, z: 1.4688399}
+  m_Center: {x: 0.014232039, y: 2.335818, z: -0.07631454}

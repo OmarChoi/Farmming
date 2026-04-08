@@ -304,15 +304,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce58cbd8eb4ea364181385e27b26ea8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerOcclusionAbility
-  _fadeRadius: 0.3
-  _castRadius: 1.4
-  _candidateSearchPadding: 2
-  _fadeStrengthLerpSpeed: 8
-  _ditherMinVisibility: 0
   _occlusionLayer:
     serializedVersion: 2
     m_Bits: 2048
   _playerOffset: {x: 0, y: 1.5, z: 0}
+  _castRadius: 0.75
+  _transparentAlpha: 0.35
+  _fadeSpeed: 4
 --- !u!114 &1723760070143069421
 MonoBehaviour:
   m_ObjectHideFlags: 0
