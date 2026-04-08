@@ -202,12 +202,15 @@ public class HelperController : MonoBehaviour
     }
 
     [PunRPC]
-    internal void RPC_Equip(int ownerViewId)
+    internal void RPC_Equip(int ownerViewId, bool isBack)
     {
         var ownerView = PhotonView.Find(ownerViewId);
         if (ownerView == null) return;
 
-        var equipSlot = ownerView.GetComponentInChildren<PlayerHelperInteractionAbility>()?.EquipSlot;
+        var interaction = ownerView.GetComponentInChildren<PlayerHelperInteractionAbility>();
+        if (interaction == null) return;
+
+        var equipSlot = isBack ? interaction.BackEquipSlot : interaction.EquipSlot;
         if (equipSlot == null) return;
 
         SetTransformSync(false);
@@ -215,6 +218,13 @@ public class HelperController : MonoBehaviour
         transform.SetParent(equipSlot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+
+        IEquipOverride equipOverride = GetComponentInChildren<IEquipOverride>();
+        if (equipOverride != null)
+        {
+            transform.localRotation = Quaternion.Euler(equipOverride.GetEquipRotation());
+            transform.localScale = _originalScale * equipOverride.GetEquipScale();
+        }
     }
 
     [PunRPC]
