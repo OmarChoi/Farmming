@@ -85,7 +85,8 @@ public class UI_HelperExperience : MonoBehaviour
         _experience.OnExpChanged += UpdateFill;
         _experience.OnReadyToUpgrade += OnReadyToUpgrade;
 
-        // 현재 경험치 즉시 반영
+        // 소환해제 시 시작된 트윈이 남아 있으면 먼저 제거 후 즉시 반영
+        _fillTween?.Kill();
         float ratio = _experience.MaxExp > 0 ? (float)_experience.CurrentExp / _experience.MaxExp : 0f;
         _fillImage.fillAmount = ratio;
     }

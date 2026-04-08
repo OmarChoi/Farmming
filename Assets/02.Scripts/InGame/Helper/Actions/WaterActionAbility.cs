@@ -97,7 +97,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
         if (isSecondary)
         {
-            _animAbility?.Play(EHelperAnim.Water);
+            _animAbility?.Play(EHelperAnim.LegendaryIce);
         }
         else
         {

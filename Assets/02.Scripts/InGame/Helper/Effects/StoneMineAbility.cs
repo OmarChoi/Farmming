@@ -154,6 +154,13 @@ public class StoneMineAbility : HelperAbility
 
         yield return new WaitForSeconds(_stunDuration);
 
+        if(parentBackup == null && _owner.PlayerOwner == null)
+        {
+            _isJumping = false;
+            _owner.EndAction();
+            yield break;
+        }
+
         Vector3 returnPosition = parentBackup != null
             ? parentBackup.position
             : _owner.PlayerOwner.transform.position;

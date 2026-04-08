@@ -12,6 +12,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     [SerializeField] private List<HelperDataSO> _helperDataList = new();
 
     private PlayerHelperInteractionAbility _helperInteractionAbility;
+    private HelperAnimationAbility _animationAbility;
     private HelperController _activeMainHelper;
     private HelperController _activeLightHelper;
     private readonly Dictionary<string, HelperSaveData> _savedStates = new();
@@ -234,6 +235,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         {
             var go = PhotonNetwork.Instantiate(prefab.name, spawnPos, Quaternion.identity);
             return go.GetComponent<HelperController>();
+
         }
         return Instantiate(prefab, spawnPos, Quaternion.identity);
     }
@@ -382,6 +384,12 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
             HelperController newHelper = InstantiateHelper(data);
             _activeLightHelper = newHelper;
+
+            HelperAnimationAbility animationAbility = newHelper.GetAbility<HelperAnimationAbility>();
+            if (animationAbility != null)
+            {
+                animationAbility.InitAnimator();
+            }
             _activeLightHelper.OnGradeChanged += OnLightHelperGradeChanged;
             _helperInteractionAbility.Summon(newHelper);
             RestoreHelperState(newHelper);
@@ -395,6 +403,14 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
             HelperController newHelper = InstantiateHelper(data);
             _activeMainHelper = newHelper;
+
+
+            HelperAnimationAbility animationAbility = newHelper.GetAbility<HelperAnimationAbility>();
+            if (animationAbility != null)
+            {
+                animationAbility.InitAnimator();
+            }
+
             _activeMainHelper.OnGradeChanged += OnMainHelperGradeChanged;
             _helperInteractionAbility.Summon(newHelper);
             RestoreHelperState(newHelper);
