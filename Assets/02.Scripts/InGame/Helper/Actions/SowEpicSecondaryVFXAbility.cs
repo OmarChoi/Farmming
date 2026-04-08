@@ -33,12 +33,13 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
         for (int i = 0; i < orderedCells.Count; i++)
         {
             TerrainCell captured = orderedCells[i];
+            Coroutine replayRoutine = null;
 
             // 이펙트 생성 직전 — 애니메이션 재생 및 트리거 지점까지 대기
             if (onEachSpawn != null)
             {
                 if (i == 0)
-                    StartCoroutine(onEachSpawn());
+                    replayRoutine = StartCoroutine(onEachSpawn());
                 else
                     yield return StartCoroutine(onEachSpawn());
             }
@@ -65,6 +66,9 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
                         if (remaining == 0) onComplete?.Invoke();
                     });
             }
+
+            if (replayRoutine != null)
+                yield return replayRoutine;
         }
     }
 
