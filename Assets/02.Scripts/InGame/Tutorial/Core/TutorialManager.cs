@@ -3,6 +3,8 @@ using System.Collections;
 
 public class TutorialManager : MonoBehaviour
 {
+    public static TutorialManager Instance { get; private set; }
+
     [Header("튜토리얼 NPC")]
     [SerializeField] private NpcDataSO _tutorialNpc;
 
@@ -21,6 +23,13 @@ public class TutorialManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         if (_npcQuestService == null)
         {
             _npcQuestService = FindFirstObjectByType<NpcQuestService>();
