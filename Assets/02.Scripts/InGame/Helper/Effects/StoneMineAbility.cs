@@ -30,6 +30,7 @@ public class StoneMineAbility : HelperAbility
     [SerializeField] private float _targetStoneEffectHorizontalOffset = 0.35f;
     [SerializeField] private float _targetStoneEffectDuration = 2f;
     [SerializeField] private float _targetStoneEffectSimulationSpeed = 2.5f;
+    [SerializeField] private float _cameraShakePerRockMultiplier = 0.35f;
 
     private HelperAnimationAbility _animAbility;
     private RangeBoostEffect _rangeBoostEffect;
@@ -168,6 +169,35 @@ public class StoneMineAbility : HelperAbility
         };
     }
 
+    private void PlayMiningCameraShake(bool shouldSpawnCenterTargetEffect, TerrainCell[] wideCells)
+    {
+        if (_owner?.PlayerOwner == null)
+            return;
+
+        PlayerCameraAbility cameraAbility = _owner.PlayerOwner.GetAbility<PlayerCameraAbility>();
+        if (cameraAbility == null)
+            return;
+
+        int rockHitCount = shouldSpawnCenterTargetEffect ? 1 : 0;
+
+        if (wideCells != null)
+        {
+            foreach (var wideCell in wideCells)
+            {
+                if (wideCell == null || wideCell.CurrentObject == null) continue;
+                if (wideCell.Data.ObjectType != EGridObjectType.Rock) continue;
+                if (!wideCell.CurrentObject.TryGetComponent<IGatherable>(out _)) continue;
+                rockHitCount++;
+            }
+        }
+
+        if (rockHitCount <= 0)
+            return;
+
+        float shakeMultiplier = 1f + ((rockHitCount - 1) * _cameraShakePerRockMultiplier);
+        cameraAbility.PlayImpactShake(shakeMultiplier);
+    }
+
     private IEnumerator JumpCoroutine(Vector3 targetPosition, IGatherable gatherable = null, TerrainCell[] wideCells = null, bool isRockTarget = false, Vector3? targetEffectPosition = null)
     {
         _isJumping = true;
@@ -211,6 +241,7 @@ public class StoneMineAbility : HelperAbility
         {
             SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
         }
+        PlayMiningCameraShake(shouldSpawnCenterTargetEffect, wideCells);
         _animAbility.Play(EHelperAnim.Stun);
         SpawnStoneEffect();
         gatherable?.TryGather(new GatheringInfo(_owner));
