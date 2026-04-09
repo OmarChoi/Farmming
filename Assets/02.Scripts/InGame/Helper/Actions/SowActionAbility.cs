@@ -21,6 +21,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _bobAmplitude = 0.3f;
     [SerializeField] private float _bobDuration = 0.4f;
     [SerializeField] private float _returnDuration = 0.5f;
+    [SerializeField] [Range(0f, 1f)] private float _legendaryHoldNormalizedTime = 0.35f;
+    [SerializeField] private float _legendaryHoldDuration = 10f;
 
     [SerializeField] [Range(0f, 1f)] private float _vfxTriggerNormalizedTime = 0.65f;
 
@@ -35,6 +37,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private bool _anySeedPlanted;
     private List<FarmTile> _currentFarmTiles;
     private SeedItemDataSO _currentSeed;
+    private Coroutine _legendaryHoldCoroutine;
 
     protected override void Awake()
     {
@@ -189,7 +192,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
                 SpawnEpicSecondaryVFX(centerCell, seed, () => done = true);
                 break;
             case EHelperGrade.Legendary:
-                _animAbility?.Replay(EHelperAnim.LegendarySow);
+                PlayLegendarySecondaryAnimation();
                 SpawnLegendarySecondaryVFX(centerCell, seed, () => done = true);
                 break;
             default:
@@ -619,6 +622,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void CompleteSecondaryAction()
     {
+        StopLegendaryHoldRoutine();
+        ResetAnimatorSpeed();
+
         if (_anySeedPlanted)
             _owner.Experience.Add(_sowExperience);
 
@@ -632,6 +638,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void CancelCurrentAction()
     {
+        StopLegendaryHoldRoutine();
+        ResetAnimatorSpeed();
+
         _currentFarmTiles = null;
         _currentSeed = null;
         _isSecondaryActing = false;
@@ -640,6 +649,60 @@ public class SowActionAbility : HelperAbility, IHelperAction
         HelperFollowAbility followAbility = _owner?.GetAbility<HelperFollowAbility>();
         if (followAbility != null)
             followAbility.enabled = true;
+    }
+
+    private void PlayLegendarySecondaryAnimation()
+    {
+        ResetAnimatorSpeed();
+        StopLegendaryHoldRoutine();
+
+        if (_animAbility == null)
+            return;
+
+        if (_legendaryHoldDuration <= 0f)
+        {
+            _animAbility.Replay(EHelperAnim.LegendarySow);
+            return;
+        }
+
+        _legendaryHoldCoroutine = StartCoroutine(ForceReplayAndHoldLegendarySow());
+    }
+
+    private void ResetAnimatorSpeed()
+    {
+        Animator animator = _animAbility?.Animator;
+        if (animator != null)
+            animator.speed = 1f;
+    }
+
+    private void StopLegendaryHoldRoutine()
+    {
+        if (_legendaryHoldCoroutine == null)
+            return;
+
+        StopCoroutine(_legendaryHoldCoroutine);
+        _legendaryHoldCoroutine = null;
+    }
+
+    private IEnumerator ForceReplayAndHoldLegendarySow()
+    {
+        yield return StartCoroutine(_animAbility.ForceReplayAndWait(EHelperAnim.LegendarySow, _legendaryHoldNormalizedTime));
+
+        Animator animator = _animAbility?.Animator;
+        if (animator == null)
+        {
+            _legendaryHoldCoroutine = null;
+            yield break;
+        }
+
+        animator.speed = 0f;
+        yield return new WaitForSeconds(_legendaryHoldDuration);
+
+        animator = _animAbility?.Animator;
+        if (animator != null)
+            animator.speed = 1f;
+
+        _legendaryHoldCoroutine = null;
     }
 
     private void OnDisable()
