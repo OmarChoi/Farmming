@@ -69,14 +69,13 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public bool CanInteractPrimary(TerrainCell cell)
     {
-        if (cell == null) return false;
-        if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf) return false;
-        return true;
+        return cell != null;
     }
 
     public void InteractPrimary(TerrainCell cell)
     {
         if (cell == null) return;
+        if (CurrentGrade == EHelperGrade.Normal && HasBlockingFrontObject(cell)) return;
 
         if (_owner.IsMine && _isActing) return;
         StartWaterAction(cell, isSecondary: false);
@@ -143,6 +142,12 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         List<TerrainCell> targetCells = _isSecondary
             ? new List<TerrainCell> { _currentCell }
             : GetTargetCells(_currentCell);
+
+        if (targetCells.Count == 0)
+        {
+            ResetState();
+            return;
+        }
 
         GetCurrentGradeVFX().SpawnHelperVFX();
 
@@ -276,6 +281,14 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     }
 
     private bool HasObject(TerrainCell cell) => cell.CurrentObject != null;
+
+    private bool HasBlockingFrontObject(TerrainCell cell)
+    {
+        if (cell?.CurrentObject == null) return false;
+
+        EGridObjectType objectType = cell.Data.ObjectType;
+        return objectType == EGridObjectType.Rock || objectType == EGridObjectType.Tree;
+    }
 
     private Vector3Int GetGridRightOffset()
     {

@@ -138,6 +138,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void ToggleSummon()
     {
+        if (HasBlockingMainHelperAction()) return;
         // 빛곡룡이 Summoned(등에서 해제) 상태이고 일반 helper가 없으면
         // 빛곡룡을 먼저 소환 해제하고, 현재 인덱스가 같으면 여기서 종료
         if (_activeLightHelper != null
@@ -423,6 +424,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     public void RespawnHelper(HelperDataSO data)
     {
         if (data == null) return;
+        if (HasBlockingMainHelperAction()) return;
 
         HelperController activeHelper = FindActiveHelper(data.HelperId);
         if (activeHelper == null) return;
@@ -480,6 +482,11 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             return _activeLightHelper;
 
         return null;
+    }
+
+    private bool HasBlockingMainHelperAction()
+    {
+        return _activeMainHelper != null && _activeMainHelper.IsActing;
     }
 
     public int GetMaxExpByGrade(HelperDataSO data, EHelperGrade grade)
