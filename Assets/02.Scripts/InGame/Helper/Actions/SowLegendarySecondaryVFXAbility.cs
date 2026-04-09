@@ -8,6 +8,7 @@ public class SowLegendarySecondaryVFXAbility : HelperAbility
 {
     [Header("레전더리 등급 파종 이펙트 (Secondary)")]
     [SerializeField] private GameObject _seedParticlePrefab;
+    [SerializeField] private float _startDelay = 0.25f;
     [SerializeField] private float _sweepDuration = 2f;       // 도착 지점이 좌→우로 이동하는 총 시간
     [SerializeField] private float _spawnInterval = 0.08f;    // 씨앗 발사 간격 (작을수록 연속적)
     [SerializeField] private float _arcHeight = 2.5f;         // 포물선 높이
@@ -33,6 +34,9 @@ public class SowLegendarySecondaryVFXAbility : HelperAbility
     private IEnumerator SweepCoroutine(Transform mouthPoint, List<TerrainCell> orderedCells,
         Action<TerrainCell> onCellLand, Action onComplete)
     {
+        if (_startDelay > 0f)
+            yield return new WaitForSeconds(_startDelay);
+
         Vector3 startTarget = GetCellTarget(orderedCells[0]);
         Vector3 endTarget   = GetCellTarget(orderedCells[orderedCells.Count - 1]);
 

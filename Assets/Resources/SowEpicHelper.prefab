@@ -1442,6 +1442,8 @@ MonoBehaviour:
   _bobAmplitude: 0.3
   _bobDuration: 0.4
   _returnDuration: 0.5
+  _legendaryHoldNormalizedTime: 0.35
+  _legendaryHoldDuration: 1.5
   _vfxTriggerNormalizedTime: 0.65
 --- !u!114 &4642191277865818875
 MonoBehaviour:
@@ -1501,6 +1503,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SowLegendarySecondaryVFXAbility
   _seedParticlePrefab: {fileID: 3441225727447022762, guid: 0865faf354dd027478a3a41e5c44d55f, type: 3}
+  _startDelay: 0.4
   _sweepDuration: 2
   _spawnInterval: 0.08
   _arcHeight: 2.5
