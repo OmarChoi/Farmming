@@ -1,6 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Collections;
 
 public class TutorialManager : MonoBehaviour
 {
@@ -9,19 +9,15 @@ public class TutorialManager : MonoBehaviour
     [Header("튜토리얼 NPC")]
     [SerializeField] private NpcDataSO _tutorialNpc;
 
-    [Header("튜토리얼 시작 퀘스트")]
-    [SerializeField] private QuestDataSO _entryTutorialQuest;
-
-    [Header("튜토리얼 퀘스트 목록")]
-    [SerializeField] private List<QuestDataSO> _tutorialQuestSequence = new();
-
-    [Header("NpcQuestService")]
-    [SerializeField] private NpcQuestService _npcQuestService;
+    [Header("TutorialProgressController")]
+    [SerializeField] private TutorialProgressController _tutorialProgressController;
 
     private PlayerController _currentPlayer;
     private Transform _playerTransform;
     private NpcController _tutorialNpcController;
     private bool _isTutorialStarted;
+
+
 
     private void Awake()
     {
@@ -32,25 +28,9 @@ public class TutorialManager : MonoBehaviour
         }
         Instance = this;
 
-        if (_npcQuestService == null)
+        if (_tutorialProgressController == null)
         {
-            _npcQuestService = FindFirstObjectByType<NpcQuestService>();
-        }
-    }
-
-    private void OnEnable()
-    {
-        if (QuestManager.Instance != null)
-        {
-            QuestManager.Instance.OnQuestCompleted += HandleQuestCompleted;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (QuestManager.Instance != null)
-        {
-            QuestManager.Instance.OnQuestCompleted -= HandleQuestCompleted;
+            _tutorialProgressController = FindFirstObjectByType<TutorialProgressController>();
         }
     }
 
@@ -62,9 +42,25 @@ public class TutorialManager : MonoBehaviour
         _currentPlayer = player;
         _playerTransform = player.transform;
 
-        if (_currentPlayer.TutorialState == ETutorialState.None)
+        if (QuestManager.Instance == null || !QuestManager.Instance.IsLoaded)
         {
-            _currentPlayer.SetTutorialState(ETutorialState.InProgress);
+            StartCoroutine(WaitAndStartTutorialCoroutine());
+            return;
+        }
+
+        StartTutorial();
+    }
+
+    private IEnumerator WaitAndStartTutorialCoroutine()
+    {
+        while (QuestManager.Instance == null || !QuestManager.Instance.IsLoaded)
+        {
+            yield return null;
+        }
+
+        if (_currentPlayer == null || _currentPlayer.TutorialState == ETutorialState.Completed)
+        {
+            yield break;
         }
 
         StartTutorial();
@@ -72,15 +68,31 @@ public class TutorialManager : MonoBehaviour
 
     private void StartTutorial()
     {
-        if (_playerTransform == null) return;
+        if (_playerTransform == null)
+        {
+            ClearTutorial();
+            return;
+        }
 
         DespawnTutorialNpc();
 
         _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, _playerTransform);
-
         if (_tutorialNpcController == null)
         {
-            Debug.LogWarning("튜토리얼 NPC 스폰 실패");
+            Debug.LogWarning("TutorialNpcController가 연결되어 있지 않습니다.");
+            ClearTutorial();
+            return;
+        }
+        if (_tutorialProgressController == null)
+        {
+            Debug.LogWarning("TutorialProgressController가 연결되어 있지 않습니다.");
+            ClearTutorial();
+            return;
+        }
+        bool began = _tutorialProgressController.BeginTutorial(_currentPlayer, _tutorialNpcController);
+        if (!began)
+        {
+            ClearTutorial();
             return;
         }
 
@@ -90,12 +102,11 @@ public class TutorialManager : MonoBehaviour
 
     private IEnumerator BeginTutorialInteraction()
     {
-        // NPC가 완전히 스폰되고 초기화될 때까지 잠시 대기합니다.
         yield return null;
 
-        if (_tutorialNpcController == null || _playerTransform == null)
+        if (_tutorialNpcController == null || _playerTransform == null || _tutorialProgressController == null)
         {
-            FailTutorialStart();
+            ClearTutorial();
             yield break;
         }
 
@@ -104,46 +115,13 @@ public class TutorialManager : MonoBehaviour
 
         if (npcInteraction == null || playerInteraction == null)
         {
-            FailTutorialStart();
+            Debug.LogWarning("튜토리얼 자동 상호작용을 시작할 수 없습니다.");
+            ClearTutorial();
             yield break;
         }
 
-        // 1. 자동으로 상호작용을 시작합니다.
+        // 자동으로 상호작용을 시작합니다.
         playerInteraction.BeginAutoInteraction(npcInteraction);
-
-        // 2. 대화 UI가 열린 다음 프레임에 튜토리얼 퀘스트 시작합니다.
-        yield return null;
-
-        NpcInteractionContext context = new NpcInteractionContext(
-            _tutorialNpcController,
-            _playerTransform,
-            npcInteraction);
-
-        _npcQuestService?.ExecuteTutorialQuestInteraction(context, _entryTutorialQuest);
-    }
-
-    private void HandleQuestCompleted(QuestRuntimeData questRuntime)
-    {
-        if (questRuntime == null || questRuntime.QuestData == null) return;
-
-        if (!questRuntime.QuestData.IsTutorial || !AreAllTutorialQuestsCompleted()) return;
-
-        CompleteTutorial();
-    }
-
-    private bool AreAllTutorialQuestsCompleted()
-    {
-        if (_tutorialQuestSequence == null || _tutorialQuestSequence.Count == 0) return false;
-
-        if (QuestManager.Instance == null) return false;
-
-        foreach (QuestDataSO quest in _tutorialQuestSequence)
-        {
-            if (quest == null) continue;
-            if (!QuestManager.Instance.IsQuestCompleted(quest.QuestId)) return false;
-        }
-
-        return true;
     }
 
     public void CompleteTutorial()
@@ -153,13 +131,10 @@ public class TutorialManager : MonoBehaviour
             _currentPlayer.SetTutorialState(ETutorialState.Completed);
         }
 
-        DespawnTutorialNpc();
-        _isTutorialStarted = false;
-        _currentPlayer = null;
-        _playerTransform = null;
+        ClearTutorial();
     }
 
-    private void FailTutorialStart()
+    private void ClearTutorial()
     {
         DespawnTutorialNpc();
         _isTutorialStarted = false;

@@ -9,4 +9,5 @@ public class SaveData
     public List<BuildingSaveData> Buildings = new();
     public TimeSaveData Time = new();
     public VillageSaveData Village = new();
+    public QuestSaveData Quest;
 }
