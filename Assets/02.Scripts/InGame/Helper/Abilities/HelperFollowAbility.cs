@@ -130,6 +130,7 @@ public class HelperFollowAbility : HelperAbility
             if (_cc.isGrounded)
             {
                 float speedRatio = _currentSpeed / _moveSpeed;
+
                 _animAbility.Play(speedRatio >= _runSpeedThreshold ? EHelperAnim.Run : EHelperAnim.Walk);
             }
         }
