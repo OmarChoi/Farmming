@@ -141,16 +141,17 @@ public class UI_HelperExperience : MonoBehaviour
 
     private bool TryApplyFixedState()
     {
-        if (_helper == null)
+        if (_helper == null || _helper.Data == null)
             return false;
 
-        if (IsGroundHelper(_helper))
+        if (_helper.Data.UsesGroundFixedExpBar)
         {
             ApplyFixedFill(_groundHelperColor, false);
             return true;
         }
 
-        if (IsLegendaryMaxHelper(_helper))
+        if (_helper.Grade.CurrentGrade == EHelperGrade.Legendary
+            && _helper.Data.UsesLegendaryMaxExpBar)
         {
             ApplyFixedFill(_legendaryMaxColor, true);
             return true;
@@ -166,22 +167,6 @@ public class UI_HelperExperience : MonoBehaviour
         _fillImage.fillAmount = 1f;
         SetMaxTextVisible(showMaxText);
         SetUpgradeReadyIndicatorVisible(false);
-    }
-
-    private bool IsLegendaryMaxHelper(HelperController helper)
-    {
-        if (helper.Grade.CurrentGrade != EHelperGrade.Legendary)
-            return false;
-
-        return helper.GetAbility<WaterActionAbility>() != null
-            || helper.GetAbility<HarvestActionAbility>() != null
-            || helper.GetAbility<WoodCuttingMineActionAbility>() != null
-            || helper.GetAbility<SowActionAbility>() != null;
-    }
-
-    private bool IsGroundHelper(HelperController helper)
-    {
-        return helper.GetAbility<GroundActionAbility>() != null;
     }
 
     private void OnReadyToUpgrade()
