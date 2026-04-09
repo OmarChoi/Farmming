@@ -6,6 +6,7 @@ using System;
 public class NetworkStorageTransferProxy : StorageTransferService
 {
     private readonly StorageSyncHandler _syncHandler;
+    public override bool RequiresRestoreBeforeCrossSwap => _syncHandler.IsMaster;
 
     public NetworkStorageTransferProxy(
         SlotContainerDomain inventory, StorageDomain storage, StorageSyncHandler syncHandler)
@@ -74,6 +75,44 @@ public class NetworkStorageTransferProxy : StorageTransferService
             _inventory.RemoveAt(inventorySlotIndex, inItemCount);
         }
 
-        _syncHandler.RequestSwap(storageSlotIndex, inItemId, inItemCount);
+        _syncHandler.RequestSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount);
+    }
+
+    // === 창고 내부 조작 ===
+
+    public override void SwapInStorage(int from, int to)
+    {
+        base.SwapInStorage(from, to);
+        if (_syncHandler.IsMaster)
+            _syncHandler.BroadcastFullSync();
+    }
+
+    public override void PickUpFromStorage(int slotIndex, out ItemDataSO item, out int count)
+    {
+        base.PickUpFromStorage(slotIndex, out item, out count);
+        if (_syncHandler.IsMaster)
+            _syncHandler.BroadcastFullSync();
+    }
+
+    public override void PutDownInStorage(int slotIndex, ItemDataSO item, int count)
+    {
+        base.PutDownInStorage(slotIndex, item, count);
+        if (_syncHandler.IsMaster)
+            _syncHandler.BroadcastFullSync();
+    }
+
+    public override int SplitHalfInStorage(int index)
+    {
+        int result = base.SplitHalfInStorage(index);
+        if (result > 0 && _syncHandler.IsMaster)
+            _syncHandler.BroadcastFullSync();
+        return result;
+    }
+
+    public override void PlaceSplitInStorage(int sourceIndex, int targetIndex, ItemDataSO item, int amount)
+    {
+        base.PlaceSplitInStorage(sourceIndex, targetIndex, item, amount);
+        if (_syncHandler.IsMaster)
+            _syncHandler.BroadcastFullSync();
     }
 }

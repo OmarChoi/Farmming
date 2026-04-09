@@ -32,6 +32,25 @@ public class SlotContainerDomain
         return FillExistingSlots(item, amount) == 0;
     }
 
+    public virtual bool AddItemToSlot(ItemDataSO item, int slotIndex, int amount = 1, bool fallbackToAuto = true)
+    {
+        if (item == null || amount <= 0)
+            return false;
+
+        if (slotIndex >= 0 && slotIndex < _slots.Count)
+        {
+            var slot = _slots[slotIndex];
+            if (slot.CanAccept(item, amount))
+            {
+                slot.TryAdd(item, amount);
+                NotifySlotChanged(slotIndex);
+                return true;
+            }
+        }
+
+        return fallbackToAuto && AddItem(item, amount);
+    }
+
     /// 기존 스택 → 빈 슬롯 순으로 채우고, 못 넣은 나머지 수량을 반환한다.
     protected int FillExistingSlots(ItemDataSO item, int amount)
     {
