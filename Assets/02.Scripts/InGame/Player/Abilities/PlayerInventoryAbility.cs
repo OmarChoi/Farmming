@@ -12,6 +12,7 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
     private bool _isOpen;
 
     public bool IsOpen => _isOpen;
+    public InventoryDomain Domain => _inventory;
     public int SlotCount => _inventory.SlotCount;
 
     public event Action<bool> OnToggle;

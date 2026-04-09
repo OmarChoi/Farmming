@@ -3,7 +3,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UI_Inventory : MonoBehaviour
+public class UI_Inventory : MonoBehaviour, ISlotContainer
 {
     private const int Columns = 4;
 
@@ -26,12 +26,17 @@ public class UI_Inventory : MonoBehaviour
     private readonly List<UI_Slot> _slotUIs = new();
 
     private TradeService _tradeService;
+    private StorageTransferService _storageTransferService;
+    private UI_Storage _linkedStorage;
     private EInventoryClickMode _clickMode = EInventoryClickMode.Normal;
 
     // 드래그 상태
     private bool _isDragging;
     private UI_Slot _dragSourceSlot;
     private UI_Slot _hoveredSlot;
+    private Transform _dragIconOriginalParent;
+
+    public UI_Slot HoveredSlot => _hoveredSlot;
 
     // 분할 드래그 상태
     private bool _isSplitDrag;
@@ -184,7 +189,7 @@ public class UI_Inventory : MonoBehaviour
 
     public void BeginDrag(UI_Slot source, bool shift = false)
     {
-        if (_clickMode != EInventoryClickMode.Normal) return;
+        if (_clickMode == EInventoryClickMode.Trading) return;
         if (source.CurrentItem == null) return;
 
         if (shift)
@@ -210,6 +215,11 @@ public class UI_Inventory : MonoBehaviour
         _dragIcon.gameObject.SetActive(true);
         _dragIcon.transform.position = Input.mousePosition;
 
+        // 드래그 아이콘을 Canvas 루트로 올려서 다른 패널 위에 렌더링
+        _dragIconOriginalParent = _dragIcon.transform.parent;
+        _dragIcon.transform.SetParent(_dragIcon.canvas.transform, true);
+        _dragIcon.transform.SetAsLastSibling();
+
         if (!_isSplitDrag)
             source.SetIconVisible(false);
 
@@ -223,6 +233,30 @@ public class UI_Inventory : MonoBehaviour
     {
         if (!_isDragging) return;
 
+        // 크로스 드래그: 인벤토리 → 창고
+        if (_clickMode == EInventoryClickMode.Storage && _linkedStorage != null)
+        {
+            var crossTarget = _linkedStorage.HoveredSlot;
+            if (crossTarget != null)
+            {
+                if (_isSplitDrag)
+                {
+                    // 분할된 아이템을 인벤토리에 복구 후 TransferService로 이동
+                    _inventoryAbility.PlaceSplit(
+                        _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
+                    _storageTransferService.MoveToStorage(_dragSourceSlot.SlotIndex);
+                }
+                else
+                {
+                    _storageTransferService.SwapAcross(
+                        _dragSourceSlot.SlotIndex, crossTarget.SlotIndex);
+                }
+                ClearDragState();
+                return;
+            }
+        }
+
+        // 일반 드래그: 인벤토리 내부
         if (_isSplitDrag)
         {
             int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
@@ -257,6 +291,8 @@ public class UI_Inventory : MonoBehaviour
 
     private void ClearDragState()
     {
+        if (_dragIconOriginalParent != null)
+            _dragIcon.transform.SetParent(_dragIconOriginalParent, true);
         _dragIcon.gameObject.SetActive(false);
         _scrollRect.enabled = true;
         _isDragging = false;
@@ -286,6 +322,14 @@ public class UI_Inventory : MonoBehaviour
     {
         if (_isDragging) return;
         if (clicked.CurrentItem == null) return;
+
+        // Storage 모드: 인벤토리 → 창고 빠른 이동
+        if (_clickMode == EInventoryClickMode.Storage)
+        {
+            _storageTransferService?.MoveToStorage(clicked.SlotIndex, 1);
+            return;
+        }
+
         if (!(clicked.CurrentItem is PotionDataSO)) return;
 
         bool used = _potionAbility != null && _potionAbility.TryUsePotion(clicked.SlotIndex);
@@ -305,6 +349,12 @@ public class UI_Inventory : MonoBehaviour
     public void Init(TradeService tradeService)
     {
         _tradeService = tradeService;
+    }
+
+    public void SetLinkedStorage(UI_Storage storage, StorageTransferService service)
+    {
+        _linkedStorage = storage;
+        _storageTransferService = service;
     }
 
     private void HandleSellClick(UI_Slot clicked)

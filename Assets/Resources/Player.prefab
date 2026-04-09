@@ -57,6 +57,7 @@ GameObject:
   - component: {fileID: 6003655954720563584}
   - component: {fileID: 1723760070143069421}
   - component: {fileID: 1126301704286780688}
+  - component: {fileID: 6292191619215480779}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -337,6 +338,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 070059ced19c74f4097e4afa81fb954e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerPotionAbility
+--- !u!114 &6292191619215480779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 203f43ca14ac2b04abede414cad73c9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerObjectInteractionAbility
+  _radius: 3
+  _interactionLayer:
+    serializedVersion: 2
+    m_Bits: 4096
+  _interactKey: 101
 --- !u!1 &2101610759984280812
 GameObject:
   m_ObjectHideFlags: 0
