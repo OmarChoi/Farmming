@@ -15,4 +15,5 @@ public class PlayerSaveData
     public CustomizeSaveData Customize = new();
 
     public ETutorialState TutorialState = ETutorialState.None;
+    public QuestSaveData Quest = new();
 }

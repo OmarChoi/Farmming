@@ -420,7 +420,12 @@ public class GameSceneInit : MonoBehaviour
     private bool ShouldStartTutorial(PlayerController player)
     {
         if (player == null || ReturningFromDungeon || TutorialManager.Instance == null) return false;
-        return player.TutorialState == ETutorialState.None || player.TutorialState == ETutorialState.InProgress;
+
+        PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
+        if (questAbility == null) return false;
+
+        return questAbility.TutorialState == ETutorialState.None ||
+               questAbility.TutorialState == ETutorialState.InProgress;
     }
 
     private void TryStartTutorial(PlayerController player)
