@@ -16,7 +16,8 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
     public int CurrentVitality { get; private set; }
     public int CurrentVitalityThreshold => GetVitalityThresholdForLevel(CurrentLevel);
     public LevelUpRequirement LevelUpRequirement => _requirementSO.GetRequirement(CurrentLevel);
-    private bool CanLevelUp => !_requirementSO.IsMaxLevel(CurrentLevel)
+    public bool IsMaxLevel => _requirementSO.IsMaxLevel(CurrentLevel);
+    private bool CanLevelUp => !IsMaxLevel
                                && CurrentVitality >= CurrentVitalityThreshold
                                && BuildingManager.Instance != null
                                && BuildingManager.Instance.BuildingCount >= GetBuildingCountForLevel(CurrentLevel);
