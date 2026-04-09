@@ -13,8 +13,9 @@ public class TutorialProgressController : MonoBehaviour
     [SerializeField] private NpcQuestService _npcQuestService;
 
     private NpcController _tutorialNpcController;
-    private PlayerController _currentPlayer;
     private Transform _playerTransform;
+
+    private QuestDataSO _pendingNextTutorialQuest;
 
     private void Awake()
     {
@@ -60,7 +61,6 @@ public class TutorialProgressController : MonoBehaviour
         PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
         if (questAbility == null) return false;
 
-        _currentPlayer = player;
         _playerTransform = player.transform;
         _tutorialNpcController = tutorialNpc;
 
@@ -137,11 +137,22 @@ public class TutorialProgressController : MonoBehaviour
 
         if (TryGetNextTutorialQuest(completedQuest, out QuestDataSO nextQuest))
         {
-            TryAcceptTutorialQuest(nextQuest);
+            _pendingNextTutorialQuest = nextQuest;
             return;
         }
 
+        _pendingNextTutorialQuest = null;
         CompleteTutorial();
+    }
+
+    public void TryAcceptPendingTutorialQuest()
+    {
+        if (_pendingNextTutorialQuest == null) return;
+
+        QuestDataSO nextQuest = _pendingNextTutorialQuest;
+        _pendingNextTutorialQuest = null;
+
+        TryAcceptTutorialQuest(nextQuest);
     }
 
     private bool TryGetNextTutorialQuest(QuestDataSO completedQuest, out QuestDataSO nextQuest)
