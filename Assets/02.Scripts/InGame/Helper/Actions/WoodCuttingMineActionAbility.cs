@@ -87,6 +87,9 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
+        if (cell != null && cell.CurrentObject != null && cell.Data.ObjectType == EGridObjectType.Tree)
+            return;
+
         _owner.BeginAction();
         _stoneMineAbility?.JumpAndSmash(cell);
     }
