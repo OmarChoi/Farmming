@@ -139,8 +139,9 @@ public class TutorialManager : MonoBehaviour
                 questAbility.SetTutorialState(ETutorialState.Completed);
             }
         }
-
-        ClearTutorial();
+        _isTutorialStarted = false;
+        _currentPlayer = null;
+        _playerTransform = null;
     }
 
     private void ClearTutorial()

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: Tutorial5AcceptResultDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: Tutorial5AcceptResultDialogue
+  Lines:
+  - Text: "\uC791\uBB3C\uC740 \uB9E4\uC77C\uB9E4\uC77C \uBB3C\uC744 \uC918\uC57C
+      \uD574\uC560~ \uADF8\uB7EC\uB2E4\uBCF4\uBA74 \uC5B4\uB290 \uC21C\uAC04 \uB2E4
+      \uC790\uB77C \uC788\uC744 \uAC70\uC57C\uC544. \uC774\uB54C \uD65C\uC57D\uD558\uB294
+      \uCE5C\uAD6C\uAC00 \uC218\uD655 \uACE1\uB8E1\uC774\uC57C\uC544!"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC218\uD655 \uACE1\uB8E1\uC740 \uBE68\uAC04 \uCE5C\uAD6C\uC778\uB370,
+      \uACE1\uB8E1\uC744 \uC190\uC5D0 \uB4E0 \uCC44\uB85C \uB2E4 \uC790\uB780 \uC791\uBB3C\uC744
+      \uC88C\uD074\uB9AD\uD558\uBA74 \uC791\uBB3C\uC744 \uC218\uD655\uD574\uC918\uC5B4!"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC218\uD655 \uACE1\uB8E1\uACFC \uD568\uAED8 \uD638\uBC15\uC744 3\uAC1C
+      \uC218\uD655\uD574 \uBD10\uC544~ \uC218\uD655 \uACE1\uB8E1\uC758 \uB2A5\uB825\uC740
+      \uB300\uB2E8\uD574\uC11C \uC791\uBB3C\uC774 \uC0C1\uD558\uC9C0 \uC54A\uACE0
+      \uCE90\uB0BC \uC218 \uC788\uC5B4\uC5B4!"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC774\uAC83\uAE4C\uC9C0 \uB2E4 \uB9C8\uCE58\uBA70\uC5B8 \uC6B0\uB9AC\uB4E4\uC758
+      \uC5ED\uD560\uC740 \uB05D\uC774\uC57C\uC544. \uD638\uBC15 3\uAC1C\uB97C \uAC00\uC838\uC624\uBA70\uC5B8
+      \uC88B\uC740 \uAC78 \uC904\uAC8C\uC5D0."
+    NextDialogue: {fileID: 0}
