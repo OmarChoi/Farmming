@@ -14,30 +14,16 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
 
-    [Header("Secondary")]
-    [SerializeField] private float _floatAbovePlayerHeight = 2f;
-    [SerializeField] private float _floatMoveDuration = 0.5f;
-    [SerializeField] private float _floatDuration = 2f;
-    [SerializeField] private float _bobAmplitude = 0.3f;
-    [SerializeField] private float _bobDuration = 0.4f;
-    [SerializeField] private float _returnDuration = 0.5f;
-    [SerializeField] [Range(0f, 1f)] private float _legendaryHoldNormalizedTime = 0.35f;
-    [SerializeField] private float _legendaryHoldDuration = 10f;
-
-    [SerializeField] [Range(0f, 1f)] private float _vfxTriggerNormalizedTime = 0.65f;
-
     private CultivateAbility _cultivateAbility;
     private SeedSelectAbility _seedSelector;
     private HelperAnimationAbility _animAbility;
-    private SowEpicSecondaryVFXAbility _epicSecondaryVFX;
-    private SowLegendarySecondaryVFXAbility _legendarySecondaryVFX;
+    private SowSecondaryVFXAbility _secondaryPresentation;
     private SowSeedVfxSpawner _seedVfxSpawner;
 
     private bool _isSecondaryActing;
     private bool _anySeedPlanted;
     private List<FarmTile> _currentFarmTiles;
     private SeedItemDataSO _currentSeed;
-    private Coroutine _legendaryHoldCoroutine;
 
     protected override void Awake()
     {
@@ -45,8 +31,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _cultivateAbility = _owner.GetAbility<CultivateAbility>();
         _seedSelector = _owner.GetAbility<SeedSelectAbility>();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
-        _epicSecondaryVFX = _owner.GetAbility<SowEpicSecondaryVFXAbility>();
-        _legendarySecondaryVFX = _owner.GetAbility<SowLegendarySecondaryVFXAbility>();
+        _secondaryPresentation = _owner.GetAbility<SowSecondaryVFXAbility>();
         _seedVfxSpawner = new SowSeedVfxSpawner(() => _mouthPoint, () => _seedVfxPrefab);
     }
 
@@ -139,10 +124,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
         switch (grade)
         {
             case EHelperGrade.Epic:
-                StartCoroutine(FloatAndSow(centerCell, seed, grade));
-                break;
             case EHelperGrade.Legendary:
-                StartCoroutine(FloatAndSow(centerCell, seed, grade));
+                StartGradeSecondary(centerCell, seed, grade);
                 break;
             default:
                 StartNormalSecondary(GetSowableFarmTiles(centerCell), seed);
@@ -164,11 +147,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _animAbility?.Play(EHelperAnim.Sow);
     }
 
-    private IEnumerator FloatAndSow(TerrainCell centerCell, SeedItemDataSO seed, EHelperGrade grade)
+    private void StartGradeSecondary(TerrainCell centerCell, SeedItemDataSO seed, EHelperGrade grade)
     {
-        if (_owner.PlayerOwner == null)
-            yield break;
-
         _isSecondaryActing = true;
         _anySeedPlanted = false;
         _currentFarmTiles = null;
@@ -176,55 +156,43 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         _owner.BeginAction();
 
-        HelperFollowAbility followAbility = _owner.GetAbility<HelperFollowAbility>();
-        if (followAbility != null)
-            followAbility.enabled = false;
+        if (_secondaryPresentation == null)
+        {
+            PlantCells(GetTargetCells(centerCell), seed);
+            CompleteSecondaryAction();
+            return;
+        }
 
-        Vector3 originalPos = _owner.transform.position;
-        Vector3 floatPos = _owner.PlayerOwner.transform.position + Vector3.up * _floatAbovePlayerHeight;
-        Tween floatMoveTween = _owner.transform.DOMove(floatPos, _floatMoveDuration)
-            .SetEase(Ease.OutQuad);
-
-        bool done = false;
         switch (grade)
         {
             case EHelperGrade.Epic:
-                SpawnEpicSecondaryVFX(centerCell, seed, () => done = true);
+                _secondaryPresentation.PlayEpic(
+                    _seedVfxSpawner.MouthPoint,
+                    GetEpicOrderedTargetCells(centerCell),
+                    cell =>
+                    {
+                        FarmTile tile = GetFarmTile(cell);
+                        if (tile != null && tile.IsReadyToSow)
+                            PlantSeed(tile, seed);
+                    },
+                    CompleteSecondaryAction);
                 break;
             case EHelperGrade.Legendary:
-                PlayLegendarySecondaryAnimation();
-                SpawnLegendarySecondaryVFX(centerCell, seed, () => done = true);
-                break;
-            default:
-                done = true;
+                _secondaryPresentation.PlayLegendary(
+                    _seedVfxSpawner.MouthPoint,
+                    GetOrderedTargetCells(centerCell),
+                    cell =>
+                    {
+                        FarmTile tile = GetFarmTile(cell);
+                        if (tile != null && tile.IsReadyToSow)
+                            PlantSeed(tile, seed);
+                    },
+                    CompleteSecondaryAction);
                 break;
         }
-
-        yield return floatMoveTween.WaitForCompletion();
-
-        Tween bobTween = null;
-        if (!done && _floatDuration > 0f)
-        {
-            bobTween = _owner.transform.DOMoveY(floatPos.y + _bobAmplitude, _bobDuration)
-                .SetLoops(-1, LoopType.Yoyo)
-                .SetEase(Ease.InOutSine);
-        }
-
-        yield return new WaitUntil(() => done);
-
-        bobTween?.Kill();
-
-        yield return _owner.transform.DOMove(originalPos, _returnDuration)
-            .SetEase(Ease.InOutQuad)
-            .WaitForCompletion();
-
-        if (followAbility != null)
-            followAbility.enabled = true;
-
-        CompleteSecondaryAction();
     }
 
-    private void SpawnEpicSecondaryVFX(TerrainCell centerCell, SeedItemDataSO seed, System.Action onComplete)
+    private List<TerrainCell> GetEpicOrderedTargetCells(TerrainCell centerCell)
     {
         Vector3Int rightOffset = GetGridRightOffset();
         var orderedCells = new List<TerrainCell>();
@@ -238,46 +206,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (rightCell != null)
             orderedCells.Add(rightCell);
 
-        if (_epicSecondaryVFX == null)
-        {
-            PlantCells(orderedCells, seed);
-            onComplete?.Invoke();
-            return;
-        }
-
-        _epicSecondaryVFX.SpawnEffects(_seedVfxSpawner.MouthPoint, orderedCells, cell =>
-        {
-            FarmTile tile = GetFarmTile(cell);
-            if (tile != null && tile.IsReadyToSow)
-                PlantSeed(tile, seed);
-        }, onComplete, ReplayEpicSowAndWait);
-    }
-
-    private void SpawnLegendarySecondaryVFX(TerrainCell centerCell, SeedItemDataSO seed, System.Action onComplete)
-    {
-        List<TerrainCell> orderedCells = GetOrderedTargetCells(centerCell);
-
-        if (_legendarySecondaryVFX == null)
-        {
-            PlantCells(orderedCells, seed);
-            onComplete?.Invoke();
-            return;
-        }
-
-        _legendarySecondaryVFX.SpawnEffects(_seedVfxSpawner.MouthPoint, orderedCells, cell =>
-        {
-            FarmTile tile = GetFarmTile(cell);
-            if (tile != null && tile.IsReadyToSow)
-                PlantSeed(tile, seed);
-        }, onComplete);
+        return orderedCells;
     }
 
     private IEnumerator ReplayEpicSowAndWait()
     {
-        if (_animAbility == null)
+        if (_secondaryPresentation == null)
             yield break;
 
-        yield return StartCoroutine(_animAbility.ForceReplayAndWait(EHelperAnim.EpicSow, _vfxTriggerNormalizedTime));
+        yield return StartCoroutine(_secondaryPresentation.ReplayEpicSowAndWait());
     }
 
     private void HandleNormalCultivation(TerrainCell cell)
@@ -463,7 +400,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void ReplayEpicSow()
     {
-        StartCoroutine(ReplayEpicSowAndWait());
+        _secondaryPresentation?.ReplayEpicSow();
     }
 
     private void ConvertLateralFarmTiles(TerrainCell centerCell)
@@ -622,8 +559,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void CompleteSecondaryAction()
     {
-        StopLegendaryHoldRoutine();
-        ResetAnimatorSpeed();
+        _secondaryPresentation?.CancelPresentation();
 
         if (_anySeedPlanted)
             _owner.Experience.Add(_sowExperience);
@@ -638,71 +574,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void CancelCurrentAction()
     {
-        StopLegendaryHoldRoutine();
-        ResetAnimatorSpeed();
+        _secondaryPresentation?.CancelPresentation();
 
         _currentFarmTiles = null;
         _currentSeed = null;
         _isSecondaryActing = false;
         _anySeedPlanted = false;
-
-        HelperFollowAbility followAbility = _owner?.GetAbility<HelperFollowAbility>();
-        if (followAbility != null)
-            followAbility.enabled = true;
-    }
-
-    private void PlayLegendarySecondaryAnimation()
-    {
-        ResetAnimatorSpeed();
-        StopLegendaryHoldRoutine();
-
-        if (_animAbility == null)
-            return;
-
-        if (_legendaryHoldDuration <= 0f)
-        {
-            _animAbility.Replay(EHelperAnim.LegendarySow);
-            return;
-        }
-
-        _legendaryHoldCoroutine = StartCoroutine(ForceReplayAndHoldLegendarySow());
-    }
-
-    private void ResetAnimatorSpeed()
-    {
-        Animator animator = _animAbility?.Animator;
-        if (animator != null)
-            animator.speed = 1f;
-    }
-
-    private void StopLegendaryHoldRoutine()
-    {
-        if (_legendaryHoldCoroutine == null)
-            return;
-
-        StopCoroutine(_legendaryHoldCoroutine);
-        _legendaryHoldCoroutine = null;
-    }
-
-    private IEnumerator ForceReplayAndHoldLegendarySow()
-    {
-        yield return StartCoroutine(_animAbility.ForceReplayAndWait(EHelperAnim.LegendarySow, _legendaryHoldNormalizedTime));
-
-        Animator animator = _animAbility?.Animator;
-        if (animator == null)
-        {
-            _legendaryHoldCoroutine = null;
-            yield break;
-        }
-
-        animator.speed = 0f;
-        yield return new WaitForSeconds(_legendaryHoldDuration);
-
-        animator = _animAbility?.Animator;
-        if (animator != null)
-            animator.speed = 1f;
-
-        _legendaryHoldCoroutine = null;
     }
 
     private void OnDisable()
