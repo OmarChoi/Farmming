@@ -8,8 +8,12 @@ public class StoneMineAbility : HelperAbility
     [SerializeField] private GameObject _effectStonePrefab;
     [SerializeField] private Transform _effectSpawnPoint;
     [SerializeField] private float _jumpHeight = 2f;
+    [SerializeField] private float _epicJumpHeight = 3f;
+    [SerializeField] private float _legendaryJumpHeight = 3.5f;
     [SerializeField] private float _jumpDuration = 0.5f;
     [SerializeField] private float _returnDuration = 0.5f;
+    [SerializeField] private float _rangeBoostScaleMultiplier = 3f;
+    [SerializeField] private float _rangeBoostScaleTweenDuration = 0.2f;
     [SerializeField] private float _endEffect = 0.2f;
     [SerializeField] private float _stunDuration = 0.5f;
     [SerializeField] private float _rejumpHeight = 0.5f;
@@ -126,12 +130,22 @@ public class StoneMineAbility : HelperAbility
     private IEnumerator JumpCoroutine(Vector3 targetPosition, IGatherable gatherable = null, TerrainCell[] wideCells = null)
     {
         _isJumping = true;
+        bool useWideScale = wideCells != null;
+        Vector3 originalLocalScale = _owner.transform.localScale;
+        float jumpHeight = GetJumpHeightForCurrentGrade();
 
         Transform parentBackup = _owner.transform.parent;
         _owner.transform.SetParent(null);
+        Vector3 detachedBaseScale = _owner.transform.localScale;
+
+        if (useWideScale)
+        {
+            _owner.transform.DOScale(detachedBaseScale * _rangeBoostScaleMultiplier, _rangeBoostScaleTweenDuration)
+                .SetEase(Ease.OutQuad);
+        }
 
         _animAbility.Play(EHelperAnim.Jump);
-        yield return Move(_owner.transform, targetPosition, _jumpHeight, _jumpDuration);
+        yield return Move(_owner.transform, targetPosition, jumpHeight, _jumpDuration);
 
         _animAbility.Play(EHelperAnim.Stun);
         SpawnStoneEffect();
@@ -156,6 +170,9 @@ public class StoneMineAbility : HelperAbility
 
         if(parentBackup == null && _owner.PlayerOwner == null)
         {
+            if (useWideScale)
+                _owner.transform.localScale = detachedBaseScale;
+
             _isJumping = false;
             _owner.EndAction();
             yield break;
@@ -166,11 +183,19 @@ public class StoneMineAbility : HelperAbility
             : _owner.PlayerOwner.transform.position;
 
         _animAbility.Play(EHelperAnim.Jump);
-        yield return Move(_owner.transform, returnPosition, _jumpHeight * _rejumpHeight, _returnDuration);
+
+        if (useWideScale)
+        {
+            _owner.transform.DOScale(detachedBaseScale, _returnDuration)
+                .SetEase(Ease.InQuad);
+        }
+
+        yield return Move(_owner.transform, returnPosition, jumpHeight * _rejumpHeight, _returnDuration);
 
         _owner.transform.SetParent(parentBackup);
         _owner.transform.localPosition = Vector3.zero;
         _owner.transform.localRotation = Quaternion.identity;
+        _owner.transform.localScale = originalLocalScale;
 
         _animAbility.Play(EHelperAnim.Idle);
         _isJumping = false;
@@ -182,6 +207,19 @@ public class StoneMineAbility : HelperAbility
         return target.DOJump(to, height, _jumpCount, duration)
                      .SetEase(Ease.Linear)
                      .WaitForCompletion();
+    }
+
+    private float GetJumpHeightForCurrentGrade()
+    {
+        if (_owner == null)
+            return _jumpHeight;
+
+        return _owner.Grade.CurrentGrade switch
+        {
+            EHelperGrade.Legendary => _legendaryJumpHeight,
+            EHelperGrade.Epic => _epicJumpHeight,
+            _ => _jumpHeight
+        };
     }
 
     private void SpawnStoneEffect()
