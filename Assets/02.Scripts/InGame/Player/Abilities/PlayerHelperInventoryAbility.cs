@@ -107,12 +107,15 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         if (!_owner.IsMine) return;
         TimeEvents.OnNetDayStarted += HandleMorning;
+        UI_Inventory.SeedSelectionRequested += HandleSeedSelectionRequested;
         OnLocalPlayerReady?.Invoke(this);
     }
 
     private void OnDestroy()
     {
         TimeEvents.OnNetDayStarted -= HandleMorning;
+        if (_owner != null && _owner.IsMine)
+            UI_Inventory.SeedSelectionRequested -= HandleSeedSelectionRequested;
     }
 
     private void Update()
@@ -487,6 +490,27 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     private bool HasBlockingMainHelperAction()
     {
         return _activeMainHelper != null && _activeMainHelper.IsActing;
+    }
+
+    private bool HandleSeedSelectionRequested(SeedItemDataSO seedItem)
+    {
+        if (seedItem == null || _activeMainHelper == null)
+            return false;
+        if (_activeMainHelper.GetAbility<SowActionAbility>() == null)
+            return false;
+
+        SeedSelectAbility seedSelectAbility = _activeMainHelper.GetAbility<SeedSelectAbility>();
+        if (seedSelectAbility == null)
+            return false;
+
+        bool selected = seedSelectAbility.TrySelectSeed(seedItem);
+
+#if UNITY_EDITOR
+        if (selected)
+            Debug.Log($"Sow seed selected: {seedItem.DisplayName}");
+#endif
+
+        return selected;
     }
 
     public int GetMaxExpByGrade(HelperDataSO data, EHelperGrade grade)
