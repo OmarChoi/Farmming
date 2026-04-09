@@ -17,8 +17,6 @@ public class TutorialManager : MonoBehaviour
     private NpcController _tutorialNpcController;
     private bool _isTutorialStarted;
 
-
-
     private void Awake()
     {
         if (Instance != null && Instance != this)

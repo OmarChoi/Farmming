@@ -366,9 +366,28 @@ public class NpcQuestService : MonoBehaviour
         bool completed = _questProgressService.CompleteQuest(questId);
         if (!completed) return;
 
+        bool isTutorialQuest = quest.QuestData.IsTutorial;
+
         if (_dialogueController != null && quest.QuestData.CompleteDialogue != null)
         {
-            _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue, EDialogueUiState.Quest);
+            if (isTutorialQuest && _tutorialProgressController != null)
+            {
+                _dialogueController.StartDialogue(
+                    quest.QuestData.CompleteDialogue,
+                    EDialogueUiState.Quest,
+                    () => _tutorialProgressController.TryAcceptPendingTutorialQuest());
+            }
+            else
+            {
+                _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue, EDialogueUiState.Quest);
+            }
+
+            return;
+        }
+
+        if (isTutorialQuest && _tutorialProgressController != null)
+        {
+            _tutorialProgressController.TryAcceptPendingTutorialQuest();
         }
     }
 
