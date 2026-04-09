@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 398721879042208804}
   - component: {fileID: 7446051149615714921}
   - component: {fileID: 4455985235989884699}
+  - component: {fileID: 9146427027092277375}
   m_Layer: 5
   m_Name: UI_VillageState
   m_TagString: Untagged
@@ -124,6 +125,19 @@ MonoBehaviour:
   _buildingCountGaugeImage: {fileID: 7650078227346572121}
   _buildingCountText: {fileID: 1209055863177169487}
   _animationDuration: 0.25
+  _gaugeDuration: 0.4
+--- !u!225 &9146427027092277375
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 452504285990356689}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &1032122011827478010
 GameObject:
   m_ObjectHideFlags: 0
@@ -588,7 +602,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -1374,7 +1388,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
