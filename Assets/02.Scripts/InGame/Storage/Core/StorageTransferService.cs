@@ -5,6 +5,7 @@ public class StorageTransferService
 {
     protected readonly SlotContainerDomain _inventory;
     protected readonly StorageDomain _storage;
+    public virtual bool RequiresRestoreBeforeCrossSwap => true;
 
     public StorageTransferService(SlotContainerDomain inventory, StorageDomain storage)
     {
@@ -69,6 +70,64 @@ public class StorageTransferService
         // 직접 슬롯을 조작했으므로 양쪽 도메인에 변경 알림
         _inventory.RemoveAt(inventorySlotIndex, 0);
         _storage.RemoveAt(storageSlotIndex, 0);
+    }
+
+    // === 창고 내부 조작 (드래그/스왑/분할) ===
+
+    /// 창고 내부 슬롯 스왑
+    public virtual void SwapInStorage(int from, int to)
+    {
+        _storage.SwapSlots(from, to);
+    }
+
+    /// 드래그 시작: 창고 슬롯에서 아이템을 들어올림 (도메인에서 제거)
+    public virtual void PickUpFromStorage(int slotIndex, out ItemDataSO item, out int count)
+    {
+        var slot = _storage.GetSlot(slotIndex);
+        if (slot == null || slot.IsEmpty)
+        {
+            item = null;
+            count = 0;
+            return;
+        }
+
+        item = slot.Item;
+        count = slot.Count;
+        _storage.RemoveAt(slotIndex, count);
+    }
+
+    /// 드래그 종료/취소: 들고 있던 아이템을 창고 슬롯에 내려놓음
+    public virtual void PutDownInStorage(int slotIndex, ItemDataSO item, int count)
+    {
+        if (item == null || count <= 0) return;
+
+        var slot = _storage.GetSlot(slotIndex);
+        if (slot == null) return;
+
+        if (slot.IsEmpty)
+        {
+            slot.TryAdd(item, count);
+        }
+        else if (slot.Item == item)
+        {
+            int canAdd = item.MaxStack - slot.Count;
+            int toAdd = Math.Min(count, canAdd);
+            if (toAdd > 0) slot.TryAdd(item, toAdd);
+        }
+
+        _storage.RemoveAt(slotIndex, 0); // 이벤트 발생용
+    }
+
+    /// 분할 드래그 시작
+    public virtual int SplitHalfInStorage(int index)
+    {
+        return _storage.SplitHalf(index);
+    }
+
+    /// 분할 결과 배치
+    public virtual void PlaceSplitInStorage(int sourceIndex, int targetIndex, ItemDataSO item, int amount)
+    {
+        _storage.PlaceSplit(sourceIndex, targetIndex, item, amount);
     }
 
     private int CalculateAvailableSpace(SlotContainerDomain container, ItemDataSO item)

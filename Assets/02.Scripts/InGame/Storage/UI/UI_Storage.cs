@@ -36,6 +36,11 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     private UI_Slot _dragSourceSlot;
     private UI_Slot _hoveredSlot;
     private Transform _dragIconOriginalParent;
+    private bool _suppressRefresh;
+
+    // 일반 드래그: PickUp으로 꺼낸 아이템 보관
+    private ItemDataSO _dragItem;
+    private int _dragCount;
 
     // 분할 드래그
     private bool _isSplitDrag;
@@ -146,6 +151,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
 
     private void RefreshSlot(int index)
     {
+        if (_suppressRefresh) return;
         if (index < 0 || index >= _slotUIs.Count) return;
         _slotUIs[index].Refresh(_storage.GetSlot(index));
     }
@@ -158,7 +164,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
 
         if (shift)
         {
-            int half = _storage.SplitHalf(source.SlotIndex);
+            int half = _transferService.SplitHalfInStorage(source.SlotIndex);
             if (half <= 0) return;
 
             _isSplitDrag = true;
@@ -168,6 +174,9 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
         else
         {
             _isSplitDrag = false;
+            // 도메인에서 아이템을 꺼내고 동기화
+            _transferService.PickUpFromStorage(source.SlotIndex, out _dragItem, out _dragCount);
+            if (_dragItem == null || _dragCount <= 0) return;
         }
 
         _isDragging = true;
@@ -175,7 +184,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
 
         if (_dragIcon != null)
         {
-            _dragIcon.sprite = source.CurrentItem.Icon;
+            _dragIcon.sprite = _isSplitDrag ? _splitItem.Icon : _dragItem.Icon;
             _dragIcon.gameObject.SetActive(true);
             _dragIcon.transform.position = Input.mousePosition;
 
@@ -183,9 +192,6 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
             _dragIcon.transform.SetParent(_dragIcon.canvas.transform, true);
             _dragIcon.transform.SetAsLastSibling();
         }
-
-        if (!_isSplitDrag)
-            source.SetIconVisible(false);
 
         if (_scrollRect != null)
             _scrollRect.enabled = false;
@@ -203,14 +209,33 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
             {
                 if (_isSplitDrag)
                 {
-                    _storage.PlaceSplit(
+                    _transferService.PlaceSplitInStorage(
                         _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
                     _transferService.MoveToInventory(_dragSourceSlot.SlotIndex);
                 }
                 else
                 {
-                    _transferService.SwapAcross(
-                        crossTarget.SlotIndex, _dragSourceSlot.SlotIndex);
+                    // 꺼낸 아이템을 원래 슬롯에 복원 후 SwapAcross
+                    if (!_transferService.RequiresRestoreBeforeCrossSwap)
+                    {
+                        _transferService.SwapAcross(
+                            crossTarget.SlotIndex, _dragSourceSlot.SlotIndex);
+                    }
+                    else
+                    {
+                        _suppressRefresh = true;
+                        try
+                        {
+                            _transferService.PutDownInStorage(_dragSourceSlot.SlotIndex, _dragItem, _dragCount);
+                            _transferService.SwapAcross(
+                                crossTarget.SlotIndex, _dragSourceSlot.SlotIndex);
+                        }
+                        finally
+                        {
+                            _suppressRefresh = false;
+                            RefreshAll();
+                        }
+                    }
                 }
                 ClearDragState();
                 return;
@@ -224,14 +249,16 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
                 ? _hoveredSlot.SlotIndex
                 : _dragSourceSlot.SlotIndex;
 
-            _storage.PlaceSplit(_dragSourceSlot.SlotIndex, targetIndex, _splitItem, _splitAmount);
+            _transferService.PlaceSplitInStorage(
+                _dragSourceSlot.SlotIndex, targetIndex, _splitItem, _splitAmount);
         }
         else
         {
-            if (_hoveredSlot != null && _hoveredSlot != _dragSourceSlot)
-                _storage.SwapSlots(_dragSourceSlot.SlotIndex, _hoveredSlot.SlotIndex);
-            else
-                RefreshSlot(_dragSourceSlot.SlotIndex);
+            int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
+                ? _hoveredSlot.SlotIndex
+                : _dragSourceSlot.SlotIndex;
+
+            _transferService.PutDownInStorage(targetIndex, _dragItem, _dragCount);
         }
 
         ClearDragState();
@@ -242,10 +269,10 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
         if (!_isDragging) return;
 
         if (_isSplitDrag)
-            _storage.PlaceSplit(
+            _transferService.PlaceSplitInStorage(
                 _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
         else
-            RefreshSlot(_dragSourceSlot.SlotIndex);
+            _transferService.PutDownInStorage(_dragSourceSlot.SlotIndex, _dragItem, _dragCount);
 
         ClearDragState();
     }
@@ -265,6 +292,8 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
         _isSplitDrag = false;
         _splitItem = null;
         _splitAmount = 0;
+        _dragItem = null;
+        _dragCount = 0;
         _dragSourceSlot = null;
     }
 
@@ -311,6 +340,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     /// ReplaceAll(동기화 수신) 시 전체 UI 갱신
     private void OnSyncReceived()
     {
+        if (_suppressRefresh) return;
         RefreshAll();
     }
 

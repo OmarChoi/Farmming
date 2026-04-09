@@ -57,17 +57,17 @@ public class StorageSyncHandler : MonoBehaviourPun
     }
 
     /// 인벤토리 ↔ 창고 스왑 요청
-    public void RequestSwap(int storageSlotIndex, int inItemId, int inItemCount)
+    public void RequestSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount)
     {
         if (IsMaster)
         {
-            ExecuteSwap(storageSlotIndex, inItemId, inItemCount,
+            ExecuteSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount,
                 PhotonNetwork.LocalPlayer?.ActorNumber ?? -1);
         }
         else
         {
             photonView.RPC(nameof(RPC_RequestSwap), RpcTarget.MasterClient,
-                storageSlotIndex, inItemId, inItemCount, PhotonNetwork.LocalPlayer.ActorNumber);
+                storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, PhotonNetwork.LocalPlayer.ActorNumber);
         }
     }
 
@@ -96,7 +96,7 @@ public class StorageSyncHandler : MonoBehaviourPun
         BroadcastFullSync();
     }
 
-    private void ExecuteSwap(int storageSlotIndex, int inItemId, int inItemCount, int actorNumber)
+    private void ExecuteSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount, int actorNumber)
     {
         var stoSlot = _storage.GetSlot(storageSlotIndex);
 
@@ -123,12 +123,12 @@ public class StorageSyncHandler : MonoBehaviourPun
 
         // 꺼낸 아이템을 요청자에게 지급
         if (outItemId > 0 && outItemCount > 0)
-            GiveItemToPlayer(actorNumber, outItemId, outItemCount);
+            GiveItemToPlayer(actorNumber, outItemId, outItemCount, inventorySlotIndex);
 
         BroadcastFullSync();
     }
 
-    private void GiveItemToPlayer(int actorNumber, int itemId, int amount)
+    private void GiveItemToPlayer(int actorNumber, int itemId, int amount, int inventorySlotIndex = -1)
     {
         if (PhotonNetwork.IsConnected && actorNumber >= 0)
         {
@@ -136,18 +136,18 @@ public class StorageSyncHandler : MonoBehaviourPun
             if (target != null)
             {
                 if (target.IsLocal)
-                    ReceiveItem(itemId, amount);
+                    ReceiveItem(itemId, amount, inventorySlotIndex);
                 else
-                    photonView.RPC(nameof(RPC_ReceiveItem), target, itemId, amount);
+                    photonView.RPC(nameof(RPC_ReceiveItem), target, itemId, amount, inventorySlotIndex);
             }
         }
         else
         {
-            ReceiveItem(itemId, amount);
+            ReceiveItem(itemId, amount, inventorySlotIndex);
         }
     }
 
-    private void ReceiveItem(int itemId, int amount)
+    private void ReceiveItem(int itemId, int amount, int inventorySlotIndex = -1)
     {
         var item = _itemDatabase.GetById(itemId);
         if (item == null) return;
@@ -155,7 +155,13 @@ public class StorageSyncHandler : MonoBehaviourPun
         foreach (var pc in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
         {
             if (!pc.IsMine) continue;
-            pc.GetAbility<PlayerInventoryAbility>()?.AddItem(item, amount);
+            var inventory = pc.GetAbility<PlayerInventoryAbility>();
+            if (inventory == null) break;
+
+            if (inventorySlotIndex >= 0)
+                inventory.AddItemToSlot(item, inventorySlotIndex, amount, fallbackToAuto: true);
+            else
+                inventory.AddItem(item, amount);
             break;
         }
     }
@@ -239,16 +245,16 @@ public class StorageSyncHandler : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RPC_RequestSwap(int storageSlotIndex, int inItemId, int inItemCount, int actorNumber)
+    private void RPC_RequestSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount, int actorNumber)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        ExecuteSwap(storageSlotIndex, inItemId, inItemCount, actorNumber);
+        ExecuteSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, actorNumber);
     }
 
     [PunRPC]
-    private void RPC_ReceiveItem(int itemId, int amount)
+    private void RPC_ReceiveItem(int itemId, int amount, int inventorySlotIndex)
     {
-        ReceiveItem(itemId, amount);
+        ReceiveItem(itemId, amount, inventorySlotIndex);
     }
 
     // === DTO ===
