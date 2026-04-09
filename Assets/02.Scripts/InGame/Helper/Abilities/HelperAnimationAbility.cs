@@ -4,6 +4,11 @@ using System.Collections;
 
 public class HelperAnimationAbility : HelperAbility
 {
+
+    private const float _animWaitTimeout = 3f;
+    private const float _forceReplayTimeout = 5f;
+    private float _maxTransitionWaitTime = 1f;
+
     private static readonly int AnimHash = Animator.StringToHash("animation");
 
     private Animator _animator;
@@ -54,7 +59,7 @@ public class HelperAnimationAbility : HelperAbility
         return true;
     }
 
-    public IEnumerator WaitForNormalizedTime(float normalizedThreshold, float timeout = 3f, int layerIndex = 0)
+    public IEnumerator WaitForNormalizedTime(float normalizedThreshold, float timeout = _animWaitTimeout, int layerIndex = 0)
     {
         yield return null;
 
@@ -70,7 +75,7 @@ public class HelperAnimationAbility : HelperAbility
         }
     }
 
-    public IEnumerator ForceReplayAndWait(EHelperAnim anim, float normalizedThreshold, float timeout = 5f, int layerIndex = 0)
+    public IEnumerator ForceReplayAndWait(EHelperAnim anim, float normalizedThreshold, float timeout = _forceReplayTimeout, int layerIndex = 0)
     {
         if (_animator == null) yield break;
 
@@ -80,9 +85,8 @@ public class HelperAnimationAbility : HelperAbility
         if (_owner.IsMine)
             _owner.PhotonView.RpcSafe(nameof(RPC_PlayAnimation), RpcTarget.Others, (int)anim);
 
-        // 전환(transition) 완료까지 대기 (최대 1초)
         float transWait = 0f;
-        while (_animator.IsInTransition(layerIndex) && transWait < 1f)
+        while (_animator.IsInTransition(layerIndex) && transWait < _maxTransitionWaitTime)
         {
             transWait += Time.deltaTime;
             yield return null;
