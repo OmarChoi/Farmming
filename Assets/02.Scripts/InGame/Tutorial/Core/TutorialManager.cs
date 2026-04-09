@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class TutorialManager : MonoBehaviour
 {
@@ -8,8 +9,11 @@ public class TutorialManager : MonoBehaviour
     [Header("튜토리얼 NPC")]
     [SerializeField] private NpcDataSO _tutorialNpc;
 
-    [Header("튜토리얼 퀘스트")]
-    [SerializeField] private QuestDataSO _tutorialQuestData;
+    [Header("튜토리얼 시작 퀘스트")]
+    [SerializeField] private QuestDataSO _entryTutorialQuest;
+
+    [Header("튜토리얼 퀘스트 목록")]
+    [SerializeField] private List<QuestDataSO> _tutorialQuestSequence = new();
 
     [Header("NpcQuestService")]
     [SerializeField] private NpcQuestService _npcQuestService;
@@ -31,6 +35,22 @@ public class TutorialManager : MonoBehaviour
         if (_npcQuestService == null)
         {
             _npcQuestService = FindFirstObjectByType<NpcQuestService>();
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.OnQuestCompleted += HandleQuestCompleted;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.OnQuestCompleted -= HandleQuestCompleted;
         }
     }
 
@@ -75,7 +95,7 @@ public class TutorialManager : MonoBehaviour
 
         if (_tutorialNpcController == null || _playerTransform == null)
         {
-            ResetRuntimeStateOnly();
+            FailTutorialStart();
             yield break;
         }
 
@@ -84,7 +104,7 @@ public class TutorialManager : MonoBehaviour
 
         if (npcInteraction == null || playerInteraction == null)
         {
-            ResetRuntimeStateOnly();
+            FailTutorialStart();
             yield break;
         }
 
@@ -99,7 +119,31 @@ public class TutorialManager : MonoBehaviour
             _playerTransform,
             npcInteraction);
 
-        _npcQuestService?.ExecuteTutorialQuestInteraction(context, _tutorialQuestData);
+        _npcQuestService?.ExecuteTutorialQuestInteraction(context, _entryTutorialQuest);
+    }
+
+    private void HandleQuestCompleted(QuestRuntimeData questRuntime)
+    {
+        if (questRuntime == null || questRuntime.QuestData == null) return;
+
+        if (!questRuntime.QuestData.IsTutorial || !AreAllTutorialQuestsCompleted()) return;
+
+        CompleteTutorial();
+    }
+
+    private bool AreAllTutorialQuestsCompleted()
+    {
+        if (_tutorialQuestSequence == null || _tutorialQuestSequence.Count == 0) return false;
+
+        if (QuestManager.Instance == null) return false;
+
+        foreach (QuestDataSO quest in _tutorialQuestSequence)
+        {
+            if (quest == null) continue;
+            if (!QuestManager.Instance.IsQuestCompleted(quest.QuestId)) return false;
+        }
+
+        return true;
     }
 
     public void CompleteTutorial()
@@ -115,10 +159,10 @@ public class TutorialManager : MonoBehaviour
         _playerTransform = null;
     }
 
-    public void ResetRuntimeStateOnly()
+    private void FailTutorialStart()
     {
+        DespawnTutorialNpc();
         _isTutorialStarted = false;
-        _tutorialNpcController = null;
         _currentPlayer = null;
         _playerTransform = null;
     }
@@ -126,17 +170,9 @@ public class TutorialManager : MonoBehaviour
     // 기존에 존재하는 튜토리얼 NPC가 있다면 제거합니다.
     private void DespawnTutorialNpc()
     {
-        if (_tutorialNpcController != null)
-        {
-            if (NpcSpawnManager.Instance != null)
-            {
-                NpcSpawnManager.Instance.Despawn(_tutorialNpcController);
-            }
-            else
-            {
-                Destroy(_tutorialNpcController.gameObject);
-            }
-            _tutorialNpcController = null;
-        }
+        if (_tutorialNpcController == null) return;
+
+        Destroy(_tutorialNpcController.gameObject);
+        _tutorialNpcController = null;
     }
 }

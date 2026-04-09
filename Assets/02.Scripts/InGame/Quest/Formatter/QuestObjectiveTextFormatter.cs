@@ -69,7 +69,7 @@ public class QuestObjectiveTextFormatter
         {
             if (requirement.Item == null) continue;
 
-            string itemName = requirement.Item.DisplayName;
+            string itemName = requirement.ItemName;
             parts.Add($"{itemName} {requirement.Amount}개");
         }
 
@@ -91,7 +91,7 @@ public class QuestObjectiveTextFormatter
 
             int itemId = requirement.ItemId;
             int currentAmount = runtimeData.GetItemProgress(itemId);
-            parts.Add($"{requirement.Item.DisplayName} {currentAmount}/{requirement.Amount}");
+            parts.Add($"{requirement.ItemName} {currentAmount}/{requirement.Amount}");
         }
 
         return string.Join(", ", parts);

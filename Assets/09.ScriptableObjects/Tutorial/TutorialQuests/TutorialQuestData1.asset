@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
   QuestId: TutorialQuestData1
   QuestName: "\uD31C\uBC0D\uC5D0 \uC628 \uAC78 \uD658\uC601\uD574!"
-  Description: "\uBC8C\uBAA9/\uCC44\uAD74 \uACE1\uB8E1\uACFC \uB098\uBB34\uC640 \uB3CC\uC744
-    2\uAC1C\uC529 \uBAA8\uC544\uBCF4\uC790."
+  Description: "\uBC8C\uBAA9/\uCC44\uAD74 \uACE1\uB8E1\uACFC \uD568\uAED8 \uB098\uBB34\uC640
+    \uB3CC\uC744 2\uAC1C\uC529 \uBAA8\uC544\uBCF4\uC790."
   QuestCategory: 0
   IsTutorial: 1
   StartNpcId: TutorialNpc
@@ -33,7 +33,19 @@ MonoBehaviour:
   PrerequisiteQuests: []
   RequiredFriendship: 0
   Reward:
-    Rewards: []
+    Rewards:
+    - RewardType: 1
+      RewardItem: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
+      Amount: 2
+      TargetNpcId: 
+    - RewardType: 1
+      RewardItem: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+      Amount: 2
+      TargetNpcId: 
+    - RewardType: 0
+      RewardItem: {fileID: 0}
+      Amount: 1200
+      TargetNpcId: 
   AcceptDialogue: {fileID: 0}
   AcceptResultDialogue: {fileID: 11400000, guid: 49e3deedea2aa9c48aaee3adbec505a6, type: 2}
   DeclineDialogue: {fileID: 0}
