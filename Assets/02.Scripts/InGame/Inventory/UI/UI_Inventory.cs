@@ -27,6 +27,7 @@ public class UI_Inventory : MonoBehaviour
 
     private TradeService _tradeService;
     private EInventoryClickMode _clickMode = EInventoryClickMode.Normal;
+    private PlayerHelperInventoryAbility _helperInventoryAbility;
 
     // 드래그 상태
     private bool _isDragging;
@@ -71,6 +72,7 @@ public class UI_Inventory : MonoBehaviour
 
         _inventoryAbility = ability;
         _potionAbility = ability.GetComponent<PlayerPotionAbility>();
+        _helperInventoryAbility = ability.GetComponent<PlayerHelperInventoryAbility>();
         _inventoryAbility.OnToggle += OnToggle;
         _inventoryAbility.OnSlotChanged += RefreshSlot;
         _inventoryAbility.OnInventoryResized += SyncSlotCount;
@@ -88,6 +90,7 @@ public class UI_Inventory : MonoBehaviour
         _inventoryAbility.OnInventoryResized -= SyncSlotCount;
         _inventoryAbility = null;
         _potionAbility = null;
+        _helperInventoryAbility = null;
     }
 
     private void OnToggle(bool open)
@@ -286,6 +289,11 @@ public class UI_Inventory : MonoBehaviour
     {
         if (_isDragging) return;
         if (clicked.CurrentItem == null) return;
+        if (_clickMode != EInventoryClickMode.Normal) return;
+
+        if (clicked.CurrentItem is SeedItemDataSO seedItem && TrySelectSeedForSowHelper(seedItem))
+            return;
+
         if (!(clicked.CurrentItem is PotionDataSO)) return;
 
         bool used = _potionAbility != null && _potionAbility.TryUsePotion(clicked.SlotIndex);
@@ -301,6 +309,31 @@ public class UI_Inventory : MonoBehaviour
     }
 
     // 판매
+
+    private bool TrySelectSeedForSowHelper(SeedItemDataSO seedItem)
+    {
+        if (seedItem == null || _helperInventoryAbility == null)
+            return false;
+
+        HelperController activeMainHelper = _helperInventoryAbility.ActiveMainHelper;
+        if (activeMainHelper == null)
+            return false;
+        if (activeMainHelper.GetAbility<SowActionAbility>() == null)
+            return false;
+
+        SeedSelectAbility seedSelectAbility = activeMainHelper.GetAbility<SeedSelectAbility>();
+        if (seedSelectAbility == null)
+            return false;
+
+        bool selected = seedSelectAbility.TrySelectSeed(seedItem);
+
+#if UNITY_EDITOR
+        if (selected)
+            Debug.Log($"Sow seed selected: {seedItem.DisplayName}");
+#endif
+
+        return selected;
+    }
 
     public void Init(TradeService tradeService)
     {
