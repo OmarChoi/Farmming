@@ -6,8 +6,10 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     [SerializeField] private KeyCode _equipKey = KeyCode.F;
     [SerializeField] private Transform _equipSlot;
     [SerializeField] private Transform _backEquipSlot;
+    [SerializeField] private HelperPlayerAnimationMapSO _helperPlayerAnimationMap;
 
     private PlayerTerrainAbility _terrainAbility;
+    private PlayerAnimationAbility _animationAbility;
     private HelperController _currentHelper;
     private HelperController _backHelper;
 
@@ -20,6 +22,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     {
         base.Awake();
         _terrainAbility = _owner.GetAbility<PlayerTerrainAbility>();
+        _animationAbility = _owner.GetAbility<PlayerAnimationAbility>();
     }
 
     private void OnDestroy()
@@ -199,7 +202,8 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (cell == null) return;
         if (isBelowFallback && !IsGroundHelper(_currentHelper)) return;
 
-        _currentHelper.InteractPrimary(cell);
+        if (_currentHelper.InteractPrimary(cell))
+            PlayHelperPlayerTrigger(_currentHelper?.Data, isPrimary: true);
     }
 
     private bool IsGroundHelper(HelperController helper)
@@ -212,6 +216,22 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         TerrainCell cell = _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
-        _currentHelper.InteractSecondary(cell);
+        if (_currentHelper.InteractSecondary(cell))
+            PlayHelperPlayerTrigger(_currentHelper?.Data, isPrimary: false);
+    }
+
+    private void PlayHelperPlayerTrigger(HelperDataSO helperData, bool isPrimary)
+    {
+        if (_helperPlayerAnimationMap == null || helperData == null) return;
+
+        if (!_helperPlayerAnimationMap.TryGetTriggers(
+            helperData,
+            out string primaryTrigger,
+            out string secondaryTrigger))
+            return;
+
+        string triggerName = isPrimary ? primaryTrigger : secondaryTrigger;
+        if (string.IsNullOrWhiteSpace(triggerName)) return;
+        _animationAbility?.PlayTriggerSynced(triggerName);
     }
 }
