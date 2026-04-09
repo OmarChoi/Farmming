@@ -42,13 +42,16 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
-        return CanSow(cell);
+        return CanSow(cell) && HasAvailableSelectedSeed();
     }
 
     public void InteractPrimary(TerrainCell cell)
     {
         if (cell == null || _cultivateAbility == null)
             return;
+
+        if (_owner.IsMine)
+            _seedSelector?.ClearSelection();
 
         switch (_owner.Grade.CurrentGrade)
         {
@@ -72,7 +75,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
 
         SeedItemDataSO selectedSeed = _seedSelector?.SelectedSeed;
-        if (selectedSeed == null)
+        if (selectedSeed == null || !HasAvailableSelectedSeed())
             return;
 
         List<FarmTile> farmTiles = GetSowableFarmTiles(cell);
@@ -553,8 +556,27 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void PlantSeed(FarmTile farmTile, SeedItemDataSO seed)
     {
+        if (farmTile == null || seed == null)
+            return;
+        if (_owner.IsMine && !ConsumeSeed(seed))
+            return;
+
         farmTile.PlantSeed(seed);
         _anySeedPlanted = true;
+    }
+
+    private bool HasAvailableSelectedSeed()
+    {
+        return _seedSelector != null && _seedSelector.HasSelectedSeedAvailable;
+    }
+
+    private bool ConsumeSeed(SeedItemDataSO seed)
+    {
+        PlayerInventoryAbility inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (inventory == null)
+            return false;
+
+        return inventory.RemoveItem(seed, 1);
     }
 
     private void CompleteSecondaryAction()

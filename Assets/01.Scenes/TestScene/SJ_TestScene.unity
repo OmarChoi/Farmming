@@ -2564,7 +2564,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8292767044679046127, guid: 02d30b51d16efbc46b643b03a0f4ff3f, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3922,67 +3922,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f09748ad6535da4f965066d97185cc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationManager
---- !u!1001 &1068383093
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4386465326626947911, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: sceneViewId
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.73024
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 2.66509
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 3.22357
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4522027000630529926, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5358294730268913053, guid: eed40b82e23022a46b900e549b777f16, type: 3}
-      propertyPath: m_Name
-      value: SowEpicHelper
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: eed40b82e23022a46b900e549b777f16, type: 3}
 --- !u!1 &1110676720
 GameObject:
   m_ObjectHideFlags: 0
@@ -7347,4 +7286,3 @@ SceneRoots:
   - {fileID: 75435600}
   - {fileID: 247561158}
   - {fileID: 833303091}
-  - {fileID: 1068383093}
