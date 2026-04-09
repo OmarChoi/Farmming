@@ -6,7 +6,7 @@ public static class TutorialNpcSpawner
 
     public static NpcController SpawnNearPlayer(NpcDataSO data, Transform player)
     {
-        if (data == null || player == null) return null;
+        if (data == null || player == null || NpcSpawnManager.Instance == null) return null;
 
         Vector3 spawnPosition = player.position + GetRandomOffset();
 
@@ -15,8 +15,9 @@ public static class TutorialNpcSpawner
             spawnPosition,
             Quaternion.identity,
             null,
-            false,
-            "TutorialNpc");
+            true,
+            "TutorialNpc",
+            true);
 
         return NpcSpawnManager.Instance.GetOrSpawn(request);
     }
