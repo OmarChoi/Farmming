@@ -91,7 +91,7 @@ public class CultivateAbility : HelperAbility
         _animAbility.Play(EHelperAnim.Jump);
         yield return Move(_owner.transform, targetPosition, _jumpHeight, _jumpDuration);
 
-        //_animAbility.Play(EHelperAnim.Cultivate);
+        _animAbility.Play(EHelperAnim.Cultivate);
         SpawnDustEffect();
         cultivationParams.OnCultivate?.Invoke();
 

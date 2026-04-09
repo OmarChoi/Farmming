@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public sealed class SowSeedVfxSpawner
+public class SowSeedVfxSpawner
 {
     private readonly Func<Transform> _getMouthPoint;
     private readonly Func<GameObject> _getSeedVfxPrefab;

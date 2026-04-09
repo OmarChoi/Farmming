@@ -1095,6 +1095,7 @@ MonoBehaviour:
   _bobAmplitude: 0.3
   _bobDuration: 0.4
   _returnDuration: 0.5
+  _vfxTriggerNormalizedTime: 0.65
 --- !u!114 &4642191277865818875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1120,6 +1121,7 @@ MonoBehaviour:
   _rayDistance: 5
   _epicInitialWait: 0.2
   _epicLookDuration: 0.8
+  _vfxTriggerNormalizedTime: 0.5
   _spinDuration: 2
   _spinDegreesPerSecond: 720
 --- !u!114 &6875171982301534196
@@ -1138,7 +1140,7 @@ MonoBehaviour:
   _arcHeight: 3
   _flightDuration: 0.6
   _particleLifetime: 1
-  _totalDuration: 2
+  _spawnAnimationDelay: 0.1
 --- !u!114 &3549005156338155432
 MonoBehaviour:
   m_ObjectHideFlags: 0
