@@ -38,6 +38,8 @@ public class GameSceneInit : MonoBehaviour
                 _mapNavMeshController.BuildInitialNavMesh();
                 PlayerController localPlayer = SpawnPlayer(spawnPos);
                 CacheVillageData();
+
+                QuestManager.Instance?.MarkLoaded();
                 TryStartTutorial(localPlayer);
 
                 var props = new Hashtable { { PropTerrainReady, true } };
