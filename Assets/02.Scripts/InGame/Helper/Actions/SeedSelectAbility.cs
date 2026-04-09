@@ -6,11 +6,13 @@ public class SeedSelectAbility : HelperAbility
 {
     public event Action<SeedItemDataSO> OnSeedSelected;
 
-    private List<SeedItemDataSO> _availableSeeds = new();
-    private int _selectedIndex = -1;
+    private readonly HashSet<SeedItemDataSO> _availableSeeds = new();
+    private SeedItemDataSO _selectedSeed;
     private PlayerInventoryAbility _inventory;
 
-    public SeedItemDataSO SelectedSeed => _selectedIndex >= 0 && _selectedIndex < _availableSeeds.Count ? _availableSeeds[_selectedIndex] : null;
+    public SeedItemDataSO SelectedSeed => _selectedSeed;
+    public int SelectedSeedCount => GetSeedCount(_selectedSeed);
+    public bool HasSelectedSeedAvailable => _selectedSeed != null && SelectedSeedCount > 0;
 
     private void Start()
     {
@@ -36,48 +38,34 @@ public class SeedSelectAbility : HelperAbility
         RefreshSeeds();
     }
 
-    private void Update()
+    public bool TrySelectSeed(SeedItemDataSO seed)
     {
-        if (_availableSeeds.Count == 0)
-        {
-            return;
-        }
+        if (seed == null || _inventory == null)
+            return false;
 
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if (scroll < 0f)
-        {
-            SelectNext();
-        }
-        else if (scroll > 0f)
-        {
-            SelectPrev();
-        }
+        if (!_availableSeeds.Contains(seed) || GetSeedCount(seed) <= 0)
+            return false;
+
+        _selectedSeed = seed;
+        NotifySelectionChanged();
+        return true;
     }
 
-    private void SelectNext()
+    public void ClearSelection()
     {
-        if (_availableSeeds.Count == 0)
-        {
+        if (_selectedSeed == null)
             return;
-        }
-        _selectedIndex = (_selectedIndex + 1) % _availableSeeds.Count;
-        OnSeedSelected?.Invoke(SelectedSeed);
-    }
 
-    private void SelectPrev()
-    {
-        if (_availableSeeds.Count == 0)
-        {
-            return;
-        }
-        _selectedIndex = (_selectedIndex - 1 + _availableSeeds.Count) % _availableSeeds.Count;
-        OnSeedSelected?.Invoke(SelectedSeed);
+        _selectedSeed = null;
+        NotifySelectionChanged();
     }
 
     private void RefreshSeeds()
     {
         if (_inventory == null)
         {
+            _selectedSeed = null;
+            NotifySelectionChanged();
             return;
         }
 
@@ -97,16 +85,19 @@ public class SeedSelectAbility : HelperAbility
             }
         }
 
-        if (_selectedIndex >= _availableSeeds.Count)
-        {
-            _selectedIndex = _availableSeeds.Count - 1;
-        }
+        NotifySelectionChanged();
+    }
 
-        if (_selectedIndex < 0 && _availableSeeds.Count > 0)
-        {
-            _selectedIndex = 0;
-        }
+    private int GetSeedCount(SeedItemDataSO seed)
+    {
+        if (seed == null || _inventory == null)
+            return 0;
 
-        OnSeedSelected?.Invoke(SelectedSeed);
+        return _inventory.GetItemCount(seed);
+    }
+
+    private void NotifySelectionChanged()
+    {
+        OnSeedSelected?.Invoke(_selectedSeed);
     }
 }
