@@ -37,7 +37,10 @@ public class TutorialManager : MonoBehaviour
     public void TryStartTutorial(PlayerController player)
     {
         if (_isTutorialStarted || player == null || _tutorialNpc == null) return;
-        if (player.TutorialState == ETutorialState.Completed) return;
+
+        PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
+        if (questAbility == null) return;
+        if (questAbility.TutorialState == ETutorialState.Completed) return;
 
         _currentPlayer = player;
         _playerTransform = player.transform;
@@ -57,8 +60,12 @@ public class TutorialManager : MonoBehaviour
         {
             yield return null;
         }
-
-        if (_currentPlayer == null || _currentPlayer.TutorialState == ETutorialState.Completed)
+        if (_currentPlayer == null)
+        {
+            yield break;
+        }
+        PlayerQuestAbility questAbility = _currentPlayer.GetAbility<PlayerQuestAbility>();
+        if (questAbility == null || questAbility.TutorialState == ETutorialState.Completed)
         {
             yield break;
         }
@@ -128,7 +135,11 @@ public class TutorialManager : MonoBehaviour
     {
         if (_currentPlayer != null)
         {
-            _currentPlayer.SetTutorialState(ETutorialState.Completed);
+            PlayerQuestAbility questAbility = _currentPlayer.GetAbility<PlayerQuestAbility>();
+            if (questAbility != null)
+            {
+                questAbility.SetTutorialState(ETutorialState.Completed);
+            }
         }
 
         ClearTutorial();

@@ -1430,8 +1430,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SaveManager
   _terrainGridManager: {fileID: 180339087}
   _mapManager: {fileID: 595466526}
-  _timeSystem: {fileID: 0}
-  _questDatabase: {fileID: 0}
+  _timeSystem: {fileID: 691244074}
 --- !u!4 &523497020
 Transform:
   m_ObjectHideFlags: 0
@@ -4575,6 +4574,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdfffef51e6eca04f85cc64016ea7918, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestManager
+  _questDatabase: {fileID: 1227541594}
 --- !u!4 &1662199786
 Transform:
   m_ObjectHideFlags: 0

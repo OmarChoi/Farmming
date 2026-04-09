@@ -10,7 +10,6 @@ public class SaveManager : MonoBehaviour
     [SerializeField] private TerrainGridManager _terrainGridManager;
     [SerializeField] private MapManager _mapManager;
     [SerializeField] private TimeSystem _timeSystem;
-    [SerializeField] private QuestDatabase _questDatabase;
 
     private readonly Dictionary<string, PlayerController> _players = new();
     private ISaveRepository _repository;
@@ -45,7 +44,15 @@ public class SaveManager : MonoBehaviour
 
     private void TryRestorePlayer(string playerId, PlayerController player)
     {
-        if (_loadedData == null) return;
+        PlayerQuestAbility questAbility = player != null ? player.GetAbility<PlayerQuestAbility>() : null;
+        if (_loadedData == null)
+        {
+            if (player != null && player.IsMine && questAbility != null)
+            {
+                questAbility.InitializeEmptyState();
+            }
+            return;
+        }
         var save = _loadedData.Players.Find(p => p.PlayerId == playerId);
         if (save == null) return;
 
@@ -106,9 +113,6 @@ public class SaveManager : MonoBehaviour
             
             if (VillageLevelManager.Instance != null)
                 data.Village = VillageLevelManager.Instance.ExportSaveData();
-
-            if (QuestManager.Instance != null)
-                data.Quest = QuestManager.Instance.ExportSaveData();
 
             _receivedSaveData.Clear();
             _expectedResponses = 0;
@@ -194,9 +198,6 @@ public class SaveManager : MonoBehaviour
         
         if (_timeSystem != null)
             _timeSystem.ImportTimeSaveData(_loadedData.Time);
-
-        if (QuestManager.Instance != null && _loadedData.Quest != null)
-            QuestManager.Instance.ImportSaveData(_loadedData.Quest, _questDatabase);
 
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
     }

@@ -57,13 +57,16 @@ public class TutorialProgressController : MonoBehaviour
     {
         if (player == null || tutorialNpc == null) return false;
 
+        PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
+        if (questAbility == null) return false;
+
         _currentPlayer = player;
         _playerTransform = player.transform;
         _tutorialNpcController = tutorialNpc;
 
-        if (_currentPlayer.TutorialState == ETutorialState.None)
+        if (questAbility.TutorialState == ETutorialState.None)
         {
-            _currentPlayer.SetTutorialState(ETutorialState.InProgress);
+            questAbility.SetTutorialState(ETutorialState.InProgress);
         }
 
         return true;

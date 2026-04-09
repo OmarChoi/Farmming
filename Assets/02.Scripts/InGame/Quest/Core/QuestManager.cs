@@ -6,6 +6,10 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 {
     public static QuestManager Instance { get; private set; }
 
+    [SerializeField] private QuestDatabase _questDatabase;
+
+    public QuestDatabase QuestDatabase => _questDatabase;
+
     private QuestRewardService _rewardService;
     private QuestRequirementService _requirementService;
 
@@ -80,14 +84,20 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         return saveData;
     }
 
-    public void ImportSaveData(QuestSaveData saveData, QuestDatabase questDatabase)
+    public void ImportSaveData(QuestSaveData saveData)
     {
         _activeQuests.Clear();
         _completedMainQuestIds.Clear();
         _completedSubQuestIds.Clear();
 
-        if (saveData == null || questDatabase == null)
+        if (saveData == null)
         {
+            InitializeEmpty();
+            return;
+        }
+        if (_questDatabase == null)
+        {
+            Debug.LogError("QuestDatabase가 없어 퀘스트 데이터를 복원할 수 없습니다.");
             MarkLoaded();
             return;
         }
@@ -116,7 +126,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
             {
                 if (runtimeSave == null || string.IsNullOrEmpty(runtimeSave.QuestId)) continue;
 
-                QuestDataSO questData = questDatabase.GetQuestById(runtimeSave.QuestId);
+                QuestDataSO questData = _questDatabase.GetQuestById(runtimeSave.QuestId);
                 if (questData == null) continue;
 
                 QuestRuntimeData runtimeData = new QuestRuntimeData(questData);
@@ -473,5 +483,13 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         if (_completedSubQuestIds.Contains(questId)) return true;
 
         return false;
+    }
+
+    public void InitializeEmpty()
+    {
+        _activeQuests.Clear();
+        _completedMainQuestIds.Clear();
+        _completedSubQuestIds.Clear();
+        MarkLoaded();
     }
 }
