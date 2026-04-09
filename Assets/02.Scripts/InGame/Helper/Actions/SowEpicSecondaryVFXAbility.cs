@@ -11,6 +11,7 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
     [SerializeField] private float _arcHeight = 3f;
     [SerializeField] private float _flightDuration = 0.6f;
     [SerializeField] private float _particleLifetime = 1f;
+    [SerializeField] private float _spawnAnimationDelay = 0.5f;
 
     // onEachSpawn: 각 이펙트 생성 직전에 yield할 코루틴 팩토리 (애니메이션 + 대기 처리용)
     public void SpawnEffects(Transform mouthPoint, List<TerrainCell> orderedCells,
@@ -37,12 +38,7 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
 
             // 이펙트 생성 직전 — 애니메이션 재생 및 트리거 지점까지 대기
             if (onEachSpawn != null)
-            {
-                if (i == 0)
-                    replayRoutine = StartCoroutine(onEachSpawn());
-                else
-                    yield return StartCoroutine(onEachSpawn());
-            }
+                replayRoutine = StartCoroutine(PlaySpawnAnimationDelayed(onEachSpawn));
 
             if (_sowEpicParticlePrefab == null || mouthPoint == null)
             {
@@ -70,6 +66,15 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
             if (replayRoutine != null)
                 yield return replayRoutine;
         }
+    }
+
+    private IEnumerator PlaySpawnAnimationDelayed(Func<IEnumerator> onEachSpawn)
+    {
+        if (_spawnAnimationDelay > 0f)
+            yield return new WaitForSeconds(_spawnAnimationDelay);
+
+        if (onEachSpawn != null)
+            yield return StartCoroutine(onEachSpawn());
     }
 
     private Vector3 GetCellTopPosition(TerrainCell cell)

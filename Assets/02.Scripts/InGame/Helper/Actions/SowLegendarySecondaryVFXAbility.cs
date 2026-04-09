@@ -36,7 +36,6 @@ public class SowLegendarySecondaryVFXAbility : HelperAbility
         Vector3 startTarget = GetCellTarget(orderedCells[0]);
         Vector3 endTarget   = GetCellTarget(orderedCells[orderedCells.Count - 1]);
 
-        // 각 cell의 플랜팅 타이밍 예약 (sweep이 해당 위치 도달 시)
         for (int i = 0; i < orderedCells.Count; i++)
         {
             float t = orderedCells.Count > 1 ? (float)i / (orderedCells.Count - 1) : 0f;
@@ -44,7 +43,6 @@ public class SowLegendarySecondaryVFXAbility : HelperAbility
             StartCoroutine(DelayedCallback(t * _sweepDuration, () => onCellLand?.Invoke(captured)));
         }
 
-        // 씨앗 연속 발사: 도착 지점이 시간에 따라 좌→우로 이동
         float elapsed = 0f;
         while (elapsed < _sweepDuration)
         {
@@ -56,7 +54,6 @@ public class SowLegendarySecondaryVFXAbility : HelperAbility
             elapsed += _spawnInterval;
         }
 
-        // 마지막으로 발사된 파티클이 착지할 때까지 대기
         yield return new WaitForSeconds(_flightDuration + _particleLifetime);
 
         onComplete?.Invoke();
