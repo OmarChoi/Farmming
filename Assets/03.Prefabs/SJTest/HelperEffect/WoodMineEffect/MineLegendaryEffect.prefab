@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &210102199511444556
 GameObject:
@@ -340,7 +340,7 @@ ParticleSystem:
     startSizeY:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 63.9
+      scalar: 4
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -666,7 +666,7 @@ ParticleSystem:
     enabled: 0
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -4888,7 +4888,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -4939,7 +4939,7 @@ Transform:
   m_GameObject: {fileID: 404711736951786029}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.36, z: 1.37}
+  m_LocalPosition: {x: 0, y: 0.36, z: 0.12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5578,7 +5578,7 @@ ParticleSystem:
     enabled: 1
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -9800,7 +9800,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -9851,7 +9851,7 @@ Transform:
   m_GameObject: {fileID: 1526837980761235578}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.08, y: 0.437, z: -1.5730001}
+  m_LocalPosition: {x: -0.04, y: 0.437, z: -0.12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10490,7 +10490,7 @@ ParticleSystem:
     enabled: 1
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -14703,7 +14703,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -14754,7 +14754,7 @@ Transform:
   m_GameObject: {fileID: 2612288619305411593}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.14, y: 0.55700004, z: 0.69699997}
+  m_LocalPosition: {x: -0.08, y: 0.55700004, z: 0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15393,7 +15393,7 @@ ParticleSystem:
     enabled: 1
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -19597,7 +19597,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -19648,7 +19648,7 @@ Transform:
   m_GameObject: {fileID: 2979390810278835073}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.437, z: 1.4269999}
+  m_LocalPosition: {x: 0, y: 0.437, z: 0.14}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20287,7 +20287,7 @@ ParticleSystem:
     enabled: 0
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -24500,7 +24500,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -24551,7 +24551,7 @@ Transform:
   m_GameObject: {fileID: 4532998670536033909}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.437, z: -0.91300005}
+  m_LocalPosition: {x: 0, y: 0.437, z: -0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -25190,7 +25190,7 @@ ParticleSystem:
     enabled: 0
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -29403,7 +29403,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -29454,7 +29454,7 @@ Transform:
   m_GameObject: {fileID: 4737979496254394590}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.08, y: 0.437, z: 0.657}
+  m_LocalPosition: {x: -0.04, y: 0.437, z: 0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -30093,7 +30093,7 @@ ParticleSystem:
     enabled: 1
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -34306,7 +34306,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -34357,7 +34357,7 @@ Transform:
   m_GameObject: {fileID: 6667568874183300315}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.36, z: -1.697}
+  m_LocalPosition: {x: 0, y: 0.36, z: -0.14}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34996,7 +34996,7 @@ ParticleSystem:
     enabled: 1
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -39218,7 +39218,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -39269,7 +39269,7 @@ Transform:
   m_GameObject: {fileID: 7023589206779266761}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.14, y: 0.55700004, z: -1.7}
+  m_LocalPosition: {x: -0.08, y: 0.55700004, z: -0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -39908,7 +39908,7 @@ ParticleSystem:
     enabled: 1
     type: 4
     angle: 25
-    length: 5
+    length: 0.6
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
@@ -44112,7 +44112,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 2
+  m_LengthScale: 0.25
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -44161,7 +44161,7 @@ Transform:
   m_GameObject: {fileID: 7586612648716651225}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.72865, y: 9.73732, z: 5.10557}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -44176,3 +44176,4 @@ Transform:
   - {fileID: 7234532580134714799}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+
