@@ -47,12 +47,8 @@ public class PlayerAnimationAbility : PlayerAbility
 
     public void PlayTriggerSynced(string triggerName)
     {
-        if (_animator == null || string.IsNullOrWhiteSpace(triggerName)) return;
-
-        _animator.SetTrigger(Animator.StringToHash(triggerName));
-
-        if (_owner.IsMine)
-            _owner.PhotonView.RPC(nameof(PlayerController.RPC_AnimTrigger), RpcTarget.Others, triggerName);
+        if (string.IsNullOrWhiteSpace(triggerName)) return;
+        PlayTriggerSynced(Animator.StringToHash(triggerName), triggerName);
     }
 
     private void PlayTriggerSynced(int hash, string name)

@@ -219,7 +219,10 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     {
         if (_helperPlayerAnimationMap == null || helperData == null) return;
 
-        if (!_helperPlayerAnimationMap.TryGetTriggers(helperData, out string primaryTrigger, out string secondaryTrigger))
+        if (!_helperPlayerAnimationMap.TryGetTriggers(
+            helperData,
+            out string primaryTrigger,
+            out string secondaryTrigger))
             return;
 
         string triggerName = isPrimary ? primaryTrigger : secondaryTrigger;
