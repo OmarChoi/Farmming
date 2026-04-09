@@ -7,6 +7,9 @@ using Image = UnityEngine.UI.Image;
 
 public class UI_VillageLevel : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    private const string LevelFormat = "LV.{0:0}";
+    private const string MaxLevelLabel = "MAX";
+
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private Image _fillImage;
 
@@ -26,11 +29,17 @@ public class UI_VillageLevel : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void UpdateGauge()
     {
-        int level = VillageLevelManager.Instance.CurrentLevel;
-        int currentGauge = VillageLevelManager.Instance.CurrentVitality;
-        int totalGauge = VillageLevelManager.Instance.CurrentVitalityThreshold;
-        _fillImage.fillAmount = (float)currentGauge / totalGauge;
-        _levelText.text = $"LV.{level.ToString().PadLeft(2, '0')}";
+        VillageLevelManager manager = VillageLevelManager.Instance;
+
+        if (manager.IsMaxLevel)
+        {
+            _fillImage.fillAmount = 1f;
+            _levelText.SetText(MaxLevelLabel);
+            return;
+        }
+
+        _fillImage.fillAmount = (float)manager.CurrentVitality / manager.CurrentVitalityThreshold;
+        _levelText.SetText(LevelFormat, manager.CurrentLevel);
     }
 
     public void OnPointerEnter(PointerEventData eventData)

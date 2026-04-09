@@ -6,6 +6,10 @@ using UnityEngine.UI;
 
 public class UI_VillageState : UIBase
 {
+    private const string LevelFormat = "Level {0:0}";
+    private const string GaugeFormat = "{0:0} / {1:0}";
+    private const string MaxLevelLabel = "MAX LEVEL";
+
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI _currentLevelText;
     [SerializeField] private Image _vitalityGaugeImage;
@@ -52,18 +56,28 @@ public class UI_VillageState : UIBase
     private void UpdateState()
     {
         VillageLevelManager villageManager = VillageLevelManager.Instance;
-        LevelUpRequirement needs = villageManager.LevelUpRequirement;
-
         int currentLevel = villageManager.CurrentLevel;
+
+        _currentLevelText.SetText(LevelFormat, currentLevel);
+
+        if (villageManager.IsMaxLevel)
+        {
+            _vitalityGaugeText.SetText(MaxLevelLabel);
+            _vitalityGaugeImage.DOFillAmount(1f, _gaugeDuration).SetEase(Ease.OutCubic).SetUpdate(true);
+
+            _buildingCountText.SetText(MaxLevelLabel);
+            _buildingCountGaugeImage.DOFillAmount(1f, _gaugeDuration).SetEase(Ease.OutCubic).SetUpdate(true);
+            return;
+        }
+
+        LevelUpRequirement needs = villageManager.LevelUpRequirement;
         int currentVitality = villageManager.CurrentVitality;
         int currentBuilding = BuildingManager.Instance.BuildingCount;
 
-        _currentLevelText.text = $"Level {currentLevel}";
-
-        _vitalityGaugeText.text = $"{currentVitality} / {needs.VitalityThreshold}";
+        _vitalityGaugeText.SetText(GaugeFormat, currentVitality, needs.VitalityThreshold);
         _vitalityGaugeImage.DOFillAmount(needs.GetVitalityRatio(currentVitality), _gaugeDuration).SetEase(Ease.OutCubic).SetUpdate(true);
 
-        _buildingCountText.text = $"{currentBuilding} / {needs.BuildingCountThreshold}";
+        _buildingCountText.SetText(GaugeFormat, currentBuilding, needs.BuildingCountThreshold);
         _buildingCountGaugeImage.DOFillAmount(needs.GetBuildingRatio(currentBuilding), _gaugeDuration).SetEase(Ease.OutCubic).SetUpdate(true);
     }
 }
