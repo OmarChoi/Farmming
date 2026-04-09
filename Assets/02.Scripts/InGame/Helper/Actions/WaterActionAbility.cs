@@ -69,6 +69,13 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         return true;
     }
 
+    public bool CanInteractSecondary(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (_owner.Grade.CurrentGrade < _owner.Data.SecondaryUnlockGrade) return false;
+        return true;
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         if (cell == null) return;

@@ -19,9 +19,10 @@ public class HelperInteractionAbility : HelperAbility
         _playerStamina = _owner.PlayerOwner?.GetAbility<PlayerStaminaAbility>();
     }
 
-    public void InteractPrimary(TerrainCell cell)
+    public bool InteractPrimary(TerrainCell cell)
     {
-        if (!CanInteract()) return;
+        if (!CanInteract()) return false;
+        if (!_action.CanInteractPrimary(cell)) return false;
 
         ConsumeResources();
 
@@ -31,16 +32,18 @@ public class HelperInteractionAbility : HelperAbility
         _owner.PhotonView.RpcSafe(
             nameof(RPC_InteractPrimary), RpcTarget.Others,
             pos.x, pos.y, pos.z);
+        return true;
     }
 
-    public void InteractSecondary(TerrainCell cell)
+    public bool InteractSecondary(TerrainCell cell)
     {
-        if (!CanInteract()) return;
+        if (!CanInteract()) return false;
+        if (!_action.CanInteractSecondary(cell)) return false;
 
         float secondaryCost = _action.GetSecondaryCost();
         if (secondaryCost >= 0)
         {
-            if (!_owner.Energy.HasEnough(secondaryCost)) return;
+            if (!_owner.Energy.HasEnough(secondaryCost)) return false;
             _owner.Energy.TryConsume(secondaryCost);
             _playerStamina?.TryConsume(_owner.Data.StaminaCost);
         }
@@ -55,6 +58,7 @@ public class HelperInteractionAbility : HelperAbility
         _owner.PhotonView.RpcSafe(
             nameof(RPC_InteractSecondary), RpcTarget.Others,
             pos.x, pos.y, pos.z);
+        return true;
     }
 
     public void InteractPrimaryLocal(TerrainCell cell)

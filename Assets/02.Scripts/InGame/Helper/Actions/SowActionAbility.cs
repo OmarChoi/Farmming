@@ -55,6 +55,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     public bool CanInteractSecondary(TerrainCell cell)
     {
         if (cell == null) return false;
+        if (_seedSelector == null || _seedSelector.SelectedSeed == null) return false;
         FarmTile farmTile = GetFarmTile(cell);
         return farmTile != null && farmTile.IsReadyToSow;
     }
