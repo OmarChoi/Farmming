@@ -6,15 +6,16 @@ using UnityEngine;
 public class StoneMineAbility : HelperAbility
 {
     [SerializeField] private GameObject _effectStonePrefab;
+    [SerializeField] private GameObject _targetStoneEffectPrefab;
     [SerializeField] private Transform _effectSpawnPoint;
     [SerializeField] private float _jumpHeight = 2f;
-    [SerializeField] private float _epicJumpHeight = 3f;
+    [SerializeField] private float _epicJumpHeight = 3.2f;
     [SerializeField] private float _legendaryJumpHeight = 3.5f;
     [SerializeField] private float _jumpDuration = 0.5f;
     [SerializeField] private float _returnDuration = 0.5f;
     [SerializeField] private float _rangeBoostScaleMultiplier = 3f;
     [SerializeField] private float _rangeBoostScaleTweenDuration = 0.2f;
-    [SerializeField] private float _endEffect = 0.2f;
+    [SerializeField] private float _endEffect = 0.8f;
     [SerializeField] private float _stunDuration = 0.5f;
     [SerializeField] private float _rejumpHeight = 0.5f;
     [SerializeField] private float _rotationDuration = 0.2f;
@@ -23,6 +24,12 @@ public class StoneMineAbility : HelperAbility
 
     [SerializeField] private float _rayOriginHeight = 3f;
     [SerializeField] private float _rayDistance = 5f;
+    [SerializeField] private float _targetStoneEffectYOffset = 0.15f;
+    [SerializeField] private float _epicTargetStoneEffectYOffset = 3.25f;
+    [SerializeField] private float _legendaryTargetStoneEffectYOffset = 2.5f;
+    [SerializeField] private float _targetStoneEffectHorizontalOffset = 0.35f;
+    [SerializeField] private float _targetStoneEffectDuration = 2f;
+    [SerializeField] private float _targetStoneEffectSimulationSpeed = 2.5f;
 
     private HelperAnimationAbility _animAbility;
     private RangeBoostEffect _rangeBoostEffect;
@@ -63,7 +70,9 @@ public class StoneMineAbility : HelperAbility
                 if (_rangeBoostEffect != null && _rangeBoostEffect.IsActive)
                     wideCells = GetHorizontalAdjacentCells(cell);
 
-                StartCoroutine(JumpCoroutine(targetPos, gatherable, wideCells));
+                bool isRockTarget = cell.Data.ObjectType == EGridObjectType.Rock;
+                Vector3 targetEffectPosition = GetCellSurfaceEffectPosition(cell);
+                StartCoroutine(JumpCoroutine(targetPos, gatherable, wideCells, isRockTarget, targetEffectPosition));
             }
         }
         else
@@ -127,12 +136,45 @@ public class StoneMineAbility : HelperAbility
         return cell.transform.position;
     }
 
-    private IEnumerator JumpCoroutine(Vector3 targetPosition, IGatherable gatherable = null, TerrainCell[] wideCells = null)
+    private Vector3 GetCellSurfaceEffectPosition(TerrainCell cell)
+    {
+        if (cell == null)
+            return Vector3.zero;
+
+        float verticalOffset = GetTargetStoneEffectYOffset();
+        Vector3 basePosition = cell.transform.position + Vector3.up * verticalOffset;
+        if (_owner?.PlayerOwner == null)
+            return basePosition;
+
+        Vector3 toPlayer = _owner.PlayerOwner.transform.position - cell.transform.position;
+        toPlayer.y = 0f;
+        if (toPlayer.sqrMagnitude <= Mathf.Epsilon)
+            return basePosition;
+
+        Vector3 horizontalOffset = toPlayer.normalized * _targetStoneEffectHorizontalOffset;
+        return basePosition + horizontalOffset;
+    }
+
+    private float GetTargetStoneEffectYOffset()
+    {
+        if (_owner == null)
+            return _targetStoneEffectYOffset;
+
+        return _owner.Grade.CurrentGrade switch
+        {
+            EHelperGrade.Epic => _epicTargetStoneEffectYOffset,
+            EHelperGrade.Legendary => _legendaryTargetStoneEffectYOffset,
+            _ => _targetStoneEffectYOffset,
+        };
+    }
+
+    private IEnumerator JumpCoroutine(Vector3 targetPosition, IGatherable gatherable = null, TerrainCell[] wideCells = null, bool isRockTarget = false, Vector3? targetEffectPosition = null)
     {
         _isJumping = true;
         bool useWideScale = wideCells != null;
         Vector3 originalLocalScale = _owner.transform.localScale;
         float jumpHeight = GetJumpHeightForCurrentGrade();
+        EHelperGrade currentGrade = _owner != null ? _owner.Grade.CurrentGrade : EHelperGrade.Normal;
 
         Transform parentBackup = _owner.transform.parent;
         _owner.transform.SetParent(null);
@@ -147,6 +189,28 @@ public class StoneMineAbility : HelperAbility
         _animAbility.Play(EHelperAnim.Jump);
         yield return Move(_owner.transform, targetPosition, jumpHeight, _jumpDuration);
 
+        bool shouldSpawnCenterTargetEffect = isRockTarget && gatherable != null;
+        if ((currentGrade == EHelperGrade.Epic || currentGrade == EHelperGrade.Legendary) && shouldSpawnCenterTargetEffect)
+        {
+            SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
+        }
+
+        if ((currentGrade == EHelperGrade.Epic || currentGrade == EHelperGrade.Legendary) && wideCells != null)
+        {
+            foreach (var wideCell in wideCells)
+            {
+                if (wideCell == null || wideCell.CurrentObject == null) continue;
+                if (wideCell.Data.ObjectType != EGridObjectType.Rock) continue;
+                if (!wideCell.CurrentObject.TryGetComponent<IGatherable>(out _)) continue;
+
+                SpawnStoneEffectAt(GetCellSurfaceEffectPosition(wideCell));
+            }
+        }
+
+        if (currentGrade == EHelperGrade.Normal && shouldSpawnCenterTargetEffect)
+        {
+            SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
+        }
         _animAbility.Play(EHelperAnim.Stun);
         SpawnStoneEffect();
         gatherable?.TryGather(new GatheringInfo(_owner));
@@ -160,7 +224,6 @@ public class StoneMineAbility : HelperAbility
 
                 if (wideCell.CurrentObject.TryGetComponent<IGatherable>(out IGatherable wideGatherable))
                 {
-                    SpawnStoneEffectAt(wideCell.transform.position);
                     wideGatherable.TryGather(new GatheringInfo(_owner));
                 }
             }
@@ -232,8 +295,20 @@ public class StoneMineAbility : HelperAbility
 
     private void SpawnStoneEffectAt(Vector3 worldPosition)
     {
-        if (_effectStonePrefab == null) return;
-        GameObject effect = Instantiate(_effectStonePrefab, worldPosition, Quaternion.identity);
-        Destroy(effect, _endEffect);
+        GameObject targetEffectPrefab = _targetStoneEffectPrefab != null ? _targetStoneEffectPrefab : _effectStonePrefab;
+        if (targetEffectPrefab == null) return;
+        GameObject effect = Instantiate(targetEffectPrefab, worldPosition, Quaternion.identity);
+
+        if (_targetStoneEffectSimulationSpeed > 0f)
+        {
+            ParticleSystem[] particleSystems = effect.GetComponentsInChildren<ParticleSystem>(true);
+            foreach (ParticleSystem particleSystem in particleSystems)
+            {
+                ParticleSystem.MainModule main = particleSystem.main;
+                main.simulationSpeed = _targetStoneEffectSimulationSpeed;
+            }
+        }
+
+        Destroy(effect, _targetStoneEffectDuration);
     }
 }
