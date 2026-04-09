@@ -8,7 +8,7 @@ public readonly struct NpcSpawnRequest
     public readonly Transform Parent;
     public readonly bool ForceRespawn;
     public readonly string Reason;  // 스폰 사유 간단히 적는 용도입니다.
-
+    public bool IsLocalOnly { get; }
     public string NpcId => Data?.NpcId;
     public GameObject Prefab => Data?.Prefab;
     public bool HasValidData => Data != null;
@@ -19,7 +19,8 @@ public readonly struct NpcSpawnRequest
         Quaternion rotation,
         Transform parent = null,
         bool forceRespawn = false,
-        string reason = null)
+        string reason = null,
+        bool isLocalOnly = false)
     {
         Data = data;
         RequestedPosition = requestedPosition;
@@ -27,5 +28,6 @@ public readonly struct NpcSpawnRequest
         Parent = parent;
         ForceRespawn = forceRespawn;
         Reason = reason;
+        IsLocalOnly = isLocalOnly;
     }
 }

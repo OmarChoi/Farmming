@@ -172,7 +172,15 @@ public class TutorialManager : MonoBehaviour
     {
         if (_tutorialNpcController == null) return;
 
-        Destroy(_tutorialNpcController.gameObject);
+        if (NpcSpawnManager.Instance != null)
+        {
+            NpcSpawnManager.Instance.Despawn(_tutorialNpcController);
+        }
+        else
+        {
+            Destroy(_tutorialNpcController.gameObject);
+        }
+
         _tutorialNpcController = null;
     }
 }
