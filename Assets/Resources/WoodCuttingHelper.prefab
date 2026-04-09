@@ -1753,8 +1753,12 @@ MonoBehaviour:
   _effectStonePrefab: {fileID: 6268602327854917636, guid: d4622163da72bb44abd45d989c2b814b, type: 3}
   _effectSpawnPoint: {fileID: 5593292928980374344}
   _jumpHeight: 2
+  _epicJumpHeight: 3.2
+  _legendaryJumpHeight: 3.8
   _jumpDuration: 0.5
   _returnDuration: 0.5
+  _rangeBoostScaleMultiplier: 2.5
+  _rangeBoostScaleTweenDuration: 0.2
   _endEffect: 0.2
   _stunDuration: 0.5
   _rejumpHeight: 0.5
