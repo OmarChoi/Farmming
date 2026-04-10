@@ -299,6 +299,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 386169379799505435, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+      propertyPath: sceneViewId
+      value: 17
+      objectReference: {fileID: 0}
     - target: {fileID: 1297318230509913425, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
       propertyPath: m_Name
       value: TimeSystem
@@ -352,17 +356,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
---- !u!114 &69070361 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2930089380795897997, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
-  m_PrefabInstance: {fileID: 69070360}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 544fd01939d0492e94ac8164086b6854, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TimeSystem
 --- !u!1001 &95179862
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3954,7 +3947,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 117b339248e72884ca2883de77f6718f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestDaySkip
-  _timeSystem: {fileID: 69070361}
+  TimeSystem: {fileID: 0}
 --- !u!1001 &1322951125
 PrefabInstance:
   m_ObjectHideFlags: 0

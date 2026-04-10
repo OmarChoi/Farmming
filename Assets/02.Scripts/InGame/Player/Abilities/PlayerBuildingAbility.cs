@@ -18,22 +18,20 @@ public class PlayerBuildingAbility : PlayerAbility
     protected override void Awake()
     {
         base.Awake();
-
-        BuildingManager buildingManager = BuildingManager.Instance;
-        if (buildingManager == null)
-        {
-            Debug.LogError($"{nameof(PlayerBuildingAbility)} requires {nameof(BuildingManager)} in the scene.", this);
-        }
-
         _terrainAbility = _owner?.GetAbility<PlayerTerrainAbility>();
+        
+        GameSceneInit.OnCompleteInitialize += BindToBuildingManager;
+        BindToBuildingManager();
+    }
+
+    private void BindToBuildingManager()
+    {
+        BuildingManager buildingManager = BuildingManager.Instance;
         _resourceHandler = new PlayerBuildResourceTracker(buildingManager, _owner);
-
-        if (buildingManager == null) return;
-
         GhostConfig ghostConfig = buildingManager.GhostConfig;
         _session = new PlayerBuildSession(buildingManager, _owner, _resourceHandler, ghostConfig);
     }
-
+    
     private void Start()
     {
         _hasStarted = true;

@@ -8,6 +8,7 @@ public static class AssetKey
         public const string FarmTile = "FarmTile";
         public const string TerrainCell = "TerrainCell";
         public const string Player = "Player";
+        public const string UnlockedItem = "UnlockedItem";
     }
 
     public static class Gathering
@@ -48,11 +49,15 @@ public static class AssetKey
         public const string Stamina = "UI_Stamina";
         public const string BuildingList = "UI_BuildingList";
         public const string BuildInfo = "UI_BuildInfo";
+        public const string VillageState = "UI_VillageState";
+        public const string VillageLevelUp = "UI_VillageLevelUp";
 
         private static readonly Dictionary<Type, string> _registered = new Dictionary<Type, string>
         {
             {typeof(UI_BuildingList), BuildingList},
             {typeof(UI_BuildInfo), BuildInfo},
+            {typeof(UI_VillageState), VillageState},
+            {typeof(UI_VillageLevelUp), VillageLevelUp},
         };
 
         public static string GetKey<T>() where T : UIBase
