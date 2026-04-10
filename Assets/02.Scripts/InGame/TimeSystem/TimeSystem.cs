@@ -34,6 +34,7 @@ public class TimeSystem : MonoBehaviour
         Instance = this;
 
         TryCreateClock();
+        TimeEvents.SetSpecData(_timeSettings);
     }
 
     private void OnDestroy()
