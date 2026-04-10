@@ -16,6 +16,7 @@ public class TutorialProgressController : MonoBehaviour
     private Transform _playerTransform;
 
     private QuestDataSO _pendingNextTutorialQuest;
+    private bool _isWaitingForFinalTutorialComplete;
 
     private void Awake()
     {
@@ -142,17 +143,42 @@ public class TutorialProgressController : MonoBehaviour
         }
 
         _pendingNextTutorialQuest = null;
-        CompleteTutorial();
+        _isWaitingForFinalTutorialComplete = true;
     }
 
     public void TryAcceptPendingTutorialQuest()
     {
-        if (_pendingNextTutorialQuest == null) return;
+        if (_pendingNextTutorialQuest == null)
+        {
+            FinishTutorialIfPending();
+            return;
+        }
 
         QuestDataSO nextQuest = _pendingNextTutorialQuest;
         _pendingNextTutorialQuest = null;
 
         TryAcceptTutorialQuest(nextQuest);
+    }
+
+    private void FinishTutorialIfPending()
+    {
+        if (!_isWaitingForFinalTutorialComplete) return;
+
+        _isWaitingForFinalTutorialComplete = false;
+        CompleteTutorial();
+    }
+
+    public bool HandleTutorialQuestDialogueEnded()
+    {
+        // 마지막 퀘스트면 기본 종료 처리를 계속 진행합니다.
+        if (_pendingNextTutorialQuest == null)
+        {
+            FinishTutorialIfPending();
+            return false;
+        }
+
+        TryAcceptPendingTutorialQuest();
+        return true;
     }
 
     private bool TryGetNextTutorialQuest(QuestDataSO completedQuest, out QuestDataSO nextQuest)
