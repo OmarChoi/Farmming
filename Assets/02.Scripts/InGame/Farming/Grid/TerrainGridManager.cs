@@ -351,24 +351,7 @@ public class TerrainGridManager : MonoBehaviour
         if (cell == null)
             return null;
 
-        var saveData = new TerrainCellSaveData
-        {
-            X = gridPos.x,
-            Y = gridPos.y,
-            Z = gridPos.z,
-            CellType = cell.Data.CellType,
-            TileType = cell.Data.TileType,
-            DirtLevel = cell.Data.DirtLevel,
-            ObjectType = cell.Data.ObjectType == EGridObjectType.Building
-                ? EGridObjectType.None : cell.Data.ObjectType,
-            ObjectLevel = cell.Data.ObjectType == EGridObjectType.Building
-                ? 0 : cell.Data.ObjectLevel,
-            IsIndestructible = cell.Data.IsIndestructible,
-            IsTop = cell.Data.IsTop
-        };
-
-        cell.ExportTo(saveData);
-        return saveData;
+        return CreateCellSaveData(gridPos, cell);
     }
 
     public void ApplyCellDelta(TerrainCellDelta delta)
@@ -418,23 +401,7 @@ public class TerrainGridManager : MonoBehaviour
 
         foreach (var kvp in _cells)
         {
-            var cellSave = new TerrainCellSaveData
-            {
-                X = kvp.Key.x,
-                Y = kvp.Key.y,
-                Z = kvp.Key.z,
-                CellType = kvp.Value.Data.CellType,
-                TileType = kvp.Value.Data.TileType,
-                DirtLevel = kvp.Value.Data.DirtLevel,
-                ObjectType = kvp.Value.Data.ObjectType == EGridObjectType.Building
-                    ? EGridObjectType.None : kvp.Value.Data.ObjectType,
-                ObjectLevel = kvp.Value.Data.ObjectType == EGridObjectType.Building
-                    ? 0 : kvp.Value.Data.ObjectLevel,
-                IsIndestructible = kvp.Value.Data.IsIndestructible,
-                IsTop = kvp.Value.Data.IsTop
-            };
-
-            kvp.Value.ExportTo(cellSave);
+            TerrainCellSaveData cellSave = CreateCellSaveData(kvp.Key, kvp.Value);
             saveData.Cells.Add(cellSave);
         }
 
@@ -468,5 +435,27 @@ public class TerrainGridManager : MonoBehaviour
 
         foreach (var kvp in _gridData.Cells)
             SpawnCell(kvp.Key, kvp.Value);
+    }
+
+    private static TerrainCellSaveData CreateCellSaveData(Vector3Int gridPos, TerrainCell cell)
+    {
+        var saveData = new TerrainCellSaveData
+        {
+            X = gridPos.x,
+            Y = gridPos.y,
+            Z = gridPos.z,
+            CellType = cell.Data.CellType,
+            TileType = cell.Data.TileType,
+            DirtLevel = cell.Data.DirtLevel,
+            ObjectType = cell.Data.ObjectType == EGridObjectType.Building
+                ? EGridObjectType.None : cell.Data.ObjectType,
+            ObjectLevel = cell.Data.ObjectType == EGridObjectType.Building
+                ? 0 : cell.Data.ObjectLevel,
+            IsIndestructible = cell.Data.IsIndestructible,
+            IsTop = cell.Data.IsTop
+        };
+
+        cell.ExportTo(saveData);
+        return saveData;
     }
 }
