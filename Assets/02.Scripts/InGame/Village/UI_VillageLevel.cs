@@ -13,18 +13,31 @@ public class UI_VillageLevel : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private Image _fillImage;
 
-    private void Start()
+    private void OnEnable()
     {
-        VillageLevelManager.Instance.OnVillageStateChanged += UpdateGauge;
+        if (VillageLevelManager.Instance == null) return;
+        SubScribeEvents();
         UpdateGauge();
     }
 
-    private void OnDestroy()
+    private void Start()
+    {
+        SubScribeEvents();
+        UpdateGauge();
+    }
+
+    private void OnDisable()
     {
         if (VillageLevelManager.Instance != null)
         {
             VillageLevelManager.Instance.OnVillageStateChanged -= UpdateGauge;
         }
+    }
+
+    private void SubScribeEvents()
+    {
+        VillageLevelManager.Instance.OnVillageStateChanged -= UpdateGauge;
+        VillageLevelManager.Instance.OnVillageStateChanged += UpdateGauge;
     }
 
     private void UpdateGauge()

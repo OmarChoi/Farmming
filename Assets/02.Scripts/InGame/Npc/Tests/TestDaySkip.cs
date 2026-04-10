@@ -2,18 +2,22 @@ using UnityEngine;
 
 public class TestDaySkip : MonoBehaviour
 {
-    private TimeSystem _timeSystem;
+    public TimeSystem TimeSystem;
 
-    private void Start()
+    private void SetTimeSystem()
     {
-        _timeSystem = FindFirstObjectByType<TimeSystem>();
+        TimeSystem = FindFirstObjectByType<TimeSystem>();
     }
     
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.N))
         {
-            _timeSystem.SkipToNextDay();
+            if (TimeSystem == null)
+            {
+                SetTimeSystem();
+            }
+            TimeSystem.SkipToNextDay();
         }
     }
 }
