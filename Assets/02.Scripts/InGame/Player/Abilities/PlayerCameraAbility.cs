@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -5,6 +6,9 @@ using UnityEngine.SceneManagement;
 public class PlayerCameraAbility : PlayerAbility
 {
     [SerializeField] private Transform _cameraRoot;
+    [SerializeField] private float _impactShakeDuration = 0.18f;
+    [SerializeField] private float _impactShakeStrength = 0.15f;
+    [SerializeField] private int _impactShakeVibrato = 18;
     private const float MinVerticalAngle = -60f;
     private const float MaxVerticalAngle = 60f;
     private const float DefaultReturnSpeed = 10f;
@@ -15,6 +19,8 @@ public class PlayerCameraAbility : PlayerAbility
     private PresetState _preset;
     private Vector3 _defaultLocalPos;
     private Vector3 _currentOffset;
+    private Vector3 _shakeOffset;
+    private Tween _shakeTween;
 
     private struct PresetState
     {
@@ -34,6 +40,8 @@ public class PlayerCameraAbility : PlayerAbility
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        _shakeTween?.Kill();
+        _shakeOffset = Vector3.zero;
     }
 
     private void Start()
@@ -132,7 +140,7 @@ public class PlayerCameraAbility : PlayerAbility
         else
         {
             _currentOffset = Vector3.Lerp(_currentOffset, _defaultLocalPos, DefaultReturnSpeed * Time.deltaTime);
-            _cameraRoot.localPosition = _currentOffset;
+            _cameraRoot.localPosition = _currentOffset + _shakeOffset;
             _cameraRoot.rotation = Quaternion.Euler(-_my, _mx, 0f);
         }
     }
@@ -179,12 +187,34 @@ public class PlayerCameraAbility : PlayerAbility
         Vector3 localOffset = _owner.transform.InverseTransformDirection(worldOffset);
         Vector3 targetLocalPos = _defaultLocalPos + localOffset;
         _currentOffset = Vector3.Lerp(_currentOffset, targetLocalPos, speed * Time.deltaTime);
-        _cameraRoot.localPosition = _currentOffset;
+        _cameraRoot.localPosition = _currentOffset + _shakeOffset;
     }
 
     public void SnapYawToPlayerFrontView()
     {
         if (!_owner.IsMine) return;
         _mx = Mathf.Repeat(_owner.transform.eulerAngles.y + 180f, 360f);
+    }
+
+    public void PlayImpactShake(float strengthMultiplier = 1f)
+    {
+        if (!_owner.IsMine) return;
+        if (_cameraRoot == null) return;
+
+        _shakeTween?.Kill();
+        _shakeOffset = Vector3.zero;
+
+        Vector3 strength = Vector3.one * (_impactShakeStrength * strengthMultiplier);
+        _shakeTween = DOTween.Shake(
+                () => _shakeOffset,
+                value => _shakeOffset = value,
+                _impactShakeDuration,
+                strength,
+                _impactShakeVibrato,
+                90f,
+                false,
+                ShakeRandomnessMode.Harmonic)
+            .SetUpdate(UpdateType.Normal)
+            .OnKill(() => _shakeOffset = Vector3.zero);
     }
 }

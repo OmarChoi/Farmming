@@ -109,6 +109,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCameraAbility
   _cameraRoot: {fileID: 8326703167717938075}
+  _impactShakeDuration: 0.18
+  _impactShakeStrength: 0.15
+  _impactShakeVibrato: 18
 --- !u!114 &9204552776688774226
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,6 +168,7 @@ MonoBehaviour:
   _equipKey: 102
   _equipSlot: {fileID: 5631609105930910836}
   _backEquipSlot: {fileID: 8812800663262423533}
+  _helperPlayerAnimationMap: {fileID: 11400000, guid: 94fc4e9290f008c4ab81acb13b4f8c13, type: 2}
 --- !u!114 &2716549386606580851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -660,6 +664,9 @@ MonoBehaviour:
   - Type: 9
     SynchronizeType: 0
     Name: LavaHit
+  - Type: 9
+    SynchronizeType: 0
+    Name: Cheer
   m_SynchronizeLayers:
   - SynchronizeType: 1
     LayerIndex: 0

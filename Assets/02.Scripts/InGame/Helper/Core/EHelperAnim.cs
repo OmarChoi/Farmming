@@ -16,4 +16,7 @@ public enum EHelperAnim
     EpicHarvest = 15,
     LegendaryHarvest = 3,
     NormalHarvest = 27,
+    EpicSow = 15,
+    LegendarySow = 44,
+    LegendaryIce = 22,
 }

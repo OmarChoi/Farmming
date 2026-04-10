@@ -4,7 +4,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using Cysharp.Threading.Tasks;
+using ExitGames.Client.Photon;
 using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 
 public class MapSyncManager : MonoBehaviourPunCallbacks
@@ -15,10 +17,13 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
     private const int CHUNK_SIZE = 4096;
     private const int SEND_INTERVAL_MS = 50;
+    private const string PropTerrainReady = "tRdy";
 
     private readonly Dictionary<int, byte[][]> _pendingChunks = new();
     private readonly List<Photon.Realtime.Player> _pendingMapRequests = new();
     private readonly HashSet<int> _villageCacheReadyActors = new();
+    private readonly HashSet<int> _pendingTerrainReplayActors = new();
+    private readonly Dictionary<Vector3Int, TerrainCellDelta> _pendingTerrainReplayDeltas = new();
     private bool _mapReady = true;
     private int _villageCacheToken;
 
@@ -44,9 +49,45 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     public void SendMapTo(Photon.Realtime.Player target)
     {
         if (!PhotonNetwork.IsMasterClient) return;
+        ResetTerrainReadyState(target);
         SendChunksAsync(target).Forget();
     }
 
+    public void BroadcastTerrainCellStateFromMaster(Vector3Int position)
+    {
+        BroadcastTerrainCellStatesFromMaster(position);
+    }
+
+    public void BroadcastTerrainCellStatesFromMaster(params Vector3Int[] positions)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (_terrainGridManager == null || positions == null || positions.Length == 0) return;
+
+        var batch = new TerrainCellDeltaBatch();
+        var seen = new HashSet<Vector3Int>();
+
+        foreach (Vector3Int position in positions)
+        {
+            if (!seen.Add(position)) continue;
+            if (_terrainGridManager.TryBuildCellDelta(position, out TerrainCellDelta delta))
+                batch.Cells.Add(delta);
+        }
+
+        if (batch.Cells.Count == 0) return;
+
+        CachePendingTerrainReplay(batch);
+
+        string json = JsonUtility.ToJson(batch);
+        foreach (Player player in PhotonNetwork.PlayerListOthers)
+        {
+            if (player == null) continue;
+            if (_pendingTerrainReplayActors.Contains(player.ActorNumber)) continue;
+
+            photonView.RPC(nameof(RPC_ApplyTerrainCellDeltaBatch), player, json);
+        }
+    }
+
+    /// 마스터의 맵 로드가 완료될 때까지 클라이언트 요청을 대기시킴
     public void HoldRequests()
     {
         _mapReady = false;
@@ -89,6 +130,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
     private async UniTaskVoid SendChunksAsync(Photon.Realtime.Player target)
     {
+        BeginTerrainReplayCapture(target);
         byte[] compressed = CompressMapData();
         int totalChunks = Mathf.CeilToInt((float)compressed.Length / CHUNK_SIZE);
         int syncId = UnityEngine.Random.Range(0, int.MaxValue);
@@ -113,6 +155,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
     private async UniTaskVoid BroadcastChunksAsync()
     {
+        BeginTerrainReplayCaptureForCurrentOthers();
         byte[] compressed = CompressMapData();
         int totalChunks = Mathf.CeilToInt((float)compressed.Length / CHUNK_SIZE);
         int syncId = UnityEngine.Random.Range(0, int.MaxValue);
@@ -279,6 +322,141 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         }
 
         SendMapTo(info.Sender);
+    }
+    
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (targetPlayer == null || changedProps == null) return;
+        if (!_pendingTerrainReplayActors.Contains(targetPlayer.ActorNumber)) return;
+
+        if (!changedProps.TryGetValue(PropTerrainReady, out object value)) return;
+        if (value is not bool isReady || !isReady) return;
+
+        FlushPendingTerrainReplayTo(targetPlayer);
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        if (otherPlayer == null) return;
+
+        if (_pendingTerrainReplayActors.Remove(otherPlayer.ActorNumber) &&
+            _pendingTerrainReplayActors.Count == 0)
+        {
+            _pendingTerrainReplayDeltas.Clear();
+        }
+    }
+
+    [PunRPC]
+    private void RPC_ApplyTerrainCellDeltaBatch(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return;
+        if (_terrainGridManager == null) return;
+
+        TerrainCellDeltaBatch batch = JsonUtility.FromJson<TerrainCellDeltaBatch>(json);
+        if (batch?.Cells == null || batch.Cells.Count == 0) return;
+
+        _terrainGridManager.ApplyCellDeltas(batch.Cells);
+        LogAppliedTerrainCellDeltaBatch(batch);
+    }
+
+    private void BeginTerrainReplayCapture(Photon.Realtime.Player target)
+    {
+        if (!PhotonNetwork.IsMasterClient || target == null) return;
+
+        if (_pendingTerrainReplayActors.Count == 0)
+            _pendingTerrainReplayDeltas.Clear();
+
+        _pendingTerrainReplayActors.Add(target.ActorNumber);
+    }
+
+    private void BeginTerrainReplayCaptureForCurrentOthers()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        Player[] others = PhotonNetwork.PlayerListOthers;
+        if (others == null || others.Length == 0) return;
+
+        if (_pendingTerrainReplayActors.Count == 0)
+            _pendingTerrainReplayDeltas.Clear();
+
+        foreach (Player player in others)
+        {
+            if (player == null) continue;
+            _pendingTerrainReplayActors.Add(player.ActorNumber);
+        }
+    }
+
+    private void CachePendingTerrainReplay(TerrainCellDeltaBatch batch)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (_pendingTerrainReplayActors.Count == 0) return;
+        if (batch?.Cells == null || batch.Cells.Count == 0) return;
+
+        foreach (TerrainCellDelta delta in batch.Cells)
+        {
+            if (delta == null) continue;
+            _pendingTerrainReplayDeltas[new Vector3Int(delta.X, delta.Y, delta.Z)] = delta;
+        }
+    }
+
+    private void FlushPendingTerrainReplayTo(Player target)
+    {
+        if (!PhotonNetwork.IsMasterClient || target == null) return;
+        if (!_pendingTerrainReplayActors.Remove(target.ActorNumber)) return;
+
+        if (_pendingTerrainReplayDeltas.Count > 0)
+        {
+            var batch = new TerrainCellDeltaBatch
+            {
+                Cells = new List<TerrainCellDelta>(_pendingTerrainReplayDeltas.Values)
+            };
+
+            string json = JsonUtility.ToJson(batch);
+            photonView.RPC(nameof(RPC_ApplyTerrainCellDeltaBatch), target, json);
+        }
+
+        if (_pendingTerrainReplayActors.Count == 0)
+            _pendingTerrainReplayDeltas.Clear();
+    }
+
+    private static void ResetTerrainReadyState(Player target)
+    {
+        if (target == null) return;
+
+        var props = new Hashtable
+        {
+            { PropTerrainReady, false }
+        };
+        target.SetCustomProperties(props);
+    }
+
+    private static void LogAppliedTerrainCellDeltaBatch(TerrainCellDeltaBatch batch)
+    {
+#if !UNITY_EDITOR
+        return;
+#endif
+        if (batch?.Cells == null || batch.Cells.Count == 0) return;
+        if (PhotonNetwork.IsMasterClient) return;
+
+        int removedCount = 0;
+        foreach (TerrainCellDelta delta in batch.Cells)
+        {
+            if (delta != null && delta.RemoveCell)
+                removedCount++;
+        }
+
+        bool terrainReady = false;
+        if (PhotonNetwork.LocalPlayer != null &&
+            PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue(PropTerrainReady, out object value) &&
+            value is bool isReady)
+        {
+            terrainReady = isReady;
+        }
+
+        int updatedCount = batch.Cells.Count - removedCount;
+        Debug.Log(
+            $"[MapSyncManager] Applied terrain delta batch on client. total={batch.Cells.Count}, updated={updatedCount}, removed={removedCount}, terrainReady={terrainReady}");
     }
 
     [PunRPC]

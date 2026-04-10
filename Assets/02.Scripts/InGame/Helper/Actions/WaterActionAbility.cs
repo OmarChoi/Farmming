@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 // 관수 곡룡: FarmDry => FarmWet
@@ -9,6 +11,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     [SerializeField] private float _secondaryEnergyCost = 25f;
     [SerializeField] private float _iceSpawnOffset = 17.5f;
+    [SerializeField] private float _secondaryIceOpenDelay = 0.2f;
+    [SerializeField] private float _secondaryIceCompleteDelay = 1.0f;
     [SerializeField] private int _waterExperience = 10;
 
     private static readonly int WaterStateHash = Animator.StringToHash("Water");
@@ -24,7 +28,9 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private bool _isActing;
     private bool _isSecondary;
     private bool _anyWatered;
+    private bool _waterOpened;
     private TerrainCell _currentCell;
+    private Coroutine _secondaryIceCoroutine;
 
     public float GetSecondaryCost() => _secondaryEnergyCost;
 
@@ -48,7 +54,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private void Update()
     {
         if (!_isActing) return;
-        if (!_isSecondary) return;
+        if (_owner.Grade.CurrentGrade == EHelperGrade.Normal || !_isSecondary) return;
 
         var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.shortNameHash == WaterStateHash && stateInfo.normalizedTime >= 1f)
@@ -64,14 +70,22 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public bool CanInteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
+        return cell != null;
+    }
+
+    public bool CanInteractSecondary(TerrainCell cell)
+    {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
-        if (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf) return false;
-        return true;
+        return _owner.Grade.CurrentGrade >= _owner.Data.SecondaryUnlockGrade;
     }
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return;
+        if (CurrentGrade == EHelperGrade.Normal && HasBlockingFrontObject(cell)) return;
 
         if (_owner.IsMine && _isActing) return;
         StartWaterAction(cell, isSecondary: false);
@@ -79,6 +93,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return;
         if (_owner.Grade.CurrentGrade < _owner.Data.SecondaryUnlockGrade) return;
         if (_owner.IsMine && _isActing) return;
@@ -91,13 +106,16 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _isActing = true;
         _isSecondary = isSecondary;
         _anyWatered = false;
+        _waterOpened = false;
         _currentCell = cell;
 
         _owner.BeginAction();
 
         if (isSecondary)
         {
-            _animAbility?.Play(EHelperAnim.Water);
+            _animAbility?.Replay(EHelperAnim.LegendaryIce);
+            if (_secondaryIceCoroutine != null) StopCoroutine(_secondaryIceCoroutine);
+            _secondaryIceCoroutine = StartCoroutine(SecondaryIceFlow());
         }
         else
         {
@@ -105,15 +123,42 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         }
     }
 
+    private IEnumerator SecondaryIceFlow()
+    {
+        if (_secondaryIceOpenDelay > 0f)
+        {
+            yield return new WaitForSeconds(_secondaryIceOpenDelay);
+        }
+
+        WaterOpen();
+
+        if (_secondaryIceCompleteDelay > 0f)
+        {
+            yield return new WaitForSeconds(_secondaryIceCompleteDelay);
+        }
+
+        _secondaryIceCoroutine = null;
+        ResetState();
+    }
+
     public void WaterOpen()
     {
         if (_currentCell == null) return;
+        if (_waterOpened) return;
+
+        _waterOpened = true;
 
         Vector3 spawnPos = _mouthPoint != null ? _mouthPoint.position : _owner.transform.position;
 
         List<TerrainCell> targetCells = _isSecondary
             ? new List<TerrainCell> { _currentCell }
             : GetTargetCells(_currentCell);
+
+        if (targetCells.Count == 0)
+        {
+            ResetState();
+            return;
+        }
 
         GetCurrentGradeVFX().SpawnHelperVFX();
 
@@ -151,6 +196,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             if (effect.CanHandle(cell))
             {
                 effect.Apply(cell);
+                if (effect is not LavaToStoneWaterEffect)
+                    BroadcastTerrainCellStateFromMaster(cell);
                 return true;
             }
         }
@@ -176,11 +223,18 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     {
         if (!_isActing) return;
 
+        if (_secondaryIceCoroutine != null)
+        {
+            StopCoroutine(_secondaryIceCoroutine);
+            _secondaryIceCoroutine = null;
+        }
+
         GetCurrentGradeVFX().Cancel();
 
         _isActing = false;
         _isSecondary = false;
         _anyWatered = false;
+        _waterOpened = false;
         _currentCell = null;
         _animAbility?.Play(EHelperAnim.Idle);
         _owner?.EndAction();
@@ -216,6 +270,10 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     {
         var cells = new List<TerrainCell>();
 
+        centerCell = GetInteractableCell(centerCell);
+        if (centerCell == null)
+            return cells;
+
         if (!HasObject(centerCell))
         {
             cells.Add(centerCell);
@@ -227,13 +285,13 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         Vector3Int rightOffset = GetGridRightOffset();
         for (int i = 1; i <= extension; i++)
         {
-            var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
-            var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
+            var rightCell = GetGridInteractableCell(centerCell.GridPosition + rightOffset * i);
+            var leftCell = GetGridInteractableCell(centerCell.GridPosition - rightOffset * i);
 
-            if (rightCell != null && !HasObject(rightCell) && rightCell.Data.IsTop)
+            if (rightCell != null && !HasObject(rightCell))
                 cells.Add(rightCell);
 
-            if (leftCell != null && !HasObject(leftCell) && leftCell.Data.IsTop)
+            if (leftCell != null && !HasObject(leftCell))
                 cells.Add(leftCell);
         }
         return cells;
@@ -241,11 +299,25 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     private bool HasObject(TerrainCell cell) => cell.CurrentObject != null;
 
+    private bool HasBlockingFrontObject(TerrainCell cell)
+    {
+        if (cell?.CurrentObject == null) return false;
+
+        EGridObjectType objectType = cell.Data.ObjectType;
+        return objectType == EGridObjectType.Rock || objectType == EGridObjectType.Tree;
+    }
+
     private Vector3Int GetGridRightOffset()
     {
         if (_owner.PlayerOwner == null) return Vector3Int.right;
 
         Vector3 right = _owner.PlayerOwner.transform.right;
         return new Vector3Int(Mathf.RoundToInt(right.x), 0, Mathf.RoundToInt(right.z));
+    }
+
+    private static void BroadcastTerrainCellStateFromMaster(TerrainCell cell)
+    {
+        if (!PhotonNetwork.IsMasterClient || cell == null) return;
+        MapSyncManager.Instance?.BroadcastTerrainCellStateFromMaster(cell.GridPosition);
     }
 }
