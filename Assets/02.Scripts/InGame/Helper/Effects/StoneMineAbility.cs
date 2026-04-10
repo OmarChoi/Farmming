@@ -170,6 +170,10 @@ public class StoneMineAbility : HelperAbility
         if (_owner?.PlayerOwner == null)
             return;
 
+        bool isRangeBoostActive = _rangeBoostEffect != null && _rangeBoostEffect.IsActive;
+        if (!isRangeBoostActive && shouldSpawnCenterTargetEffect)
+            return;
+
         PlayerCameraAbility cameraAbility = _owner.PlayerOwner.GetAbility<PlayerCameraAbility>();
         if (cameraAbility == null)
             return;

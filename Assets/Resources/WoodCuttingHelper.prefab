@@ -1722,9 +1722,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WoodCuttingMineActionAbility
   _effectWoodPrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
+  _woodNormalEffect: {fileID: 1941846686147301934, guid: f22224b6deb22e04089e099a5f2fbdcf, type: 3}
   _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
   _idleTransition: 0.5
+  _slashMagicHeightOffset: 1
+  _slashMagicLifetime: 1
+  _slashMagicRotationOffset: {x: 0, y: 0, z: 0}
   _wideGatherOffset: 2
 --- !u!114 &8890283815802751499
 MonoBehaviour:
@@ -1774,6 +1778,7 @@ MonoBehaviour:
   _targetStoneEffectHorizontalOffset: 0.45
   _targetStoneEffectDuration: 2
   _targetStoneEffectSimulationSpeed: 2.5
+  _cameraShakePerRockMultiplier: 0.35
 --- !u!114 &4078509730715069191
 MonoBehaviour:
   m_ObjectHideFlags: 0
