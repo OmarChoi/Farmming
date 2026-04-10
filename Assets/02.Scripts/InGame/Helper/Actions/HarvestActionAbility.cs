@@ -44,6 +44,9 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
+        if (cell == null) return;
+
         switch (_owner.Grade.CurrentGrade)
         {
             case EHelperGrade.Normal:
@@ -193,9 +196,11 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             success = true;
         }
 
-        if (seed.Icon != null)
+        ItemDataSO harvestItem = seed.HarvestItem;
+        if (harvestItem != null)
         {
-            _harvestItem?.Raise(seed.Icon, seed.DisplayName, harvestAmount);
+            Sprite notificationIcon = harvestItem.Icon != null ? harvestItem.Icon : seed.Icon;
+            _harvestItem?.Raise(notificationIcon, harvestItem.DisplayName, harvestAmount);
         }
 
         return success;
@@ -211,16 +216,20 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private List<TerrainCell> GetLegendaryCells(TerrainCell centerCell)
     {
+        centerCell = GetInteractableCell(centerCell);
+        if (centerCell == null)
+            return new List<TerrainCell>();
+
         var cells = new List<TerrainCell> { centerCell };
 
         Vector3Int rightOffset = GetGridRightOffset();
         for (int i = 1; i <= 2; i++)
         {
-            var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
-            var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
+            var rightCell = GetGridInteractableCell(centerCell.GridPosition + rightOffset * i);
+            var leftCell = GetGridInteractableCell(centerCell.GridPosition - rightOffset * i);
 
-            if (rightCell != null && rightCell.Data.IsTop) cells.Add(rightCell);
-            if (leftCell != null && leftCell.Data.IsTop) cells.Add(leftCell);
+            if (rightCell != null) cells.Add(rightCell);
+            if (leftCell != null) cells.Add(leftCell);
         }
         return cells;
     }
@@ -246,6 +255,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private FarmTile GetFarmTile(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return null;
         if (cell.FarmTile != null && cell.FarmTile.gameObject.activeSelf)
         {
