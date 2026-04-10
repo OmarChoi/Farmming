@@ -328,4 +328,22 @@ public class NpcDialogueController : MonoBehaviour
             _currentInteractor,
             _currentInteractionComponent);
     }
+
+    public void HideDialogueUiOnly()
+    {
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.None;
+        _onDialogueEnded = null;
+
+        if (_uiFriendshipBar != null)
+        {
+            _uiFriendshipBar.gameObject.SetActive(false);
+        }
+
+        if (_uiDialogue != null)
+        {
+            _uiDialogue.Close();
+        }
+    }
 }

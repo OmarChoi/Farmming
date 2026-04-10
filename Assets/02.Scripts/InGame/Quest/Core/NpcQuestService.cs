@@ -612,6 +612,8 @@ public class NpcQuestService : MonoBehaviour
             return;
         }
 
+        _dialogueController?.HideDialogueUiOnly();
+
         _infoPageController.ShowAsync(questData.AcceptInfoPageSet,
             () => context?.InteractionComponent?.EndInteraction()).Forget();
     }
@@ -623,6 +625,8 @@ public class NpcQuestService : MonoBehaviour
             HandleQuestPostProcess(context, questData);
             return;
         }
+
+        _dialogueController?.HideDialogueUiOnly();
 
         _infoPageController.ShowAsync(questData.CompleteInfoPageSet,
             () => HandleQuestPostProcess(context, questData)).Forget();
