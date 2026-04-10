@@ -7,16 +7,13 @@ using System.Collections.Generic;
 
 public class UI_InfoPage : MonoBehaviour
 {
-    [SerializeField] private GameObject _root;
+    [SerializeField] private GameObject _pageRoot;
     [SerializeField] private UI_InfoPageView _pageView;
 
     [Header("버튼")]
     [SerializeField] private Button _prevButton;
     [SerializeField] private Button _nextButton;
-    [SerializeField] private Button _completeButton;
-
-    [Header("페이지 장수")]
-    [SerializeField] private TextMeshProUGUI _pageIndexText;
+    [SerializeField] private Button _closeButton;
 
     [Header("PopupDoTween")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
@@ -37,17 +34,17 @@ public class UI_InfoPage : MonoBehaviour
         {
             _nextButton.onClick.AddListener(ShowNextPage);
         }
-        if (_completeButton != null)
+        if (_closeButton != null)
         {
-            _completeButton.onClick.AddListener(OnClickComplete);
+            _closeButton.onClick.AddListener(OnClickComplete);
         }
     }
 
     private void Start()
     {
-        if (_root != null)
+        if (_pageRoot != null)
         {
-            _root.SetActive(false);
+            _pageRoot.SetActive(false);
         }
     }
 
@@ -67,9 +64,9 @@ public class UI_InfoPage : MonoBehaviour
         {
             await _popupDoTween.PlayOpenAsync();
         }
-        else if (_root != null)
+        else if (_pageRoot != null)
         {
-            _root.SetActive(true);
+            _pageRoot.SetActive(true);
         }
     }
 
@@ -79,9 +76,9 @@ public class UI_InfoPage : MonoBehaviour
         {
             await _popupDoTween.PlayCloseAsync();
         }
-        else if (_root != null)
+        else if (_pageRoot != null)
         {
-            _root.SetActive(false);
+            _pageRoot.SetActive(false);
         }
 
         _pages.Clear();
@@ -94,7 +91,6 @@ public class UI_InfoPage : MonoBehaviour
         {
             _pageView.Refresh(null);
             UpdateButtons();
-            UpdatePageText();
             return;
         }
 
@@ -102,7 +98,6 @@ public class UI_InfoPage : MonoBehaviour
         _pageView.Refresh(_pages[_currentPageIndex]);
 
         UpdateButtons();
-        UpdatePageText();
     }
 
     private void UpdateButtons()
@@ -119,23 +114,10 @@ public class UI_InfoPage : MonoBehaviour
         {
             _nextButton.gameObject.SetActive(hasPages && !isLast);
         }
-        if (_completeButton != null)
+        if (_closeButton != null)
         {
-            _completeButton.gameObject.SetActive(hasPages && isLast);
+            _closeButton.gameObject.SetActive(hasPages && isLast);
         }
-    }
-
-    private void UpdatePageText()
-    {
-        if (_pageIndexText == null) return;
-
-        if (_pages.Count == 0)
-        {
-            _pageIndexText.text = "0 / 0";
-            return;
-        }
-
-        _pageIndexText.text = $"{_currentPageIndex + 1} / {_pages.Count}";
     }
 
     private void ShowPrevPage()

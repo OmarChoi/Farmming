@@ -15,9 +15,23 @@ public class UI_InfoPageView : MonoBehaviour
     [Header("설명 비디오")]
     [SerializeField] private RawImage _videoImage;
     [SerializeField] private VideoPlayer _videoPlayer;
+    [SerializeField] private RenderTexture _renderTexture;
 
     [Header("설명 텍스트")]
     [SerializeField] private TextMeshProUGUI _descriptionText;
+
+    private void Awake()
+    {
+        if (_videoPlayer != null && _renderTexture != null)
+        {
+            _videoPlayer.targetTexture = _renderTexture;
+        }
+
+        if (_videoImage != null && _renderTexture != null)
+        {
+            _videoImage.texture = _renderTexture;
+        }
+    }
 
     public void Refresh(InfoPageData pageData)
     {
