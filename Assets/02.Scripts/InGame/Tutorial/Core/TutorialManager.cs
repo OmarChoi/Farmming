@@ -84,13 +84,11 @@ public class TutorialManager : MonoBehaviour
         _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, _playerTransform);
         if (_tutorialNpcController == null)
         {
-            Debug.LogWarning("TutorialNpcController가 연결되어 있지 않습니다.");
             ClearTutorial();
             return;
         }
         if (_tutorialProgressController == null)
         {
-            Debug.LogWarning("TutorialProgressController가 연결되어 있지 않습니다.");
             ClearTutorial();
             return;
         }
@@ -120,7 +118,6 @@ public class TutorialManager : MonoBehaviour
 
         if (npcInteraction == null || playerInteraction == null)
         {
-            Debug.LogWarning("튜토리얼 자동 상호작용을 시작할 수 없습니다.");
             ClearTutorial();
             yield break;
         }

@@ -336,13 +336,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     public bool AddHelper(HelperDataSO data)
     {
-        if (data == null) return false;
-
-        if (_helperDataList.Exists(h => h != null && h.HelperId == data.HelperId))
-        {
-            Debug.Log($"Helper 존재: {data.HelperName}");
-            return false;
-        }
+        if (data == null || _helperDataList.Exists(h => h != null && h.HelperId == data.HelperId)) return false;
 
         _helperDataList.Add(data);
 
@@ -358,7 +352,6 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                 EnergySavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             };
         }
-        Debug.Log($"Helper added: {data.HelperName}");
         OnSelectionChanged?.Invoke(0);
         return true;
     }
