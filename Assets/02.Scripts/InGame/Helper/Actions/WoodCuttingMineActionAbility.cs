@@ -33,6 +33,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     [SerializeField] private Transform _embeddedNormalWoodEffect;
     [SerializeField] private Transform _embeddedEpicWoodEffect;
+    [SerializeField] private Transform _embeddedLegendaryWoodEffect;
 
     private StoneMineAbility _stoneMineAbility;
     private HelperAnimationAbility _animAbility;
@@ -48,6 +49,10 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     private Quaternion _embeddedEpicWoodEffectLocalRotation;
     private Vector3 _embeddedEpicWoodEffectLocalScale;
     private Tween _embeddedEpicWoodEffectResetTween;
+    private Vector3 _embeddedLegendaryWoodEffectLocalPosition;
+    private Quaternion _embeddedLegendaryWoodEffectLocalRotation;
+    private Vector3 _embeddedLegendaryWoodEffectLocalScale;
+    private Tween _embeddedLegendaryWoodEffectResetTween;
 
     protected override void Awake()
     {
@@ -57,6 +62,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         _rangeBoostEffect = _owner.GetAbility<RangeBoostEffect>();
         CacheEmbeddedNormalWoodEffect();
         CacheEmbeddedEpicWoodEffect();
+        CacheEmbeddedLegendaryWoodEffect();
     }
 
     private void OnDisable()
@@ -64,6 +70,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         StopAllCoroutines();
         ResetEmbeddedNormalWoodEffectTransform(false);
         ResetEmbeddedEpicWoodEffectTransform(false);
+        ResetEmbeddedLegendaryWoodEffectTransform(false);
         _owner?.EndAction();
     }
 
@@ -132,6 +139,10 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
             {
                 LaunchEpicWoodEffect(targetCell, info, preferEmbeddedEffect, spawnRangeImpactEffect);
             }
+        }
+        else if (_owner.Grade.CurrentGrade == EHelperGrade.Legendary && !isWideActive)
+        {
+            LaunchLegendaryWoodEffect(cell, info);
         }
         else if (isWideActive)
         {
@@ -419,6 +430,17 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         _embeddedEpicWoodEffect.gameObject.SetActive(false);
     }
 
+    private void CacheEmbeddedLegendaryWoodEffect()
+    {
+        if (_embeddedLegendaryWoodEffect == null)
+            return;
+
+        _embeddedLegendaryWoodEffectLocalPosition = _embeddedLegendaryWoodEffect.localPosition;
+        _embeddedLegendaryWoodEffectLocalRotation = _embeddedLegendaryWoodEffect.localRotation;
+        _embeddedLegendaryWoodEffectLocalScale = _embeddedLegendaryWoodEffect.localScale;
+        _embeddedLegendaryWoodEffect.gameObject.SetActive(false);
+    }
+
     private GameObject SpawnDetachedNormalWoodEffect(Vector3 startPosition, Quaternion spawnRotation)
     {
         GameObject source = _embeddedNormalWoodEffect != null
@@ -484,6 +506,27 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
                 SpawnEpicWoodRangeImpactEffect(cell, startPosition);
             }
 
+            TryGatherWoodCell(cell, info);
+        });
+    }
+
+    private void LaunchLegendaryWoodEffect(TerrainCell cell, GatheringInfo info)
+    {
+        if (cell == null)
+            return;
+
+        Vector3 startPosition = GetLegendaryWoodEffectSpawnPosition();
+        if (startPosition == Vector3.positiveInfinity || _embeddedLegendaryWoodEffect == null)
+        {
+            SpawnWoodVFX(info, Vector3.zero);
+            return;
+        }
+
+        Vector3 targetPosition = GetNormalWoodImpactPosition(cell, startPosition);
+        PlayEmbeddedLegendaryWoodEffect(startPosition, targetPosition);
+
+        DOVirtual.DelayedCall(Mathf.Max(0f, _epicWoodImpactDelay), () =>
+        {
             TryGatherWoodCell(cell, info);
         });
     }
@@ -612,6 +655,28 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         });
     }
 
+    private void PlayEmbeddedLegendaryWoodEffect(Vector3 startPosition, Vector3 targetPosition)
+    {
+        if (_owner == null || _owner.Grade.CurrentGrade != EHelperGrade.Legendary)
+            return;
+
+        ResetEmbeddedLegendaryWoodEffectTransform(false);
+
+        if (_embeddedLegendaryWoodEffect == null)
+            return;
+
+        _embeddedLegendaryWoodEffect.position = startPosition;
+        _embeddedLegendaryWoodEffect.rotation = GetLegendaryWoodEffectSpawnRotation(startPosition, targetPosition);
+        _embeddedLegendaryWoodEffect.gameObject.SetActive(true);
+        RestartParticleSystems(_embeddedLegendaryWoodEffect);
+
+        float resetDelay = GetLegendaryWoodEffectLifetime();
+        _embeddedLegendaryWoodEffectResetTween = DOVirtual.DelayedCall(resetDelay, () =>
+        {
+            ResetEmbeddedLegendaryWoodEffectTransform(false);
+        });
+    }
+
     private void ResetEmbeddedEpicWoodEffectTransform(bool keepActive)
     {
         _embeddedEpicWoodEffectResetTween?.Kill();
@@ -627,6 +692,22 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
         if (!keepActive)
             _embeddedEpicWoodEffect.gameObject.SetActive(false);
+    }
+
+    private void ResetEmbeddedLegendaryWoodEffectTransform(bool keepActive)
+    {
+        _embeddedLegendaryWoodEffectResetTween?.Kill();
+        _embeddedLegendaryWoodEffectResetTween = null;
+
+        if (_embeddedLegendaryWoodEffect == null)
+            return;
+
+        _embeddedLegendaryWoodEffect.localPosition = _embeddedLegendaryWoodEffectLocalPosition;
+        _embeddedLegendaryWoodEffect.localRotation = _embeddedLegendaryWoodEffectLocalRotation;
+        _embeddedLegendaryWoodEffect.localScale = _embeddedLegendaryWoodEffectLocalScale;
+
+        if (!keepActive)
+            _embeddedLegendaryWoodEffect.gameObject.SetActive(false);
     }
 
     private Quaternion GetSlashMagicRotation()
@@ -675,7 +756,50 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         return yawDelta * templateRotation;
     }
 
+    private Vector3 GetLegendaryWoodEffectSpawnPosition()
+    {
+        if (_mouthPoint != null)
+            return _mouthPoint.position;
+
+        if (_embeddedLegendaryWoodEffect != null)
+            return _embeddedLegendaryWoodEffect.position;
+
+        if (_effectSpawnPoint != null)
+            return _effectSpawnPoint.position;
+
+        return Vector3.positiveInfinity;
+    }
+
+    private Quaternion GetLegendaryWoodEffectSpawnRotation(Vector3 startPosition, Vector3 targetPosition)
+    {
+        Quaternion templateRotation = _embeddedLegendaryWoodEffect != null
+            ? _embeddedLegendaryWoodEffect.rotation
+            : (_mouthPoint != null
+                ? _mouthPoint.rotation
+                : (_effectSpawnPoint != null ? _effectSpawnPoint.rotation : GetSlashMagicRotation()));
+
+        Vector3 templateForward = Vector3.ProjectOnPlane(templateRotation * Vector3.forward, Vector3.up);
+        if (templateForward.sqrMagnitude <= Mathf.Epsilon)
+        {
+            templateForward = Vector3.ProjectOnPlane(_owner?.PlayerOwner != null ? _owner.PlayerOwner.transform.forward : Vector3.forward, Vector3.up);
+        }
+
+        Vector3 targetDirection = Vector3.ProjectOnPlane(targetPosition - startPosition, Vector3.up);
+        if (targetDirection.sqrMagnitude <= Mathf.Epsilon || templateForward.sqrMagnitude <= Mathf.Epsilon)
+        {
+            return templateRotation;
+        }
+
+        Quaternion yawDelta = Quaternion.FromToRotation(templateForward.normalized, targetDirection.normalized);
+        return yawDelta * templateRotation;
+    }
+
     private float GetEpicWoodEffectLifetime()
+    {
+        return Mathf.Max(2f, _slashMagicLifetime);
+    }
+
+    private float GetLegendaryWoodEffectLifetime()
     {
         return Mathf.Max(2f, _slashMagicLifetime);
     }
