@@ -85,6 +85,11 @@ public class HelperAnimationAbility : HelperAbility
         if (_owner.IsMine)
             _owner.PhotonView.RpcSafe(nameof(RPC_PlayAnimation), RpcTarget.Others, (int)anim);
 
+        // Let the Animator process the parameter change before rewinding the state.
+        // Without this, we can accidentally restart the previous state (for example Idle)
+        // and freeze the helper with the wrong pose.
+        yield return null;
+
         float transWait = 0f;
         while (_animator.IsInTransition(layerIndex) && transWait < _maxTransitionWaitTime)
         {
