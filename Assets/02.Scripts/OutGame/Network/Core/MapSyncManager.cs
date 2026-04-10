@@ -22,7 +22,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     private readonly Dictionary<int, byte[][]> _pendingChunks = new();
     private readonly List<Photon.Realtime.Player> _pendingMapRequests = new();
     private readonly HashSet<int> _pendingTerrainReplayActors = new();
-    private readonly Dictionary<string, TerrainCellDelta> _pendingTerrainReplayDeltas = new();
+    private readonly Dictionary<Vector3Int, TerrainCellDelta> _pendingTerrainReplayDeltas = new();
     private bool _mapReady = true;
 
     public event Action OnMapSynced;
@@ -108,8 +108,8 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
     private async UniTaskVoid SendChunksAsync(Photon.Realtime.Player target)
     {
-        byte[] compressed = CompressMapData();
         BeginTerrainReplayCapture(target);
+        byte[] compressed = CompressMapData();
         int totalChunks = Mathf.CeilToInt((float)compressed.Length / CHUNK_SIZE);
         int syncId = UnityEngine.Random.Range(0, int.MaxValue);
 
@@ -133,8 +133,8 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
     private async UniTaskVoid BroadcastChunksAsync()
     {
-        byte[] compressed = CompressMapData();
         BeginTerrainReplayCaptureForCurrentOthers();
+        byte[] compressed = CompressMapData();
         int totalChunks = Mathf.CeilToInt((float)compressed.Length / CHUNK_SIZE);
         int syncId = UnityEngine.Random.Range(0, int.MaxValue);
 
@@ -378,7 +378,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         foreach (TerrainCellDelta delta in batch.Cells)
         {
             if (delta == null) continue;
-            _pendingTerrainReplayDeltas[GetTerrainReplayKey(delta.X, delta.Y, delta.Z)] = delta;
+            _pendingTerrainReplayDeltas[new Vector3Int(delta.X, delta.Y, delta.Z)] = delta;
         }
     }
 
@@ -400,11 +400,6 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
         if (_pendingTerrainReplayActors.Count == 0)
             _pendingTerrainReplayDeltas.Clear();
-    }
-
-    private static string GetTerrainReplayKey(int x, int y, int z)
-    {
-        return $"{x}:{y}:{z}";
     }
 
     private static void ResetTerrainReadyState(Player target)
