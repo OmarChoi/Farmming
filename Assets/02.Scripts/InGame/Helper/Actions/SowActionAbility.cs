@@ -47,6 +47,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null || _cultivateAbility == null)
             return;
 
@@ -69,6 +70,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null)
             return;
         if (_owner.IsMine && _isSecondaryActing)
@@ -197,11 +199,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private List<TerrainCell> GetEpicOrderedTargetCells(TerrainCell centerCell)
     {
+        centerCell = GetInteractableCell(centerCell);
+        if (centerCell == null)
+            return new List<TerrainCell>();
+
         Vector3Int rightOffset = GetGridRightOffset();
         var orderedCells = new List<TerrainCell>();
 
-        TerrainCell leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset);
-        TerrainCell rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset);
+        TerrainCell leftCell = GetGridInteractableCell(centerCell.GridPosition - rightOffset);
+        TerrainCell rightCell = GetGridInteractableCell(centerCell.GridPosition + rightOffset);
 
         if (leftCell != null)
             orderedCells.Add(leftCell);
@@ -428,6 +434,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private bool CanCultivate(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null)
             return false;
         if (cell.Data.CellType != ECellType.Dirt)
@@ -445,6 +452,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private FarmTile GetFarmTile(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null)
             return null;
         if (cell.FarmTile != null && cell.FarmTile.gameObject.activeSelf)
@@ -454,7 +462,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private bool NeedsFarmConversion(TerrainCell cell)
     {
-        return cell == null || cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf;
+        cell = GetInteractableCell(cell);
+        return cell != null && (cell.FarmTile == null || !cell.FarmTile.gameObject.activeSelf);
     }
 
     private List<TerrainCell> GetLateralCells(TerrainCell centerCell)
@@ -469,6 +478,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
         {
             TerrainCell rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
             TerrainCell leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
+            rightCell = GetInteractableCell(rightCell);
+            leftCell = GetInteractableCell(leftCell);
             if (rightCell != null)
                 cells.Add(rightCell);
             if (leftCell != null)
@@ -480,6 +491,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private List<TerrainCell> GetTargetCells(TerrainCell centerCell)
     {
+        centerCell = GetInteractableCell(centerCell);
+        if (centerCell == null)
+            return new List<TerrainCell>();
+
         var cells = new List<TerrainCell> { centerCell };
         cells.AddRange(GetLateralCells(centerCell));
         return cells;
@@ -487,12 +502,16 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private List<TerrainCell> GetOrderedTargetCells(TerrainCell centerCell)
     {
+        centerCell = GetInteractableCell(centerCell);
+        if (centerCell == null)
+            return new List<TerrainCell>();
+
         Vector3Int rightOffset = GetGridRightOffset();
         int extension = _owner.Grade.GetRange() - 1;
         var cells = new List<TerrainCell>();
         for (int i = -extension; i <= extension; i++)
         {
-            TerrainCell cell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
+            TerrainCell cell = GetGridInteractableCell(centerCell.GridPosition + rightOffset * i);
             if (cell != null)
                 cells.Add(cell);
         }
@@ -516,7 +535,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private TerrainCell GetLateralCell(TerrainCell centerCell, int directionSign)
     {
         Vector3Int rightOffset = GetGridRightOffset();
-        return TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * directionSign);
+        return GetGridInteractableCell(centerCell.GridPosition + rightOffset * directionSign);
     }
 
     private void TryConvertLateralCell(TerrainCell centerCell, int directionSign)
@@ -610,5 +629,17 @@ public class SowActionAbility : HelperAbility, IHelperAction
         CancelCurrentAction();
         _owner?.transform.DOKill();
         _owner?.EndAction();
+    }
+
+    private TerrainCell GetInteractableCell(TerrainCell cell)
+    {
+        if (TerrainGridManager.Instance == null) return null;
+        return TerrainGridManager.Instance.IsCellAvailableForInteraction(cell) ? cell : null;
+    }
+
+    private TerrainCell GetGridInteractableCell(Vector3Int gridPos)
+    {
+        if (TerrainGridManager.Instance == null) return null;
+        return TerrainGridManager.Instance.GetInteractionCell(gridPos, false, out _);
     }
 }

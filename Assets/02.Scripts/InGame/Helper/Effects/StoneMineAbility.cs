@@ -51,6 +51,11 @@ public class StoneMineAbility : HelperAbility
 
     public void JumpAndSmash(TerrainCell cell)
     {
+        if (TerrainGridManager.Instance != null && !TerrainGridManager.Instance.IsCellAvailableForInteraction(cell))
+        {
+            return;
+        }
+
         if(_isJumping || cell == null)
         {
             return;
@@ -100,8 +105,8 @@ public class StoneMineAbility : HelperAbility
         Vector3Int centerGrid = centerCell.GridPosition;
         var result = new List<TerrainCell>();
 
-        var rightCell = TerrainGridManager.Instance.GetCell(centerGrid + rightOffset);
-        var leftCell = TerrainGridManager.Instance.GetCell(centerGrid - rightOffset);
+        var rightCell = TerrainGridManager.Instance.GetInteractionCell(centerGrid + rightOffset, false, out _);
+        var leftCell = TerrainGridManager.Instance.GetInteractionCell(centerGrid - rightOffset, false, out _);
 
         if (rightCell != null) result.Add(rightCell);
         if (leftCell != null) result.Add(leftCell);

@@ -46,16 +46,24 @@ public class PlayerGridIndicatorAbility : PlayerAbility
 
     private void UpdateIndicators(HelperController helper, IHelperAction action)
     {
-        Vector3Int centerGridPos = _terrainAbility.FrontGridPos;
+        bool isGroundHelper = helper.GetAbility<GroundActionAbility>() != null;
+        TerrainCell centerCell = isGroundHelper
+            ? _terrainAbility.GetFrontCellForGroundHelper()
+            : _terrainAbility.GetFrontCell();
+        if (centerCell == null)
+        {
+            HideAll();
+            return;
+        }
 
-        GetIndicatorPositions(centerGridPos, helper);
+        GetIndicatorPositions(centerCell.GridPosition, helper);
         List<Vector3Int> positions = _positionBuffer;
 
         _activeCount = 0;
         for (int i = 0; i < positions.Count; i++)
         {
             Vector3Int gridPos = positions[i];
-            TerrainCell cell = GridManager.GetCell(gridPos);
+            TerrainCell cell = GridManager.GetInteractionCell(gridPos, false, out _);
 
             Vector3 worldPos = GridManager.GridToWorld(gridPos);
             worldPos.y += GridManager.CellSize * 0.5f + _heightOffset;
