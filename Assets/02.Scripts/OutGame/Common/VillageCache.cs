@@ -5,6 +5,7 @@ public static class VillageCache
 {
     public static TerrainSaveData Terrain { get; set; }
     public static List<BuildingSaveData> Buildings { get; set; }
+    public static List<StorageSaveData> Storages { get; set; }
 
     // 플레이어 위치 캐시 (PlayerId → position/rotation)
     private static readonly Dictionary<string, Vector3> _positions = new();
@@ -18,6 +19,7 @@ public static class VillageCache
         Buildings = BuildingManager.Instance != null
             ? BuildingManager.Instance.ExportBuildings()
             : null;
+        Storages = StorageManager.Instance.ExportStorages();
     }
 
     public static void CapturePlayerPositions()
@@ -54,6 +56,7 @@ public static class VillageCache
     {
         Terrain = null;
         Buildings = null;
+        Storages = null;
         _positions.Clear();
         _rotations.Clear();
     }

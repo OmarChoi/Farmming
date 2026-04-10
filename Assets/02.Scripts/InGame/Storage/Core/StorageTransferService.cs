@@ -76,8 +76,8 @@ public class StorageTransferService
         }
 
         // 직접 슬롯을 조작했으므로 양쪽 도메인에 변경 알림
-        _inventory.RemoveAt(inventorySlotIndex, 0);
-        _storage.RemoveAt(storageSlotIndex, 0);
+        _inventory.NotifySlotChanged(inventorySlotIndex);
+        _storage.NotifySlotChanged(storageSlotIndex);
     }
 
     // === 창고 내부 조작 (드래그/스왑/분할) ===
@@ -123,7 +123,7 @@ public class StorageTransferService
             if (toAdd > 0) slot.TryAdd(item, toAdd);
         }
 
-        _storage.RemoveAt(slotIndex, 0); // 이벤트 발생용
+        _storage.NotifySlotChanged(slotIndex);
     }
 
     /// 분할 드래그 시작

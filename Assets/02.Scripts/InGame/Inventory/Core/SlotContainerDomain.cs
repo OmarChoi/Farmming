@@ -198,6 +198,6 @@ public class SlotContainerDomain
         NotifySlotChanged(sourceIndex);
     }
 
-    protected void NotifySlotChanged(int index) => OnSlotChanged?.Invoke(index);
+    public void NotifySlotChanged(int index) => OnSlotChanged?.Invoke(index);
     protected void NotifySlotCountChanged() => OnSlotCountChanged?.Invoke();
 }

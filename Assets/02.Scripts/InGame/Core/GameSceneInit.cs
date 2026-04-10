@@ -69,6 +69,8 @@ public class GameSceneInit : MonoBehaviour
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
 
+            StorageManager.Instance.ImportStorages(VillageCache.Storages);
+
             VillageCache.RestorePlayerPositions();
             LoadingProgress.Value = 0.6f;
             ReturningFromDungeon = false;
@@ -182,6 +184,8 @@ public class GameSceneInit : MonoBehaviour
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
 
+            StorageManager.Instance.ImportStorages(VillageCache.Storages);
+
             VillageCache.RestorePlayerPositions();
         }
         else
@@ -217,6 +221,8 @@ public class GameSceneInit : MonoBehaviour
             
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+
+            StorageManager.Instance.ImportStorages(VillageCache.Storages);
             
             _mapNavMeshController.BuildInitialNavMesh();
 

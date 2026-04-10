@@ -27,6 +27,7 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
 
     private TradeService _tradeService;
     private StorageTransferService _storageTransferService;
+    private StorageController _boundStorageController;
     private UI_Storage _linkedStorage;
     private EInventoryClickMode _clickMode = EInventoryClickMode.Normal;
 
@@ -47,16 +48,33 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
 
     private void Awake()
     {
+        StorageUiRegistry.RegisterInventory(this);
+        StorageUiRegistry.OnStorageRegistered += HandleStorageRegistered;
+        StorageUiRegistry.OnStorageUnregistered += HandleStorageUnregistered;
+
         _panelRect = _panel.GetComponent<RectTransform>();
         _panelOriginPos = _panelRect.anchoredPosition;
         _panel.SetActive(false);
         _dragIcon.gameObject.SetActive(false);
         PlayerInventoryAbility.OnLocalPlayerReady += Bind;
+        TryBindExistingPlayer();
+        StorageController.OnReady += HandleStorageControllerReady;
+
+        if (StorageController.Instance != null)
+            BindStorageController(StorageController.Instance);
+
+        if (StorageUiRegistry.CurrentStorage != null)
+            HandleStorageRegistered(StorageUiRegistry.CurrentStorage);
     }
 
     private void OnDestroy()
     {
         PlayerInventoryAbility.OnLocalPlayerReady -= Bind;
+        StorageController.OnReady -= HandleStorageControllerReady;
+        StorageUiRegistry.OnStorageRegistered -= HandleStorageRegistered;
+        StorageUiRegistry.OnStorageUnregistered -= HandleStorageUnregistered;
+        StorageUiRegistry.UnregisterInventory(this);
+        UnbindStorageController();
         Unbind();
     }
 
@@ -68,6 +86,21 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
 
         if (!Input.GetMouseButton(0))
             EndDrag();
+    }
+
+    private void TryBindExistingPlayer()
+    {
+        if (_inventoryAbility != null) return;
+
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (player == null || !player.IsMine) continue;
+            var ability = player.GetAbility<PlayerInventoryAbility>();
+            if (ability == null) continue;
+            Bind(ability);
+            return;
+        }
     }
 
     private void Bind(PlayerInventoryAbility ability)
@@ -357,6 +390,60 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
         _storageTransferService = service;
     }
 
+    private void HandleStorageControllerReady(StorageController controller)
+    {
+        BindStorageController(controller);
+    }
+
+    private void BindStorageController(StorageController controller)
+    {
+        if (controller == null) return;
+
+        if (_boundStorageController == controller)
+            return;
+
+        UnbindStorageController();
+
+        _boundStorageController = controller;
+        _boundStorageController.OnStorageOpened += HandleStorageOpened;
+        _boundStorageController.OnStorageClosed += HandleStorageClosed;
+
+        if (controller.IsOpen && controller.CurrentSession != null)
+            HandleStorageOpened(controller.CurrentSession);
+    }
+
+    private void UnbindStorageController()
+    {
+        if (_boundStorageController == null) return;
+
+        _boundStorageController.OnStorageOpened -= HandleStorageOpened;
+        _boundStorageController.OnStorageClosed -= HandleStorageClosed;
+        _boundStorageController = null;
+    }
+
+    private void HandleStorageOpened(StorageSession session)
+    {
+        if (session == null) return;
+
+        // 던전 복귀 등으로 바인딩이 누락된 경우 복구
+        if (_inventoryAbility == null)
+        {
+            TryBindExistingPlayer();
+            // Open() 이벤트를 이미 놓쳤으므로 직접 패널 활성화
+            if (_inventoryAbility != null && _inventoryAbility.IsOpen)
+                OnToggle(true);
+        }
+
+        SetLinkedStorage(StorageUiRegistry.CurrentStorage, session.TransferService);
+        SetClickMode(EInventoryClickMode.Storage);
+    }
+
+    private void HandleStorageClosed()
+    {
+        SetClickMode(EInventoryClickMode.Normal);
+        SetLinkedStorage(null, null);
+    }
+
     private void HandleSellClick(UI_Slot clicked)
     {
         if (_tradeService == null) return;
@@ -369,5 +456,16 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
         else
             Debug.LogWarning($"판매 실패 - Slot: {clicked.SlotIndex}");
 #endif
+    }
+
+    private void HandleStorageRegistered(UI_Storage storage)
+    {
+        if (_boundStorageController == null || !_boundStorageController.IsOpen) return;
+        SetLinkedStorage(storage, _storageTransferService);
+    }
+
+    private void HandleStorageUnregistered()
+    {
+        SetLinkedStorage(null, _storageTransferService);
     }
 }

@@ -8,6 +8,9 @@ public class NetworkStorageTransferProxy : StorageTransferService
     private readonly StorageSyncHandler _syncHandler;
     public override bool RequiresRestoreBeforeCrossSwap => _syncHandler.IsMaster;
 
+    // 클라이언트 드래그 시 원본 슬롯 추적 (PickUp → PutDown 간 이동 동기화)
+    private int _clientDragSourceSlot = -1;
+
     public NetworkStorageTransferProxy(
         SlotContainerDomain inventory, StorageDomain storage, StorageSyncHandler syncHandler)
         : base(inventory, storage)
@@ -85,6 +88,8 @@ public class NetworkStorageTransferProxy : StorageTransferService
         base.SwapInStorage(from, to);
         if (_syncHandler.IsMaster)
             _syncHandler.BroadcastFullSync();
+        else
+            _syncHandler.RequestSwapInStorage(from, to);
     }
 
     public override void PickUpFromStorage(int slotIndex, out ItemDataSO item, out int count)
@@ -92,13 +97,25 @@ public class NetworkStorageTransferProxy : StorageTransferService
         base.PickUpFromStorage(slotIndex, out item, out count);
         if (_syncHandler.IsMaster)
             _syncHandler.BroadcastFullSync();
+        else
+            _clientDragSourceSlot = slotIndex;
     }
 
     public override void PutDownInStorage(int slotIndex, ItemDataSO item, int count)
     {
         base.PutDownInStorage(slotIndex, item, count);
         if (_syncHandler.IsMaster)
+        {
             _syncHandler.BroadcastFullSync();
+        }
+        else
+        {
+            int sourceSlot = _clientDragSourceSlot;
+            _clientDragSourceSlot = -1;
+
+            if (sourceSlot >= 0 && sourceSlot != slotIndex)
+                _syncHandler.RequestSwapInStorage(sourceSlot, slotIndex);
+        }
     }
 
     public override int SplitHalfInStorage(int index)

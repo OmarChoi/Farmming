@@ -100,6 +100,8 @@ public class SaveManager : MonoBehaviour
             if (BuildingManager.Instance != null)
                 data.Buildings = BuildingManager.Instance.ExportBuildings();
 
+            data.Storages = StorageManager.Instance.ExportStorages();
+
             if (_timeSystem != null)
                 data.Time = _timeSystem.ExportSaveData();
             
@@ -187,6 +189,8 @@ public class SaveManager : MonoBehaviour
         
         if (BuildingManager.Instance != null && _loadedData.Buildings != null)
             await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
+
+        StorageManager.Instance.ImportStorages(_loadedData.Storages);
         
         if (_timeSystem != null)
             _timeSystem.ImportTimeSaveData(_loadedData.Time);
