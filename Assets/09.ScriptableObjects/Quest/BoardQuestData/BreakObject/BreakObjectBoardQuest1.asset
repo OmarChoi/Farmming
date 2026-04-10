@@ -18,10 +18,12 @@ MonoBehaviour:
     \uB370 \uBC29\uD574\uAC00 \uB418\uACE0 \uC788\uC5B4. \uB204\uAC00 \uB098\uBB34
     \uC880 \uC5C6\uC560\uC92C\uC73C\uBA74 \uC88B\uACA0\uC5B4!"
   QuestCategory: 2
+  IsTutorial: 0
   StartNpcId: 
   CompleteNpcId: 
+  IsForcedAccept: 0
   ObjectiveType: 0
-  TargetObjectId: "\uB098\uBB34"
+  TargetId: "\uD1B5\uB098\uBB34"
   ItemRequirements: []
   TargetNpcId: 
   RequiredAmount: 1
@@ -38,6 +40,8 @@ MonoBehaviour:
       Amount: 1
       TargetNpcId: 
   AcceptDialogue: {fileID: 0}
+  AcceptResultDialogue: {fileID: 0}
+  DeclineDialogue: {fileID: 0}
   InProgressDialogue: {fileID: 0}
   CompleteDialogue: {fileID: 0}
   NoQuestDialogue: {fileID: 0}

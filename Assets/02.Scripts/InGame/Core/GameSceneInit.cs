@@ -36,8 +36,11 @@ public class GameSceneInit : MonoBehaviour
             {
                 Vector3 spawnPos = _mapManager.GenerateVillage();
                 _mapNavMeshController.BuildInitialNavMesh();
-                SpawnPlayer(spawnPos);
+                PlayerController localPlayer = SpawnPlayer(spawnPos);
                 CacheVillageData();
+
+                QuestManager.Instance?.MarkLoaded();
+                TryStartTutorial(localPlayer);
 
                 var props = new Hashtable { { PropTerrainReady, true } };
                 PhotonNetwork.LocalPlayer.SetCustomProperties(props);
@@ -105,19 +108,17 @@ public class GameSceneInit : MonoBehaviour
 
         LoadingProgress.Value = 0.6f;
 
-        var existing = FindAnyObjectByType<PlayerController>();
-        if (existing != null && existing.IsMine)
-        {
-            // 기존 플레이어 사용 — 스폰 건너뜀
-        }
-        else
+        PlayerController localPlayer = FindLocalPlayer();
+
+        if (localPlayer == null)
         {
             var pos = FindSpawnPosition();
-            SpawnPlayer(pos);
+            localPlayer = SpawnPlayer(pos);
         }
 
         CacheVillageData();
         await WaitForAllTerrainReady();
+        TryStartTutorial(localPlayer);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -149,13 +150,15 @@ public class GameSceneInit : MonoBehaviour
         return Vector3.zero;
     }
 
-    private void SpawnPlayer(Vector3 spawnPos)
+    private PlayerController SpawnPlayer(Vector3 spawnPos)
     {
         var playerObj = PhotonNetwork.Instantiate(_playerPrefabName, spawnPos, Quaternion.identity);
         var pc = playerObj.GetComponent<PlayerController>();
 
         if (CustomizeData.Instance != null)
             pc.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
+
+        return pc;
     }
 
     private void InitLocalGame()
@@ -215,6 +218,7 @@ public class GameSceneInit : MonoBehaviour
     {
         int slot = RoomManager.Instance.SelectedSlot;
         bool returning = ReturningFromDungeon;
+        PlayerController localPlayer = null;
 
         if (returning && VillageCache.HasCache)
         {
@@ -232,6 +236,7 @@ public class GameSceneInit : MonoBehaviour
             VillageCache.RestorePlayerPositions();
             RestoreExistingPlayers();
             ReturningFromDungeon = false;
+            localPlayer = FindLocalPlayer();
         }
         else
         {
@@ -244,15 +249,16 @@ public class GameSceneInit : MonoBehaviour
 
             if (BuildingManager.Instance != null)
                 BuildingManager.Instance.SpawnBuildingNpcs();
-            
+
             if (ReturningFromDungeon)
             {
                 RestoreExistingPlayers();
                 ReturningFromDungeon = false;
+                localPlayer = FindLocalPlayer();
             }
             else
             {
-                SpawnPlayer(Vector3.zero);
+                localPlayer = SpawnPlayer(Vector3.zero);
             }
 
             await UniTask.Yield();
@@ -266,6 +272,7 @@ public class GameSceneInit : MonoBehaviour
         LoadingProgress.Value = 0.6f;
         RoomManager.Instance.OpenRoom();
         await WaitForAllTerrainReady();
+        TryStartTutorial(localPlayer);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -402,5 +409,34 @@ public class GameSceneInit : MonoBehaviour
             { SceneTransitionRoomProps.DungeonFloor, null }
         };
         PhotonNetwork.CurrentRoom.SetCustomProperties(clearRoomProps);
+    }
+
+    private PlayerController FindLocalPlayer()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+
+        foreach (var player in players)
+        {
+            if (player != null && player.IsMine) return player;
+        }
+
+        return null;
+    }
+
+    private bool ShouldStartTutorial(PlayerController player)
+    {
+        if (player == null || ReturningFromDungeon || TutorialManager.Instance == null) return false;
+
+        PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
+        if (questAbility == null) return false;
+
+        return questAbility.TutorialState == ETutorialState.None ||
+               questAbility.TutorialState == ETutorialState.InProgress;
+    }
+
+    private void TryStartTutorial(PlayerController player)
+    {
+        if (!ShouldStartTutorial(player)) return;
+        TutorialManager.Instance.TryStartTutorial(player);
     }
 }

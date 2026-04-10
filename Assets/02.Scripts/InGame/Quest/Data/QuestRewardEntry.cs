@@ -7,6 +7,7 @@ public class QuestRewardEntry
     public EQuestRewardType RewardType;
     public ItemDataSO RewardItem;
     public int Amount = 1;
+    public HelperDataSO RewardHelper;
 
     [Header("호감도 보상용")]
     public string TargetNpcId;
@@ -25,6 +26,9 @@ public class QuestRewardEntry
 
             case EQuestRewardType.Friendship:
                 return !string.IsNullOrEmpty(TargetNpcId);
+
+            case EQuestRewardType.HelperUnlock:
+                return RewardHelper != null;
 
             default:
                 return false;
