@@ -54,7 +54,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private void Update()
     {
         if (!_isActing) return;
-        if (!_isSecondary) return;
+        if (_owner.Grade.CurrentGrade == EHelperGrade.Normal || !_isSecondary) return;
 
         var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.shortNameHash == WaterStateHash && stateInfo.normalizedTime >= 1f)
@@ -70,18 +70,20 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public bool CanInteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         return cell != null;
     }
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
-        if (_owner.Grade.CurrentGrade < _owner.Data.SecondaryUnlockGrade) return false;
-        return true;
+        return _owner.Grade.CurrentGrade >= _owner.Data.SecondaryUnlockGrade;
     }
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return;
         if (CurrentGrade == EHelperGrade.Normal && HasBlockingFrontObject(cell)) return;
 
@@ -91,6 +93,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return;
         if (_owner.Grade.CurrentGrade < _owner.Data.SecondaryUnlockGrade) return;
         if (_owner.IsMine && _isActing) return;
@@ -267,6 +270,10 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     {
         var cells = new List<TerrainCell>();
 
+        centerCell = GetInteractableCell(centerCell);
+        if (centerCell == null)
+            return cells;
+
         if (!HasObject(centerCell))
         {
             cells.Add(centerCell);
@@ -278,13 +285,13 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         Vector3Int rightOffset = GetGridRightOffset();
         for (int i = 1; i <= extension; i++)
         {
-            var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
-            var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
+            var rightCell = GetGridInteractableCell(centerCell.GridPosition + rightOffset * i);
+            var leftCell = GetGridInteractableCell(centerCell.GridPosition - rightOffset * i);
 
-            if (rightCell != null && !HasObject(rightCell) && rightCell.Data.IsTop)
+            if (rightCell != null && !HasObject(rightCell))
                 cells.Add(rightCell);
 
-            if (leftCell != null && !HasObject(leftCell) && leftCell.Data.IsTop)
+            if (leftCell != null && !HasObject(leftCell))
                 cells.Add(leftCell);
         }
         return cells;
