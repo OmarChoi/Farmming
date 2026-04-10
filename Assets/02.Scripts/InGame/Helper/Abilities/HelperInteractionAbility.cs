@@ -22,6 +22,7 @@ public class HelperInteractionAbility : HelperAbility
     public void InteractPrimary(TerrainCell cell)
     {
         if (!CanInteract()) return;
+        if (!_action.CanInteractPrimary(cell)) return;
 
         ConsumeResources();
 
@@ -36,6 +37,7 @@ public class HelperInteractionAbility : HelperAbility
     public void InteractSecondary(TerrainCell cell)
     {
         if (!CanInteract()) return;
+        if (!_action.CanInteractSecondary(cell)) return;
 
         float secondaryCost = _action.GetSecondaryCost();
         if (secondaryCost >= 0)

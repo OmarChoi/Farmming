@@ -195,9 +195,21 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void TryInteractPrimary()
     {
-        TerrainCell cell = _terrainAbility.GetFrontCell(out bool isBelowFallback);
+        bool isGroundHelper = IsGroundHelper(_currentHelper);
+        TerrainCell cell;
+        bool isBelowFallback = false;
+
+        if (isGroundHelper)
+        {
+            cell = _terrainAbility.GetFrontCellForGroundHelper();
+        }
+        else
+        {
+            cell = _terrainAbility.GetFrontCell(out isBelowFallback);
+        }
+
         if (cell == null) return;
-        if (isBelowFallback && !IsGroundHelper(_currentHelper)) return;
+        if (isBelowFallback && !isGroundHelper) return;
 
         _currentHelper.InteractPrimary(cell);
     }
@@ -209,7 +221,9 @@ public class PlayerHelperInteractionAbility : PlayerAbility
 
     private void TryInteractSecondary()
     {
-        TerrainCell cell = _terrainAbility.GetFrontCell();
+        TerrainCell cell = IsGroundHelper(_currentHelper)
+            ? _terrainAbility.GetFrontCellForGroundHelper()
+            : _terrainAbility.GetFrontCell();
         if (cell == null) return;
 
         _currentHelper.InteractSecondary(cell);

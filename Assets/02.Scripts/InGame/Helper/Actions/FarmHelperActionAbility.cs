@@ -8,6 +8,7 @@ public class FarmHelperActionAbility : HelperAbility, IHelperAction
 
     public bool CanInteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
         if (cell.Data.CellType != ECellType.Dirt) return false;
         if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
@@ -17,6 +18,9 @@ public class FarmHelperActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
+        if (cell == null) return;
+
         _owner.BeginAction();
 
         FarmTile farmTile = cell.FarmTile;
@@ -32,5 +36,11 @@ public class FarmHelperActionAbility : HelperAbility, IHelperAction
     public void InteractSecondary(TerrainCell cell)
     {
         // TODO: 우클릭 동작 구현
+    }
+
+    private TerrainCell GetInteractableCell(TerrainCell cell)
+    {
+        if (TerrainGridManager.Instance == null) return null;
+        return TerrainGridManager.Instance.IsCellAvailableForInteraction(cell) ? cell : null;
     }
 }

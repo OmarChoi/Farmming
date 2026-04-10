@@ -56,6 +56,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return;
 
         if (!CanRemoveCell(cell)) return;
@@ -102,6 +103,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return;
 
         PlayerInventoryAbility inventory = GetInventory();
@@ -146,12 +148,14 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     public bool CanInteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
         return CanRemoveCell(cell);
     }
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
         if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
             return false;
@@ -175,6 +179,12 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         }
 
         return cell.Data.CanDig(_canDigLevel);
+    }
+
+    private TerrainCell GetInteractableCell(TerrainCell cell)
+    {
+        if (TerrainGridManager.Instance == null) return null;
+        return TerrainGridManager.Instance.IsCellAvailableForInteraction(cell) ? cell : null;
     }
 
     private void AnimateCellToMouth(TerrainCell cell)

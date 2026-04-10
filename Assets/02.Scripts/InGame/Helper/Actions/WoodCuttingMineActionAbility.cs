@@ -42,18 +42,23 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     public bool CanInteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
         return cell.Data.ObjectType == EGridObjectType.Tree;
     }
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
         return cell.Data.ObjectType == EGridObjectType.Rock;
     }
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
+        if (cell == null) return;
+
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.WoodCutting);
 
@@ -175,8 +180,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         Vector3Int centerGrid = centerCell.GridPosition;
         List<TerrainCell> result = new List<TerrainCell>();
 
-        TerrainCell rightCell = TerrainGridManager.Instance.GetCell(centerGrid + rightOffset);
-        TerrainCell leftCell = TerrainGridManager.Instance.GetCell(centerGrid - rightOffset);
+        TerrainCell rightCell = TerrainGridManager.Instance.GetInteractionCell(centerGrid + rightOffset, false, out _);
+        TerrainCell leftCell = TerrainGridManager.Instance.GetInteractionCell(centerGrid - rightOffset, false, out _);
 
         if (rightCell != null) result.Add(rightCell);
         if (leftCell != null) result.Add(leftCell);
@@ -193,10 +198,19 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
+        if (cell == null) return;
+
         if (cell != null && cell.CurrentObject != null && cell.Data.ObjectType == EGridObjectType.Tree)
             return;
 
         _owner.BeginAction();
         _stoneMineAbility?.JumpAndSmash(cell);
+    }
+
+    private TerrainCell GetInteractableCell(TerrainCell cell)
+    {
+        if (TerrainGridManager.Instance == null) return null;
+        return TerrainGridManager.Instance.IsCellAvailableForInteraction(cell) ? cell : null;
     }
 }
