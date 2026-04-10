@@ -193,9 +193,11 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             success = true;
         }
 
-        if (seed.Icon != null)
+        ItemDataSO harvestItem = seed.HarvestItem;
+        if (harvestItem != null)
         {
-            _harvestItem?.Raise(seed.Icon, seed.DisplayName, harvestAmount);
+            Sprite notificationIcon = harvestItem.Icon != null ? harvestItem.Icon : seed.Icon;
+            _harvestItem?.Raise(notificationIcon, harvestItem.DisplayName, harvestAmount);
         }
 
         return success;

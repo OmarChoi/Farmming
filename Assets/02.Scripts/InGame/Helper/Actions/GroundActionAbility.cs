@@ -105,6 +105,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return;
+        if (!CanPlaceGroundOnCell(cell)) return;
 
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return;
@@ -127,6 +128,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, _generateDirtAmount);
         if (!placed) return;
 
+        ClearFarmLandIfCovered(cell, targetGridPos);
+
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.EatGround);
 
@@ -146,6 +149,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _owner.EndAction();
     }
 
+    private void ClearFarmLandIfCovered(TerrainCell sourceCell, Vector3Int placedGridPos)
+    {
+        if (sourceCell == null) return;
+        if (sourceCell.Data.ObjectType != EGridObjectType.FarmLand) return;
+        if (placedGridPos != sourceCell.GridPosition + Vector3Int.up) return;
+
+        sourceCell.Data.RemoveObject();
+        sourceCell.Refresh();
+    }
+
     public bool CanInteractPrimary(TerrainCell cell)
     {
         cell = GetInteractableCell(cell);
@@ -157,14 +170,29 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return false;
-        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
-            return false;
+        if (!CanPlaceGroundOnCell(cell)) return false;
 
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return false;
 
         ItemDataSO selectedGround = _groundSelector?.SelectedGround;
         return selectedGround != null;
+    }
+
+    private bool CanPlaceGroundOnCell(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return false;
+
+        if (cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return true;
+
+        FarmTile farmTile = cell.FarmTile;
+        if (farmTile == null)
+            return true;
+
+        return !farmTile.HasSeed && !farmTile.HasCrop;
     }
 
     private bool CanRemoveCell(TerrainCell cell)
@@ -174,7 +202,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (cell.Data.ObjectType == EGridObjectType.FarmLand)
         {
             FarmTile farmTile = cell.FarmTile;
-            if (farmTile != null && farmTile.HasSeed) return false;
+            if (farmTile != null && (farmTile.HasSeed || farmTile.HasCrop)) return false;
             return cell.Data.CanDig(_canDigLevel);
         }
 

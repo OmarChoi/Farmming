@@ -16,6 +16,7 @@ public class CropGrowth : MonoBehaviour
 
     public bool HasStarted => _hasStarted;
     public bool IsHarvestable => !_isGrowing && _hasStarted;
+    public bool HasCropObject => _currentCropObject != null;
 
     private void Awake()
     {
