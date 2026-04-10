@@ -18,15 +18,18 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
     private readonly Dictionary<int, byte[][]> _pendingChunks = new();
     private readonly List<Photon.Realtime.Player> _pendingMapRequests = new();
+    private readonly HashSet<int> _villageCacheReadyActors = new();
     private bool _mapReady = true;
+    private int _villageCacheToken;
+
+    private const float VillageCachePrepareTimeoutSeconds = 5f;
 
     public event Action OnMapSynced;
 
-    // --- 던전 시드 동기화 ---
     private int _dungeonSeed;
     private int _dungeonFloor;
     private bool _dungeonSeedReady;
-    public event Action<int, int> OnDungeonSeedReceived; // floor, seed
+    public event Action<int, int> OnDungeonSeedReceived;
 
     private void Awake()
     {
@@ -38,32 +41,50 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         Instance = this;
     }
 
-    /// 마스터가 특정 플레이어에게 현재 맵 데이터를 전송
     public void SendMapTo(Photon.Realtime.Player target)
     {
         if (!PhotonNetwork.IsMasterClient) return;
         SendChunksAsync(target).Forget();
     }
 
-    /// 마스터의 맵 로드가 완료될 때까지 클라이언트 요청을 대기시킴
     public void HoldRequests()
     {
         _mapReady = false;
         _pendingMapRequests.Clear();
     }
 
-    /// 마스터가 모든 클라이언트에게 맵 전송
     public void BroadcastMap()
     {
         if (!PhotonNetwork.IsMasterClient) return;
         _mapReady = true;
 
-        // 맵 로딩 중 도착한 요청을 개별 전송 (씬 전환 타이밍에 브로드캐스트가 누락될 수 있으므로)
         foreach (var player in _pendingMapRequests)
             SendMapTo(player);
         _pendingMapRequests.Clear();
 
         BroadcastChunksAsync().Forget();
+    }
+
+    public async UniTask PrepareVillageCacheForDungeonAsync()
+    {
+        CaptureVillageCacheLocally();
+
+        if (!PhotonNetwork.IsConnected)
+            return;
+
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        _villageCacheReadyActors.Clear();
+        _villageCacheToken = UnityEngine.Random.Range(1, int.MaxValue);
+        _villageCacheReadyActors.Add(PhotonNetwork.LocalPlayer.ActorNumber);
+
+        photonView.RPC(nameof(RPC_PrepareVillageCacheForDungeon), RpcTarget.Others, _villageCacheToken);
+
+        float timeout = Time.realtimeSinceStartup + VillageCachePrepareTimeoutSeconds;
+        await UniTask.WaitUntil(() =>
+            _villageCacheReadyActors.Count >= PhotonNetwork.PlayerList.Length ||
+            Time.realtimeSinceStartup > timeout);
     }
 
     private async UniTaskVoid SendChunksAsync(Photon.Realtime.Player target)
@@ -72,7 +93,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         int totalChunks = Mathf.CeilToInt((float)compressed.Length / CHUNK_SIZE);
         int syncId = UnityEngine.Random.Range(0, int.MaxValue);
 
-        Debug.Log($"맵 동기화 전송: 압축 {compressed.Length} bytes, {totalChunks} 청크");
+        Debug.Log($"Map sync send: {compressed.Length} bytes, {totalChunks} chunks");
 
         photonView.RPC(nameof(RPC_MapSyncStart), target, syncId, totalChunks);
 
@@ -119,8 +140,10 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
             Terrain = _terrainGridManager.ExportSaveData(),
             Buildings = BuildingManager.Instance != null
                 ? BuildingManager.Instance.ExportBuildings()
-                : new System.Collections.Generic.List<BuildingSaveData>()
+                : new List<BuildingSaveData>(),
+            Storages = StorageManager.Instance.ExportStorages()
         };
+
         string json = JsonUtility.ToJson(syncData);
         byte[] raw = Encoding.UTF8.GetBytes(json);
 
@@ -143,7 +166,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     private void RPC_MapSyncStart(int syncId, int totalChunks)
     {
         _pendingChunks[syncId] = new byte[totalChunks][];
-        Debug.Log($"맵 동기화 시작 (청크 {totalChunks}개)");
+        Debug.Log($"Map sync start ({totalChunks} chunks)");
     }
 
     [PunRPC]
@@ -174,21 +197,22 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
 
         string json = DecompressMapData(compressed);
         var syncData = JsonUtility.FromJson<MapSyncData>(json);
+        ApplySyncedMapData(syncData, compressed.Length).Forget();
+    }
 
+    private async UniTaskVoid ApplySyncedMapData(MapSyncData syncData, int payloadSize)
+    {
         _terrainGridManager.ImportSaveData(syncData.Terrain);
-            
-        if (syncData.Buildings != null && syncData.Buildings.Count > 0 && BuildingManager.Instance != null)
-        {
-            BuildingManager.Instance.ImportBuildings(syncData.Buildings).Forget();
-        }
 
-        Debug.Log($"맵 동기화 완료 (압축 {compressed.Length} bytes)");
+        if (syncData.Buildings != null && syncData.Buildings.Count > 0 && BuildingManager.Instance != null)
+            await BuildingManager.Instance.ImportBuildings(syncData.Buildings);
+
+        StorageManager.Instance.ImportStorages(syncData.Storages);
+
+        Debug.Log($"Map sync completed ({payloadSize} bytes)");
         OnMapSynced?.Invoke();
     }
 
-    // === 던전 시드 동기화 ===
-
-    /// 마스터가 던전 시드를 모든 클라이언트에게 전송
     public void BroadcastDungeonSeed(int floor, int seed)
     {
         if (!PhotonNetwork.IsMasterClient) return;
@@ -198,7 +222,6 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         photonView.RPC(nameof(RPC_DungeonSeed), RpcTarget.Others, floor, seed);
     }
 
-    /// 클라이언트가 마스터에게 던전 시드 요청
     public void RequestDungeonSeed()
     {
         if (PhotonNetwork.IsMasterClient) return;
@@ -219,11 +242,8 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         photonView.RPC(nameof(RPC_DungeonSeed), info.Sender, _dungeonFloor, _dungeonSeed);
     }
 
-    // === 던전 입장 요청 (클라이언트 → 마스터) ===
+    public event Action<int> OnDungeonEntryRequested;
 
-    public event Action<int> OnDungeonEntryRequested; // floor
-
-    /// 클라이언트가 마스터에게 던전 입장을 요청
     public void RequestDungeonEntry(int floor)
     {
         if (PhotonNetwork.IsMasterClient)
@@ -241,9 +261,6 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         OnDungeonEntryRequested?.Invoke(floor);
     }
 
-    // === 마을 맵 동기화 ===
-
-    /// 클라이언트가 GameScene에 도착한 후 마스터에게 맵 요청
     public void RequestMapFromMaster()
     {
         if (PhotonNetwork.IsMasterClient) return;
@@ -262,5 +279,37 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         }
 
         SendMapTo(info.Sender);
+    }
+
+    [PunRPC]
+    private void RPC_PrepareVillageCacheForDungeon(int token, PhotonMessageInfo info)
+    {
+        CaptureVillageCacheLocally();
+
+        if (!PhotonNetwork.IsConnected)
+            return;
+
+        int actorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+        photonView.RPC(nameof(RPC_ReportVillageCacheReady), RpcTarget.MasterClient, token, actorNumber);
+    }
+
+    [PunRPC]
+    private void RPC_ReportVillageCacheReady(int token, int actorNumber)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (token != _villageCacheToken) return;
+        _villageCacheReadyActors.Add(actorNumber);
+    }
+
+    private static void CaptureVillageCacheLocally()
+    {
+        TerrainGridManager gridManager = TerrainGridManager.Instance;
+        if (gridManager == null && MapManager.Instance != null)
+            gridManager = MapManager.Instance.GridManager;
+
+        if (gridManager == null) return;
+
+        VillageCache.Capture(gridManager);
+        VillageCache.CapturePlayerPositions();
     }
 }

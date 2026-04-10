@@ -120,6 +120,8 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
         }
         else
         {
+            if (TerrainGridManager.Instance != null)
+                VillageCache.Capture(TerrainGridManager.Instance);
             VillageCache.CapturePlayerPositions();
             DungeonSceneInit.FloorOverride = floor;
             SceneManager.LoadScene(SceneName.Dungeon1);
@@ -140,6 +142,9 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
             int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
             await SaveManager.Instance.SaveAsync(slot);
         }
+
+        if (MapSyncManager.Instance != null)
+            await MapSyncManager.Instance.PrepareVillageCacheForDungeonAsync();
 
         SceneTransitionData.Type = ETransitionType.VillageToDungeon;
         SceneTransitionData.DungeonFloor = floor;

@@ -3,6 +3,7 @@ using Photon.Pun;
 using UnityEngine;
 
 /// 창고 네트워크 동기화 전담. PUN2 RPC는 이 클래스에서만 호출한다.
+/// Storage 전용 네트워크 레이어로, INetworkAdapter와 별도로 운용된다.
 /// 마스터: StorageTransferService로 로컬 실행 → 전체 브로드캐스트
 /// 클라이언트: RPC로 마스터에 요청 → 결과 수신
 [RequireComponent(typeof(PhotonView))]
@@ -68,6 +69,20 @@ public class StorageSyncHandler : MonoBehaviourPun
         {
             photonView.RPC(nameof(RPC_RequestSwap), RpcTarget.MasterClient,
                 storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, PhotonNetwork.LocalPlayer.ActorNumber);
+        }
+    }
+
+    /// 창고 내부 슬롯 스왑/이동 요청
+    public void RequestSwapInStorage(int from, int to)
+    {
+        if (IsMaster)
+        {
+            _storage.SwapSlots(from, to);
+            BroadcastFullSync();
+        }
+        else
+        {
+            photonView.RPC(nameof(RPC_RequestSwapInStorage), RpcTarget.MasterClient, from, to);
         }
     }
 
@@ -157,7 +172,7 @@ public class StorageSyncHandler : MonoBehaviourPun
         }
 
         // 슬롯 변경 알림
-        _storage.RemoveAt(storageSlotIndex, 0);
+        _storage.NotifySlotChanged(storageSlotIndex);
 
         // 꺼낸 아이템을 요청자에게 지급
         if (outItemId > 0 && outItemCount > 0)
@@ -233,37 +248,55 @@ public class StorageSyncHandler : MonoBehaviourPun
 
     private string Serialize()
     {
-        var data = new StorageSyncData { Slots = new List<StorageSlotEntry>() };
-        for (int i = 0; i < _storage.SlotCount; i++)
-        {
-            var slot = _storage.GetSlot(i);
-            if (slot.IsEmpty) continue;
-            data.Slots.Add(new StorageSlotEntry
-            {
-                SlotIndex = i,
-                ItemId = slot.Item.Id,
-                Count = slot.Count
-            });
-        }
+        var data = new StorageSyncData { Slots = ExportSlots() };
         return JsonUtility.ToJson(data);
     }
 
     private void Deserialize(string json)
     {
         var data = JsonUtility.FromJson<StorageSyncData>(json);
-        var filled = new List<(int index, InventorySlot slot)>();
+        ImportSlots(_slotCount, data?.Slots);
+    }
 
-        foreach (var entry in data.Slots)
+    public List<InventorySlotSaveData> ExportSlots()
+    {
+        var slots = new List<InventorySlotSaveData>();
+        for (int i = 0; i < _storage.SlotCount; i++)
         {
-            var item = _itemDatabase.GetById(entry.ItemId);
-            if (item == null) continue;
+            var slot = _storage.GetSlot(i);
+            if (slot == null || slot.IsEmpty) continue;
 
-            var slot = new InventorySlot();
-            slot.TryAdd(item, entry.Count);
-            filled.Add((entry.SlotIndex, slot));
+            slots.Add(new InventorySlotSaveData
+            {
+                SlotIndex = i,
+                ItemId = slot.Item.Id,
+                Count = slot.Count
+            });
         }
 
-        _storage.ReplaceAll(_slotCount, filled);
+        return slots;
+    }
+
+    public void ImportSlots(int slotCount, List<InventorySlotSaveData> slots)
+    {
+        int totalSlots = Mathf.Max(slotCount, _slotCount);
+        var filled = new List<(int index, InventorySlot slot)>();
+
+        if (slots != null)
+        {
+            foreach (var entry in slots)
+            {
+                var item = _itemDatabase.GetById(entry.ItemId);
+                if (item == null) continue;
+
+                var slot = new InventorySlot();
+                slot.TryAdd(item, entry.Count);
+                filled.Add((entry.SlotIndex, slot));
+            }
+        }
+
+        _slotCount = totalSlots;
+        _storage.ReplaceAll(totalSlots, filled);
     }
 
     // === RPC ===
@@ -307,6 +340,14 @@ public class StorageSyncHandler : MonoBehaviourPun
     }
 
     [PunRPC]
+    private void RPC_RequestSwapInStorage(int from, int to)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        _storage.SwapSlots(from, to);
+        BroadcastFullSync();
+    }
+
+    [PunRPC]
     private void RPC_RequestSplitHalf(int storageSlotIndex)
     {
         if (!PhotonNetwork.IsMasterClient) return;
@@ -333,19 +374,11 @@ public class StorageSyncHandler : MonoBehaviourPun
         ReceiveItem(itemId, amount, inventorySlotIndex);
     }
 
-    // === DTO ===
+    // === 네트워크 동기화 DTO ===
 
     [System.Serializable]
     private class StorageSyncData
     {
-        public List<StorageSlotEntry> Slots;
-    }
-
-    [System.Serializable]
-    private class StorageSlotEntry
-    {
-        public int SlotIndex;
-        public int ItemId;
-        public int Count;
+        public List<InventorySlotSaveData> Slots;
     }
 }

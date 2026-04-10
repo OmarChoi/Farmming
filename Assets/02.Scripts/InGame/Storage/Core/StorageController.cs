@@ -1,41 +1,59 @@
+using System;
 using UnityEngine;
 
-/// UI_Inventory + UI_Storage를 조합하고 클릭모드를 전환한다.
-/// 네트워크 분기는 NetworkStorageTransferProxy가 내부에서 처리한다.
+/// Storage UI를 직접 제어하지 않고 세션 이벤트만 발행한다.
 public class StorageController : MonoBehaviour
 {
-    [Header("요구 컴포넌트")]
-    [SerializeField] private UI_Inventory _uiInventory;
-    [SerializeField] private UI_Storage _uiStorage;
+    public static StorageController Instance { get; private set; }
+    public static event Action<StorageController> OnReady;
 
     private PlayerInventoryAbility _playerInventory;
-    private StorageTransferService _transferService;
     private StorageObject _currentStorageObject;
 
-    private bool _isOpen;
+    public bool IsOpen => CurrentSession != null;
+    public StorageSession CurrentSession { get; private set; }
+
+    public event Action<StorageSession> OnStorageOpened;
+    public event Action OnStorageClosed;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        OnReady?.Invoke(this);
+    }
 
     private void OnEnable()
     {
         PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
-        if (_uiStorage != null)
-            _uiStorage.OnCloseRequested += CloseStorage;
+        CacheInventoryAbility();
     }
 
     private void OnDisable()
     {
         PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
-        if (_uiStorage != null)
-            _uiStorage.OnCloseRequested -= CloseStorage;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     private void OnPlayerReady(PlayerInventoryAbility ability)
     {
+        if (ability == null) return;
         _playerInventory = ability;
     }
 
     private void Update()
     {
-        if (!_isOpen) return;
+        if (!IsOpen) return;
 
         if (Input.GetKeyDown(KeyCode.Escape))
             CloseStorage();
@@ -43,46 +61,62 @@ public class StorageController : MonoBehaviour
 
     public void OpenStorage(StorageObject storageObject)
     {
-        if (_playerInventory == null || storageObject == null) return;
+        if (storageObject == null) return;
+        if (!EnsureInventoryAbility()) return;
 
-        _currentStorageObject = storageObject;
+        StorageTransferService transferService;
         var storage = storageObject.Storage;
         var syncHandler = storageObject.SyncHandler;
 
         if (syncHandler != null)
         {
-            _transferService = new NetworkStorageTransferProxy(
+            transferService = new NetworkStorageTransferProxy(
                 _playerInventory.Domain, storage, syncHandler);
         }
         else
         {
-            // SyncHandler 없음 (로컬 전용)
-            _transferService = new StorageTransferService(_playerInventory.Domain, storage);
+            transferService = new StorageTransferService(_playerInventory.Domain, storage);
         }
 
-        _uiStorage.Init(storage, _transferService);
-        _uiStorage.SetLinkedInventory(_uiInventory);
-        _uiInventory.SetLinkedStorage(_uiStorage, _transferService);
-        _uiInventory.SetClickMode(EInventoryClickMode.Storage);
+        _currentStorageObject = storageObject;
+        CurrentSession = new StorageSession(_playerInventory, storageObject, storage, transferService);
 
         _playerInventory.Open();
-        _uiStorage.Open();
-        _isOpen = true;
+        OnStorageOpened?.Invoke(CurrentSession);
     }
 
     public void CloseStorage()
     {
-        if (!_isOpen) return;
+        if (!IsOpen) return;
 
-        _uiStorage.Close();
-        _uiStorage.SetLinkedInventory(null);
-        _uiInventory.SetClickMode(EInventoryClickMode.Normal);
-        _uiInventory.SetLinkedStorage(null, null);
-        _playerInventory.Close();
+        OnStorageClosed?.Invoke();
+        _playerInventory?.Close();
 
         _currentStorageObject?.EndInteract();
         _currentStorageObject = null;
-        _transferService = null;
-        _isOpen = false;
+        CurrentSession = null;
+    }
+
+    private bool EnsureInventoryAbility()
+    {
+        if (_playerInventory != null) return true;
+
+        CacheInventoryAbility();
+        return _playerInventory != null;
+    }
+
+    private void CacheInventoryAbility()
+    {
+        PlayerController[] players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (PlayerController player in players)
+        {
+            if (player == null || !player.IsMine) continue;
+
+            PlayerInventoryAbility ability = player.GetAbility<PlayerInventoryAbility>();
+            if (ability == null) continue;
+
+            _playerInventory = ability;
+            return;
+        }
     }
 }

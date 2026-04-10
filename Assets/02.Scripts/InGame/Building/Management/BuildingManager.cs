@@ -253,6 +253,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             instance.ConstructionCompleted -= HandleBuildingConstructionCompleted;
             instance.ConstructionCompleted += HandleBuildingConstructionCompleted;
             instance.Initialize(request.Data, saveData, CreateConstructionContext());
+            RegisterStorageIfPresent(saveData, instance);
         }
 
         return true;
@@ -395,5 +396,20 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
     }
     #endregion
+
+    private static void RegisterStorageIfPresent(BuildingSaveData saveData, BaseBuilding buildingInstance)
+    {
+        if (saveData == null || buildingInstance == null) return;
+
+        StorageObject[] storages = buildingInstance.GetComponentsInChildren<StorageObject>(true);
+        if (storages == null || storages.Length == 0) return;
+
+        if (storages.Length > 1)
+        {
+            Debug.LogWarning($"{nameof(BuildingManager)} found multiple {nameof(StorageObject)} components under building {saveData.BuildingId} at ({saveData.AnchorX}, {saveData.AnchorY}, {saveData.AnchorZ}). Only the first storage will be saved.");
+        }
+
+        StorageManager.Instance.RegisterBuildingStorage(saveData, storages[0]);
+    }
 
 }

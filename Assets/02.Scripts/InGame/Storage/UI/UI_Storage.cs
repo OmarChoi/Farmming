@@ -29,6 +29,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
 
     private StorageDomain _storage;
     private StorageTransferService _transferService;
+    private StorageController _boundController;
     private readonly List<UI_Slot> _slotUIs = new();
 
     // 드래그 상태
@@ -50,8 +51,6 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     // 크로스 드래그용
     private UI_Inventory _linkedInventory;
 
-    public event Action OnCloseRequested;
-
     public bool IsDragging => _isDragging;
     public UI_Slot HoveredSlot => _hoveredSlot;
 
@@ -62,13 +61,24 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
 
     private void Awake()
     {
+        StorageUiRegistry.RegisterStorage(this);
+        StorageController.OnReady += HandleControllerReady;
+        StorageUiRegistry.OnInventoryRegistered += HandleInventoryRegistered;
+        StorageUiRegistry.OnInventoryUnregistered += HandleInventoryUnregistered;
+
+        if (StorageController.Instance != null)
+            BindController(StorageController.Instance);
+
+        if (StorageUiRegistry.CurrentInventory != null)
+            HandleInventoryRegistered(StorageUiRegistry.CurrentInventory);
+
         _panelRect = _panel.GetComponent<RectTransform>();
         _panelOriginPos = _panelRect.anchoredPosition;
         _panel.SetActive(false);
         if (_dragIcon != null)
             _dragIcon.gameObject.SetActive(false);
         if (_exitButton != null)
-            _exitButton.onClick.AddListener(() => OnCloseRequested?.Invoke());
+            _exitButton.onClick.AddListener(HandleCloseRequested);
     }
 
     private void Update()
@@ -344,10 +354,81 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
 
     private void OnDestroy()
     {
+        if (_exitButton != null)
+            _exitButton.onClick.RemoveListener(HandleCloseRequested);
+
+        StorageUiRegistry.UnregisterStorage(this);
+        StorageController.OnReady -= HandleControllerReady;
+        StorageUiRegistry.OnInventoryRegistered -= HandleInventoryRegistered;
+        StorageUiRegistry.OnInventoryUnregistered -= HandleInventoryUnregistered;
+        UnbindController();
+
         if (_storage != null)
         {
             _storage.OnSlotChanged -= RefreshSlot;
             _storage.OnSlotCountChanged -= OnSyncReceived;
         }
+    }
+
+    private void HandleControllerReady(StorageController controller)
+    {
+        BindController(controller);
+    }
+
+    private void BindController(StorageController controller)
+    {
+        if (controller == null) return;
+
+        if (_boundController == controller)
+            return;
+
+        UnbindController();
+
+        _boundController = controller;
+        _boundController.OnStorageOpened += HandleStorageOpened;
+        _boundController.OnStorageClosed += HandleStorageClosed;
+
+        if (controller.IsOpen && controller.CurrentSession != null)
+            HandleStorageOpened(controller.CurrentSession);
+    }
+
+    private void UnbindController()
+    {
+        if (_boundController == null) return;
+
+        _boundController.OnStorageOpened -= HandleStorageOpened;
+        _boundController.OnStorageClosed -= HandleStorageClosed;
+        _boundController = null;
+    }
+
+    private void HandleStorageOpened(StorageSession session)
+    {
+        if (session == null) return;
+
+        Init(session.Storage, session.TransferService);
+        SetLinkedInventory(StorageUiRegistry.CurrentInventory);
+        Open();
+    }
+
+    private void HandleStorageClosed()
+    {
+        SetLinkedInventory(null);
+        Close();
+    }
+
+    private static void HandleCloseRequested()
+    {
+        StorageController.Instance?.CloseStorage();
+    }
+
+    private void HandleInventoryRegistered(UI_Inventory inventory)
+    {
+        if (_boundController == null || !_boundController.IsOpen) return;
+        SetLinkedInventory(inventory);
+    }
+
+    private void HandleInventoryUnregistered()
+    {
+        SetLinkedInventory(null);
     }
 }
