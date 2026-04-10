@@ -15,6 +15,7 @@ public class FarmTile : MonoBehaviour
 
     public SeedItemDataSO PlantedSeed { get; private set; }
     public bool HasSeed => PlantedSeed != null;
+    public bool HasCrop => _cropGrowth != null && _cropGrowth.HasCropObject;
     public bool IsWet => StateMachine.CurrentStateType == EFarmTileStateType.FarmWet;
     public bool IsReadyToSow => StateMachine.CurrentStateType == EFarmTileStateType.FarmDry && !HasSeed;
     public Transform CropSpawnPoint => _cropSpawnPoint;

@@ -108,6 +108,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCameraAbility
   _cameraRoot: {fileID: 8326703167717938075}
+  _impactShakeDuration: 0.18
+  _impactShakeStrength: 0.15
+  _impactShakeVibrato: 18
 --- !u!114 &9204552776688774226
 MonoBehaviour:
   m_ObjectHideFlags: 0

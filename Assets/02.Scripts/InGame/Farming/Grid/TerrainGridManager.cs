@@ -115,6 +115,41 @@ public class TerrainGridManager : MonoBehaviour
         return _cells.TryGetValue(gridPos, out var cell) ? cell : null;
     }
 
+    public bool IsCellAvailableForInteraction(TerrainCell cell)
+    {
+        if (cell == null || cell.Data == null)
+            return false;
+
+        if (!cell.Data.IsTop)
+            return false;
+
+        return GetTopY(cell.GridPosition.x, cell.GridPosition.z) == cell.GridPosition.y;
+    }
+
+    public TerrainCell GetInteractionCell(Vector3Int gridPos)
+    {
+        return GetInteractionCell(gridPos, true, out _);
+    }
+
+    public TerrainCell GetInteractionCell(Vector3Int gridPos, bool allowBelowFallback, out bool isBelowFallback)
+    {
+        isBelowFallback = false;
+
+        TerrainCell cell = GetCell(gridPos);
+        if (IsCellAvailableForInteraction(cell))
+            return cell;
+
+        if (!allowBelowFallback || cell != null)
+            return null;
+
+        TerrainCell belowCell = GetCell(gridPos + Vector3Int.down);
+        if (!IsCellAvailableForInteraction(belowCell))
+            return null;
+
+        isBelowFallback = true;
+        return belowCell;
+    }
+
     public Vector3Int WorldToGrid(Vector3 worldPos)
     {
         int x = Mathf.RoundToInt(worldPos.x / _cellSize);
