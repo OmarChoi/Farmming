@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30e7bbcfe12455a4580dd627f9480adb, type: 3}
+  m_Name: Tutorial2InfoPageSet
+  m_EditorClassIdentifier: Assembly-CSharp::InfoPageSetSO
+  _pages:
+  - Title: "\uAC74\uBB3C\uC744 \uC9C0\uC5B4\uC694!"
+    VideoClip: {fileID: 32900000, guid: 172af1588a2c4624ba795050c26f9fb9, type: 3}
+    Description: "B\uB97C \uB20C\uB7EC \uC6D0\uD558\uB294 \uAC74\uBB3C\uC744 \uC9C0\uC744
+      \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC6D0\uD558\uB294 \uC7A5\uC18C\uC5D0 \uB300\uACE0
+      B\uB97C \uD55C\uBC88 \uB354 \uB204\uB974\uBA74 \uAC74\uBB3C\uC774 \uC9C0\uC5B4\uC9D1\uB2C8\uB2E4.
+      \uAC74\uBB3C\uC5D0 \uB530\uB77C \uC694\uAD6C \uC7AC\uB8CC\uC640 \uAC74\uCD95
+      \uC77C\uC218\uAC00 \uB2EC\uB77C\uC9D1\uB2C8\uB2E4."
+  - Title: "\uBB3C\uAC74\uC744 \uC0AC\uACE0 \uD314\uC544\uC694!"
+    VideoClip: {fileID: 32900000, guid: 6a65866b0e04e134388f06add8a4af2a, type: 3}
+    Description: "\uB3C8\uC774 \uC788\uB2E4\uBA74 \uC6D0\uD558\uB294 \uBB3C\uAC74\uC744
+      \uD074\uB9AD\uD574\uC11C \uC0B4 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uB610\uD55C,
+      \uC778\uBCA4\uD1A0\uB9AC\uC5D0\uC11C \uC6D0\uD558\uB294 \uC544\uC774\uD15C\uC744
+      \uD074\uB9AD\uD558\uC5EC \uD310\uB9E4\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."

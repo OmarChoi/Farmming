@@ -37,14 +37,17 @@ MonoBehaviour:
     - RewardType: 1
       RewardItem: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
       Amount: 2
+      RewardHelper: {fileID: 0}
       TargetNpcId: 
     - RewardType: 1
       RewardItem: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
       Amount: 2
+      RewardHelper: {fileID: 0}
       TargetNpcId: 
     - RewardType: 0
       RewardItem: {fileID: 0}
       Amount: 1200
+      RewardHelper: {fileID: 0}
       TargetNpcId: 
   AcceptDialogue: {fileID: 0}
   AcceptResultDialogue: {fileID: 11400000, guid: 49e3deedea2aa9c48aaee3adbec505a6, type: 2}
@@ -52,3 +55,5 @@ MonoBehaviour:
   InProgressDialogue: {fileID: 11400000, guid: 9826b4d0682665341af7ca0d09ae6025, type: 2}
   CompleteDialogue: {fileID: 11400000, guid: 3a8fe6a7f68fe1d458a4ace896c0ce45, type: 2}
   NoQuestDialogue: {fileID: 11400000, guid: fe6fa0ea4657a694da9548cdd14cdcc7, type: 2}
+  AcceptInfoPageSet: {fileID: 11400000, guid: ebe1cd3599d783840b9440b1b7714ab2, type: 2}
+  CompleteInfoPageSet: {fileID: 0}
