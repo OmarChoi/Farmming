@@ -21,11 +21,11 @@ MonoBehaviour:
   StartNpcId: TutorialNpc
   CompleteNpcId: TutorialNpc
   IsForcedAccept: 1
-  ObjectiveType: 3
-  TargetObjectId: 
+  ObjectiveType: 5
+  TargetId: "\uD2B9\uBCC4\uD55C \uD638\uBC15\uC528"
   ItemRequirements: []
   TargetNpcId: TutorialNpc
-  RequiredAmount: 2
+  RequiredAmount: 3
   PrerequisiteQuests:
   - {fileID: 11400000, guid: 68ad8745b185b5c4c873555553366dcd, type: 2}
   RequiredFriendship: 0
