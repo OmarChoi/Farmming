@@ -30,7 +30,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 68ad8745b185b5c4c873555553366dcd, type: 2}
   RequiredFriendship: 0
   Reward:
-    Rewards: []
+    Rewards:
+    - RewardType: 3
+      RewardItem: {fileID: 0}
+      Amount: 1
+      RewardHelper: {fileID: 11400000, guid: a3c3d2b2383ca574ca74489e706053ff, type: 2}
+      TargetNpcId: 
   AcceptDialogue: {fileID: 0}
   AcceptResultDialogue: {fileID: 11400000, guid: 1225da952281f024597030ecd9b1cab6, type: 2}
   DeclineDialogue: {fileID: 0}
