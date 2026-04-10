@@ -22,7 +22,7 @@ MonoBehaviour:
   CompleteNpcId: TutorialNpc
   IsForcedAccept: 1
   ObjectiveType: 2
-  TargetObjectId: 
+  TargetId: 
   ItemRequirements:
   - _item: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
     _amount: 3
@@ -36,6 +36,7 @@ MonoBehaviour:
     - RewardType: 1
       RewardItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
       Amount: 3
+      RewardHelper: {fileID: 0}
       TargetNpcId: 
   AcceptDialogue: {fileID: 0}
   AcceptResultDialogue: {fileID: 11400000, guid: 76acb150133267740b0a950ff131a6a4, type: 2}
@@ -43,3 +44,5 @@ MonoBehaviour:
   InProgressDialogue: {fileID: 11400000, guid: 838b994af3c5ddf488f64259d097cdc0, type: 2}
   CompleteDialogue: {fileID: 11400000, guid: 47ba0e4af1cbfb640a939fe3d70f1823, type: 2}
   NoQuestDialogue: {fileID: 11400000, guid: 75af0582be79624449cdb8535eba8502, type: 2}
+  AcceptInfoPageSet: {fileID: 11400000, guid: 9c9f6633c76cfbd4f9910b4d32aaa588, type: 2}
+  CompleteInfoPageSet: {fileID: 0}
