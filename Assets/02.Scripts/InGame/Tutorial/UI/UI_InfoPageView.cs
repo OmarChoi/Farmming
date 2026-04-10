@@ -37,49 +37,39 @@ public class UI_InfoPageView : MonoBehaviour
 
     public void Refresh(InfoPageData pageData)
     {
-        if (pageData == null)
-        {
-            if (_titleText != null)
-            {
-                _titleText.text = "";
-            }
-            if (_descriptionText != null)
-            {
-                _descriptionText.text = "";
-            }
-            if (_videoPlayer != null)
-            {
-                _videoPlayer.Stop();
-                _videoPlayer.clip = null;
-            }
-            if (_videoImage != null)
-            {
-                _videoImage.gameObject.SetActive(false);
-            }
-            return;
-        }
+        _videoRequestId++;
 
         if (_titleText != null)
         {
-            _titleText.text = pageData.Title;
+            _titleText.text = pageData != null ? pageData.Title : string.Empty;
         }
 
         if (_descriptionText != null)
         {
-            _descriptionText.text = _wrapper != null
-                ? _wrapper.WrapText(pageData.Description, _descriptionText)
-                : pageData.Description;
+            _descriptionText.text = pageData != null
+                ? (_wrapper != null ? _wrapper.WrapText(pageData.Description, _descriptionText) : pageData.Description)
+                : string.Empty;
         }
 
-        RefreshVideo(pageData.VideoClip);
+        if (pageData == null)
+        {
+            ResetVideoState();
+            return;
+        }
+
+        RefreshVideoAsync(pageData.VideoClip, _videoRequestId).Forget();
     }
 
-    private async void RefreshVideo(VideoClip clip)
+    private async UniTaskVoid RefreshVideoAsync(VideoClip clip, int requestId)
     {
-        int requestId = ++_videoRequestId;
+        ResetVideoState();
 
-        _videoPlayer.Stop();
+        if (_videoPlayer == null || _videoImage == null || clip == null) return;
+
+        _videoImage.gameObject.SetActive(true);
+
         _videoPlayer.clip = clip;
+        _videoPlayer.isLooping = true;
 
         await PrepareVideo(_videoPlayer);
 
@@ -89,8 +79,36 @@ public class UI_InfoPageView : MonoBehaviour
         _videoPlayer.Play();
     }
 
+    private void ResetVideoState()
+    {
+        if (_videoPlayer != null)
+        {
+            _videoPlayer.Stop();
+            _videoPlayer.clip = null;
+        }
+
+        ClearRenderTexture();
+
+        if (_videoImage != null)
+        {
+            _videoImage.gameObject.SetActive(false);
+        }
+    }
+
+    private void ClearRenderTexture()
+    {
+        if (_renderTexture == null) return;
+
+        RenderTexture current = RenderTexture.active;
+        RenderTexture.active = _renderTexture;
+        GL.Clear(true, true, Color.clear);
+        RenderTexture.active = current;
+    }
+
     private async UniTask PrepareVideo(VideoPlayer player)
     {
+        if (player == null || player.clip == null) return;
+
         var tcs = new UniTaskCompletionSource();
 
         void OnPrepared(VideoPlayer video)
@@ -103,5 +121,11 @@ public class UI_InfoPageView : MonoBehaviour
         player.Prepare();
 
         await tcs.Task;
+    }
+
+    private void OnDisable()
+    {
+        _videoRequestId++;
+        ResetVideoState();
     }
 }

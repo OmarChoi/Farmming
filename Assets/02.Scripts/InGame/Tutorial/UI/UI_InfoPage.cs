@@ -57,15 +57,17 @@ public class UI_InfoPage : MonoBehaviour
         }
 
         _currentPageIndex = 0;
+
+        if (_pageRoot != null)
+        {
+            _pageRoot.SetActive(true);
+        }
+
         RefreshCurrentPage();
 
         if (_popupDoTween != null)
         {
             await _popupDoTween.PlayOpenAsync();
-        }
-        else if (_pageRoot != null)
-        {
-            _pageRoot.SetActive(true);
         }
     }
 
@@ -78,6 +80,11 @@ public class UI_InfoPage : MonoBehaviour
         else if (_pageRoot != null)
         {
             _pageRoot.SetActive(false);
+        }
+
+        if (_pageView != null)
+        {
+            _pageView.Refresh(null);
         }
 
         _pages.Clear();
