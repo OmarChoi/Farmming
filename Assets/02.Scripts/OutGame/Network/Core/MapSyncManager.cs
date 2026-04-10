@@ -47,6 +47,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     public void SendMapTo(Photon.Realtime.Player target)
     {
         if (!PhotonNetwork.IsMasterClient) return;
+        ResetTerrainReadyState(target);
         SendChunksAsync(target).Forget();
     }
 
@@ -338,6 +339,7 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         if (batch?.Cells == null || batch.Cells.Count == 0) return;
 
         _terrainGridManager.ApplyCellDeltas(batch.Cells);
+        LogAppliedTerrainCellDeltaBatch(batch);
     }
 
     private void BeginTerrainReplayCapture(Photon.Realtime.Player target)
@@ -403,5 +405,44 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     private static string GetTerrainReplayKey(int x, int y, int z)
     {
         return $"{x}:{y}:{z}";
+    }
+
+    private static void ResetTerrainReadyState(Player target)
+    {
+        if (target == null) return;
+
+        var props = new Hashtable
+        {
+            { PropTerrainReady, false }
+        };
+        target.SetCustomProperties(props);
+    }
+
+    private static void LogAppliedTerrainCellDeltaBatch(TerrainCellDeltaBatch batch)
+    {
+#if !UNITY_EDITOR
+        return;
+#endif
+        if (batch?.Cells == null || batch.Cells.Count == 0) return;
+        if (PhotonNetwork.IsMasterClient) return;
+
+        int removedCount = 0;
+        foreach (TerrainCellDelta delta in batch.Cells)
+        {
+            if (delta != null && delta.RemoveCell)
+                removedCount++;
+        }
+
+        bool terrainReady = false;
+        if (PhotonNetwork.LocalPlayer != null &&
+            PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue(PropTerrainReady, out object value) &&
+            value is bool isReady)
+        {
+            terrainReady = isReady;
+        }
+
+        int updatedCount = batch.Cells.Count - removedCount;
+        Debug.Log(
+            $"[MapSyncManager] Applied terrain delta batch on client. total={batch.Cells.Count}, updated={updatedCount}, removed={removedCount}, terrainReady={terrainReady}");
     }
 }
