@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 // 관수 곡룡: FarmDry => FarmWet
@@ -192,6 +193,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
             if (effect.CanHandle(cell))
             {
                 effect.Apply(cell);
+                if (effect is not LavaToStoneWaterEffect)
+                    BroadcastTerrainCellStateFromMaster(cell);
                 return true;
             }
         }
@@ -303,5 +306,11 @@ public class WaterActionAbility : HelperAbility, IHelperAction
 
         Vector3 right = _owner.PlayerOwner.transform.right;
         return new Vector3Int(Mathf.RoundToInt(right.x), 0, Mathf.RoundToInt(right.z));
+    }
+
+    private static void BroadcastTerrainCellStateFromMaster(TerrainCell cell)
+    {
+        if (!PhotonNetwork.IsMasterClient || cell == null) return;
+        MapSyncManager.Instance?.BroadcastTerrainCellStateFromMaster(cell.GridPosition);
     }
 }
