@@ -60,6 +60,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
         if (!CanRemoveCell(cell)) return;
 
+        if (!TryResolveDigTargetPosition(cell.GridPosition, _canDigLevel, out Vector3Int digTargetPos))
+            return;
+
         bool isFarmLand = cell.Data.ObjectType == EGridObjectType.FarmLand;
         if (isFarmLand)
         {
@@ -81,6 +84,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _owner.BeginAction();
 
         AnimateCellToMouth(detachedCell);
+        BroadcastGroundStateFromMaster(digTargetPos);
 
         var pos = cell.GridPosition;
         if (isFarmLand)
@@ -134,6 +138,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
             StartPlaceCellAnimation(newCell, targetWorldPos);
         }
+
+        BroadcastGroundStateFromMaster(targetGridPos);
 
         _owner.PhotonView.RpcSafe(
             nameof(RPC_PlaceBlockWithAnimation), RpcTarget.Others,
@@ -249,6 +255,43 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return cell.GridPosition;
 
         return cell.GridPosition + Vector3Int.up;
+    }
+
+    private bool TryResolveDigTargetPosition(Vector3Int gridPos, int toolLevel, out Vector3Int digTargetPos)
+    {
+        digTargetPos = gridPos;
+
+        TerrainCell cell = TerrainGridManager.Instance?.GetCell(gridPos);
+        if (cell == null) return false;
+
+        Vector3Int abovePos = gridPos + Vector3Int.up;
+        TerrainCell aboveCell = TerrainGridManager.Instance.GetCell(abovePos);
+        if (aboveCell != null && aboveCell.Data.CellType == ECellType.Dirt)
+        {
+            TerrainCell aboveAboveCell = TerrainGridManager.Instance.GetCell(abovePos + Vector3Int.up);
+            if (aboveAboveCell != null && aboveAboveCell.Data.CellType == ECellType.Dirt)
+                return false;
+
+            if (!aboveCell.Data.CanDig(toolLevel) || aboveCell.Data.ObjectType != EGridObjectType.None)
+                return false;
+
+            digTargetPos = abovePos;
+            return true;
+        }
+
+        if (!cell.Data.CanDig(toolLevel))
+            return false;
+
+        return cell.Data.ObjectType == EGridObjectType.None || cell.Data.ObjectType == EGridObjectType.FarmLand;
+    }
+
+    private static void BroadcastGroundStateFromMaster(Vector3Int changedCellPos)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        MapSyncManager.Instance?.BroadcastTerrainCellStatesFromMaster(
+            changedCellPos,
+            changedCellPos + Vector3Int.down);
     }
 
     private void OnDisable()

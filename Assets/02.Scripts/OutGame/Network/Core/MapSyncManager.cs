@@ -45,6 +45,32 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         SendChunksAsync(target).Forget();
     }
 
+    public void BroadcastTerrainCellStateFromMaster(Vector3Int position)
+    {
+        BroadcastTerrainCellStatesFromMaster(position);
+    }
+
+    public void BroadcastTerrainCellStatesFromMaster(params Vector3Int[] positions)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (_terrainGridManager == null || positions == null || positions.Length == 0) return;
+
+        var batch = new TerrainCellDeltaBatch();
+        var seen = new HashSet<Vector3Int>();
+
+        foreach (Vector3Int position in positions)
+        {
+            if (!seen.Add(position)) continue;
+            if (_terrainGridManager.TryBuildCellDelta(position, out TerrainCellDelta delta))
+                batch.Cells.Add(delta);
+        }
+
+        if (batch.Cells.Count == 0) return;
+
+        string json = JsonUtility.ToJson(batch);
+        photonView.RPC(nameof(RPC_ApplyTerrainCellDeltaBatch), RpcTarget.Others, json);
+    }
+
     /// 마스터의 맵 로드가 완료될 때까지 클라이언트 요청을 대기시킴
     public void HoldRequests()
     {
@@ -262,5 +288,17 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         }
 
         SendMapTo(info.Sender);
+    }
+
+    [PunRPC]
+    private void RPC_ApplyTerrainCellDeltaBatch(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return;
+        if (_terrainGridManager == null) return;
+
+        TerrainCellDeltaBatch batch = JsonUtility.FromJson<TerrainCellDeltaBatch>(json);
+        if (batch?.Cells == null || batch.Cells.Count == 0) return;
+
+        _terrainGridManager.ApplyCellDeltas(batch.Cells);
     }
 }

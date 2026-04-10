@@ -288,6 +288,95 @@ public class TerrainGridManager : MonoBehaviour
 
     public TerrainGridData GetGridData() => _gridData;
 
+    public bool TryBuildCellDelta(Vector3Int gridPos, out TerrainCellDelta delta)
+    {
+        delta = new TerrainCellDelta
+        {
+            X = gridPos.x,
+            Y = gridPos.y,
+            Z = gridPos.z
+        };
+
+        TerrainCell cell = GetCell(gridPos);
+        if (cell == null)
+        {
+            delta.RemoveCell = true;
+            delta.Cell = null;
+            return true;
+        }
+
+        delta.RemoveCell = false;
+        delta.Cell = ExportCellSaveData(gridPos);
+        return delta.Cell != null;
+    }
+
+    public TerrainCellSaveData ExportCellSaveData(Vector3Int gridPos)
+    {
+        TerrainCell cell = GetCell(gridPos);
+        if (cell == null)
+            return null;
+
+        var saveData = new TerrainCellSaveData
+        {
+            X = gridPos.x,
+            Y = gridPos.y,
+            Z = gridPos.z,
+            CellType = cell.Data.CellType,
+            TileType = cell.Data.TileType,
+            DirtLevel = cell.Data.DirtLevel,
+            ObjectType = cell.Data.ObjectType == EGridObjectType.Building
+                ? EGridObjectType.None : cell.Data.ObjectType,
+            ObjectLevel = cell.Data.ObjectType == EGridObjectType.Building
+                ? 0 : cell.Data.ObjectLevel,
+            IsIndestructible = cell.Data.IsIndestructible,
+            IsTop = cell.Data.IsTop
+        };
+
+        cell.ExportTo(saveData);
+        return saveData;
+    }
+
+    public void ApplyCellDelta(TerrainCellDelta delta)
+    {
+        if (delta == null) return;
+
+        Vector3Int gridPos = new(delta.X, delta.Y, delta.Z);
+        if (delta.RemoveCell)
+        {
+            RemoveCell(gridPos);
+            return;
+        }
+
+        if (delta.Cell == null) return;
+
+        var cellData = new TerrainCellData(
+            delta.Cell.CellType,
+            delta.Cell.TileType,
+            delta.Cell.DirtLevel,
+            delta.Cell.ObjectType,
+            delta.Cell.ObjectLevel,
+            delta.Cell.IsIndestructible,
+            delta.Cell.IsTop);
+
+        SetCell(gridPos, cellData);
+
+        if (delta.Cell.Farm != null &&
+            _cells.TryGetValue(gridPos, out TerrainCell cell) &&
+            cell != null &&
+            cell.Data.ObjectType == EGridObjectType.FarmLand)
+        {
+            cell.ImportFarm(delta.Cell, _seedDatabase);
+        }
+    }
+
+    public void ApplyCellDeltas(IEnumerable<TerrainCellDelta> deltas)
+    {
+        if (deltas == null) return;
+
+        foreach (TerrainCellDelta delta in deltas)
+            ApplyCellDelta(delta);
+    }
+
     public TerrainSaveData ExportSaveData()
     {
         var saveData = new TerrainSaveData();
