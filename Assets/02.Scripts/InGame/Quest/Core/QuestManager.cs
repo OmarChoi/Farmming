@@ -580,4 +580,9 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         _completedSubQuestIds.Clear();
         MarkLoaded();
     }
+
+    public bool TryGetActiveQuest(string questId, out QuestRuntimeData quest)
+    {
+        return _activeQuests.TryGetValue(questId, out quest);
+    }
 }

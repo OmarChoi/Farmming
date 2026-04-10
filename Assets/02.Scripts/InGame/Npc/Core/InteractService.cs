@@ -137,7 +137,7 @@ public class InteractService : MonoBehaviour
     {
         if (context == null || context.Npc == null) return;
 
-        if (context.Npc.Data != null && context.Npc.Data.AutoStartQuestOnInteract)
+        if (context.Npc.Data != null && context.Npc.AutoStartQuestOnInteract)
         {
             _npcQuestService?.ExecuteAutoQuestInteraction(context);
             return;

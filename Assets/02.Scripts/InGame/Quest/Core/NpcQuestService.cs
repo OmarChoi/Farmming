@@ -516,17 +516,7 @@ public class NpcQuestService : MonoBehaviour
     {
         if (string.IsNullOrEmpty(questId) || _questProgressService == null) return null;
 
-        List<QuestRuntimeData> activeQuests = _questProgressService.GetActiveQuestList();
-        if (activeQuests == null) return null;
-
-        foreach (QuestRuntimeData quest in activeQuests)
-        {
-            if (quest == null || quest.QuestData == null) continue;
-            if (quest.QuestData.QuestId != questId) continue;
-
-            return quest;
-        }
-
-        return null;
+        _questProgressService.TryGetActiveQuest(questId, out QuestRuntimeData quest);
+        return quest;
     }
 }
