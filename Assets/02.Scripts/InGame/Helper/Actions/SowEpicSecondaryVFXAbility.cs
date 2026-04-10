@@ -11,10 +11,11 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
     [SerializeField] private float _arcHeight = 3f;
     [SerializeField] private float _flightDuration = 0.6f;
     [SerializeField] private float _particleLifetime = 1f;
-    [SerializeField] private float _totalDuration = 2f;
+    [SerializeField] private float _spawnAnimationDelay = 0.5f;
 
+    // onEachSpawn: 각 이펙트 생성 직전에 yield할 코루틴 팩토리 (애니메이션 + 대기 처리용)
     public void SpawnEffects(Transform mouthPoint, List<TerrainCell> orderedCells,
-        Action<TerrainCell> onCellLand, Action onComplete, Action onEachSpawn = null)
+        Action<TerrainCell> onCellLand, Action onComplete, Func<IEnumerator> onEachSpawn = null)
     {
         if (orderedCells == null || orderedCells.Count == 0)
         {
@@ -26,29 +27,27 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
     }
 
     private IEnumerator SpawnSequence(Transform mouthPoint, List<TerrainCell> orderedCells,
-        Action<TerrainCell> onCellLand, Action onComplete, Action onEachSpawn)
+        Action<TerrainCell> onCellLand, Action onComplete, Func<IEnumerator> onEachSpawn)
     {
-        float interval = orderedCells.Count > 1
-            ? _totalDuration / (orderedCells.Count - 1)
-            : 0f;
-
         int remaining = orderedCells.Count;
 
         for (int i = 0; i < orderedCells.Count; i++)
         {
             TerrainCell captured = orderedCells[i];
+            Coroutine replayRoutine = null;
+
+            // 이펙트 생성 직전 — 애니메이션 재생 및 트리거 지점까지 대기
+            if (onEachSpawn != null)
+                replayRoutine = StartCoroutine(PlaySpawnAnimationDelayed(onEachSpawn));
 
             if (_sowEpicParticlePrefab == null || mouthPoint == null)
             {
-                onEachSpawn?.Invoke();
                 onCellLand?.Invoke(captured);
                 remaining--;
                 if (remaining == 0) onComplete?.Invoke();
             }
             else
             {
-                onEachSpawn?.Invoke();
-
                 Vector3 spawnPos = mouthPoint.position;
                 Vector3 targetPos = GetCellTopPosition(captured);
 
@@ -64,9 +63,18 @@ public class SowEpicSecondaryVFXAbility : HelperAbility
                     });
             }
 
-            if (i < orderedCells.Count - 1)
-                yield return new WaitForSeconds(interval);
+            if (replayRoutine != null)
+                yield return replayRoutine;
         }
+    }
+
+    private IEnumerator PlaySpawnAnimationDelayed(Func<IEnumerator> onEachSpawn)
+    {
+        if (_spawnAnimationDelay > 0f)
+            yield return new WaitForSeconds(_spawnAnimationDelay);
+
+        if (onEachSpawn != null)
+            yield return StartCoroutine(onEachSpawn());
     }
 
     private Vector3 GetCellTopPosition(TerrainCell cell)

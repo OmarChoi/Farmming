@@ -5,6 +5,7 @@ public class HelperDataSO : ScriptableObject
 {
     public string HelperId;
     public string HelperName;
+    public EHelperType HelperType = EHelperType.Unknown;
     public Sprite HelperIcon;
     public HelperController Prefab;         
     public HelperController EpicPrefab;     
@@ -38,6 +39,14 @@ public class HelperDataSO : ScriptableObject
 
     public EHelperGrade SecondaryUnlockGrade = EHelperGrade.Normal;
     public bool IsLightHelper = false;
+
+    public bool UsesLegendaryMaxExpBar
+        => HelperType == EHelperType.Water
+        || HelperType == EHelperType.Harvest
+        || HelperType == EHelperType.WoodCuttingMine
+        || HelperType == EHelperType.Sow;
+
+    public bool UsesGroundFixedExpBar => HelperType == EHelperType.Ground;
 
     [SerializeField] private Sprite _leftClickIcon;
     [SerializeField] private Sprite _rightClickIcon;

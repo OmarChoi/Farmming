@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 public class UI_Inventory : MonoBehaviour
 {
     private const int Columns = 4;
+    public static event Func<SeedItemDataSO, bool> SeedSelectionRequested;
 
     [Header("참조")]
     [SerializeField] private GameObject _panel;
@@ -286,6 +288,11 @@ public class UI_Inventory : MonoBehaviour
     {
         if (_isDragging) return;
         if (clicked.CurrentItem == null) return;
+        if (_clickMode != EInventoryClickMode.Normal) return;
+
+        if (clicked.CurrentItem is SeedItemDataSO seedItem && RequestSeedSelection(seedItem))
+            return;
+
         if (!(clicked.CurrentItem is PotionDataSO)) return;
 
         bool used = _potionAbility != null && _potionAbility.TryUsePotion(clicked.SlotIndex);
@@ -301,6 +308,20 @@ public class UI_Inventory : MonoBehaviour
     }
 
     // 판매
+
+    private bool RequestSeedSelection(SeedItemDataSO seedItem)
+    {
+        if (seedItem == null || SeedSelectionRequested == null)
+            return false;
+
+        foreach (Func<SeedItemDataSO, bool> handler in SeedSelectionRequested.GetInvocationList())
+        {
+            if (handler.Invoke(seedItem))
+                return true;
+        }
+
+        return false;
+    }
 
     public void Init(TradeService tradeService)
     {

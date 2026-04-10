@@ -114,7 +114,15 @@ public class HelperController : MonoBehaviour
             transform.localScale = _originalScale * equipOverride.GetEquipScale();
         }
 
-        GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
+        if(Grade.CurrentGrade >= EHelperGrade.Epic)
+        {
+            GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Idle);
+        }
+        else
+        {
+            GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
+        }
+        
     }
 
     public void Unequip()
@@ -172,14 +180,14 @@ public class HelperController : MonoBehaviour
         OnActionEnded?.Invoke();
     }
 
-    public void InteractPrimary(TerrainCell cell)
+    public bool InteractPrimary(TerrainCell cell)
     {
-        GetAbility<HelperInteractionAbility>()?.InteractPrimary(cell);
+        return GetAbility<HelperInteractionAbility>()?.InteractPrimary(cell) ?? false;
     }
 
-    public void InteractSecondary(TerrainCell cell)
+    public bool InteractSecondary(TerrainCell cell)
     {
-        GetAbility<HelperInteractionAbility>()?.InteractSecondary(cell);
+        return GetAbility<HelperInteractionAbility>()?.InteractSecondary(cell) ?? false;
     }
 
     #region PUN2 RPC — 원격 상태 동기화 수신부
@@ -202,19 +210,18 @@ public class HelperController : MonoBehaviour
     }
 
     [PunRPC]
-    internal void RPC_Equip(int ownerViewId)
+    internal void RPC_Equip(int ownerViewId, bool isBack)
     {
         var ownerView = PhotonView.Find(ownerViewId);
         if (ownerView == null) return;
 
-        var equipSlot = ownerView.GetComponentInChildren<PlayerHelperInteractionAbility>()?.EquipSlot;
+        var interaction = ownerView.GetComponentInChildren<PlayerHelperInteractionAbility>();
+        if (interaction == null) return;
+
+        var equipSlot = (isBack && interaction.BackEquipSlot != null) ? interaction.BackEquipSlot : interaction.EquipSlot;
         if (equipSlot == null) return;
 
-        SetTransformSync(false);
-        State = EHelperState.Equipped;
-        transform.SetParent(equipSlot);
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.identity;
+        Equip(equipSlot);
     }
 
     [PunRPC]
