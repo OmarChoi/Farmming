@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 
@@ -9,12 +10,17 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
 {
     public static VillageLevelManager Instance { get; private set; }
 
-    [SerializeField] private int[] _levelThresholds = { 100, 150, 200 };
+    [SerializeField] private VillageLevelRequirementSO _requirementSO;
 
     public int CurrentLevel { get; private set; } = 1;
-    public int CurrentGauge { get; private set; }
-    public int CurrentThreshold => GetThresholdForLevel(CurrentLevel);
-    public bool CanLevelUp => CurrentThreshold > 0 && CurrentGauge >= CurrentThreshold;
+    public int CurrentVitality { get; private set; }
+    public int CurrentVitalityThreshold => GetVitalityThresholdForLevel(CurrentLevel);
+    public LevelUpRequirement LevelUpRequirement => _requirementSO.GetRequirement(CurrentLevel);
+    public bool IsMaxLevel => _requirementSO.IsMaxLevel(CurrentLevel);
+    private bool CanLevelUp => !IsMaxLevel
+                               && CurrentVitality >= CurrentVitalityThreshold
+                               && BuildingManager.Instance != null
+                               && BuildingManager.Instance.BuildingCount >= GetBuildingCountForLevel(CurrentLevel);
 
     public event Action OnVillageStateChanged;
 
@@ -29,9 +35,10 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
             return;
         }
         Instance = this;
+        _subscribed = false;
     }
 
-    private void OnEnable()
+    public override void OnEnable()
     {
         TrySubscribe();
     }
@@ -41,11 +48,12 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         TrySubscribe();
     }
 
-    private void OnDisable()
+    public override void OnDisable()
     {
         if (_subscribed && BuildingManager.Instance != null)
         {
             BuildingManager.Instance.OnBuildingBuilt -= HandleBuildingBuilt;
+            BuildingManager.Instance.OnBuildingDestroyed -= HandleBuildingDestroyed;
         }
         _subscribed = false;
     }
@@ -60,24 +68,29 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         if (_subscribed) return;
         if (BuildingManager.Instance == null) return;
         BuildingManager.Instance.OnBuildingBuilt += HandleBuildingBuilt;
+        BuildingManager.Instance.OnBuildingDestroyed += HandleBuildingDestroyed;
         _subscribed = true;
     }
 
     private void HandleBuildingBuilt(BuildingDataSO data)
     {
         if (data == null) return;
-        if (!_builtOnceIds.Add(data.BuildingId)) return;
-        
-        if (data.FirstBuildGaugeContribution <= 0)
+
+        bool isFirst = _builtOnceIds.Add(data.BuildingId);
+        if (isFirst && data.FirstBuildGaugeContribution > 0)
         {
-            OnVillageStateChanged?.Invoke();
-            return;
+            CurrentVitality += data.FirstBuildGaugeContribution;
         }
-        CurrentGauge += data.FirstBuildGaugeContribution;
-        if (CurrentGauge >= CurrentThreshold)
+
+        if (CanLevelUp)
         {
             RequestLevelUp();
         }
+        OnVillageStateChanged?.Invoke();
+    }
+
+    private void HandleBuildingDestroyed()
+    {
         OnVillageStateChanged?.Invoke();
     }
 
@@ -89,7 +102,10 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
 
         if (!PhotonNetwork.IsConnected)
         {
-            ExecuteLevelUp();
+            CurrentVitality -= CurrentVitalityThreshold;
+            CurrentLevel++;
+            UIController.Instance.OpenAsync<UI_VillageLevelUp>(ui => ui.SetData(CurrentLevel).Forget()).Forget();
+            OnVillageStateChanged?.Invoke();
             return;
         }
 
@@ -102,27 +118,33 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         if (!PhotonNetwork.IsMasterClient) return;
         if (!CanLevelUp) return;
 
-        photonView.RpcSafe(nameof(RPC_ExecuteLevelUp), RpcTarget.All);
-    }
-
-    [PunRPC]
-    private void RPC_ExecuteLevelUp() => ExecuteLevelUp();
-
-    private void ExecuteLevelUp()
-    {
-        int threshold = CurrentThreshold;
-        if (threshold <= 0 || CurrentGauge < threshold) return;
-
-        CurrentGauge -= threshold;
+        int threshold = CurrentVitalityThreshold;
+        CurrentVitality -= threshold;
         CurrentLevel++;
+        UIController.Instance.OpenAsync<UI_VillageLevelUp>(ui => ui.SetData(CurrentLevel).Forget()).Forget();
+
+        photonView.RpcSafe(nameof(RPC_SetVillageLevel), RpcTarget.Others, CurrentLevel, CurrentVitality);
         OnVillageStateChanged?.Invoke();
     }
 
-    private int GetThresholdForLevel(int level)
+    [PunRPC]
+    private void RPC_SetVillageLevel(int level, int gauge)
     {
-        if (_levelThresholds.Length == 0) return 0;
-        int idx = Math.Clamp(level - 1, 0, _levelThresholds.Length - 1);
-        return _levelThresholds[idx];
+        if (PhotonNetwork.IsMasterClient) return;
+        CurrentLevel = level;
+        CurrentVitality = gauge;
+        UIController.Instance.OpenAsync<UI_VillageLevelUp>(ui => ui.SetData(CurrentLevel).Forget()).Forget();
+        OnVillageStateChanged?.Invoke();
+    }
+
+    private int GetVitalityThresholdForLevel(int level)
+    {
+        return _requirementSO.GetRequirement(level).VitalityThreshold;
+    }
+
+    private int GetBuildingCountForLevel(int level)
+    {
+        return _requirementSO.GetRequirement(level).BuildingCountThreshold;
     }
 
     #region Sync
@@ -130,7 +152,7 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
     public void ImportSaveData(VillageSaveData saveData)
     {
         CurrentLevel = Math.Max(saveData.Level, 1);
-        CurrentGauge = saveData.Gauge;
+        CurrentVitality = saveData.Gauge;
         foreach (string id in saveData.BuiltBuildings)
         {
             _builtOnceIds.Add(id);
@@ -143,7 +165,7 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         return new VillageSaveData
         {
             Level = CurrentLevel,
-            Gauge = CurrentGauge,
+            Gauge = CurrentVitality,
             BuiltBuildings = _builtOnceIds.ToList()
         };
     }
