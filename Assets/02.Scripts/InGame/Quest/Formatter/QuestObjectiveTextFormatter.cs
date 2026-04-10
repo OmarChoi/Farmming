@@ -57,6 +57,9 @@ public class QuestObjectiveTextFormatter
         {
             case EQuestObjectiveType.BreakObject:
             case EQuestObjectiveType.TalkToNpc:
+            case EQuestObjectiveType.DryFarmTile:
+            case EQuestObjectiveType.PlantSeed:
+            case EQuestObjectiveType.WaterFarmTile:
                 return $"진행도: {runtimeData.CurrentAmount} / {questData.RequiredAmount}";
 
             case EQuestObjectiveType.CollectItem:
