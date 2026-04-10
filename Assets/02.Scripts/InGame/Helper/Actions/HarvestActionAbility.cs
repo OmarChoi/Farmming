@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 // 수확 공룡: IsHarvestable -> 수확
@@ -43,6 +44,9 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
+        if (cell == null) return;
+
         switch (_owner.Grade.CurrentGrade)
         {
             case EHelperGrade.Normal:
@@ -88,6 +92,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             _owner.Experience.Add(_harvestExperience);
 
         farmTile.Interact();
+        BroadcastFarmTileStateFromMaster(farmTile);
         _animAbility?.Play(EHelperAnim.Idle);
         _owner.EndAction();
     }
@@ -95,7 +100,6 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     private void InteractPrimaryEpic(TerrainCell centerCell)
     {
         _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.EpicHarvest);
 
         bool anyHarvested = false;
 
@@ -109,15 +113,22 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
                 if (anyHarvested) _owner.Experience.Add(_harvestExperience);
                 _animAbility?.Play(EHelperAnim.Idle);
                 _owner.EndAction();
-            });
+            }, _ => ReplayEpicHarvest());
         }
         else
         {
+            ReplayEpicHarvest();
             if (TryHarvestCell(centerCell)) anyHarvested = true;
             if (anyHarvested) _owner.Experience.Add(_harvestExperience);
             _animAbility?.Play(EHelperAnim.Idle);
             _owner.EndAction();
         }
+    }
+
+    private void ReplayEpicHarvest()
+    {
+        if (_animAbility == null) return;
+        StartCoroutine(_animAbility.ForceReplayAndWait(EHelperAnim.EpicHarvest, 0f));
     }
 
     private void InteractPrimaryLegendary(TerrainCell centerCell)
@@ -169,6 +180,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
         bool success = HarvestCell(farmTile, farmTile.PlantedSeed);
         farmTile.Interact();
+        BroadcastFarmTileStateFromMaster(farmTile);
         return success;
     }
 
@@ -184,9 +196,11 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             success = true;
         }
 
-        if (seed.Icon != null)
+        ItemDataSO harvestItem = seed.HarvestItem;
+        if (harvestItem != null)
         {
-            _harvestItem?.Raise(seed.Icon, seed.DisplayName, harvestAmount);
+            Sprite notificationIcon = harvestItem.Icon != null ? harvestItem.Icon : seed.Icon;
+            _harvestItem?.Raise(notificationIcon, harvestItem.DisplayName, harvestAmount);
         }
 
         return success;
@@ -202,16 +216,20 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private List<TerrainCell> GetLegendaryCells(TerrainCell centerCell)
     {
+        centerCell = GetInteractableCell(centerCell);
+        if (centerCell == null)
+            return new List<TerrainCell>();
+
         var cells = new List<TerrainCell> { centerCell };
 
         Vector3Int rightOffset = GetGridRightOffset();
         for (int i = 1; i <= 2; i++)
         {
-            var rightCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition + rightOffset * i);
-            var leftCell = TerrainGridManager.Instance?.GetCell(centerCell.GridPosition - rightOffset * i);
+            var rightCell = GetGridInteractableCell(centerCell.GridPosition + rightOffset * i);
+            var leftCell = GetGridInteractableCell(centerCell.GridPosition - rightOffset * i);
 
-            if (rightCell != null && rightCell.Data.IsTop) cells.Add(rightCell);
-            if (leftCell != null && leftCell.Data.IsTop) cells.Add(leftCell);
+            if (rightCell != null) cells.Add(rightCell);
+            if (leftCell != null) cells.Add(leftCell);
         }
         return cells;
     }
@@ -237,11 +255,22 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private FarmTile GetFarmTile(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return null;
         if (cell.FarmTile != null && cell.FarmTile.gameObject.activeSelf)
         {
             return cell.FarmTile;
         }
         return null;
+    }
+
+    private static void BroadcastFarmTileStateFromMaster(FarmTile farmTile)
+    {
+        if (!PhotonNetwork.IsMasterClient || farmTile == null) return;
+
+        TerrainCell cell = farmTile.GetComponentInParent<TerrainCell>();
+        if (cell == null) return;
+
+        MapSyncManager.Instance?.BroadcastTerrainCellStateFromMaster(cell.GridPosition);
     }
 }

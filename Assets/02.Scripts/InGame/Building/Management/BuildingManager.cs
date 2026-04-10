@@ -24,11 +24,13 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     public event Action<BuildingDataSO> OnLocalBuildCostConfirmed;
     public event Action<BuildingDataSO> OnLocalRemoveRefundGranted;
     public event Action<BuildingDataSO> OnBuildingBuilt;
+    public event Action OnBuildingDestroyed;
 
     private readonly BuildingRegistry _registry = new BuildingRegistry();
     private BuildingPlacementService _placement;
     private BuildingInstanceFactory _factory;
 
+    public int BuildingCount { get; private set; }
     public IReadOnlyList<BuildingDataSO> AvailableBuildings => _buildingDatabase.Buildings;
     public GhostConfig GhostConfig => new GhostConfig(_ghostMaterial, _ghostValidColor, _ghostInvalidColor);
 
@@ -263,6 +265,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     {
         if (building == null) return;
         building.ConstructionCompleted -= HandleBuildingConstructionCompleted;
+        BuildingCount++;
         OnBuildingBuilt?.Invoke(building.BuildingData);
     }
 
@@ -298,6 +301,8 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     {
         if (!_registry.RemoveInstance(anchor, out BaseBuilding buildingInstance)) return;
         _factory.Destroy(buildingInstance);
+        BuildingCount--;
+        OnBuildingDestroyed?.Invoke();
     }
 
     private bool TryRemoveResolved(Vector3Int anchor, BuildingSaveData saveData, BuildingDataSO buildingData)

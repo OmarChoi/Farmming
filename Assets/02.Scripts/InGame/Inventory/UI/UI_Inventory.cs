@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 public class UI_Inventory : MonoBehaviour, ISlotContainer
 {
     private const int Columns = 4;
+    public static event Func<SeedItemDataSO, bool> SeedSelectionRequested;
 
     [Header("참조")]
     [SerializeField] private GameObject _panel;
@@ -355,6 +357,11 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
     {
         if (_isDragging) return;
         if (clicked.CurrentItem == null) return;
+        if (_clickMode != EInventoryClickMode.Normal) return;
+
+        if (clicked.CurrentItem is SeedItemDataSO seedItem && RequestSeedSelection(seedItem))
+            return;
+
 
         // Storage 모드: 인벤토리 → 창고 빠른 이동
         if (_clickMode == EInventoryClickMode.Storage)
@@ -378,6 +385,20 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
     }
 
     // 판매
+
+    private bool RequestSeedSelection(SeedItemDataSO seedItem)
+    {
+        if (seedItem == null || SeedSelectionRequested == null)
+            return false;
+
+        foreach (Func<SeedItemDataSO, bool> handler in SeedSelectionRequested.GetInvocationList())
+        {
+            if (handler.Invoke(seedItem))
+                return true;
+        }
+
+        return false;
+    }
 
     public void Init(TradeService tradeService)
     {

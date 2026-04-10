@@ -12,6 +12,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     [SerializeField] private List<HelperDataSO> _helperDataList = new();
 
     private PlayerHelperInteractionAbility _helperInteractionAbility;
+    private HelperAnimationAbility _animationAbility;
     private HelperController _activeMainHelper;
     private HelperController _activeLightHelper;
     private readonly Dictionary<string, HelperSaveData> _savedStates = new();
@@ -27,6 +28,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     public int SummonedIndex => _summonedMainIndex >= 0 ? _summonedMainIndex : _summonedLightIndex;
     public bool IsCurrentIndexSummoned => _currentIndex == _summonedMainIndex || _currentIndex == _summonedLightIndex;
     public HelperController ActiveHelper => _activeMainHelper != null ? _activeMainHelper : _activeLightHelper;
+    public HelperController ActiveMainHelper => _activeMainHelper;
+    public bool HasActiveMainHelper => _activeMainHelper != null;
 
     public HelperDataSO SummonedData
     {
@@ -103,7 +106,16 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     private void Start()
     {
         if (!_owner.IsMine) return;
+        TimeEvents.OnNetDayStarted += HandleMorning;
+        UI_Inventory.SeedSelectionRequested += HandleSeedSelectionRequested;
         OnLocalPlayerReady?.Invoke(this);
+    }
+
+    private void OnDestroy()
+    {
+        TimeEvents.OnNetDayStarted -= HandleMorning;
+        if (_owner != null && _owner.IsMine)
+            UI_Inventory.SeedSelectionRequested -= HandleSeedSelectionRequested;
     }
 
     private void Update()
@@ -129,6 +141,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void ToggleSummon()
     {
+        if (HasBlockingMainHelperAction()) return;
         // 빛곡룡이 Summoned(등에서 해제) 상태이고 일반 helper가 없으면
         // 빛곡룡을 먼저 소환 해제하고, 현재 인덱스가 같으면 여기서 종료
         if (_activeLightHelper != null
@@ -234,11 +247,17 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         {
             var go = PhotonNetwork.Instantiate(prefab.name, spawnPos, Quaternion.identity);
             return go.GetComponent<HelperController>();
+
         }
         return Instantiate(prefab, spawnPos, Quaternion.identity);
     }
 
     private void SaveHelperState(HelperController helper)
+    {
+        SaveHelperState(helper, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+    }
+
+    private void SaveHelperState(HelperController helper, long savedAt)
     {
         if (helper == null) return;
         _savedStates[helper.HelperId] = new HelperSaveData
@@ -248,7 +267,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             Grade = (int)helper.Grade.CurrentGrade,
             Experience = helper.Experience.CurrentExp,
             Energy = helper.Energy.Current,
-            EnergySavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            EnergySavedAt = savedAt
         };
     }
 
@@ -274,6 +293,45 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         if (_savedStates.TryGetValue(helper.HelperId, out var state))
             helper.LoadState(state);
+    }
+
+    private void HandleMorning()
+    {
+        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        RecoverActiveHelper(_activeMainHelper, now);
+        RecoverActiveHelper(_activeLightHelper, now);
+        RecoverSavedHelpers(now);
+    }
+
+    private void RecoverActiveHelper(HelperController helper, long savedAt)
+    {
+        if (helper == null) return;
+
+        helper.Energy.RecoverFull();
+        SaveHelperState(helper, savedAt);
+    }
+
+    private void RecoverSavedHelpers(long savedAt)
+    {
+        foreach (HelperDataSO data in _helperDataList)
+        {
+            if (data == null) continue;
+            if (IsActiveHelper(data.HelperId)) continue;
+
+            if (_savedStates.TryGetValue(data.HelperId, out HelperSaveData state))
+            {
+                state.Energy = data.MaxEnergy;
+                state.EnergySavedAt = savedAt;
+                _savedStates[data.HelperId] = state;
+            }
+        }
+    }
+
+    private bool IsActiveHelper(string helperId)
+    {
+        return (_activeMainHelper != null && _activeMainHelper.HelperId == helperId)
+            || (_activeLightHelper != null && _activeLightHelper.HelperId == helperId);
     }
 
     public void AddHelper(HelperDataSO data)
@@ -369,6 +427,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     public void RespawnHelper(HelperDataSO data)
     {
         if (data == null) return;
+        if (HasBlockingMainHelperAction()) return;
 
         HelperController activeHelper = FindActiveHelper(data.HelperId);
         if (activeHelper == null) return;
@@ -382,6 +441,12 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
             HelperController newHelper = InstantiateHelper(data);
             _activeLightHelper = newHelper;
+
+            HelperAnimationAbility animationAbility = newHelper.GetAbility<HelperAnimationAbility>();
+            if (animationAbility != null)
+            {
+                animationAbility.InitAnimator();
+            }
             _activeLightHelper.OnGradeChanged += OnLightHelperGradeChanged;
             _helperInteractionAbility.Summon(newHelper);
             RestoreHelperState(newHelper);
@@ -395,6 +460,14 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
             HelperController newHelper = InstantiateHelper(data);
             _activeMainHelper = newHelper;
+
+
+            HelperAnimationAbility animationAbility = newHelper.GetAbility<HelperAnimationAbility>();
+            if (animationAbility != null)
+            {
+                animationAbility.InitAnimator();
+            }
+
             _activeMainHelper.OnGradeChanged += OnMainHelperGradeChanged;
             _helperInteractionAbility.Summon(newHelper);
             RestoreHelperState(newHelper);
@@ -412,6 +485,32 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             return _activeLightHelper;
 
         return null;
+    }
+
+    private bool HasBlockingMainHelperAction()
+    {
+        return _activeMainHelper != null && _activeMainHelper.IsActing;
+    }
+
+    private bool HandleSeedSelectionRequested(SeedItemDataSO seedItem)
+    {
+        if (seedItem == null || _activeMainHelper == null)
+            return false;
+        if (_activeMainHelper.GetAbility<SowActionAbility>() == null)
+            return false;
+
+        SeedSelectAbility seedSelectAbility = _activeMainHelper.GetAbility<SeedSelectAbility>();
+        if (seedSelectAbility == null)
+            return false;
+
+        bool selected = seedSelectAbility.TrySelectSeed(seedItem);
+
+#if UNITY_EDITOR
+        if (selected)
+            Debug.Log($"Sow seed selected: {seedItem.DisplayName}");
+#endif
+
+        return selected;
     }
 
     public int GetMaxExpByGrade(HelperDataSO data, EHelperGrade grade)

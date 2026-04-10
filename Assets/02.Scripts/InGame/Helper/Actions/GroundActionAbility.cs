@@ -56,6 +56,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     public void InteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return;
 
         if (!CanRemoveCell(cell)) return;
@@ -81,6 +82,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _owner.BeginAction();
 
         AnimateCellToMouth(detachedCell);
+        BroadcastGroundStateFromMaster(detachedCell.GridPosition);
 
         var pos = cell.GridPosition;
         if (isFarmLand)
@@ -102,7 +104,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return;
+        if (!CanPlaceGroundOnCell(cell)) return;
 
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return;
@@ -125,6 +129,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, _generateDirtAmount);
         if (!placed) return;
 
+        ClearFarmLandIfCovered(cell, targetGridPos);
+
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.EatGround);
 
@@ -135,6 +141,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             StartPlaceCellAnimation(newCell, targetWorldPos);
         }
 
+        BroadcastGroundStateFromMaster(targetGridPos);
+
         _owner.PhotonView.RpcSafe(
             nameof(RPC_PlaceBlockWithAnimation), RpcTarget.Others,
             targetGridPos.x, targetGridPos.y, targetGridPos.z, (int)tileType, _generateDirtAmount);
@@ -144,23 +152,50 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _owner.EndAction();
     }
 
+    private void ClearFarmLandIfCovered(TerrainCell sourceCell, Vector3Int placedGridPos)
+    {
+        if (sourceCell == null) return;
+        if (sourceCell.Data.ObjectType != EGridObjectType.FarmLand) return;
+        if (placedGridPos != sourceCell.GridPosition + Vector3Int.up) return;
+
+        sourceCell.Data.RemoveObject();
+        sourceCell.Refresh();
+    }
+
     public bool CanInteractPrimary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
         return CanRemoveCell(cell);
     }
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
+        cell = GetInteractableCell(cell);
         if (cell == null) return false;
-        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
-            return false;
+        if (!CanPlaceGroundOnCell(cell)) return false;
 
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return false;
 
         ItemDataSO selectedGround = _groundSelector?.SelectedGround;
         return selectedGround != null;
+    }
+
+    private bool CanPlaceGroundOnCell(TerrainCell cell)
+    {
+        if (cell == null) return false;
+        if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return false;
+
+        if (cell.Data.ObjectType != EGridObjectType.FarmLand)
+            return true;
+
+        FarmTile farmTile = cell.FarmTile;
+        if (farmTile == null)
+            return true;
+
+        return !farmTile.HasSeed && !farmTile.HasCrop;
     }
 
     private bool CanRemoveCell(TerrainCell cell)
@@ -170,7 +205,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (cell.Data.ObjectType == EGridObjectType.FarmLand)
         {
             FarmTile farmTile = cell.FarmTile;
-            if (farmTile != null && farmTile.HasSeed) return false;
+            if (farmTile != null && (farmTile.HasSeed || farmTile.HasCrop)) return false;
             return cell.Data.CanDig(_canDigLevel);
         }
 
@@ -249,6 +284,15 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return cell.GridPosition;
 
         return cell.GridPosition + Vector3Int.up;
+    }
+
+    private static void BroadcastGroundStateFromMaster(Vector3Int changedCellPos)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        MapSyncManager.Instance?.BroadcastTerrainCellStatesFromMaster(
+            changedCellPos,
+            changedCellPos + Vector3Int.down);
     }
 
     private void OnDisable()

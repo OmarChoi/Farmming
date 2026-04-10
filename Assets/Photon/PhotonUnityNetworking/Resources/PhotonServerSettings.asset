@@ -82,20 +82,11 @@ MonoBehaviour:
   - RPC_ConfirmBuild
   - RPC_RequestSkipToNextDay
   - RPC_SyncTime
-  - RPC_ExecuteLevelUp
   - RPC_RequestLevelUp
   - RPC_AnimTrigger
   - RPC_StartTimer
-  - RPC_ReceiveItem
-  - RPC_RequestAddItem
-  - RPC_RequestFullSync
-  - RPC_RequestRemoveItem
-  - RPC_RequestSwap
-  - RPC_SyncStorage
-  - RPC_RequestRemoveItemToSlot
-  - RPC_RequestGiveHeldItem
-  - RPC_RequestPlaceSplit
-  - RPC_RequestSplitHalf
+  - RPC_SetVillageLevel
+  - RPC_ApplyTerrainCellDeltaBatch
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

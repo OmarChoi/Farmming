@@ -61,6 +61,12 @@ public class GameSceneInit : MonoBehaviour
 
     private async UniTaskVoid WaitForMapAndSpawn()
     {
+        if (PhotonNetwork.IsConnected)
+        {
+            var props = new Hashtable { { PropTerrainReady, false } };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        }
+
         // 던전 복귀 시 캐시에서 마을 복원
         if (ReturningFromDungeon && VillageCache.HasCache)
         {
