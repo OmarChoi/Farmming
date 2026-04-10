@@ -82,6 +82,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _owner.BeginAction();
 
         AnimateCellToMouth(detachedCell);
+        BroadcastGroundStateFromMaster(detachedCell.GridPosition);
 
         var pos = cell.GridPosition;
         if (isFarmLand)
@@ -139,6 +140,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
             StartPlaceCellAnimation(newCell, targetWorldPos);
         }
+
+        BroadcastGroundStateFromMaster(targetGridPos);
 
         _owner.PhotonView.RpcSafe(
             nameof(RPC_PlaceBlockWithAnimation), RpcTarget.Others,
@@ -281,6 +284,15 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return cell.GridPosition;
 
         return cell.GridPosition + Vector3Int.up;
+    }
+
+    private static void BroadcastGroundStateFromMaster(Vector3Int changedCellPos)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        MapSyncManager.Instance?.BroadcastTerrainCellStatesFromMaster(
+            changedCellPos,
+            changedCellPos + Vector3Int.down);
     }
 
     private void OnDisable()
