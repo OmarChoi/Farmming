@@ -209,9 +209,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
             {
                 if (_isSplitDrag)
                 {
-                    _transferService.PlaceSplitInStorage(
-                        _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
-                    _transferService.MoveToInventory(_dragSourceSlot.SlotIndex);
+                    _transferService.AddHeldItemToInventory(_splitItem, _splitAmount);
                 }
                 else
                 {

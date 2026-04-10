@@ -45,6 +45,14 @@ public class StorageTransferService
         return true;
     }
 
+    public virtual bool AddHeldItemToInventory(ItemDataSO item, int amount)
+    {
+        if (item == null || amount <= 0) return false;
+
+        _inventory.AddItem(item, amount);
+        return true;
+    }
+
     /// 인벤토리 슬롯과 창고 슬롯 간 스왑.
     public virtual void SwapAcross(int inventorySlotIndex, int storageSlotIndex)
     {

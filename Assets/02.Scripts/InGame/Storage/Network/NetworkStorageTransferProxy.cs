@@ -104,8 +104,13 @@ public class NetworkStorageTransferProxy : StorageTransferService
     public override int SplitHalfInStorage(int index)
     {
         int result = base.SplitHalfInStorage(index);
-        if (result > 0 && _syncHandler.IsMaster)
-            _syncHandler.BroadcastFullSync();
+        if (result > 0)
+        {
+            if (_syncHandler.IsMaster)
+                _syncHandler.BroadcastFullSync();
+            else
+                _syncHandler.RequestSplitHalf(index);
+        }
         return result;
     }
 
@@ -114,5 +119,18 @@ public class NetworkStorageTransferProxy : StorageTransferService
         base.PlaceSplitInStorage(sourceIndex, targetIndex, item, amount);
         if (_syncHandler.IsMaster)
             _syncHandler.BroadcastFullSync();
+        else if (item != null && amount > 0)
+            _syncHandler.RequestPlaceSplit(sourceIndex, targetIndex, item.Id, amount);
+    }
+
+    public override bool AddHeldItemToInventory(ItemDataSO item, int amount)
+    {
+        if (_syncHandler.IsMaster)
+            return base.AddHeldItemToInventory(item, amount);
+
+        if (item == null || amount <= 0) return false;
+
+        _syncHandler.RequestGiveHeldItem(item.Id, amount);
+        return true;
     }
 }
