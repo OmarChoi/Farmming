@@ -53,7 +53,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private void Update()
     {
         if (!_isActing) return;
-        if (!_isSecondary) return;
+        if (_owner.Grade.CurrentGrade == EHelperGrade.Normal || !_isSecondary) return;
 
         var stateInfo = _animAbility.Animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.shortNameHash == WaterStateHash && stateInfo.normalizedTime >= 1f)
