@@ -104,7 +104,7 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         {
             CurrentVitality -= CurrentVitalityThreshold;
             CurrentLevel++;
-            UIController.Instance.OpenAsync<UI_VillageLevelUp>(ui => ui.SetData(CurrentLevel).Forget());
+            UIController.Instance.OpenAsync<UI_VillageLevelUp>(ui => ui.SetData(CurrentLevel).Forget()).Forget();
             OnVillageStateChanged?.Invoke();
             return;
         }

@@ -212,7 +212,8 @@ public class TimeSystem : MonoBehaviour
         {
             return prevMinutes < targetMinutes && currentMinutes >= targetMinutes;
         }
-
+        
+        // 날짜가 변경된 경우, 이전 날짜에서 이벤트 시간을 지나지 않았거나, 새 날짜에서 이벤트 시간에 도달했는지 확인합니다.
         return prevMinutes < targetMinutes || currentMinutes >= targetMinutes;
     }
 
