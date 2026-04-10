@@ -105,8 +105,8 @@ public class StoneMineAbility : HelperAbility
         Vector3Int centerGrid = centerCell.GridPosition;
         var result = new List<TerrainCell>();
 
-        var rightCell = TerrainGridManager.Instance.GetInteractionCell(centerGrid + rightOffset, false, out _);
-        var leftCell = TerrainGridManager.Instance.GetInteractionCell(centerGrid - rightOffset, false, out _);
+        var rightCell = GetGridInteractableCell(centerGrid + rightOffset);
+        var leftCell = GetGridInteractableCell(centerGrid - rightOffset);
 
         if (rightCell != null) result.Add(rightCell);
         if (leftCell != null) result.Add(leftCell);

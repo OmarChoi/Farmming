@@ -312,15 +312,4 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         return new Vector3Int(Mathf.RoundToInt(right.x), 0, Mathf.RoundToInt(right.z));
     }
 
-    private TerrainCell GetInteractableCell(TerrainCell cell)
-    {
-        if (TerrainGridManager.Instance == null) return null;
-        return TerrainGridManager.Instance.IsCellAvailableForInteraction(cell) ? cell : null;
-    }
-
-    private TerrainCell GetGridInteractableCell(Vector3Int gridPos)
-    {
-        if (TerrainGridManager.Instance == null) return null;
-        return TerrainGridManager.Instance.GetInteractionCell(gridPos, false, out _);
-    }
 }
