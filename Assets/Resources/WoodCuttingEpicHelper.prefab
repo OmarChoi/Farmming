@@ -28,8 +28,8 @@ Transform:
   m_GameObject: {fileID: 229588880894515821}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.767, z: 0.723}
-  m_LocalScale: {x: 0.19999999, y: 0.19999999, z: 0.19999999}
+  m_LocalPosition: {x: 0, y: 0.61, z: 0.89}
+  m_LocalScale: {x: 0.8000001, y: 0.8000001, z: 0.8000001}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6742385779365880687}
@@ -2000,6 +2000,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4484897684428785056}
+  - {fileID: 6855522517503920736}
   - {fileID: 791085876162074289}
   - {fileID: 3321478947951795686}
   - {fileID: 3360712140434801594}
@@ -2138,15 +2139,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WoodCuttingMineActionAbility
   _effectWoodPrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _woodNormalEffect: {fileID: 0}
+  _woodNormalRangeEffect: {fileID: 0}
   _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
   _mouthPoint: {fileID: 4484897684428785056}
   _idleTransition: 0.5
   _slashMagicHeightOffset: 1
   _slashMagicLifetime: 1
+  _normalWoodEffectLaunchDelay: 0.3
+  _normalWoodEffectParticleStartDelay: 0.1
+  _normalWoodRangeEffectDelay: 0.2
   _normalWoodEffectTravelDuration: 0.2
+  _epicWoodImpactDelay: 0.2
   _slashMagicRotationOffset: {x: 0, y: 0, z: 0}
   _wideGatherOffset: 2
+  _embeddedNormalWoodEffect: {fileID: 0}
+  _embeddedEpicWoodEffect: {fileID: 6855522517503920736}
 --- !u!114 &8890283815802751499
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2502,4 +2510,66 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 697516973218170222, guid: 12241b1e12d210f41b2d428e812c8674, type: 3}
   m_PrefabInstance: {fileID: 2861563108909078664}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5697014374111152258
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6742385779365880687}
+    m_Modifications:
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.75573
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.1186
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1360169097543365779, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+      propertyPath: m_Name
+      value: WoodEpicEffect
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+--- !u!4 &6855522517503920736 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
+  m_PrefabInstance: {fileID: 5697014374111152258}
   m_PrefabAsset: {fileID: 0}
