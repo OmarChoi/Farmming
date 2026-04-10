@@ -1,6 +1,6 @@
 using UnityEngine;
-using System;
 using System.Collections;
+using Cysharp.Threading.Tasks;
 
 public class TutorialManager : MonoBehaviour
 {
@@ -142,6 +142,11 @@ public class TutorialManager : MonoBehaviour
         _isTutorialStarted = false;
         _currentPlayer = null;
         _playerTransform = null;
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SaveAsync().Forget();
+        }
     }
 
     private void ClearTutorial()

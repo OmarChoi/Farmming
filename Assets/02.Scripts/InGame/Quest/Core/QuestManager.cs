@@ -505,9 +505,10 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
                 DailyQuestManager.Instance?.MarkCompletedToday(questId);
                 break;
         }
-        SaveManager.Instance.SaveAsync().Forget();
         OnQuestCompleted?.Invoke(quest);
         RemoveQuest(questId);
+
+        SaveManager.Instance.SaveAsync().Forget();
         return true;
     }
 
