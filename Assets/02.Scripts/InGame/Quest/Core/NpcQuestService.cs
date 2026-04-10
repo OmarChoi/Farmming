@@ -310,7 +310,11 @@ public class NpcQuestService : MonoBehaviour
         if (questData.AcceptDialogue != null)
         {
             _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest,
-            () => ShowAcceptConfirmChoices(context, questData));
+            () =>
+            {
+                ShowAcceptConfirmChoices(context, questData);
+                return true;
+            });
         }
         else
         {
@@ -375,7 +379,7 @@ public class NpcQuestService : MonoBehaviour
                 _dialogueController.StartDialogue(
                     quest.QuestData.CompleteDialogue,
                     EDialogueUiState.Quest,
-                    () => _tutorialProgressController.TryAcceptPendingTutorialQuest());
+                    () => _tutorialProgressController.HandleTutorialQuestDialogueEnded());
             }
             else
             {

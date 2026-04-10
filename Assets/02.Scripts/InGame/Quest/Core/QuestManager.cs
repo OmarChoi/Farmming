@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class QuestManager : MonoBehaviour, IQuestProgressService
 {
@@ -438,7 +439,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
                 DailyQuestManager.Instance?.MarkCompletedToday(questId);
                 break;
         }
-
+        SaveManager.Instance.SaveAsync().Forget();
         OnQuestCompleted?.Invoke(quest);
         RemoveQuest(questId);
         return true;
