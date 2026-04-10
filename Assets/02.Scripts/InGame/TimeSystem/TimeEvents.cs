@@ -15,6 +15,7 @@ public static class TimeEvents
     public static GameTime CurrentTime { get; private set; }
     public static bool IsDayTime { get; private set; }
     public static int ElapsedDays { get; private set; }
+    public static TimeSettingSO Settings { get; private set; }
 
     public static event Action<GameTime> OnMinuteChanged;
 
@@ -36,6 +37,12 @@ public static class TimeEvents
         IsDayTime = isDayTime;
         ElapsedDays = elapsedDays;
     }
+
+    internal static void SetSpecData(TimeSettingSO timeSetting)
+    {
+        Settings = timeSetting;
+    }
+    
     internal static void InvokeMinuteChanged(GameTime time) => OnMinuteChanged?.Invoke(time);
     internal static void InvokeNetDayChanged() => OnNetDayChanged?.Invoke();
     internal static void InvokeNetDayStarted() => OnNetDayStarted?.Invoke();
