@@ -622,7 +622,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 117b339248e72884ca2883de77f6718f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestDaySkip
-  _timeSystem: {fileID: 691244074}
+  TimeSystem: {fileID: 0}
 --- !u!1 &178107158
 GameObject:
   m_ObjectHideFlags: 0
@@ -1710,6 +1710,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 386169379799505435, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1297318230509913425, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
       propertyPath: m_Name
       value: TimeSystem
