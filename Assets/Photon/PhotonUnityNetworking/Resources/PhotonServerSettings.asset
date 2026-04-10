@@ -93,6 +93,9 @@ MonoBehaviour:
   - RPC_RequestSwap
   - RPC_SyncStorage
   - RPC_RequestRemoveItemToSlot
+  - RPC_RequestGiveHeldItem
+  - RPC_RequestPlaceSplit
+  - RPC_RequestSplitHalf
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

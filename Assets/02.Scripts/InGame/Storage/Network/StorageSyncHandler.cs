@@ -71,6 +71,44 @@ public class StorageSyncHandler : MonoBehaviourPun
         }
     }
 
+    public void RequestSplitHalf(int storageSlotIndex)
+    {
+        if (IsMaster)
+        {
+            ExecuteSplitHalf(storageSlotIndex);
+        }
+        else
+        {
+            photonView.RPC(nameof(RPC_RequestSplitHalf), RpcTarget.MasterClient, storageSlotIndex);
+        }
+    }
+
+    public void RequestPlaceSplit(int sourceIndex, int targetIndex, int itemId, int amount)
+    {
+        if (IsMaster)
+        {
+            ExecutePlaceSplit(sourceIndex, targetIndex, itemId, amount);
+        }
+        else
+        {
+            photonView.RPC(nameof(RPC_RequestPlaceSplit), RpcTarget.MasterClient,
+                sourceIndex, targetIndex, itemId, amount);
+        }
+    }
+
+    public void RequestGiveHeldItem(int itemId, int amount)
+    {
+        if (IsMaster)
+        {
+            GiveItemToPlayer(PhotonNetwork.LocalPlayer?.ActorNumber ?? -1, itemId, amount);
+        }
+        else
+        {
+            photonView.RPC(nameof(RPC_RequestGiveHeldItem), RpcTarget.MasterClient,
+                itemId, amount, PhotonNetwork.LocalPlayer.ActorNumber);
+        }
+    }
+
     // === 마스터 실행 로직 ===
 
     private void ExecuteAddItem(int itemId, int amount)
@@ -125,6 +163,23 @@ public class StorageSyncHandler : MonoBehaviourPun
         if (outItemId > 0 && outItemCount > 0)
             GiveItemToPlayer(actorNumber, outItemId, outItemCount, inventorySlotIndex);
 
+        BroadcastFullSync();
+    }
+
+    private void ExecuteSplitHalf(int storageSlotIndex)
+    {
+        if (_storage.SplitHalf(storageSlotIndex) > 0)
+            BroadcastFullSync();
+    }
+
+    private void ExecutePlaceSplit(int sourceIndex, int targetIndex, int itemId, int amount)
+    {
+        if (amount <= 0) return;
+
+        var item = _itemDatabase.GetById(itemId);
+        if (item == null) return;
+
+        _storage.PlaceSplit(sourceIndex, targetIndex, item, amount);
         BroadcastFullSync();
     }
 
@@ -249,6 +304,27 @@ public class StorageSyncHandler : MonoBehaviourPun
     {
         if (!PhotonNetwork.IsMasterClient) return;
         ExecuteSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, actorNumber);
+    }
+
+    [PunRPC]
+    private void RPC_RequestSplitHalf(int storageSlotIndex)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        ExecuteSplitHalf(storageSlotIndex);
+    }
+
+    [PunRPC]
+    private void RPC_RequestPlaceSplit(int sourceIndex, int targetIndex, int itemId, int amount)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        ExecutePlaceSplit(sourceIndex, targetIndex, itemId, amount);
+    }
+
+    [PunRPC]
+    private void RPC_RequestGiveHeldItem(int itemId, int amount, int actorNumber)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        GiveItemToPlayer(actorNumber, itemId, amount);
     }
 
     [PunRPC]

@@ -9,7 +9,7 @@ public enum ETitlePanel { Title, Lobby, Join, Room, Connecting }
 public class TitleFlowManager : MonoBehaviour
 {
     [SerializeField] private int _maxSlots = 3;
-
+    [SerializeField] private GameObject _pun2Manager;
     public event Action<ETitlePanel> OnPanelChanged;
     public event Action<string> OnRoomIdReady;
     public event Action<string> OnJoinError;
@@ -18,6 +18,7 @@ public class TitleFlowManager : MonoBehaviour
 
     private void Awake()
     {
+        Instantiate(_pun2Manager);
         SlotService = new SaveSlotService(new LocalJsonSaveRepository(), _maxSlots);
     }
 
