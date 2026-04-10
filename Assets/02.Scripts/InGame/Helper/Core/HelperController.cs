@@ -180,14 +180,14 @@ public class HelperController : MonoBehaviour
         OnActionEnded?.Invoke();
     }
 
-    public void InteractPrimary(TerrainCell cell)
+    public bool InteractPrimary(TerrainCell cell)
     {
-        GetAbility<HelperInteractionAbility>()?.InteractPrimary(cell);
+        return GetAbility<HelperInteractionAbility>()?.InteractPrimary(cell) ?? false;
     }
 
-    public void InteractSecondary(TerrainCell cell)
+    public bool InteractSecondary(TerrainCell cell)
     {
-        GetAbility<HelperInteractionAbility>()?.InteractSecondary(cell);
+        return GetAbility<HelperInteractionAbility>()?.InteractSecondary(cell) ?? false;
     }
 
     #region PUN2 RPC — 원격 상태 동기화 수신부

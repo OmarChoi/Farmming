@@ -45,6 +45,12 @@ public class PlayerAnimationAbility : PlayerAbility
             _animator.SetTrigger(Animator.StringToHash(triggerName));
     }
 
+    public void PlayTriggerSynced(string triggerName)
+    {
+        if (string.IsNullOrWhiteSpace(triggerName)) return;
+        PlayTriggerSynced(Animator.StringToHash(triggerName), triggerName);
+    }
+
     private void PlayTriggerSynced(int hash, string name)
     {
         if (_animator == null) return;
