@@ -334,9 +334,33 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             || (_activeLightHelper != null && _activeLightHelper.HelperId == helperId);
     }
 
-    public void AddHelper(HelperDataSO data)
+    public bool AddHelper(HelperDataSO data)
     {
+        if (data == null) return false;
+
+        if (_helperDataList.Exists(h => h != null && h.HelperId == data.HelperId))
+        {
+            Debug.Log($"Helper 존재: {data.HelperName}");
+            return false;
+        }
+
         _helperDataList.Add(data);
+
+        if (!_savedStates.ContainsKey(data.HelperId))
+        {
+            _savedStates[data.HelperId] = new HelperSaveData
+            {
+                HelperId = data.HelperId,
+                Level = 1,
+                Grade = 0,
+                Experience = 0,
+                Energy = data.MaxEnergy,
+                EnergySavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
+        }
+        Debug.Log($"Helper added: {data.HelperName}");
+        OnSelectionChanged?.Invoke(0);
+        return true;
     }
 
     public void ExportTo(PlayerSaveData saveData)

@@ -15,6 +15,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
     private QuestRequirementService _requirementService;
 
     private PlayerInventoryAbility _playerInventory;
+    private PlayerHelperInventoryAbility _playerHelperInventory;
 
     private readonly Dictionary<string, QuestRuntimeData> _activeQuests = new();
     private readonly HashSet<string> _completedMainQuestIds = new();
@@ -50,7 +51,8 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
     private void OnEnable()
     {
-        PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
+        PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerInventoryReady;
+        PlayerHelperInventoryAbility.OnLocalPlayerReady += OnPlayerHelperInventoryReady;
         GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
         FarmTileStateMachine.OnTileBecameDry += HandleTileBecameDry;
         FarmTile.OnSeedPlanted += HandleSeedPlanted;
@@ -59,7 +61,8 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
     private void OnDisable()
     {
-        PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
+        PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerInventoryReady;
+        PlayerHelperInventoryAbility.OnLocalPlayerReady -= OnPlayerHelperInventoryReady;
         GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
         FarmTileStateMachine.OnTileBecameDry -= HandleTileBecameDry;
         FarmTile.OnSeedPlanted -= HandleSeedPlanted;
@@ -154,13 +157,30 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         OnQuestDataLoaded?.Invoke();
     }
 
-    private void OnPlayerReady(PlayerInventoryAbility ability)
+    private void OnPlayerInventoryReady(PlayerInventoryAbility ability)
     {
 #if UNITY_EDITOR
         Debug.Log("PlayerInventoryAbility 확인");
 #endif
         _playerInventory = ability;
-        _rewardService = new QuestRewardService(_playerInventory);
+        TryInitializeServices();
+    }
+
+    private void OnPlayerHelperInventoryReady(PlayerHelperInventoryAbility ability)
+    {
+#if UNITY_EDITOR
+        Debug.Log("PlayerHelperInventoryAbility 확인");
+#endif
+        _playerHelperInventory = ability;
+        TryInitializeServices();
+    }
+
+    private void TryInitializeServices()
+    {
+        if (_playerInventory == null) return;
+        if (_playerHelperInventory == null) return;
+
+        _rewardService = new QuestRewardService(_playerInventory, _playerHelperInventory);
         _requirementService = new QuestRequirementService(_playerInventory);
     }
 
