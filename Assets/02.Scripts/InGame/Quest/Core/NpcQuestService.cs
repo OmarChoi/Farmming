@@ -6,6 +6,7 @@ public class NpcQuestService : MonoBehaviour
     [SerializeField] private NpcDialogueController _dialogueController;
     [SerializeField] private QuestManager _questManager;
     [SerializeField] private NpcFriendshipManager _npcFriendshipManager;
+    [SerializeField] private TutorialProgressController _tutorialProgressController;
 
     private IQuestProgressService _questProgressService;
     private IFriendshipService _friendshipService;
@@ -23,6 +24,10 @@ public class NpcQuestService : MonoBehaviour
         if (_npcFriendshipManager == null)
         {
             _npcFriendshipManager = FindFirstObjectByType<NpcFriendshipManager>();
+        }
+        if (_tutorialProgressController == null)
+        {
+            _tutorialProgressController = FindFirstObjectByType<TutorialProgressController>();
         }
 
         _questProgressService = _questManager;
@@ -102,6 +107,34 @@ public class NpcQuestService : MonoBehaviour
         }
 
         return result;
+    }
+
+    private NpcQuestEntry FindHighestPriorityEntry(NpcInteractionContext context)
+    {
+        List<NpcQuestEntry> entries = FindQuestEntries(context);
+        if (entries == null || entries.Count == 0) return null;
+
+        NpcQuestEntry acceptable = null;
+
+        foreach (NpcQuestEntry entry in entries)
+        {
+            if (entry == null || entry.QuestData == null) continue;
+
+            switch (entry.EntryType)
+            {
+                case ENpcQuestEntryType.Completable:
+                    return entry;
+
+                case ENpcQuestEntryType.InProgress:
+                    return entry;
+
+                case ENpcQuestEntryType.Acceptable:
+                    acceptable ??= entry;
+                    break;
+            }
+        }
+
+        return acceptable;
     }
 
     private bool IsQuestRelatedToNpc(QuestDataSO questData, string npcId)
@@ -269,10 +302,19 @@ public class NpcQuestService : MonoBehaviour
     {
         if (questData == null || _dialogueController == null) return;
 
+        if (questData.IsForcedAccept)
+        {
+            AcceptQuestWithResultDialogue(context, questData);
+            return;
+        }
         if (questData.AcceptDialogue != null)
         {
             _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest,
-            () => ShowAcceptConfirmChoices(context, questData));
+            () =>
+            {
+                ShowAcceptConfirmChoices(context, questData);
+                return true;
+            });
         }
         else
         {
@@ -300,18 +342,9 @@ public class NpcQuestService : MonoBehaviour
         bool accepted = _questProgressService.AcceptQuest(questData);
         if (!accepted) return;
 
-        if (_dialogueController != null)
+        if (_dialogueController != null && questData.AcceptResultDialogue != null)
         {
-            if (questData.AcceptResultDialogue != null)
-            {
-                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest);
-            }
-            else
-            {
-#if UNITY_EDITOR
-                Debug.Log($"퀘스트 수락: {questData.QuestName}");
-#endif
-            }
+            _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest);
         }
     }
 
@@ -337,18 +370,28 @@ public class NpcQuestService : MonoBehaviour
         bool completed = _questProgressService.CompleteQuest(questId);
         if (!completed) return;
 
-        if (_dialogueController != null)
+        bool isTutorialQuest = quest.QuestData.IsTutorial;
+
+        if (_dialogueController != null && quest.QuestData.CompleteDialogue != null)
         {
-            if (quest.QuestData.CompleteDialogue != null)
+            if (isTutorialQuest && _tutorialProgressController != null)
             {
-                _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue, EDialogueUiState.Quest);
+                _dialogueController.StartDialogue(
+                    quest.QuestData.CompleteDialogue,
+                    EDialogueUiState.Quest,
+                    () => _tutorialProgressController.HandleTutorialQuestDialogueEnded());
             }
             else
             {
-#if UNITY_EDITOR
-                Debug.Log($"퀘스트 완료: {quest.QuestData.QuestName}");
-#endif
+                _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue, EDialogueUiState.Quest);
             }
+
+            return;
+        }
+
+        if (isTutorialQuest && _tutorialProgressController != null)
+        {
+            _tutorialProgressController.TryAcceptPendingTutorialQuest();
         }
     }
 
@@ -367,18 +410,9 @@ public class NpcQuestService : MonoBehaviour
             }
         }
 
-        if (_dialogueController != null)
+        if (_dialogueController != null && quest.QuestData.InProgressDialogue != null)
         {
-            if (quest.QuestData.InProgressDialogue != null)
-            {
-                _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
-            }
-            else
-            {
-#if UNITY_EDITOR
-                Debug.Log($"진행 중 퀘스트: {quest.QuestData.QuestName}");
-#endif
-            }
+            _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
         }
     }
 
@@ -398,8 +432,91 @@ public class NpcQuestService : MonoBehaviour
                 return;
             }
         }
-#if UNITY_EDITOR
-        Debug.Log("관련된 퀘스트가 없습니다.");
-#endif
+    }
+
+    public void ExecuteTutorialQuestInteraction(NpcInteractionContext context, QuestDataSO questData)
+    {
+        if (context == null || context.Npc == null || questData == null || _questProgressService == null) return;
+
+        if (!CanOfferQuest(context, questData))
+        {
+            HandleNoQuest(context);
+            return;
+        }
+
+        HandleAcceptQuestEntry(context, questData);
+    }
+
+    public void ExecuteAutoQuestInteraction(NpcInteractionContext context)
+    {
+        if (context == null || context.Npc == null || _questProgressService == null) return;
+
+        if (TryExecuteTutorialInteraction(context))
+        {
+            return;
+        }
+
+        NpcQuestEntry entry = FindHighestPriorityEntry(context);
+
+        if (entry == null || entry.QuestData == null)
+        {
+            HandleNoQuest(context);
+            return;
+        }
+
+        OnClickQuestEntry(context, entry);
+    }
+
+    private bool TryExecuteTutorialInteraction(NpcInteractionContext context)
+    {
+        if (context == null || context.Npc == null) return false;
+        if (_tutorialProgressController == null) return false;
+        if (!_tutorialProgressController.IsTutorialNpc(context.Npc)) return false;
+
+        if (!_tutorialProgressController.TryGetCurrentTutorialQuest(out QuestDataSO currentQuest) || currentQuest == null)
+        {
+            HandleNoQuest(context);
+            return true;
+        }
+
+        // 현재 단계의 튜토리얼 퀘스트가 이 NPC와 관련 없는 경우 넘어갑니다.
+        if (!IsQuestRelatedToNpc(currentQuest, context.NpcId))
+        {
+            HandleNoQuest(context);
+            return true;
+        }
+
+        QuestRuntimeData runtimeQuest = FindActiveQuestRuntime(currentQuest.QuestId);
+
+        if (runtimeQuest != null)
+        {
+            switch (runtimeQuest.Status)
+            {
+                case EQuestStatus.CanComplete:
+                    HandleCompleteQuest(context, runtimeQuest);
+                    return true;
+
+                case EQuestStatus.InProgress:
+                    HandleInProgressQuest(context, runtimeQuest);
+                    return true;
+            }
+        }
+
+        if (CanOfferQuest(context, currentQuest))
+        {
+            HandleAcceptQuestEntry(context, currentQuest);
+            return true;
+        }
+
+        HandleNoQuest(context);
+        return true;
+    }
+
+    private QuestRuntimeData FindActiveQuestRuntime(string questId)
+    {
+        if (string.IsNullOrEmpty(questId) || _questProgressService == null) return null;
+
+        _questProgressService.TryGetActiveQuest(questId, out QuestRuntimeData quest);
+        return quest;
     }
 }

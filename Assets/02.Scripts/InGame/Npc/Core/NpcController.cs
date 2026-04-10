@@ -7,6 +7,7 @@ public class NpcController : MonoBehaviour
 {
     public PhotonView PhotonView { get; private set; }
     public bool IsMine => PhotonView == null || !PhotonNetwork.IsConnected || PhotonView.IsMine;
+    public bool IsLocalOnly { get; private set; }
 
     [Header("Npc 컴포넌트")]
     [SerializeField] private Animator _animator;
@@ -40,6 +41,7 @@ public class NpcController : MonoBehaviour
     public Transform CurrentInteractor => _currentInteractor;
     public NpcInteractionOption[] InteractionOptions => _interactionOptions;
     public bool IsInteracting => _isInteracting;
+    public bool AutoStartQuestOnInteract => _npcData != null && _npcData.AutoStartQuestOnInteract;
 
     private void Awake()
     {
@@ -52,9 +54,10 @@ public class NpcController : MonoBehaviour
         _movement?.SetOwner(IsMine);
     }
 
-    public void Initialize(NpcDataSO data)
+    public void Initialize(NpcDataSO data, bool isLocalOnly = false)
     {
         _npcData = data;
+        IsLocalOnly = isLocalOnly;
         GenerateTimeOffset();
         _movement.Initialize(_anim, data.WalkSpeed, data.RunSpeed, data.JumpDuration, data.JumpHeight);
     }
@@ -102,7 +105,7 @@ public class NpcController : MonoBehaviour
         _isInteracting = true;
         _currentInteractor = interactor;
 
-        if (PhotonNetwork.IsConnected && !PhotonView.IsMine)
+        if (!IsMine && !IsLocalOnly)
         {
             // 클라이언트: 마스터에게 상호작용 요청 RPC 전송
             Vector3 interactorPos = interactor != null ? interactor.position : transform.position;
@@ -133,7 +136,7 @@ public class NpcController : MonoBehaviour
     private void PlayGreetAll()
     {
         _anim?.PlayGreet();
-        if (PhotonNetwork.IsConnected && PhotonView.IsMine)
+        if (IsMine && !IsLocalOnly)
         {
             PhotonView.RPC(nameof(RPC_PlayNpcGreet), RpcTarget.Others);
         }
@@ -150,7 +153,7 @@ public class NpcController : MonoBehaviour
         _isInteracting = false;
         _currentInteractor = null;
 
-        if (PhotonNetwork.IsConnected && !PhotonView.IsMine)
+        if (!IsMine && !IsLocalOnly)
         {
             // 클라이언트: 마스터에게 상호작용 종료 RPC 전송
             PhotonView.RPC(nameof(RPC_EndInteraction), RpcTarget.MasterClient);

@@ -9,13 +9,12 @@ public interface IQuestProgressService
     bool AcceptQuest(QuestDataSO questData);
 
     public bool HasQuest(string questId);
-
     public bool CanCompleteQuest(string questId);
 
     bool CompleteQuest(string questId);
     bool TryDeliverItemToNpc(string questId, string npcId);
-
     bool IsQuestCompleted(string questId);
+    public bool TryGetActiveQuest(string questId, out QuestRuntimeData quest);
 
     event Action<QuestRuntimeData> OnQuestAccepted;
     event Action<QuestRuntimeData> OnQuestUpdated;

@@ -146,4 +146,40 @@ public class QuestRuntimeData
             _itemProgressList.Add(new QuestItemProgressEntry(pair.Key, pair.Value));
         }
     }
+
+    public List<QuestItemProgressSaveData> GetItemProgressSaveList()
+    {
+        EnsureMap();
+
+        List<QuestItemProgressSaveData> result = new();
+
+        foreach (var pair in _itemProgressMap)
+        {
+            result.Add(new QuestItemProgressSaveData
+            {
+                ItemId = pair.Key,
+                CurrentAmount = pair.Value
+            });
+        }
+
+        return result;
+    }
+
+    public void RestoreItemProgress(List<QuestItemProgressSaveData> saveList)
+    {
+        _itemProgressMap = new Dictionary<int, int>();
+
+        if (saveList != null)
+        {
+            foreach (QuestItemProgressSaveData entry in saveList)
+            {
+                if (entry == null) continue;
+                if (entry.ItemId < 0) continue;
+
+                _itemProgressMap[entry.ItemId] = Mathf.Max(0, entry.CurrentAmount);
+            }
+        }
+
+        SyncListFromMap();
+    }
 }

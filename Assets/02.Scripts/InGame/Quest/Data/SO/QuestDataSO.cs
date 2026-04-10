@@ -11,14 +11,16 @@ public class QuestDataSO : ScriptableObject
 
     [Header("퀘스트 종류")]
     public EQuestCategory QuestCategory;
+    public bool IsTutorial = false;
 
     [Header("수락 / 완료 NPC")]
     public string StartNpcId;       // 이 퀘스트를 주는 NPC입니다.
     public string CompleteNpcId;    // 이 퀘스트를 완료 처리하는 NPC입니다.
+    public bool IsForcedAccept = false;  // true면 플레이어가 퀘스트를 강제로 수락하도록 합니다.
 
     [Header("목표")]
     public EQuestObjectiveType ObjectiveType;
-    public string TargetObjectId;   // BreakObject용 Id입니다.
+    public string TargetId;   // 목표 대상 Id입니다.
     public List<QuestItemRequirementEntry> ItemRequirements;  // CollectItem와 DeliverItem 단일 아이템용 Id입니다.
     public string TargetNpcId;      // TalkToNpc와 DeliverItem용 Id입니다.
     public int RequiredAmount = 1;  // 단일 목표용 요구 수량입니다.
