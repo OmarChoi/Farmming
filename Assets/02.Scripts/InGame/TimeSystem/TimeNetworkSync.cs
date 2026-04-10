@@ -6,22 +6,28 @@ public class TimeNetworkSync : MonoBehaviourPunCallbacks
 {
     private TimeSystem TimeSystem => TimeSystem.Instance;
 
-    private void OnEnable()
+    public override void OnEnable()
     {
         if (TimeSystem != null)
+        {
             TimeSystem.RegisterSync(this);
+        }
     }
 
     private void Start()
     {
         if (TimeSystem != null)
+        {
             TimeSystem.RegisterSync(this);
+        }
     }
 
-    private void OnDisable()
+    public override void OnDisable()
     {
         if (TimeSystem != null)
+        {
             TimeSystem.UnregisterSync(this);
+        }
     }
 
     public void SendSkipToNextDayRequest()
