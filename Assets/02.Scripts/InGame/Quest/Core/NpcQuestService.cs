@@ -1,4 +1,6 @@
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 
 public class NpcQuestService : MonoBehaviour
@@ -7,6 +9,8 @@ public class NpcQuestService : MonoBehaviour
     [SerializeField] private QuestManager _questManager;
     [SerializeField] private NpcFriendshipManager _npcFriendshipManager;
     [SerializeField] private TutorialProgressController _tutorialProgressController;
+
+    private InfoPageController _infoPageController;
 
     private IQuestProgressService _questProgressService;
     private IFriendshipService _friendshipService;
@@ -32,6 +36,21 @@ public class NpcQuestService : MonoBehaviour
 
         _questProgressService = _questManager;
         _friendshipService = _npcFriendshipManager;
+    }
+
+    private void OnEnable()
+    {
+        InfoPageController.OnInfoPageReady += OnInfoPageControllerReady;
+    }
+
+    private void OnDisable()
+    {
+        InfoPageController.OnInfoPageReady -= OnInfoPageControllerReady;
+    }
+
+    private void OnInfoPageControllerReady(InfoPageController infoPage)
+    {
+        _infoPageController = infoPage;
     }
 
     public void ExecuteQuestInteraction(NpcInteractionContext context)
@@ -344,8 +363,30 @@ public class NpcQuestService : MonoBehaviour
 
         if (_dialogueController != null && questData.AcceptResultDialogue != null)
         {
-            _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest);
+            if (HasAcceptInfoPages(questData) && CanShowInfoPage())
+            {
+                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest,
+                    () =>
+                    {
+                        ShowAcceptInfoPages(context, questData);
+                        return true;
+                    });
+            }
+            else
+            {
+                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest);
+            }
+
+            return;
         }
+
+        if (HasAcceptInfoPages(questData))
+        {
+            ShowAcceptInfoPages(context, questData);
+            return;
+        }
+
+        context.InteractionComponent?.EndInteraction();
     }
 
     private void DeclineQuestWithDialogue(NpcInteractionContext context, QuestDataSO questData)
@@ -366,33 +407,64 @@ public class NpcQuestService : MonoBehaviour
     {
         if (quest == null || quest.QuestData == null) return;
 
-        string questId = quest.QuestData.QuestId;
-        bool completed = _questProgressService.CompleteQuest(questId);
+        QuestDataSO questData = quest.QuestData;
+
+        bool completed = _questProgressService.CompleteQuest(questData.QuestId);
         if (!completed) return;
 
-        bool isTutorialQuest = quest.QuestData.IsTutorial;
+        Func<bool> onDialogueEnded = null;
 
-        if (_dialogueController != null && quest.QuestData.CompleteDialogue != null)
+        if (HasCompleteInfoPages(questData) && CanShowInfoPage())
         {
-            if (isTutorialQuest && _tutorialProgressController != null)
+            onDialogueEnded = () =>
             {
-                _dialogueController.StartDialogue(
-                    quest.QuestData.CompleteDialogue,
-                    EDialogueUiState.Quest,
-                    () => _tutorialProgressController.HandleTutorialQuestDialogueEnded());
+                ShowCompleteInfoPages(context, questData);
+                return true;
+            };
+        }
+        else if (questData.IsTutorial && _tutorialProgressController != null)
+        {
+            onDialogueEnded = () => _tutorialProgressController.HandleTutorialQuestDialogueEnded();
+        }
+
+        if (_dialogueController != null && questData.CompleteDialogue != null)
+        {
+            if (onDialogueEnded != null)
+            {
+                _dialogueController.StartDialogue(questData.CompleteDialogue, EDialogueUiState.Quest, onDialogueEnded);
             }
             else
             {
-                _dialogueController.StartDialogue(quest.QuestData.CompleteDialogue, EDialogueUiState.Quest);
+                _dialogueController.StartDialogue(questData.CompleteDialogue, EDialogueUiState.Quest);
             }
 
             return;
         }
 
-        if (isTutorialQuest && _tutorialProgressController != null)
+        if (HasCompleteInfoPages(questData))
         {
-            _tutorialProgressController.TryAcceptPendingTutorialQuest();
+            ShowCompleteInfoPages(context, questData);
+            return;
         }
+
+        HandleQuestPostProcess(context, questData);
+    }
+
+    private void HandleQuestPostProcess(NpcInteractionContext context, QuestDataSO questData)
+    {
+        if (questData == null)
+        {
+            context?.InteractionComponent?.EndInteraction();
+            return;
+        }
+
+        if (questData.IsTutorial && _tutorialProgressController != null)
+        {
+            _tutorialProgressController.HandleTutorialQuestDialogueEnded();
+            return;
+        }
+
+        context?.InteractionComponent?.EndInteraction();
     }
 
     private void HandleInProgressQuest(NpcInteractionContext context, QuestRuntimeData quest)
@@ -518,5 +590,46 @@ public class NpcQuestService : MonoBehaviour
 
         _questProgressService.TryGetActiveQuest(questId, out QuestRuntimeData quest);
         return quest;
+    }
+
+    private bool HasAcceptInfoPages(QuestDataSO questData)
+    {
+        return questData != null && questData.AcceptInfoPageSet != null &&
+               questData.AcceptInfoPageSet.Pages != null && questData.AcceptInfoPageSet.HasPages();
+    }
+
+    private bool HasCompleteInfoPages(QuestDataSO questData)
+    {
+        return questData != null && questData.CompleteInfoPageSet != null &&
+               questData.CompleteInfoPageSet.Pages != null && questData.CompleteInfoPageSet.HasPages();
+    }
+
+    private void ShowAcceptInfoPages(NpcInteractionContext context, QuestDataSO questData)
+    {
+        if (!HasAcceptInfoPages(questData) || !CanShowInfoPage())
+        {
+            context?.InteractionComponent?.EndInteraction();
+            return;
+        }
+
+        _infoPageController.ShowAsync(questData.AcceptInfoPageSet,
+            () => context?.InteractionComponent?.EndInteraction()).Forget();
+    }
+
+    private void ShowCompleteInfoPages(NpcInteractionContext context, QuestDataSO questData)
+    {
+        if (!HasCompleteInfoPages(questData) || !CanShowInfoPage())
+        {
+            HandleQuestPostProcess(context, questData);
+            return;
+        }
+
+        _infoPageController.ShowAsync(questData.CompleteInfoPageSet,
+            () => HandleQuestPostProcess(context, questData)).Forget();
+    }
+
+    private bool CanShowInfoPage()
+    {
+        return _infoPageController != null;
     }
 }

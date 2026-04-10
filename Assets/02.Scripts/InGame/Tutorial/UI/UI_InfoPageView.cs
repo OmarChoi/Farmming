@@ -1,5 +1,5 @@
+using Cysharp.Threading.Tasks;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -16,6 +16,8 @@ public class UI_InfoPageView : MonoBehaviour
     [SerializeField] private RawImage _videoImage;
     [SerializeField] private VideoPlayer _videoPlayer;
     [SerializeField] private RenderTexture _renderTexture;
+
+    private int _videoRequestId = 0;
 
     [Header("설명 텍스트")]
     [SerializeField] private TextMeshProUGUI _descriptionText;
@@ -72,31 +74,34 @@ public class UI_InfoPageView : MonoBehaviour
         RefreshVideo(pageData.VideoClip);
     }
 
-    private void RefreshVideo(VideoClip clip)
+    private async void RefreshVideo(VideoClip clip)
     {
-        if (_videoPlayer == null) return;
-
-        if (clip == null)
-        {
-            _videoPlayer.Stop();
-            _videoPlayer.clip = null;
-
-            if (_videoImage != null)
-            {
-                _videoImage.gameObject.SetActive(false);
-            }
-
-            return;
-        }
-
-        if (_videoImage != null)
-        {
-            _videoImage.gameObject.SetActive(true);
-        }
+        int requestId = ++_videoRequestId;
 
         _videoPlayer.Stop();
         _videoPlayer.clip = clip;
-        _videoPlayer.isLooping = true;
+
+        await PrepareVideo(_videoPlayer);
+
+        // 이전에 요청이 있었으면 무시합니다.
+        if (requestId != _videoRequestId) return;
+
         _videoPlayer.Play();
+    }
+
+    private async UniTask PrepareVideo(VideoPlayer player)
+    {
+        var tcs = new UniTaskCompletionSource();
+
+        void OnPrepared(VideoPlayer video)
+        {
+            video.prepareCompleted -= OnPrepared;
+            tcs.TrySetResult();
+        }
+
+        player.prepareCompleted += OnPrepared;
+        player.Prepare();
+
+        await tcs.Task;
     }
 }

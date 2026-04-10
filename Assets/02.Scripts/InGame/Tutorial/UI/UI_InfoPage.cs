@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
@@ -13,7 +12,7 @@ public class UI_InfoPage : MonoBehaviour
     [Header("버튼")]
     [SerializeField] private Button _prevButton;
     [SerializeField] private Button _nextButton;
-    [SerializeField] private Button _closeButton;
+    [SerializeField] private Button _completeButton;
 
     [Header("PopupDoTween")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
@@ -34,9 +33,9 @@ public class UI_InfoPage : MonoBehaviour
         {
             _nextButton.onClick.AddListener(ShowNextPage);
         }
-        if (_closeButton != null)
+        if (_completeButton != null)
         {
-            _closeButton.onClick.AddListener(OnClickComplete);
+            _completeButton.onClick.AddListener(OnClickComplete);
         }
     }
 
@@ -114,9 +113,9 @@ public class UI_InfoPage : MonoBehaviour
         {
             _nextButton.gameObject.SetActive(hasPages && !isLast);
         }
-        if (_closeButton != null)
+        if (_completeButton != null)
         {
-            _closeButton.gameObject.SetActive(hasPages && isLast);
+            _completeButton.gameObject.SetActive(hasPages && isLast);
         }
     }
 

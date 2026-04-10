@@ -40,6 +40,10 @@ public class QuestDataSO : ScriptableObject
     public NpcDialogueSO CompleteDialogue;
     public NpcDialogueSO NoQuestDialogue;
 
+    [Header("Info Page")]
+    public InfoPageSetSO AcceptInfoPageSet;
+    public InfoPageSetSO CompleteInfoPageSet;
+
     // 실수로 퀘스트 요구치가 0 이하로 지정될 경우, 자동으로 1로 바꿔주어 오류를 방어합니다.
     private void OnValidate()
     {
