@@ -9,6 +9,6 @@ public class InfoPageData
 
     public VideoClip VideoClip;
 
-    [TextArea(5, 10)]
+    [TextArea(3, 10)]
     public string Description;
 }
