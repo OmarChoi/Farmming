@@ -38,9 +38,4 @@ public class FarmHelperActionAbility : HelperAbility, IHelperAction
         // TODO: 우클릭 동작 구현
     }
 
-    private TerrainCell GetInteractableCell(TerrainCell cell)
-    {
-        if (TerrainGridManager.Instance == null) return null;
-        return TerrainGridManager.Instance.IsCellAvailableForInteraction(cell) ? cell : null;
-    }
 }

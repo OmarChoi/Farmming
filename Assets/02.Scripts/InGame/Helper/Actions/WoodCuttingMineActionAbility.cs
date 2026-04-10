@@ -29,10 +29,11 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     [SerializeField] private float _wideGatherOffset = 2f;
 
+    [SerializeField] private Transform _embeddedNormalWoodEffect;
+
     private StoneMineAbility _stoneMineAbility;
     private HelperAnimationAbility _animAbility;
     private RangeBoostEffect _rangeBoostEffect;
-    private Transform _embeddedNormalWoodEffect;
     private Vector3 _embeddedNormalWoodEffectLocalPosition;
     private Quaternion _embeddedNormalWoodEffectLocalRotation;
     private Vector3 _embeddedNormalWoodEffectLocalScale;
@@ -340,7 +341,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
     private void CacheEmbeddedNormalWoodEffect()
     {
-        _embeddedNormalWoodEffect = FindEmbeddedNormalWoodEffect();
         if (_embeddedNormalWoodEffect == null)
             return;
 
@@ -348,24 +348,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         _embeddedNormalWoodEffectLocalRotation = _embeddedNormalWoodEffect.localRotation;
         _embeddedNormalWoodEffectLocalScale = _embeddedNormalWoodEffect.localScale;
         _embeddedNormalWoodEffect.gameObject.SetActive(false);
-    }
-
-    private Transform FindEmbeddedNormalWoodEffect()
-    {
-        if (_mouthPoint == null)
-            return null;
-
-        for (int i = 0; i < _mouthPoint.childCount; i++)
-        {
-            Transform child = _mouthPoint.GetChild(i);
-            if (child == null)
-                continue;
-
-            if (child.GetComponentInChildren<ParticleSystem>(true) != null)
-                return child;
-        }
-
-        return null;
     }
 
     private GameObject SpawnDetachedNormalWoodEffect(Vector3 startPosition, Quaternion spawnRotation)
@@ -534,8 +516,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         Vector3Int centerGrid = centerCell.GridPosition;
         List<TerrainCell> result = new List<TerrainCell>();
 
-        TerrainCell rightCell = TerrainGridManager.Instance.GetInteractionCell(centerGrid + rightOffset, false, out _);
-        TerrainCell leftCell = TerrainGridManager.Instance.GetInteractionCell(centerGrid - rightOffset, false, out _);
+        TerrainCell rightCell = GetGridInteractableCell(centerGrid + rightOffset);
+        TerrainCell leftCell = GetGridInteractableCell(centerGrid - rightOffset);
 
         if (rightCell != null) result.Add(rightCell);
         if (leftCell != null) result.Add(leftCell);
@@ -562,9 +544,4 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         _stoneMineAbility?.JumpAndSmash(cell);
     }
 
-    private TerrainCell GetInteractableCell(TerrainCell cell)
-    {
-        if (TerrainGridManager.Instance == null) return null;
-        return TerrainGridManager.Instance.IsCellAvailableForInteraction(cell) ? cell : null;
-    }
 }

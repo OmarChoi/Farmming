@@ -21,8 +21,8 @@ public class HelperInteractionAbility : HelperAbility
 
     public bool InteractPrimary(TerrainCell cell)
     {
-        if (!CanInteract()) return;
-        if (!_action.CanInteractPrimary(cell)) return;
+        if (!CanInteract()) return false;
+        if (!_action.CanInteractPrimary(cell)) return false;
 
         ConsumeResources();
 
@@ -37,8 +37,8 @@ public class HelperInteractionAbility : HelperAbility
 
     public bool InteractSecondary(TerrainCell cell)
     {
-        if (!CanInteract()) return;
-        if (!_action.CanInteractSecondary(cell)) return;
+        if (!CanInteract()) return false;
+        if (!_action.CanInteractSecondary(cell)) return false;
 
         float secondaryCost = _action.GetSecondaryCost();
         if (secondaryCost >= 0)

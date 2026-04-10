@@ -209,12 +209,6 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         return cell.Data.CanDig(_canDigLevel);
     }
 
-    private TerrainCell GetInteractableCell(TerrainCell cell)
-    {
-        if (TerrainGridManager.Instance == null) return null;
-        return TerrainGridManager.Instance.IsCellAvailableForInteraction(cell) ? cell : null;
-    }
-
     private void AnimateCellToMouth(TerrainCell cell)
     {
         if (_mouthPoint == null)
