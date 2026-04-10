@@ -41,6 +41,7 @@ public class NpcController : MonoBehaviour
     public Transform CurrentInteractor => _currentInteractor;
     public NpcInteractionOption[] InteractionOptions => _interactionOptions;
     public bool IsInteracting => _isInteracting;
+    public bool AutoStartQuestOnInteract => _npcData != null && _npcData.AutoStartQuestOnInteract;
 
     private void Awake()
     {
@@ -135,7 +136,7 @@ public class NpcController : MonoBehaviour
     private void PlayGreetAll()
     {
         _anim?.PlayGreet();
-        if (!IsMine && !IsLocalOnly)
+        if (IsMine && !IsLocalOnly)
         {
             PhotonView.RPC(nameof(RPC_PlayNpcGreet), RpcTarget.Others);
         }
