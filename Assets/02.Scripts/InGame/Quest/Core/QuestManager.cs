@@ -52,12 +52,18 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
     {
         PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerReady;
         GatheringObject.OnGatheringCompleted += HandleGatheringCompleted;
+        FarmTileStateMachine.OnTileBecameDry += HandleTileBecameDry;
+        FarmTile.OnSeedPlanted += HandleSeedPlanted;
+        FarmTileStateMachine.OnTileBecameWet += HandleTileBecameWet;
     }
 
     private void OnDisable()
     {
         PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
         GatheringObject.OnGatheringCompleted -= HandleGatheringCompleted;
+        FarmTileStateMachine.OnTileBecameDry -= HandleTileBecameDry;
+        FarmTile.OnSeedPlanted -= HandleSeedPlanted;
+        FarmTileStateMachine.OnTileBecameWet -= HandleTileBecameWet;
     }
 
     public QuestSaveData ExportSaveData()
@@ -162,6 +168,22 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
     {
         if (obj == null || obj.GatheringData == null) return;
         ReportObjectBroken(obj.GatheringData.ObjectName);
+    }
+
+    private void HandleTileBecameDry(FarmTile tile)
+    {
+        ReportFarmDried();
+    }
+
+    private void HandleSeedPlanted(FarmTile tile, SeedItemDataSO seed)
+    {
+        if (seed == null) return;
+        ReportSeedPlanted(seed.DisplayName);
+    }
+
+    private void HandleTileBecameWet(FarmTile tile)
+    {
+        ReportFarmWatered();
     }
 
     // 현재 진행 중인 퀘스트가 하나라도 있는지 확인합니다.
@@ -290,6 +312,24 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         TryAddSimpleProgress(EQuestObjectiveType.TalkToNpc, npcId, 1);
     }
 
+    public void ReportFarmDried(int amount = 1)
+    {
+        if (amount <= 0) return;
+        TryAddSimpleProgress(EQuestObjectiveType.DryFarmTile, amount);
+    }
+
+    public void ReportSeedPlanted(string seedId, int amount = 1)
+    {
+        if (string.IsNullOrEmpty(seedId)) return;
+        TryAddSimpleProgress(EQuestObjectiveType.PlantSeed, seedId, amount);
+    }
+
+    public void ReportFarmWatered(int amount = 1)
+    {
+        if (amount <= 0) return;
+        TryAddSimpleProgress(EQuestObjectiveType.WaterFarmTile, amount);
+    }
+
     public bool TryDeliverItemToNpc(string questId, string npcId)
     {
         if (string.IsNullOrEmpty(questId) || string.IsNullOrEmpty(npcId) || _requirementService == null) return false;
@@ -314,9 +354,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
     private void TryAddSimpleProgress(EQuestObjectiveType objectiveType, string targetId, int amount)
     {
-        if (_activeQuests.Count == 0) return;
-        if (string.IsNullOrEmpty(targetId)) return;
-        if (amount <= 0) return;
+        if (_activeQuests.Count == 0 || amount <= 0 || string.IsNullOrEmpty(targetId)) return;
 
         foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
@@ -327,6 +365,31 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
             if (questData.ObjectiveType != objectiveType) continue;
             if (!IsSimpleTargetMatched(questData, objectiveType, targetId)) continue;
+
+            quest.CurrentAmount += amount;
+
+            if (quest.CurrentAmount >= questData.RequiredAmount)
+            {
+                quest.CurrentAmount = questData.RequiredAmount;
+                quest.Status = EQuestStatus.CanComplete;
+            }
+
+            OnQuestUpdated?.Invoke(quest);
+        }
+    }
+
+    private void TryAddSimpleProgress(EQuestObjectiveType objectiveType, int amount)
+    {
+        if (_activeQuests.Count == 0 || amount <= 0) return;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+
+            QuestDataSO questData = quest.QuestData;
+
+            if (questData.ObjectiveType != objectiveType) continue;
 
             quest.CurrentAmount += amount;
 
@@ -376,10 +439,13 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         switch (objectiveType)
         {
             case EQuestObjectiveType.BreakObject:
-                return questData.TargetObjectId == targetId;
+                return questData.TargetId == targetId;
 
             case EQuestObjectiveType.TalkToNpc:
                 return questData.TargetNpcId == targetId;
+
+            case EQuestObjectiveType.PlantSeed:
+                return questData.TargetId == targetId;
 
             default:
                 return false;

@@ -21,7 +21,7 @@ public class QuestObjectiveTextFormatter
         switch (questData.ObjectiveType)
         {
             case EQuestObjectiveType.BreakObject:
-                return $"{questData.TargetObjectId} {questData.RequiredAmount}만큼 캐기";
+                return $"{questData.TargetId} {questData.RequiredAmount}만큼 캐기";
 
             case EQuestObjectiveType.CollectItem:
                 return $"{BuildItemRequirementText(questData.ItemRequirements)} 가져오기";
@@ -31,6 +31,15 @@ public class QuestObjectiveTextFormatter
 
             case EQuestObjectiveType.TalkToNpc:
                 return $"{GetNpcDisplayName(questData.TargetNpcId)} 찾아가기";
+
+            case EQuestObjectiveType.DryFarmTile:
+                return $"땅을 {questData.RequiredAmount}만큼 경작하기";
+
+            case EQuestObjectiveType.PlantSeed:
+                return $"{questData.TargetId}를 {questData.RequiredAmount}만큼 심기";
+
+            case EQuestObjectiveType.WaterFarmTile:
+                return $"밭에 {questData.RequiredAmount}만큼 물주기";
 
             default:
                 return string.Empty;

@@ -20,7 +20,7 @@ public class QuestDataSO : ScriptableObject
 
     [Header("목표")]
     public EQuestObjectiveType ObjectiveType;
-    public string TargetObjectId;   // BreakObject용 Id입니다.
+    public string TargetId;   // 목표 대상 Id입니다.
     public List<QuestItemRequirementEntry> ItemRequirements;  // CollectItem와 DeliverItem 단일 아이템용 Id입니다.
     public string TargetNpcId;      // TalkToNpc와 DeliverItem용 Id입니다.
     public int RequiredAmount = 1;  // 단일 목표용 요구 수량입니다.
