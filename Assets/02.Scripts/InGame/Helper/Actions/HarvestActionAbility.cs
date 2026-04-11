@@ -88,13 +88,22 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     {
         yield return new WaitForSeconds(delay);
 
-        if (HarvestCell(farmTile, farmTile.PlantedSeed))
+        bool harvested = false;
+        if (farmTile != null)
+        {
+            SeedItemDataSO plantedSeed = farmTile.PlantedSeed;
+            if (plantedSeed != null)
+            {
+                harvested = HarvestCell(farmTile, plantedSeed);
+                farmTile.Interact();
+                BroadcastFarmTileStateFromMaster(farmTile);
+            }
+        }
+
+        if (harvested)
             _owner.Experience.Add(_harvestExperience);
 
-        farmTile.Interact();
-        BroadcastFarmTileStateFromMaster(farmTile);
-        _animAbility?.Play(EHelperAnim.Idle);
-        _owner.EndAction();
+        FinishHarvestAction();
     }
 
     private void InteractPrimaryEpic(TerrainCell centerCell)
@@ -111,8 +120,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             }, () =>
             {
                 if (anyHarvested) _owner.Experience.Add(_harvestExperience);
-                _animAbility?.Play(EHelperAnim.Idle);
-                _owner.EndAction();
+                FinishHarvestAction();
             }, _ => ReplayEpicHarvest());
         }
         else
@@ -120,8 +128,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             ReplayEpicHarvest();
             if (TryHarvestCell(centerCell)) anyHarvested = true;
             if (anyHarvested) _owner.Experience.Add(_harvestExperience);
-            _animAbility?.Play(EHelperAnim.Idle);
-            _owner.EndAction();
+            FinishHarvestAction();
         }
     }
 
@@ -156,8 +163,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             _legendaryVFX.SpawnEffects(centerCell, rightDir, cellHarvests, () =>
             {
                 if (anyHarvested) _owner.Experience.Add(_harvestExperience);
-                _animAbility?.Play(EHelperAnim.Idle);
-                _owner.EndAction();
+                FinishHarvestAction();
             });
         }
         else
@@ -165,8 +171,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             foreach (var (_, harvest) in cellHarvests)
                 harvest?.Invoke();
             if (anyHarvested) _owner.Experience.Add(_harvestExperience);
-            _animAbility?.Play(EHelperAnim.Idle);
-            _owner.EndAction();
+            FinishHarvestAction();
         }
     }
 
@@ -186,6 +191,9 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private bool HarvestCell(FarmTile farmTile, SeedItemDataSO seed)
     {
+        if (farmTile == null || seed == null)
+            return false;
+
         int harvestAmount = UnityEngine.Random.Range(seed.HarvestAmountMin, seed.HarvestAmountMax + 1);
 
         PlayerInventoryAbility inventory = GetInventory();
@@ -204,6 +212,12 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         }
 
         return success;
+    }
+
+    private void FinishHarvestAction()
+    {
+        _animAbility?.Play(EHelperAnim.Idle);
+        _owner.EndAction();
     }
 
     private bool IsHarvestableCell(TerrainCell cell)

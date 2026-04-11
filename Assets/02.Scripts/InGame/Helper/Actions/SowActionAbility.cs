@@ -15,6 +15,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _cultivateGroundEffectLifetime = 2f;
     [SerializeField] private float _cultivateGroundEffectSurfaceOffset = 2.1f;
     [SerializeField] private float _cultivateLegendarySpinFadeOutDuration = 0.05f;
+    [SerializeField] private float _secondaryOpenFallbackDelay = 0.35f;
+    [SerializeField] private float _secondaryCompleteFallbackDelay = 5f;
 
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
@@ -31,6 +33,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private bool _anySeedPlanted;
     private List<FarmTile> _currentFarmTiles;
     private SeedItemDataSO _currentSeed;
+    private Coroutine _secondaryOpenFallbackCoroutine;
+    private Coroutine _secondaryCompleteFallbackCoroutine;
+    private bool _secondaryOpened;
 
     protected override void Awake()
     {
@@ -105,6 +110,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void SowOpen()
     {
+        if (!_isSecondaryActing || _secondaryOpened)
+            return;
+
+        _secondaryOpened = true;
+        StopSecondaryOpenFallback();
+
         if (_currentFarmTiles == null || _currentFarmTiles.Count == 0 || _currentSeed == null || !_seedVfxSpawner.HasMouthPoint)
             return;
 
@@ -158,8 +169,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _anySeedPlanted = false;
         _currentFarmTiles = farmTiles;
         _currentSeed = seed;
+        _secondaryOpened = false;
 
         _owner.BeginAction();
+        StartSecondaryFallbacks(requireOpenFallback: true);
         _animAbility?.Play(EHelperAnim.Sow);
     }
 
@@ -169,8 +182,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _anySeedPlanted = false;
         _currentFarmTiles = null;
         _currentSeed = null;
+        _secondaryOpened = false;
 
         _owner.BeginAction();
+        StartSecondaryFallbacks(requireOpenFallback: false);
 
         if (_secondaryPresentation == null)
         {
@@ -743,6 +758,60 @@ public class SowActionAbility : HelperAbility, IHelperAction
         BroadcastFarmTileStateFromMaster(farmTile);
     }
 
+    private void StartSecondaryFallbacks(bool requireOpenFallback)
+    {
+        CancelSecondaryFallbacks();
+
+        if (requireOpenFallback)
+        {
+            float openDelay = Mathf.Max(0.05f, _secondaryOpenFallbackDelay);
+            _secondaryOpenFallbackCoroutine = StartCoroutine(SecondaryOpenFallbackCoroutine(openDelay));
+        }
+
+        float completeDelay = Mathf.Max(0.5f, _secondaryCompleteFallbackDelay);
+        _secondaryCompleteFallbackCoroutine = StartCoroutine(SecondaryCompleteFallbackCoroutine(completeDelay));
+    }
+
+    private IEnumerator SecondaryOpenFallbackCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (_isSecondaryActing && !_secondaryOpened)
+            SowOpen();
+    }
+
+    private IEnumerator SecondaryCompleteFallbackCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (_isSecondaryActing)
+            CompleteSecondaryAction();
+    }
+
+    private void StopSecondaryOpenFallback()
+    {
+        if (_secondaryOpenFallbackCoroutine == null)
+            return;
+
+        StopCoroutine(_secondaryOpenFallbackCoroutine);
+        _secondaryOpenFallbackCoroutine = null;
+    }
+
+    private void CancelSecondaryFallbacks()
+    {
+        if (_secondaryOpenFallbackCoroutine != null)
+        {
+            StopCoroutine(_secondaryOpenFallbackCoroutine);
+            _secondaryOpenFallbackCoroutine = null;
+        }
+
+        if (_secondaryCompleteFallbackCoroutine != null)
+        {
+            StopCoroutine(_secondaryCompleteFallbackCoroutine);
+            _secondaryCompleteFallbackCoroutine = null;
+        }
+    }
+
     private bool HasAvailableSelectedSeed()
     {
         return _seedSelector != null && _seedSelector.HasSelectedSeedAvailable;
@@ -759,6 +828,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void CompleteSecondaryAction()
     {
+        if (!_isSecondaryActing)
+            return;
+
+        CancelSecondaryFallbacks();
         _secondaryPresentation?.CancelPresentation();
 
         if (_anySeedPlanted)
@@ -769,17 +842,20 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _currentSeed = null;
         _isSecondaryActing = false;
         _anySeedPlanted = false;
+        _secondaryOpened = false;
         _owner.EndAction();
     }
 
     private void CancelCurrentAction()
     {
+        CancelSecondaryFallbacks();
         _secondaryPresentation?.CancelPresentation();
 
         _currentFarmTiles = null;
         _currentSeed = null;
         _isSecondaryActing = false;
         _anySeedPlanted = false;
+        _secondaryOpened = false;
     }
 
     private void OnDisable()
