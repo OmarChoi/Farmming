@@ -3,12 +3,17 @@ using UnityEngine.Tilemaps;
 
 public class CropGrowth : MonoBehaviour
 {
+    [Header("Harvest Ready Effect")]
+    [SerializeField] private GameObject _harvestReadyEffectPrefab;
+    [SerializeField] private float _harvestReadyEffectYOffset = 0f;
+
     private SeedItemDataSO _seedConfig;
     private int _currentStageIndex = 0;
     private int _elapsedDays = 0;
     private bool _isGrowing = false;
     private bool _hasStarted = false;
     private GameObject _currentCropObject;
+    private GameObject _harvestReadyEffectInstance;
 
     private FarmTile _tile;
 
@@ -31,12 +36,13 @@ public class CropGrowth : MonoBehaviour
     private void OnDestroy()
     {
         PlayerInventoryAbility.OnLocalPlayerReady -= OnPlayerReady;
+        ClearHarvestReadyEffect();
     }
 
     private void OnPlayerReady(PlayerInventoryAbility inventoryAbility)
     {
         _inventoryAbility = inventoryAbility;
-        Debug.Log("수확물 인벤토리 연동");
+        Debug.Log("Harvest inventory connected");
     }
 
     public void ShowFirstStage(SeedItemDataSO seedConfig)
@@ -45,12 +51,12 @@ public class CropGrowth : MonoBehaviour
         _currentStageIndex = 0;
         _elapsedDays = 0;
         _isGrowing = false;
-        _hasStarted = false; // 아직 성장 시작 아님
+        _hasStarted = false;
 
-        ApplyStagePrefab(); // 첫 단계 프리팹만 표시
+        ApplyStagePrefab();
+        RefreshHarvestReadyEffect();
     }
 
-    // 물을 줬을 때 외부에서 호출
     public void StartGrowth(SeedItemDataSO seedConfig)
     {
         _seedConfig = seedConfig;
@@ -58,6 +64,7 @@ public class CropGrowth : MonoBehaviour
         _hasStarted = true;
         _currentStageIndex = 0;
         _elapsedDays = 0;
+        RefreshHarvestReadyEffect();
     }
 
     public void CheckMorningGrowth()
@@ -96,14 +103,15 @@ public class CropGrowth : MonoBehaviour
 
         SeedGrowthStageData currentStage = _seedConfig.SeedGrowthStage[_currentStageIndex];
 
-        if(_elapsedDays >= currentStage.RequireDays)
+        if (_elapsedDays >= currentStage.RequireDays)
         {
             _elapsedDays = 0;
 
-            if(_currentStageIndex + 1 >= _seedConfig.SeedGrowthStage.Count)
+            if (_currentStageIndex + 1 >= _seedConfig.SeedGrowthStage.Count)
             {
                 _isGrowing = false;
-                Debug.Log("수확가능");
+                Debug.Log("Crop is harvestable");
+                RefreshHarvestReadyEffect();
                 return;
             }
 
@@ -119,11 +127,13 @@ public class CropGrowth : MonoBehaviour
             return;
         }
 
-        if(!_hasStarted)
+        if (!_hasStarted)
         {
-            Debug.Log("아직 성장 시작 안함");
+            Debug.Log("Growth has not started yet");
             return;
         }
+
+        ClearHarvestReadyEffect();
 
         if (_currentCropObject != null)
         {
@@ -150,6 +160,7 @@ public class CropGrowth : MonoBehaviour
     {
         if (!farmData.CropHasStarted)
         {
+            ClearHarvestReadyEffect();
             return;
         }
 
@@ -162,21 +173,68 @@ public class CropGrowth : MonoBehaviour
         if (_currentStageIndex >= 0 && _currentStageIndex < _seedConfig.SeedGrowthStage.Count)
         {
             ApplyStagePrefab();
+            RefreshHarvestReadyEffect();
         }
         else
         {
-            Debug.LogWarning($"[Load] StageIndex 범위 초과: {_currentStageIndex}");
+            Debug.LogWarning($"[Load] StageIndex out of range: {_currentStageIndex}");
+            ClearHarvestReadyEffect();
         }
     }
 
     private void ApplyStagePrefab()
     {
-        if(_currentCropObject != null)
+        if (_currentCropObject != null)
         {
             Destroy(_currentCropObject);
         }
 
         GameObject prefab = _seedConfig.SeedGrowthStage[_currentStageIndex].SeedStageItem;
         _currentCropObject = Instantiate(prefab, _tile.CropSpawnPoint.position, Quaternion.identity, _tile.transform);
+        RefreshHarvestReadyEffect();
+    }
+
+    private void RefreshHarvestReadyEffect()
+    {
+        if (!IsHarvestable || _currentCropObject == null || _harvestReadyEffectPrefab == null)
+        {
+            ClearHarvestReadyEffect();
+            return;
+        }
+
+        Vector3 effectPosition = GetHarvestReadyEffectPosition();
+
+        if (_harvestReadyEffectInstance == null)
+        {
+            _harvestReadyEffectInstance = Instantiate(_harvestReadyEffectPrefab, effectPosition, Quaternion.identity, _tile.transform);
+            return;
+        }
+
+        _harvestReadyEffectInstance.transform.SetPositionAndRotation(effectPosition, Quaternion.identity);
+        if (!_harvestReadyEffectInstance.activeSelf)
+        {
+            _harvestReadyEffectInstance.SetActive(true);
+        }
+    }
+
+    private Vector3 GetHarvestReadyEffectPosition()
+    {
+        Vector3 basePosition = _tile != null && _tile.CropSpawnPoint != null
+            ? _tile.CropSpawnPoint.position
+            : transform.position;
+
+        basePosition.y += _harvestReadyEffectYOffset;
+        return basePosition;
+    }
+
+    private void ClearHarvestReadyEffect()
+    {
+        if (_harvestReadyEffectInstance == null)
+        {
+            return;
+        }
+
+        Destroy(_harvestReadyEffectInstance);
+        _harvestReadyEffectInstance = null;
     }
 }

@@ -9,10 +9,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _seedVfxPrefab;
     [SerializeField] private GameObject _cultivateGroundEffectPrefab;
+    [SerializeField] private Transform _cultivateLegendarySpinEffect;
     [SerializeField] private float _sowDelay = 0.5f;
     [SerializeField] private float _epicThreeTileLookDuration = 1.6f;
     [SerializeField] private float _cultivateGroundEffectLifetime = 2f;
     [SerializeField] private float _cultivateGroundEffectSurfaceOffset = 2.1f;
+    [SerializeField] private float _cultivateLegendarySpinFadeOutDuration = 0.05f;
 
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
@@ -22,6 +24,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private HelperAnimationAbility _animAbility;
     private SowSecondaryVFXAbility _secondaryPresentation;
     private SowSeedVfxSpawner _seedVfxSpawner;
+    private Tween _cultivateLegendarySpinHideTween;
 
     private bool _isSecondaryActing;
     private bool _anySeedPlanted;
@@ -36,6 +39,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
         _secondaryPresentation = _owner.GetAbility<SowSecondaryVFXAbility>();
         _seedVfxSpawner = new SowSeedVfxSpawner(() => _mouthPoint, () => _seedVfxPrefab);
+        SetCultivateLegendarySpinEffectActive(false, true);
     }
 
     public bool CanInteractPrimary(TerrainCell cell)
@@ -363,17 +367,19 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (NeedsFarmConversion(cell))
         {
             _owner.BeginAction();
-            _cultivateAbility.JumpAndCultivate(cell, new CultivateAbility.CultivationParams
+        _cultivateAbility.JumpAndCultivate(cell, new CultivateAbility.CultivationParams
+        {
+            OnCultivate = () =>
             {
-                OnCultivate = () =>
-                {
-                    bool convertedCenter = TryConvertToFarmWithCultivateEffect(cell, true);
-                    bool convertedLateral = ConvertLateralFarmTiles(cell, true);
-                    if (convertedCenter || convertedLateral)
-                        _owner.Experience.Add(_cultivateExperience);
-                },
-                Spin = true
-            });
+                bool convertedCenter = TryConvertToFarmWithCultivateEffect(cell, true);
+                bool convertedLateral = ConvertLateralFarmTiles(cell, true);
+                if (convertedCenter || convertedLateral)
+                    _owner.Experience.Add(_cultivateExperience);
+            },
+            OnSpinStart = PlayCultivateLegendarySpinEffect,
+            OnSpinComplete = StopCultivateLegendarySpinEffect,
+            Spin = true
+        });
             return;
         }
 
@@ -393,6 +399,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
                 if (anyConverted)
                     _owner.Experience.Add(_cultivateExperience);
             } : null,
+            OnSpinStart = PlayCultivateLegendarySpinEffect,
+            OnSpinComplete = StopCultivateLegendarySpinEffect,
             Spin = true
         });
     }
@@ -578,6 +586,69 @@ public class SowActionAbility : HelperAbility, IHelperAction
         Destroy(effect, Mathf.Max(0.1f, _cultivateGroundEffectLifetime));
     }
 
+    private void PlayCultivateLegendarySpinEffect()
+    {
+        if (_cultivateLegendarySpinEffect == null)
+            return;
+
+        _cultivateLegendarySpinHideTween?.Kill();
+        _cultivateLegendarySpinHideTween = null;
+
+        SetCultivateLegendarySpinEffectActive(true, true);
+    }
+
+    private void StopCultivateLegendarySpinEffect()
+    {
+        if (_cultivateLegendarySpinEffect == null)
+            return;
+
+        _cultivateLegendarySpinHideTween?.Kill();
+        SetCultivateLegendarySpinEffectActive(false, false);
+
+        _cultivateLegendarySpinHideTween = DOVirtual.DelayedCall(
+            Mathf.Max(0.05f, _cultivateLegendarySpinFadeOutDuration),
+            () =>
+            {
+                SetCultivateLegendarySpinEffectActive(false, true);
+                _cultivateLegendarySpinHideTween = null;
+            });
+    }
+
+    private void SetCultivateLegendarySpinEffectActive(bool active, bool clearParticles)
+    {
+        if (_cultivateLegendarySpinEffect == null)
+            return;
+
+        ParticleSystem[] particleSystems = _cultivateLegendarySpinEffect.GetComponentsInChildren<ParticleSystem>(true);
+        foreach (ParticleSystem particleSystem in particleSystems)
+        {
+            if (active)
+            {
+                particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                particleSystem.Clear(true);
+                particleSystem.Play(true);
+            }
+            else
+            {
+                ParticleSystemStopBehavior stopBehavior = clearParticles
+                    ? ParticleSystemStopBehavior.StopEmittingAndClear
+                    : ParticleSystemStopBehavior.StopEmitting;
+                particleSystem.Stop(true, stopBehavior);
+                if (clearParticles)
+                    particleSystem.Clear(true);
+            }
+        }
+
+        if (active)
+        {
+            _cultivateLegendarySpinEffect.gameObject.SetActive(true);
+        }
+        else if (clearParticles)
+        {
+            _cultivateLegendarySpinEffect.gameObject.SetActive(false);
+        }
+    }
+
     private bool TryGetCultivateGroundEffectSurfaceY(TerrainCell cell, out float surfaceY)
     {
         surfaceY = cell.transform.position.y;
@@ -694,6 +765,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     private void OnDisable()
     {
+        _cultivateLegendarySpinHideTween?.Kill();
+        _cultivateLegendarySpinHideTween = null;
+        SetCultivateLegendarySpinEffectActive(false, true);
         StopAllCoroutines();
         CancelCurrentAction();
         _owner?.transform.DOKill();
