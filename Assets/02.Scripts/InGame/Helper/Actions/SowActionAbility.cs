@@ -8,8 +8,11 @@ public class SowActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _seedVfxPrefab;
+    [SerializeField] private GameObject _cultivateGroundEffectPrefab;
     [SerializeField] private float _sowDelay = 0.5f;
     [SerializeField] private float _epicThreeTileLookDuration = 1.6f;
+    [SerializeField] private float _cultivateGroundEffectLifetime = 2f;
+    [SerializeField] private float _cultivateGroundEffectSurfaceOffset = 2.1f;
 
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
@@ -301,8 +304,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
             {
                 OnCultivate = () =>
                 {
-                    leftCell.TryConvertToFarm();
-                    _owner.Experience.Add(_cultivateExperience);
+                    if (TryConvertToFarmWithCultivateEffect(leftCell, true))
+                        _owner.Experience.Add(_cultivateExperience);
                     ReplayEpicSow();
                 },
                 EpicLook = true,
@@ -327,8 +330,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
             {
                 OnCultivate = () =>
                 {
-                    cell.TryConvertToFarm();
-                    _owner.Experience.Add(_cultivateExperience);
+                    if (TryConvertToFarmWithCultivateEffect(cell, true))
+                        _owner.Experience.Add(_cultivateExperience);
                     ReplayEpicSow();
                 },
                 EpicLook = true,
@@ -364,9 +367,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
             {
                 OnCultivate = () =>
                 {
-                    cell.TryConvertToFarm();
-                    _owner.Experience.Add(_cultivateExperience);
-                    ConvertLateralFarmTiles(cell);
+                    bool convertedCenter = TryConvertToFarmWithCultivateEffect(cell, true);
+                    bool convertedLateral = ConvertLateralFarmTiles(cell, true);
+                    if (convertedCenter || convertedLateral)
+                        _owner.Experience.Add(_cultivateExperience);
                 },
                 Spin = true
             });
@@ -385,7 +389,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         {
             OnCultivate = anyLateralToConvert ? () =>
             {
-                bool anyConverted = ConvertFarmTiles(lateralCells);
+                bool anyConverted = ConvertFarmTiles(lateralCells, true);
                 if (anyConverted)
                     _owner.Experience.Add(_cultivateExperience);
             } : null,
@@ -400,8 +404,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
         {
             OnCultivate = () =>
             {
-                cell.TryConvertToFarm();
-                _owner.Experience.Add(_cultivateExperience);
+                if (TryConvertToFarmWithCultivateEffect(cell, true))
+                    _owner.Experience.Add(_cultivateExperience);
                 ReplayEpicSow();
             }
         });
@@ -412,20 +416,19 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _secondaryPresentation?.ReplayEpicSow();
     }
 
-    private void ConvertLateralFarmTiles(TerrainCell centerCell)
+    private bool ConvertLateralFarmTiles(TerrainCell centerCell, bool spawnCultivateEffect = false)
     {
-        ConvertFarmTiles(GetLateralCells(centerCell));
+        return ConvertFarmTiles(GetLateralCells(centerCell), spawnCultivateEffect);
     }
 
-    private bool ConvertFarmTiles(List<TerrainCell> cells)
+    private bool ConvertFarmTiles(List<TerrainCell> cells, bool spawnCultivateEffect = false)
     {
         bool anyConverted = false;
         foreach (TerrainCell lateralCell in cells)
         {
             if (NeedsFarmConversion(lateralCell))
             {
-                lateralCell.TryConvertToFarm();
-                anyConverted = true;
+                anyConverted |= TryConvertToFarmWithCultivateEffect(lateralCell, spawnCultivateEffect);
             }
         }
 
@@ -542,7 +545,73 @@ public class SowActionAbility : HelperAbility, IHelperAction
     {
         TerrainCell lateralCell = GetLateralCell(centerCell, directionSign);
         if (lateralCell != null && NeedsFarmConversion(lateralCell))
-            lateralCell.TryConvertToFarm();
+            TryConvertToFarmWithCultivateEffect(lateralCell, true);
+    }
+
+    private bool TryConvertToFarmWithCultivateEffect(TerrainCell cell, bool spawnCultivateEffect)
+    {
+        cell = GetInteractableCell(cell);
+        if (cell == null)
+            return false;
+
+        bool converted = cell.TryConvertToFarm();
+        if (converted && spawnCultivateEffect)
+        {
+            SpawnCultivateGroundEffect(cell);
+        }
+
+        return converted;
+    }
+
+    private void SpawnCultivateGroundEffect(TerrainCell cell)
+    {
+        if (_cultivateGroundEffectPrefab == null || cell == null)
+            return;
+
+        Vector3 spawnPosition = cell.transform.position;
+        if (TryGetCultivateGroundEffectSurfaceY(cell, out float surfaceY))
+        {
+            spawnPosition.y = surfaceY + _cultivateGroundEffectSurfaceOffset;
+        }
+
+        GameObject effect = Instantiate(_cultivateGroundEffectPrefab, spawnPosition, Quaternion.identity);
+        Destroy(effect, Mathf.Max(0.1f, _cultivateGroundEffectLifetime));
+    }
+
+    private bool TryGetCultivateGroundEffectSurfaceY(TerrainCell cell, out float surfaceY)
+    {
+        surfaceY = cell.transform.position.y;
+
+        if (cell.FarmTile != null && cell.FarmTile.gameObject.activeInHierarchy &&
+            TryGetTopSurfaceY(cell.FarmTile.gameObject, out surfaceY))
+        {
+            return true;
+        }
+
+        return TryGetTopSurfaceY(cell.gameObject, out surfaceY);
+    }
+
+    private bool TryGetTopSurfaceY(GameObject target, out float topY)
+    {
+        topY = 0f;
+        if (target == null)
+            return false;
+
+        Collider collider = target.GetComponentInChildren<Collider>(true);
+        if (collider != null)
+        {
+            topY = collider.bounds.max.y;
+            return true;
+        }
+
+        Renderer renderer = target.GetComponentInChildren<Renderer>(true);
+        if (renderer != null)
+        {
+            topY = renderer.bounds.max.y;
+            return true;
+        }
+
+        return false;
     }
 
     private Vector3Int GetGridRightOffset()
