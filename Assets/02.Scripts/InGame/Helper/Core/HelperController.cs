@@ -145,14 +145,17 @@ public class HelperController : MonoBehaviour
 
     public void LoadState(HelperSaveData data)
     {
-        Level.CurrentLevel = data.Level;
-        Grade.CurrentGrade = (EHelperGrade)data.Grade;
-        Experience.Load(data.Experience);
-
         float elapsed = data.EnergySavedAt > 0
             ? (float)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - data.EnergySavedAt)
             : 0f;
-        Energy.Load(data.Energy, elapsed);
+
+        ApplyRuntimeState(
+            data.Level,
+            (EHelperGrade)data.Grade,
+            data.Experience,
+            data.Energy,
+            elapsed,
+            notifyGradeChanged: true);
     }
 
     public void PerformUpgrade()
@@ -164,6 +167,21 @@ public class HelperController : MonoBehaviour
         Grade.Upgrade();
         Experience.Reset();
         OnGradeChanged?.Invoke();
+        SyncRuntimeState();
+    }
+
+    public void SyncRuntimeState()
+    {
+        if (PhotonView == null || !PhotonNetwork.IsConnected || !PhotonView.IsMine)
+            return;
+
+        PhotonView.RpcSafe(
+            nameof(RPC_SyncRuntimeState),
+            RpcTarget.Others,
+            Level.CurrentLevel,
+            (int)Grade.CurrentGrade,
+            Experience.CurrentExp,
+            Energy.Current);
     }
 
     public void BeginAction()
@@ -232,5 +250,53 @@ public class HelperController : MonoBehaviour
         SetTransformSync(true);
     }
 
+    [PunRPC]
+    internal void RPC_SyncRuntimeState(int level, int grade, int experience, float energy)
+    {
+        ApplyRuntimeState(
+            level,
+            (EHelperGrade)grade,
+            experience,
+            energy,
+            elapsedEnergyRecovery: 0f,
+            notifyGradeChanged: true);
+    }
+
     #endregion
+
+    private void ApplyRuntimeState(
+        int level,
+        EHelperGrade grade,
+        int experience,
+        float energy,
+        float elapsedEnergyRecovery,
+        bool notifyGradeChanged)
+    {
+        EHelperGrade previousGrade = Grade.CurrentGrade;
+
+        Level.CurrentLevel = level;
+        Grade.CurrentGrade = grade;
+        Experience.Load(experience);
+        Energy.Load(energy, elapsedEnergyRecovery);
+
+        if (notifyGradeChanged && previousGrade != grade)
+            OnGradeChanged?.Invoke();
+
+        RefreshEquippedAnimationForGrade();
+    }
+
+    private void RefreshEquippedAnimationForGrade()
+    {
+        if (State != EHelperState.Equipped)
+            return;
+
+        HelperAnimationAbility animationAbility = GetAbility<HelperAnimationAbility>();
+        if (animationAbility == null)
+            return;
+
+        if (Grade.CurrentGrade >= EHelperGrade.Epic)
+            animationAbility.Play(EHelperAnim.Idle);
+        else
+            animationAbility.Play(EHelperAnim.Equipped);
+    }
 }
