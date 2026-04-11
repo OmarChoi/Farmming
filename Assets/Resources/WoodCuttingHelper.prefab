@@ -1725,6 +1725,7 @@ MonoBehaviour:
   _effectWoodPrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _woodNormalEffect: {fileID: 2060656865814824145, guid: f22224b6deb22e04089e099a5f2fbdcf, type: 3}
   _woodNormalRangeEffect: {fileID: 4594267831969506764, guid: 79cd118ef865c9b43bb67aa367340b70, type: 3}
+  _woodEpicRangeEffect: {fileID: 0}
   _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
   _mouthPoint: {fileID: 5033183502897188921}
@@ -1735,9 +1736,11 @@ MonoBehaviour:
   _normalWoodEffectParticleStartDelay: 0
   _normalWoodRangeEffectDelay: 0.2
   _normalWoodEffectTravelDuration: 0.2
+  _epicWoodImpactDelay: 0.2
   _slashMagicRotationOffset: {x: 0, y: 0, z: 0}
   _wideGatherOffset: 2
   _embeddedNormalWoodEffect: {fileID: 825125106397935611}
+  _embeddedEpicWoodEffect: {fileID: 0}
 --- !u!114 &8890283815802751499
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2454,17 +2457,25 @@ PrefabInstance:
       propertyPath: startDelay.scalar
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3123672267032614008, guid: f22224b6deb22e04089e099a5f2fbdcf, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.8019
+      objectReference: {fileID: 0}
+    - target: {fileID: 3123672267032614008, guid: f22224b6deb22e04089e099a5f2fbdcf, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.051494043
+      objectReference: {fileID: 0}
     - target: {fileID: 7596762620736772729, guid: f22224b6deb22e04089e099a5f2fbdcf, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.8
+      value: 0.59367394
       objectReference: {fileID: 0}
     - target: {fileID: 7596762620736772729, guid: f22224b6deb22e04089e099a5f2fbdcf, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.8
+      value: 0.59367394
       objectReference: {fileID: 0}
     - target: {fileID: 7596762620736772729, guid: f22224b6deb22e04089e099a5f2fbdcf, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.8
+      value: 0.59367394
       objectReference: {fileID: 0}
     - target: {fileID: 7596762620736772729, guid: f22224b6deb22e04089e099a5f2fbdcf, type: 3}
       propertyPath: m_LocalPosition.x

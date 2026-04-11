@@ -77,6 +77,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac560868d27131c40a676516addc4c00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CropGrowth
+  _harvestReadyEffectPrefab: {fileID: 110889889937190958, guid: 62cf4df1d021fef47aab525b0d91ed57, type: 3}
+  _harvestReadyEffectYOffset: 0
 --- !u!65 &2633870886322983840
 BoxCollider:
   m_ObjectHideFlags: 0
