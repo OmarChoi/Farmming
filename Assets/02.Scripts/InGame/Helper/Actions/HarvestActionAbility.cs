@@ -197,7 +197,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         }
 
         ItemDataSO harvestItem = seed.HarvestItem;
-        if (harvestItem != null)
+        if (_owner.IsMine && harvestItem != null)
         {
             Sprite notificationIcon = harvestItem.Icon != null ? harvestItem.Icon : seed.Icon;
             _harvestItem?.Raise(notificationIcon, harvestItem.DisplayName, harvestAmount);
