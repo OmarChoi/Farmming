@@ -295,7 +295,7 @@ public class UI_HelperUpgrade : MonoBehaviour
         _helperNameText.text = HelperUpgradeTextFormatter.GetHelperName(data);
         _helperGradeText.text = HelperUpgradeTextFormatter.GetGradeText(grade);
         _helperExpText.text = HelperUpgradeTextFormatter.GetExpText(grade, exp, maxExp);
-        _helperRangeText.text = HelperUpgradeTextFormatter.GetRangeText(data, grade, canUpgrade);
+        _helperRangeText.text = HelperUpgradeTextFormatter.GetRangeText(data, grade);
 
         if (_upgradeButton != null)
         {
