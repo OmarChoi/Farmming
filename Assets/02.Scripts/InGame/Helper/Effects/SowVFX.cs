@@ -1,5 +1,6 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using UnityEngine;
+using System;
 using UnityEngine.UIElements;
 
 public class SowVFX : MonoBehaviour
@@ -10,7 +11,7 @@ public class SowVFX : MonoBehaviour
     [SerializeField] private int _jumpCount = 1;
     [SerializeField] private float _effectDuration = 1f;
 
-    public void Launch(Vector3 targetPosition, Vector3 direction)
+    public void Launch(Vector3 targetPosition, Vector3 direction, Action onLand = null)
     {
         if(direction != Vector3.zero)
         {
@@ -19,10 +20,10 @@ public class SowVFX : MonoBehaviour
 
         transform.DOJump(targetPosition, _arcHeight, _jumpCount, _duration)
                  .SetEase(Ease.Linear)
-                 .OnComplete(() => OnLand(targetPosition));
+                 .OnComplete(() => OnLand(targetPosition, onLand));
     }
 
-    private void OnLand(Vector3 position)
+    private void OnLand(Vector3 position, Action onLand)
     {
         if(_landEffectPrefab != null)
         {
@@ -30,6 +31,7 @@ public class SowVFX : MonoBehaviour
             Destroy(effect, _effectDuration);
         }
 
+        onLand?.Invoke();
         Destroy(gameObject);
     }
 }

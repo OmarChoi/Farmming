@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
@@ -73,6 +73,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.NormalHarvest);
+        PlayHarvestNormalStartSfx(cell);
 
         if (_normalVfxPrefab != null)
         {
@@ -111,6 +112,18 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         _owner.BeginAction();
 
         bool anyHarvested = false;
+        bool playedEpicStartSfx = false;
+
+        void ReplayEpicHarvestWithSfx()
+        {
+            if (!playedEpicStartSfx)
+            {
+                PlayHarvestEpicStartSfx(centerCell);
+                playedEpicStartSfx = true;
+            }
+
+            ReplayEpicHarvest();
+        }
 
         if (_epicVFX != null)
         {
@@ -121,11 +134,11 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             {
                 if (anyHarvested) _owner.Experience.Add(_harvestExperience);
                 FinishHarvestAction();
-            }, _ => ReplayEpicHarvest());
+            }, _ => ReplayEpicHarvestWithSfx());
         }
         else
         {
-            ReplayEpicHarvest();
+            ReplayEpicHarvestWithSfx();
             if (TryHarvestCell(centerCell)) anyHarvested = true;
             if (anyHarvested) _owner.Experience.Add(_harvestExperience);
             FinishHarvestAction();
@@ -143,6 +156,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         List<TerrainCell> targetCells = GetLegendaryCells(centerCell);
 
         _owner.BeginAction();
+        PlayHarvestLegendaryStartSfx(centerCell);
         _animAbility?.Play(EHelperAnim.LegendaryHarvest);
 
         Vector3 rightDir = GetRightDirection();
@@ -226,6 +240,39 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (farmTile == null || !farmTile.HasSeed) return false;
         CropGrowth cropGrowth = farmTile.CropGrowth;
         return cropGrowth != null && cropGrowth.IsHarvestable;
+    }
+
+    private static void PlayHarvestNormalStartSfx(TerrainCell cell)
+    {
+        if (cell == null || SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.HarvestNormal,
+            spatialMode: ESpatialMode.Positional3D,
+            position: cell.transform.position));
+    }
+
+    private static void PlayHarvestEpicStartSfx(TerrainCell cell)
+    {
+        if (cell == null || SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.HarvestEpic,
+            spatialMode: ESpatialMode.Positional3D,
+            position: cell.transform.position));
+    }
+
+    private static void PlayHarvestLegendaryStartSfx(TerrainCell cell)
+    {
+        if (cell == null || SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.HarvestLegendary,
+            spatialMode: ESpatialMode.Positional3D,
+            position: cell.transform.position));
     }
 
     private List<TerrainCell> GetLegendaryCells(TerrainCell centerCell)
