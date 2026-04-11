@@ -43,14 +43,7 @@ public class DailyQuestManager : MonoBehaviour
     public bool CanAcceptDailyQuest(QuestDataSO questData)
     {
         if (questData == null || string.IsNullOrEmpty(questData.QuestId)) return false;
-
-        int currentDay = TimeEvents.CurrentDay;
-
-        if (_dailyQuestCompletedDays.TryGetValue(questData.QuestId, out int completedDay))
-        {
-            return completedDay != currentDay;
-        }
-        return true;
+        return !_dailyQuestCompletedDays.ContainsKey(questData.QuestId);
     }
 
     public void MarkCompletedToday(string questId)
@@ -61,6 +54,7 @@ public class DailyQuestManager : MonoBehaviour
 
     private void HandleDayChanged()
     {
+        _dailyQuestCompletedDays.Clear();
         QuestManager.Instance?.RemoveAllDailyQuests();
         RefreshTodayDailyQuests();
 

@@ -24,7 +24,7 @@ MonoBehaviour:
   CompleteNpcId: 
   IsForcedAccept: 0
   ObjectiveType: 0
-  TargetId: "\uB3CC"
+  TargetId: "\uBC14\uC704"
   ItemRequirements: []
   TargetNpcId: 
   RequiredAmount: 1
@@ -35,6 +35,7 @@ MonoBehaviour:
     - RewardType: 2
       RewardItem: {fileID: 0}
       Amount: 50
+      RewardHelper: {fileID: 0}
       TargetNpcId: Shopper
   AcceptDialogue: {fileID: 0}
   AcceptResultDialogue: {fileID: 0}
@@ -42,3 +43,5 @@ MonoBehaviour:
   InProgressDialogue: {fileID: 0}
   CompleteDialogue: {fileID: 0}
   NoQuestDialogue: {fileID: 0}
+  AcceptInfoPageSet: {fileID: 0}
+  CompleteInfoPageSet: {fileID: 0}
