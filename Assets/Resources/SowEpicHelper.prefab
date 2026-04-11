@@ -1528,10 +1528,14 @@ MonoBehaviour:
   _mouthPoint: {fileID: 1982235181728634582}
   _seedVfxPrefab: {fileID: 3796885633913593696, guid: b4c4fb9801e93434d809d1505d55675f, type: 3}
   _cultivateGroundEffectPrefab: {fileID: 5141274713067311243, guid: 35d00d14d4e1ec3438c24e5af9ca6cc6, type: 3}
+  _cultivateLegendarySpinEffect: {fileID: 0}
   _sowDelay: 0.5
   _epicThreeTileLookDuration: 1.6
   _cultivateGroundEffectLifetime: 2
   _cultivateGroundEffectSurfaceOffset: 2.1
+  _cultivateLegendarySpinFadeOutDuration: 0.05
+  _secondaryOpenFallbackDelay: 0.35
+  _secondaryCompleteFallbackDelay: 5
   _cultivateExperience: 10
   _sowExperience: 10
 --- !u!114 &9182746351204875634

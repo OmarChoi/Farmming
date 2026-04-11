@@ -20,7 +20,7 @@ MonoBehaviour:
   EpicPrefab: {fileID: 432567996443749047, guid: 773c654ebe113674f81f820fc2a57603, type: 3}
   LegendaryPrefab: {fileID: 432567996443749047, guid: ce00054f389338740a5954f443506c40, type: 3}
   MaxEnergy: 100
-  EnergyRecoveryPerSecond: 10
+  EnergyRecoveryPerSecond: 3
   GatherDamage: 50
   StaminaCost: 5
   MaxLevel: 10
@@ -30,7 +30,7 @@ MonoBehaviour:
   EpicRange: 2
   LegendaryRange: 3
   NormalMaxExp: 30
-  EpicMaxExp: 30
+  EpicMaxExp: 60
   SecondaryUnlockGrade: 0
   IsLightHelper: 0
   _leftClickIcon: {fileID: 21300000, guid: 12681ae5bc70f864681174434d53be00, type: 3}

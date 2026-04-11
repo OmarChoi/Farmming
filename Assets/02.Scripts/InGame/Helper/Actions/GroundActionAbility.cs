@@ -54,12 +54,27 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         return _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
     }
 
+    public bool CanUseGroundItem(ItemDataSO item)
+    {
+        if (item == null || _groundItemMappings == null)
+            return false;
+
+        foreach (GroundItemMapping mapping in _groundItemMappings)
+        {
+            if (mapping.Item == item)
+                return true;
+        }
+
+        return false;
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return;
 
         if (!CanRemoveCell(cell)) return;
+        ETileType removedTileType = cell.Data.TileType;
 
         bool isFarmLand = cell.Data.ObjectType == EGridObjectType.FarmLand;
         if (isFarmLand)
@@ -94,11 +109,12 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             _owner.PhotonView.RpcSafe(nameof(RPC_DigWithAnimation), RpcTarget.Others, pos.x, pos.y, pos.z, _canDigLevel);
         }
 
-            PlayerInventoryAbility inventory = GetInventory();
-            if (inventory != null && _dirtItem != null)
-            {
-                QuestReportItemHelper.AddItemAndReportQuest(inventory, _dirtItem, _getDirtAmount);
-            }
+        PlayerInventoryAbility inventory = GetInventory();
+        ItemDataSO rewardItem = GetRewardItemForTile(removedTileType);
+        if (inventory != null && rewardItem != null)
+        {
+            QuestReportItemHelper.AddItemAndReportQuest(inventory, rewardItem, _getDirtAmount);
+        }
         _owner.EndAction();
     }
 
@@ -132,16 +148,24 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, _generateDirtAmount);
         if (!placed) return;
 
+        bool destroyedByLava = ShouldDestroyPlacedGroundImmediately(tileType, targetGridPos);
+
         ClearFarmLandIfCovered(cell, targetGridPos);
 
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.EatGround);
 
         TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
-        if (newCell != null && _mouthPoint != null)
+        if (!destroyedByLava && newCell != null && _mouthPoint != null)
         {
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
             StartPlaceCellAnimation(newCell, targetWorldPos);
+        }
+
+        if (destroyedByLava)
+        {
+            TerrainGridManager.Instance.RemoveCell(targetGridPos);
+            _animAbility?.Play(EHelperAnim.Idle);
         }
 
         BroadcastGroundStateFromMaster(targetGridPos);
@@ -214,6 +238,19 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return false;
 
         return slot.Count >= requiredAmount;
+    }
+
+    private bool ShouldDestroyPlacedGroundImmediately(ETileType placedTileType, Vector3Int targetGridPos)
+    {
+        if (placedTileType != ETileType.VillageDirt)
+            return false;
+
+        TerrainCell belowCell = TerrainGridManager.Instance?.GetCell(targetGridPos + Vector3Int.down);
+        if (belowCell == null || belowCell.Data == null)
+            return false;
+
+        return belowCell.Data.TileType == ETileType.Dungeon3Lava
+               || belowCell.Data.TileType == ETileType.Dungeon3LavaStone;
     }
 
     private bool CanRemoveCell(TerrainCell cell)
@@ -296,6 +333,20 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         return fallback;
     }
 
+    private ItemDataSO GetRewardItemForTile(ETileType tileType)
+    {
+        if (_groundItemMappings != null)
+        {
+            foreach (GroundItemMapping mapping in _groundItemMappings)
+            {
+                if (mapping.TileType == tileType && mapping.Item != null)
+                    return mapping.Item;
+            }
+        }
+
+        return _dirtItem;
+    }
+
     private Vector3Int GetPlacePosition(TerrainCell cell)
     {
         if (cell.Data.CellType == ECellType.Empty)
@@ -351,10 +402,18 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     internal void RPC_PlaceBlockWithAnimation(int gridX, int gridY, int gridZ, int tileType, int dirtLevel)
     {
         var targetGridPos = new Vector3Int(gridX, gridY, gridZ);
-        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, (ETileType)tileType, dirtLevel);
+        ETileType placedTileType = (ETileType)tileType;
+        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, placedTileType, dirtLevel);
         if (!placed) return;
 
         _animAbility?.Play(EHelperAnim.EatGround);
+
+        if (ShouldDestroyPlacedGroundImmediately(placedTileType, targetGridPos))
+        {
+            TerrainGridManager.Instance.RemoveCell(targetGridPos);
+            _animAbility?.Play(EHelperAnim.Idle);
+            return;
+        }
 
         TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
         if (newCell != null && _mouthPoint != null)
