@@ -240,11 +240,83 @@ public class SaveManager : MonoBehaviourPun
         SaveAsync(slot).Forget();
     }
 
+    public void RequestPlayerOnlySave(int slot = 0)
+    {
+        PlayerController local = GetLocalPlayer();
+        if (local == null) return;
+
+        string playerId = local.PlayerId;
+        PlayerSaveData saveData = local.ExportSaveData(playerId);
+        string json = JsonUtility.ToJson(saveData);
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            SavePlayerOnlyAsync(playerId, saveData, slot).Forget();
+        }
+        else
+        {
+            photonView.RPC(
+                nameof(RPC_RequestPlayerOnlySave),
+                RpcTarget.MasterClient,
+                playerId,
+                json,
+                slot);
+        }
+    }
+
+    public async UniTask SavePlayerOnlyAsync(string playerId, PlayerSaveData playerSave, int slot = 0)
+    {
+        if (_isSaving) return;
+        if (string.IsNullOrEmpty(playerId) || playerSave == null) return;
+
+        _isSaving = true;
+
+        try
+        {
+            SaveData data = _loadedData ?? new SaveData();
+
+            if (data.Players == null)
+                data.Players = new List<PlayerSaveData>();
+
+            data.Players.RemoveAll(p => p != null && p.PlayerId == playerId);
+            data.Players.Add(playerSave);
+
+            _loadedData = data;
+
+            await _repository.SaveAsync(data, slot);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    [PunRPC]
+    private void RPC_RequestPlayerOnlySave(string playerId, string json, int slot, PhotonMessageInfo info)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        PlayerSaveData saveData = JsonUtility.FromJson<PlayerSaveData>(json);
+        if (saveData == null) return;
+
+        SavePlayerOnlyAsync(playerId, saveData, slot).Forget();
+    }
+
     public UniTask<bool> HasSaveAsync(int slot = 0) => _repository.HasSaveAsync(slot);
 
     public bool HasPlayerData(string playerId)
     {
         if (_loadedData == null) return false;
         return _loadedData.Players.Exists(p => p.PlayerId == playerId);
+    }
+
+    private PlayerController GetLocalPlayer()
+    {
+        foreach (var player in _players.Values)
+        {
+            if (player != null && player.IsMine) return player;
+        }
+
+        return null;
     }
 }

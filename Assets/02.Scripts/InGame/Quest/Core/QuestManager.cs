@@ -531,7 +531,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         RemoveQuest(questId);
 
         int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
-        SaveManager.Instance?.RequestSave(slot);
+        SaveManager.Instance?.RequestPlayerOnlySave(slot);
         return true;
     }
 
