@@ -16,6 +16,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     [SerializeField] private GameObject _woodNormalEffect;
     [SerializeField] private GameObject _woodNormalRangeEffect;
     [SerializeField] private GameObject _woodEpicRangeEffect;
+    [SerializeField] private GameObject _woodLegendaryRangeEffect;
+    [SerializeField] private GameObject _woodLegendaryRangeEffectGround;
     [SerializeField] protected GameObject _effectStonePrefab;
     [SerializeField] protected Transform _effectSpawnPoint;
     [SerializeField] private Transform _mouthPoint;
@@ -140,9 +142,16 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
                 LaunchEpicWoodEffect(targetCell, info, preferEmbeddedEffect, spawnRangeImpactEffect);
             }
         }
-        else if (_owner.Grade.CurrentGrade == EHelperGrade.Legendary && !isWideActive)
+        else if (_owner.Grade.CurrentGrade == EHelperGrade.Legendary)
         {
-            LaunchLegendaryWoodEffect(cell, info);
+            TerrainCell[] targetCells = GetEpicWoodTargetCells(cell, isWideActive);
+            bool preferEmbeddedEffect = !isWideActive && targetCells.Length == 1;
+            bool spawnRangeImpactEffect = isWideActive;
+
+            foreach (TerrainCell targetCell in targetCells)
+            {
+                LaunchLegendaryWoodEffect(targetCell, info, preferEmbeddedEffect, spawnRangeImpactEffect);
+            }
         }
         else if (isWideActive)
         {
@@ -471,6 +480,21 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         return effect;
     }
 
+    private GameObject SpawnDetachedLegendaryWoodEffect(Vector3 startPosition, Quaternion spawnRotation)
+    {
+        GameObject source = _embeddedLegendaryWoodEffect != null
+            ? _embeddedLegendaryWoodEffect.gameObject
+            : null;
+
+        if (source == null)
+            return null;
+
+        GameObject effect = Instantiate(source, startPosition, spawnRotation);
+        effect.SetActive(true);
+        RestartParticleSystems(effect.transform);
+        return effect;
+    }
+
     private void LaunchEpicWoodEffect(TerrainCell cell, GatheringInfo info, bool preferEmbeddedEffect, bool spawnRangeImpactEffect)
     {
         if (cell == null)
@@ -510,7 +534,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         });
     }
 
-    private void LaunchLegendaryWoodEffect(TerrainCell cell, GatheringInfo info)
+    private void LaunchLegendaryWoodEffect(TerrainCell cell, GatheringInfo info, bool preferEmbeddedEffect, bool spawnRangeImpactEffect)
     {
         if (cell == null)
             return;
@@ -523,10 +547,28 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         }
 
         Vector3 targetPosition = GetNormalWoodImpactPosition(cell, startPosition);
-        PlayEmbeddedLegendaryWoodEffect(startPosition, targetPosition);
+        Quaternion spawnRotation = GetLegendaryWoodEffectSpawnRotation(startPosition, targetPosition);
+
+        if (preferEmbeddedEffect && _embeddedLegendaryWoodEffect != null)
+        {
+            PlayEmbeddedLegendaryWoodEffect(startPosition, targetPosition);
+        }
+        else
+        {
+            GameObject effect = SpawnDetachedLegendaryWoodEffect(startPosition, spawnRotation);
+            if (effect != null)
+            {
+                Destroy(effect, GetLegendaryWoodEffectLifetime());
+            }
+        }
 
         DOVirtual.DelayedCall(Mathf.Max(0f, _epicWoodImpactDelay), () =>
         {
+            if (spawnRangeImpactEffect)
+            {
+                SpawnLegendaryWoodRangeImpactEffects(cell, startPosition);
+            }
+
             TryGatherWoodCell(cell, info);
         });
     }
@@ -545,6 +587,32 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
         float destroyDelay = Mathf.Max(GetEpicWoodEffectLifetime(), 2f);
         Destroy(effect, destroyDelay);
+    }
+
+    private void SpawnLegendaryWoodRangeImpactEffects(TerrainCell cell, Vector3 originPosition)
+    {
+        cell = GetInteractableCell(cell);
+        if (cell == null) return;
+        if (cell.CurrentObject == null) return;
+        if (cell.Data.ObjectType != EGridObjectType.Tree) return;
+
+        float destroyDelay = Mathf.Max(GetLegendaryWoodEffectLifetime(), 2f);
+
+        if (_woodLegendaryRangeEffect != null)
+        {
+            Vector3 impactPosition = GetNormalWoodImpactPosition(cell, originPosition);
+            Quaternion impactRotation = GetLegendaryWoodEffectSpawnRotation(originPosition, impactPosition);
+            GameObject impactEffect = Instantiate(_woodLegendaryRangeEffect, impactPosition, impactRotation);
+            Destroy(impactEffect, destroyDelay);
+        }
+
+        if (_woodLegendaryRangeEffectGround != null)
+        {
+            Vector3 groundPosition = cell.transform.position;
+            Quaternion groundRotation = GetLegendaryWoodEffectSpawnRotation(originPosition, groundPosition);
+            GameObject groundEffect = Instantiate(_woodLegendaryRangeEffectGround, groundPosition, groundRotation);
+            Destroy(groundEffect, destroyDelay);
+        }
     }
 
     private void LaunchEmbeddedNormalWoodEffect(TerrainCell cell, GatheringInfo info, Vector3 originPosition, bool spawnRangeImpactEffect)
