@@ -65,10 +65,10 @@ public class NpcDialogueController : MonoBehaviour
         _uiDialogue.BindDialoguePanel(OnClickDialoguePanel);
     }
 
-    public void Open(NpcController npc, Transform interactor)
+    public void Open(NpcController npc, PlayerController player)
     {
         _currentNpc = npc;
-        _currentInteractor = interactor;
+        _currentInteractor = player.transform;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
         _anim = npc.Anim;
 
