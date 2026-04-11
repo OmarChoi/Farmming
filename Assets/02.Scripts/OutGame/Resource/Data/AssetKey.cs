@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 public static class AssetKey
@@ -36,6 +36,13 @@ public static class AssetKey
         }
     }
 
+    public static class BGM
+    {
+        public const string StartScene = "SFXstartscenebgm";
+        public const string Village = "SFXvillagebgm";
+        public const string Dungeon2 = "SFXdungeon2bgm";
+    }
+
     public static class UI
     {
         public const string Inventory = "UI_Inventory";
@@ -71,6 +78,19 @@ public static class AssetKey
         #region Player
         public const string Move = "SFX_Move";
         
+        #endregion
+
+        #region Helper
+        public const string HarvestNormal = "SFXharvestnormal";
+        public const string HarvestEpic = "SFXharvestepic";
+        public const string HarvestLegendary = "SFXharvestlegendary";
+        public const string SowNormal = "SFXsownormal";
+        public const string SowLegendary = "SFXsowlegendary";
+        public const string WaterNormalSplash = "SFXwaternormal";
+        public const string WaterEpicSplash = "SFXwaterepic";
+        public const string WaterLegendarySplash = "SFXwaterlegendary";
+        public const string WoodLeaf = "SFXwoodleaf";
+
         #endregion
     }
 }

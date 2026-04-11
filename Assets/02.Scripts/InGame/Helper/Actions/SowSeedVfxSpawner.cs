@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class SowSeedVfxSpawner
@@ -16,7 +16,7 @@ public class SowSeedVfxSpawner
 
     public Transform MouthPoint => _getMouthPoint?.Invoke();
 
-    public void SpawnTo(FarmTile tile)
+    public void SpawnTo(FarmTile tile, Action onLand = null)
     {
         Transform mouthPoint = MouthPoint;
         if (tile == null || mouthPoint == null)
@@ -38,6 +38,6 @@ public class SowSeedVfxSpawner
 
         GameObject vfxObj = UnityEngine.Object.Instantiate(prefab, spawnPos, Quaternion.identity);
         SowVFX sowVfx = vfxObj.GetComponent<SowVFX>();
-        sowVfx?.Launch(targetPos, direction);
+        sowVfx?.Launch(targetPos, direction, onLand);
     }
 }

@@ -96,7 +96,13 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         if (cell == null) return;
 
         _owner.BeginAction();
-        _animAbility?.Play(EHelperAnim.WoodCutting);
+        EHelperAnim cuttingAnim = _owner.Grade.CurrentGrade switch
+        {
+            EHelperGrade.Epic => EHelperAnim.WoodEpicCutting,
+            EHelperGrade.Legendary => EHelperAnim.WoodLegendaryCutting,
+            _ => EHelperAnim.WoodCutting
+        };
+        _animAbility?.Play(cuttingAnim);
 
         GatheringInfo info = new GatheringInfo(_owner);
 
