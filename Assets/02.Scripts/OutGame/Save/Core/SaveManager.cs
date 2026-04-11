@@ -44,7 +44,15 @@ public class SaveManager : MonoBehaviour
 
     private void TryRestorePlayer(string playerId, PlayerController player)
     {
-        if (_loadedData == null) return;
+        PlayerQuestAbility questAbility = player != null ? player.GetAbility<PlayerQuestAbility>() : null;
+        if (_loadedData == null)
+        {
+            if (player != null && player.IsMine && questAbility != null)
+            {
+                questAbility.InitializeEmptyState();
+            }
+            return;
+        }
         var save = _loadedData.Players.Find(p => p.PlayerId == playerId);
         if (save == null) return;
 
@@ -105,7 +113,7 @@ public class SaveManager : MonoBehaviour
             
             if (VillageLevelManager.Instance != null)
                 data.Village = VillageLevelManager.Instance.ExportSaveData();
-            
+
             _receivedSaveData.Clear();
             _expectedResponses = 0;
 

@@ -7,6 +7,7 @@ public class NpcController : MonoBehaviour
 {
     public PhotonView PhotonView { get; private set; }
     public bool IsMine => PhotonView == null || !PhotonNetwork.IsConnected || PhotonView.IsMine;
+    public bool IsLocalOnly { get; private set; }
 
     [Header("Npc 컴포넌트")]
     [SerializeField] private Animator _animator;
@@ -40,6 +41,7 @@ public class NpcController : MonoBehaviour
     public Transform CurrentInteractor => _currentInteractor;
     public NpcInteractionOption[] InteractionOptions => _interactionOptions;
     public bool IsInteracting => _isInteracting;
+    public bool AutoStartQuestOnInteract => _npcData != null && _npcData.AutoStartQuestOnInteract;
 
     private void Awake()
     {
@@ -52,9 +54,10 @@ public class NpcController : MonoBehaviour
         _movement?.SetOwner(IsMine);
     }
 
-    public void Initialize(NpcDataSO data)
+    public void Initialize(NpcDataSO data, bool isLocalOnly = false)
     {
         _npcData = data;
+        IsLocalOnly = isLocalOnly;
         GenerateTimeOffset();
         _movement.Initialize(_anim, data.WalkSpeed, data.RunSpeed, data.JumpDuration, data.JumpHeight);
     }
@@ -87,7 +90,7 @@ public class NpcController : MonoBehaviour
     }
 
     // 플레이어가 Npc와 상호작용을 시작할 때, Npc의 이동을 멈추고 플레이어를 바라보도록 합니다.
-    public bool CanStartInteraction(Transform interactor)
+    public bool CanStartInteraction(PlayerController player)
     {
         if (_isInteracting)
         {
@@ -97,21 +100,21 @@ public class NpcController : MonoBehaviour
         return true;
     }
 
-    public void StartInteraction(Transform interactor)
+    public void StartInteraction(PlayerController player)
     {
         _isInteracting = true;
-        _currentInteractor = interactor;
+        _currentInteractor = player.transform;
 
-        if (PhotonNetwork.IsConnected && !PhotonView.IsMine)
+        if (!IsMine && !IsLocalOnly)
         {
             // 클라이언트: 마스터에게 상호작용 요청 RPC 전송
-            Vector3 interactorPos = interactor != null ? interactor.position : transform.position;
+            Vector3 interactorPos = player != null ? player.transform.position : transform.position;
             PhotonView.RPC(nameof(RPC_StartInteraction), RpcTarget.MasterClient, interactorPos);
             return;
         }
 
         // 마스터 또는 오프라인: 직접 실행
-        Vector3 targetPos = interactor != null ? interactor.position : transform.position;
+        Vector3 targetPos = player != null ? player.transform.position : transform.position;
         StartInteractionAsync(targetPos).Forget();
     }
 
@@ -133,7 +136,7 @@ public class NpcController : MonoBehaviour
     private void PlayGreetAll()
     {
         _anim?.PlayGreet();
-        if (PhotonNetwork.IsConnected && PhotonView.IsMine)
+        if (IsMine && !IsLocalOnly)
         {
             PhotonView.RPC(nameof(RPC_PlayNpcGreet), RpcTarget.Others);
         }
@@ -150,7 +153,7 @@ public class NpcController : MonoBehaviour
         _isInteracting = false;
         _currentInteractor = null;
 
-        if (PhotonNetwork.IsConnected && !PhotonView.IsMine)
+        if (!IsMine && !IsLocalOnly)
         {
             // 클라이언트: 마스터에게 상호작용 종료 RPC 전송
             PhotonView.RPC(nameof(RPC_EndInteraction), RpcTarget.MasterClient);

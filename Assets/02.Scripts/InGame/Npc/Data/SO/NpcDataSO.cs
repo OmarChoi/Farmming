@@ -34,4 +34,7 @@ public class NpcDataSO : ScriptableObject
     public bool UseRandomTimeOffset = true;
     public int MinTimeOffset = 0;
     public int MaxTimeOffset = 10;
+
+    [Header("자동 퀘스트 상호작용 여부")]
+    public bool AutoStartQuestOnInteract = false;
 }

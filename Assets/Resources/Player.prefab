@@ -57,6 +57,7 @@ GameObject:
   - component: {fileID: 6003655954720563584}
   - component: {fileID: 1723760070143069421}
   - component: {fileID: 1126301704286780688}
+  - component: {fileID: 4491963025146124486}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -341,6 +342,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 070059ced19c74f4097e4afa81fb954e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerPotionAbility
+--- !u!114 &4491963025146124486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21a2007ee4b3e6245b2d8bba77d16e1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerQuestAbility
 --- !u!1 &2101610759984280812
 GameObject:
   m_ObjectHideFlags: 0
@@ -649,6 +662,9 @@ MonoBehaviour:
   - Type: 9
     SynchronizeType: 0
     Name: Cheer
+  - Type: 9
+    SynchronizeType: 0
+    Name: Point
   m_SynchronizeLayers:
   - SynchronizeType: 1
     LayerIndex: 0

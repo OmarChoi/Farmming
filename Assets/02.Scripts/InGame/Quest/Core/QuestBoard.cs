@@ -1,15 +1,16 @@
-using UnityEngine;
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using UnityEngine;
+using static AssetKey;
 
-public class QuestBoard : MonoBehaviour
+public class QuestBoard : MonoBehaviour, IInteraction
 {
     [Header("퀘스트 보드 컴포넌트")]
     [SerializeField] private QuestBoardDataSO _boardQuest;
     [SerializeField] private UI_QuestBoard _uiQuestBoard;
 
-    [Header("플레이어 컨트롤러")]
-    [SerializeField] private PlayerController _playerController;
+    private PlayerController _playerController;
+    private PlayerNPCInteractionAbility _playerInteraction;
 
     public QuestBoardDataSO BoardQuest => _boardQuest;
 
@@ -37,8 +38,11 @@ public class QuestBoard : MonoBehaviour
         }
     }
 
-    public void Interact()
+    public void RequestInteract(PlayerController player)
     {
+        _playerController = player;
+        _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
+
         OpenQuestBoard().Forget();
     }
 
@@ -70,5 +74,6 @@ public class QuestBoard : MonoBehaviour
         {
             _playerController?.SetCursorLock(true);
         }
+        _playerInteraction?.EndInteraction();
     }
 }

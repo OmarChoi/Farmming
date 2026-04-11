@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
     private Renderer[] _cachedRenderers;
 
+
     private void Awake()
     {
         PhotonView = GetComponent<PhotonView>();

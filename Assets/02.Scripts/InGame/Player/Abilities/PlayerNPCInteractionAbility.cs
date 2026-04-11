@@ -41,12 +41,12 @@ public class PlayerNPCInteractionAbility : PlayerAbility
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, _radius, _interactionLayer);
 
-        INpcInteraction closest = null;
+        IInteraction closest = null;
         float minDist = float.MaxValue;
 
         foreach (var hit in hits)
         {
-            INpcInteraction interactable = hit.GetComponentInParent<INpcInteraction>();
+            IInteraction interactable = hit.GetComponentInParent<IInteraction>();
             if (interactable == null) continue;
 
             float dist = Vector3.Distance(transform.position, hit.transform.position);
@@ -64,7 +64,7 @@ public class PlayerNPCInteractionAbility : PlayerAbility
             _owner.LockAction();
             _animation?.PlayGreet();
             _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
-            closest.RequestInteract(transform);
+            closest.RequestInteract(_owner);
         }
     }
 
@@ -84,5 +84,19 @@ public class PlayerNPCInteractionAbility : PlayerAbility
         Quaternion targetRotation = Quaternion.LookRotation(dir);
         _owner.transform.rotation = Quaternion.Slerp(
             _owner.transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+    }
+
+    public void BeginAutoInteraction(IInteraction target)
+    {
+        if (target == null) return;
+
+        Component targetComponent = target as Component;
+        if (targetComponent == null) return;
+
+        _faceTarget = targetComponent.transform;
+        _owner.LockAction();
+        _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
+
+        target.RequestInteract(_owner);
     }
 }
