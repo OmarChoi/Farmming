@@ -65,8 +65,11 @@ public class NpcSpawnManager : MonoBehaviour
 
         if (MapNavMeshController.Instance == null || !MapNavMeshController.Instance.IsReady)
         {
-            Debug.LogWarning($"[NpcSpawnManager] NavMesh가 준비되지 않아 NPC 스폰 불가: {request.NpcId}");
-            return false;
+            if (request.Reason != "TutorialNpc")
+            {
+                Debug.LogWarning($"[NpcSpawnManager] NavMesh가 준비되지 않아 NPC 스폰 불가: {request.NpcId}");
+                return false;
+            }
         }
 
         GameObject prefab = request.Prefab != null ? request.Prefab : _defaultNpcPrefab;
