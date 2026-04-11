@@ -363,30 +363,31 @@ public class NpcQuestService : MonoBehaviour
 
         if (_dialogueController != null && questData.AcceptResultDialogue != null)
         {
-            if (HasAcceptInfoPages(questData) && CanShowInfoPage())
+            bool hasInfoPages = HasAcceptInfoPages(questData) && CanShowInfoPage();
+            bool hasDialogue = _dialogueController != null && questData.AcceptResultDialogue != null;
+
+            if (hasDialogue)
             {
-                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest,
-                    () =>
+                Func<bool> onDialogueEnded = null;
+                if (hasInfoPages)
+                {
+                    onDialogueEnded = () =>
                     {
                         ShowAcceptInfoPages(context, questData);
-                        return true;
-                    });
+                        return true; // 기본 다이얼로그 종료 동작을 방지합니다.
+                    };
+                }
+                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest, onDialogueEnded);
+            }
+            else if (hasInfoPages)
+            {
+                ShowAcceptInfoPages(context, questData);
             }
             else
             {
-                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest);
+                context.InteractionComponent?.EndInteraction();
             }
-
-            return;
         }
-
-        if (HasAcceptInfoPages(questData))
-        {
-            ShowAcceptInfoPages(context, questData);
-            return;
-        }
-
-        context.InteractionComponent?.EndInteraction();
     }
 
     private void DeclineQuestWithDialogue(NpcInteractionContext context, QuestDataSO questData)
@@ -405,49 +406,39 @@ public class NpcQuestService : MonoBehaviour
 
     private void HandleCompleteQuest(NpcInteractionContext context, QuestRuntimeData quest)
     {
-        if (quest == null || quest.QuestData == null) return;
+        if (quest?.QuestData == null) return;
 
         QuestDataSO questData = quest.QuestData;
+        if (!_questProgressService.CompleteQuest(questData.QuestId)) return;
 
-        bool completed = _questProgressService.CompleteQuest(questData.QuestId);
-        if (!completed) return;
+        bool hasInfoPages = HasCompleteInfoPages(questData) && CanShowInfoPage();
+        bool hasDialogue = _dialogueController != null && questData.CompleteDialogue != null;
 
-        Func<bool> onDialogueEnded = null;
-
-        if (HasCompleteInfoPages(questData) && CanShowInfoPage())
+        if (hasDialogue)
         {
-            onDialogueEnded = () =>
+            Func<bool> onDialogueEnded = null;
+            if (hasInfoPages)
             {
-                ShowCompleteInfoPages(context, questData);
-                return true;
-            };
-        }
-        else if (questData.IsTutorial && _tutorialProgressController != null)
-        {
-            onDialogueEnded = () => _tutorialProgressController.HandleTutorialQuestDialogueEnded();
-        }
-
-        if (_dialogueController != null && questData.CompleteDialogue != null)
-        {
-            if (onDialogueEnded != null)
-            {
-                _dialogueController.StartDialogue(questData.CompleteDialogue, EDialogueUiState.Quest, onDialogueEnded);
+                onDialogueEnded = () =>
+                {
+                    ShowCompleteInfoPages(context, questData);
+                    return true;
+                };
             }
-            else
+            else if (questData.IsTutorial && _tutorialProgressController != null)
             {
-                _dialogueController.StartDialogue(questData.CompleteDialogue, EDialogueUiState.Quest);
+                onDialogueEnded = () => _tutorialProgressController.HandleTutorialQuestDialogueEnded();
             }
-
-            return;
+            _dialogueController.StartDialogue(questData.CompleteDialogue, EDialogueUiState.Quest, onDialogueEnded);
         }
-
-        if (HasCompleteInfoPages(questData))
+        else if (hasInfoPages)
         {
             ShowCompleteInfoPages(context, questData);
-            return;
         }
-
-        HandleQuestPostProcess(context, questData);
+        else
+        {
+            HandleQuestPostProcess(context, questData);
+        }
     }
 
     private void HandleQuestPostProcess(NpcInteractionContext context, QuestDataSO questData)
