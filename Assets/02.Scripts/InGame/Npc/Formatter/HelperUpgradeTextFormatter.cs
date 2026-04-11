@@ -46,7 +46,7 @@ public class HelperUpgradeTextFormatter
         return $"현재 경험치: {exp} / {maxExp}";
     }
 
-    public static string GetRangeText(HelperDataSO data, EHelperGrade currentGrade, bool canUpgrade)
+    public static string GetRangeText(HelperDataSO data, EHelperGrade currentGrade)
     {
         if (data == null) return string.Empty;
 
@@ -54,18 +54,13 @@ public class HelperUpgradeTextFormatter
 
         if (currentGrade == EHelperGrade.Legendary)
         {
-            return $"작업 범위: {currentRange} (MAX)";
-        }
-
-        if (!canUpgrade)
-        {
-            return $"작업 범위: {currentRange}";
+            return $"작업 범위가 {currentRange}칸입니다.";
         }
 
         EHelperGrade nextGrade = GetNextGrade(currentGrade);
         int nextRange = GetRange(data, nextGrade);
 
-        return $"작업 범위: {currentRange} -> {nextRange}";
+        return $"작업 범위가 {currentRange}칸에서 {nextRange}칸으로 증가합니다.";
     }
 
     public static string GetUpgradeMessage(bool canUpgrade, string blockReason)
