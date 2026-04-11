@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -83,7 +83,11 @@ public class WaterEpicVFXAbility : HelperAbility, IWaterGradeVFX
 
         GameObject landVfx = Instantiate(_landVfxPrefab, position, Quaternion.identity);
         EpicWaterLandEffect landEffect = landVfx.GetComponentInChildren<EpicWaterLandEffect>();
-        landEffect?.Initialize(cell, isCenter, onCellLand);
+        landEffect?.Initialize(cell, isCenter, (landedCell, landedIsCenter) =>
+        {
+            PlayWaterImpactSfx(position);
+            onCellLand?.Invoke(landedCell, landedIsCenter);
+        });
         Destroy(landVfx, _landVfxDuration);
     }
 
@@ -100,5 +104,16 @@ public class WaterEpicVFXAbility : HelperAbility, IWaterGradeVFX
             StopCoroutine(_completionCoroutine);
             _completionCoroutine = null;
         }
+    }
+
+    private static void PlayWaterImpactSfx(Vector3 targetPos)
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.WaterEpicSplash,
+            spatialMode: ESpatialMode.Positional3D,
+            position: targetPos));
     }
 }

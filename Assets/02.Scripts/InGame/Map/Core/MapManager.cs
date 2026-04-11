@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
@@ -34,6 +34,7 @@ public class MapManager : MonoBehaviour
         _gridManager.LoadFromData(result.GridData);
         _gridManager.SetMaxHeight(_villageConfig.MaxHeight);
         CurrentMap = EMapType.Village;
+        PlayCurrentMapBgm();
 
         if (player != null)
             PlacePlayer(player, result.SpawnPoint);
@@ -62,6 +63,7 @@ public class MapManager : MonoBehaviour
             2 => EMapType.Dungeon2,
             _ => EMapType.Dungeon3
         };
+        PlayCurrentMapBgm();
 
         if (player != null)
             PlacePlayer(player, result.SpawnPoint);
@@ -78,6 +80,7 @@ public class MapManager : MonoBehaviour
         _gridManager.ImportSaveData(saveData);
         _gridManager.SetMaxHeight(_villageConfig.MaxHeight);
         CurrentMap = EMapType.Village;
+        PlayCurrentMapBgm();
     }
 
     private void PlacePlayer(Transform player, Vector3Int spawnPoint)
@@ -94,5 +97,21 @@ public class MapManager : MonoBehaviour
         int index = floor - 1;
         if (index < 0 || index >= _dungeonConfigs.Length) return null;
         return _dungeonConfigs[index];
+    }
+
+    private void PlayCurrentMapBgm()
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        switch (CurrentMap)
+        {
+            case EMapType.Village:
+                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Village);
+                break;
+            case EMapType.Dungeon2:
+                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Dungeon2);
+                break;
+        }
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using Photon.Pun;
@@ -122,7 +122,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         foreach (FarmTile tile in _currentFarmTiles)
         {
             FarmTile capturedTile = tile;
-            _seedVfxSpawner.SpawnTo(capturedTile);
+            _seedVfxSpawner.SpawnTo(capturedTile, () => PlaySowNormalImpactSfx(capturedTile));
             StartCoroutine(PlantAfterDelay(capturedTile, _currentSeed));
         }
     }
@@ -204,11 +204,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
                     {
                         FarmTile tile = GetFarmTile(cell);
                         if (tile != null && tile.IsReadyToSow)
+                        {
+                            PlaySowNormalImpactSfx(tile);
                             PlantSeed(tile, seed);
+                        }
                     },
                     CompleteSecondaryAction);
                 break;
             case EHelperGrade.Legendary:
+                bool playedLegendaryImpactSfx = false;
                 _secondaryPresentation.PlayLegendary(
                     _seedVfxSpawner.MouthPoint,
                     GetOrderedTargetCells(centerCell),
@@ -216,7 +220,14 @@ public class SowActionAbility : HelperAbility, IHelperAction
                     {
                         FarmTile tile = GetFarmTile(cell);
                         if (tile != null && tile.IsReadyToSow)
+                        {
+                            if (!playedLegendaryImpactSfx)
+                            {
+                                PlaySowLegendaryImpactSfx(tile);
+                                playedLegendaryImpactSfx = true;
+                            }
                             PlantSeed(tile, seed);
+                        }
                     },
                     CompleteSecondaryAction);
                 break;
@@ -824,6 +835,36 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return false;
 
         return inventory.RemoveItem(seed, 1);
+    }
+
+    private static void PlaySowNormalImpactSfx(FarmTile farmTile)
+    {
+        if (farmTile == null || SoundManager.Instance == null)
+            return;
+
+        Vector3 targetPos = farmTile.CropSpawnPoint != null
+            ? farmTile.CropSpawnPoint.position
+            : farmTile.transform.position;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.SowNormal,
+            spatialMode: ESpatialMode.Positional3D,
+            position: targetPos));
+    }
+
+    private static void PlaySowLegendaryImpactSfx(FarmTile farmTile)
+    {
+        if (farmTile == null || SoundManager.Instance == null)
+            return;
+
+        Vector3 targetPos = farmTile.CropSpawnPoint != null
+            ? farmTile.CropSpawnPoint.position
+            : farmTile.transform.position;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.SowLegendary,
+            spatialMode: ESpatialMode.Positional3D,
+            position: targetPos));
     }
 
     private void CompleteSecondaryAction()
