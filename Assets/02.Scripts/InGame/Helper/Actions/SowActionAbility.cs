@@ -25,6 +25,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private SowSecondaryVFXAbility _secondaryPresentation;
     private SowSeedVfxSpawner _seedVfxSpawner;
     private Tween _cultivateLegendarySpinHideTween;
+    private ParticleSystem[] _cultivateLegendarySpinParticles;
 
     private bool _isSecondaryActing;
     private bool _anySeedPlanted;
@@ -39,6 +40,9 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
         _secondaryPresentation = _owner.GetAbility<SowSecondaryVFXAbility>();
         _seedVfxSpawner = new SowSeedVfxSpawner(() => _mouthPoint, () => _seedVfxPrefab);
+        _cultivateLegendarySpinParticles = _cultivateLegendarySpinEffect != null
+            ? _cultivateLegendarySpinEffect.GetComponentsInChildren<ParticleSystem>(true)
+            : System.Array.Empty<ParticleSystem>();
         SetCultivateLegendarySpinEffectActive(false, true);
     }
 
@@ -634,8 +638,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (_cultivateLegendarySpinEffect == null)
             return;
 
-        ParticleSystem[] particleSystems = _cultivateLegendarySpinEffect.GetComponentsInChildren<ParticleSystem>(true);
-        foreach (ParticleSystem particleSystem in particleSystems)
+        foreach (ParticleSystem particleSystem in _cultivateLegendarySpinParticles)
         {
             if (active)
             {
