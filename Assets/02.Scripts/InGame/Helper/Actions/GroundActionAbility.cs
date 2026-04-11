@@ -120,6 +120,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
         }
 
+        if (!HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount))
+            return;
+
         if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
             return;
 
@@ -179,7 +182,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (inventory == null) return false;
 
         ItemDataSO selectedGround = _groundSelector?.SelectedGround;
-        return selectedGround != null;
+        int groundSlotIndex = _groundSelector?.SelectedGroundSlotIndex ?? -1;
+        return HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount);
     }
 
     private bool CanPlaceGroundOnCell(TerrainCell cell)
@@ -196,6 +200,20 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return true;
 
         return !farmTile.HasSeed && !farmTile.HasCrop;
+    }
+
+    private bool HasSelectedGroundAmount(PlayerInventoryAbility inventory, ItemDataSO selectedGround, int slotIndex, int requiredAmount)
+    {
+        if (inventory == null || selectedGround == null || slotIndex < 0)
+            return false;
+
+        InventorySlot slot = inventory.GetSlot(slotIndex);
+        if (slot == null || slot.IsEmpty)
+            return false;
+        if (slot.Item != selectedGround)
+            return false;
+
+        return slot.Count >= requiredAmount;
     }
 
     private bool CanRemoveCell(TerrainCell cell)
