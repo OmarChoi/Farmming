@@ -6,6 +6,8 @@ public enum EHelperAnim
     Equipped = 27,
     Jump = 10,
     WoodCutting = 5,
+    WoodEpicCutting = 4,
+    WoodLegendaryCutting = 4,
     Stun = 4,
     Harvest = 24,
     Sow = 30,
