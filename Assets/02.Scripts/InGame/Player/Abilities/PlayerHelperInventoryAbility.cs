@@ -295,8 +295,13 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void RestoreHelperState(HelperController helper)
     {
+        if (helper == null)
+            return;
+
         if (_savedStates.TryGetValue(helper.HelperId, out var state))
             helper.LoadState(state);
+
+        helper.SyncRuntimeState();
     }
 
     private void HandleMorning()
