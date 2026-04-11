@@ -528,7 +528,8 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         OnQuestCompleted?.Invoke(quest);
         RemoveQuest(questId);
 
-        SaveManager.Instance.SaveAsync().Forget();
+        int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+        SaveManager.Instance.SaveAsync(slot).Forget();
         return true;
     }
 

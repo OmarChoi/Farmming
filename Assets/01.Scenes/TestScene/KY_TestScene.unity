@@ -1446,7 +1446,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SaveManager
   _terrainGridManager: {fileID: 180339087}
   _mapManager: {fileID: 595466526}
-  _timeSystem: {fileID: 0}
+  _timeSystem: {fileID: 1769622167}
 --- !u!4 &523497020
 Transform:
   m_ObjectHideFlags: 0
@@ -5489,6 +5489,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+--- !u!114 &1769622167 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2930089380795897997, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+  m_PrefabInstance: {fileID: 1769622166}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 544fd01939d0492e94ac8164086b6854, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TimeSystem
 --- !u!1 &1782907448
 GameObject:
   m_ObjectHideFlags: 0
