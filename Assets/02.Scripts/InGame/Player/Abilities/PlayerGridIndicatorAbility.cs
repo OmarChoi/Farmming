@@ -3,6 +3,18 @@ using UnityEngine;
 
 public class PlayerGridIndicatorAbility : PlayerAbility
 {
+    private readonly struct CellSurfaceCache
+    {
+        public CellSurfaceCache(bool hasSurface, float surfaceY)
+        {
+            HasSurface = hasSurface;
+            SurfaceY = surfaceY;
+        }
+
+        public bool HasSurface { get; }
+        public float SurfaceY { get; }
+    }
+
     [SerializeField] private GameObject _indicatorPrefab;
     [SerializeField] private float _heightOffset = 0.05f;
 
@@ -13,6 +25,7 @@ public class PlayerGridIndicatorAbility : PlayerAbility
     private readonly List<GameObject> _indicatorPool = new();
     private readonly List<Vector3Int> _positionBuffer = new();
     private readonly List<TerrainCell> _cellBuffer = new();
+    private readonly Dictionary<TerrainCell, CellSurfaceCache> _cellSurfaceCache = new();
 
     private int _activeCount;
     private bool _hasIndicatorVisualBaseOffset;
@@ -210,6 +223,14 @@ public class PlayerGridIndicatorAbility : PlayerAbility
     private bool TryGetCellSurfaceY(TerrainCell cell, out float surfaceY)
     {
         surfaceY = 0f;
+        if (cell == null)
+            return false;
+
+        if (_cellSurfaceCache.TryGetValue(cell, out CellSurfaceCache cached))
+        {
+            surfaceY = cached.SurfaceY;
+            return cached.HasSurface;
+        }
 
         Collider[] colliders = cell.GetComponentsInChildren<Collider>(true);
         bool found = false;
@@ -237,6 +258,7 @@ public class PlayerGridIndicatorAbility : PlayerAbility
             found = true;
         }
 
+        _cellSurfaceCache[cell] = new CellSurfaceCache(found, surfaceY);
         return found;
     }
 
@@ -308,5 +330,10 @@ public class PlayerGridIndicatorAbility : PlayerAbility
         }
 
         _activeCount = 0;
+    }
+
+    private void OnDisable()
+    {
+        _cellSurfaceCache.Clear();
     }
 }
