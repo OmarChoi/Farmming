@@ -6,6 +6,8 @@ using UnityEngine;
 // 시각 전용이므로 모든 클라이언트에서 로컬로 동작한다 (RPC 불필요)
 public class DirectionalLightController : MonoBehaviour
 {
+    private const int NoonMinutes = 12 * GameTime.MinutesPerHour;
+    
     [Header("References")]
     [SerializeField] private Light _directionalLight;
     [SerializeField] private TimeSettingSO _timeSettings;
@@ -17,7 +19,6 @@ public class DirectionalLightController : MonoBehaviour
     [Tooltip("라이트의 Z 회전(roll)")]
     [SerializeField] private float _baseRoll = 0f;
 
-    private const int NoonMinutes = 12 * GameTime.MinutesPerHour;
 
     private bool _originalCached;
     private Color _originalColor;
@@ -32,16 +33,24 @@ public class DirectionalLightController : MonoBehaviour
         // 원본 상태 캐싱에 실패하면(참조 누락 등) 이후 로직 진입을 차단
         if (!CacheOriginalState()) return;
 
-        // 매 게임 분마다 라이트 갱신 + 현재 시간 기준으로 즉시 1회 동기화
-        TimeEvents.OnMinuteChanged += UpdateLight;
+        // 색/강도는 매 게임 분, 회전은 Update에서 프레임 단위로 처리
+        TimeEvents.OnMinuteChanged += UpdateLightColor;
         RefreshNow();
     }
 
     // 컴포넌트 비활성화 시 구독 해제 및 원본 라이트 상태 복원
     private void OnDisable()
     {
-        TimeEvents.OnMinuteChanged -= UpdateLight;
+        TimeEvents.OnMinuteChanged -= UpdateLightColor;
         RestoreOriginalState();
+    }
+
+    // 회전은 분 내부 진행도까지 반영해 매 프레임 연속으로 갱신한다
+    private void Update()
+    {
+        if (_directionalLight == null || _timeSettings == null) return;
+        GameTime currentTime = TimeEvents.CurrentDay > 0 ? TimeEvents.CurrentTime : _timeSettings.DefaultTime;
+        UpdateLightRotation(currentTime);
     }
 
     // 외부에서 강제로 현재 시간 기준 라이트 상태를 재적용할 때 사용
@@ -50,29 +59,35 @@ public class DirectionalLightController : MonoBehaviour
     {
         if (_timeSettings == null) return;
         GameTime currentTime = TimeEvents.CurrentDay > 0 ? TimeEvents.CurrentTime : _timeSettings.DefaultTime;
-        UpdateLight(currentTime);
+        UpdateLightColor(currentTime);
+        UpdateLightRotation(currentTime);
     }
 
     #endregion
 
     #region Light Update
 
-    // 주어진 시간에 맞춰 Directional Light의 색/강도/회전을 갱신한다
+    // 색/강도 보간 : SkyboxController와 동일한 커브로 from→to 키프레임 사이를 블렌딩
     // OnMinuteChanged 이벤트로 매 게임 분마다 호출된다
-    private void UpdateLight(GameTime time)
+    private void UpdateLightColor(GameTime time)
     {
         // 참조/세그먼트 유효성 확인 : 하나라도 없으면 갱신을 건너뛴다
-        if (!SkySegmentResolver.TryResolve(time, _timeSettings, _skyDatabase, 
+        if (!SkySegmentResolver.TryResolve(time, _timeSettings, _skyDatabase,
                                            out SkyKeyframeSO from, out SkyKeyframeSO to, out float segmentProgress)) return;
 
-        // 색/강도 보간 : SkyboxController와 동일한 커브로 from→to 키프레임 사이를 블렌딩
         float t = SkySegmentResolver.EvaluateCurve(from.BlendCurve, segmentProgress);
         _directionalLight.color = Color.Lerp(from.LightColor, to.LightColor, t);
         _directionalLight.intensity = Mathf.Lerp(from.LightIntensity, to.LightIntensity, t);
+    }
 
-        // 회전 계산 : 정오(12:00)를 X=90°(수직 아래)로 두고 24시간 동안 연속 1회전
-        // 06:00 ≈ 0°(지평선), 12:00 ≈ 90°(정오), 18:00 ≈ 180°(반대 지평선), 00:00 ≈ 270°(지평선 아래)
-        float pitch = ((time.TotalMinutes - NoonMinutes) / (float)GameTime.MinutesPerDay) * 360f + 90f;
+    // 회전 계산 : 정오(12:00)를 X=90°(수직 아래)로 두고 24시간 동안 연속 1회전
+    // 06:00 ≈ 0°(지평선), 12:00 ≈ 90°(정오), 18:00 ≈ 180°(반대 지평선), 00:00 ≈ 270°(지평선 아래)
+    // TimeSystem의 분 내부 진행도(0~1)를 더해 분 경계에서의 이산 점프를 제거한다
+    private void UpdateLightRotation(GameTime time)
+    {
+        float minuteFraction = TimeSystem.Instance != null ? TimeSystem.Instance.CurrentMinuteProgress : 0f;
+        float totalMinutes = time.TotalMinutes + minuteFraction;
+        float pitch = ((totalMinutes - NoonMinutes) / GameTime.MinutesPerDay) * 360f + 90f;
         _directionalLight.transform.rotation = Quaternion.Euler(pitch, _baseYaw, _baseRoll);
     }
 
