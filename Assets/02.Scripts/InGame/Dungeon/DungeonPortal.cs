@@ -5,7 +5,7 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class DungeonPortal : MonoBehaviour, INpcInteraction
+public class DungeonPortal : MonoBehaviour, IInteraction
 {
     [SerializeField] private UI_DungeonPortal _ui;
     [SerializeField] private DungeonMapConfig[] _dungeonConfigs;
@@ -31,7 +31,7 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
             MapSyncManager.Instance.OnDungeonEntryRequested -= OnMasterReceiveEntry;
     }
 
-    public void RequestInteract(Transform interactor)
+    public void RequestInteract(PlayerController player)
     {
         if (!ResolveUI())
         {
@@ -39,8 +39,8 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
             return;
         }
 
-        _playerController = interactor.GetComponentInParent<PlayerController>();
-        _playerInteraction = interactor.GetComponentInChildren<PlayerNPCInteractionAbility>();
+        _playerController = player;
+        _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
 
         _playerController?.EnterUIMode();
         _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction);
