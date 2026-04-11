@@ -36,6 +36,8 @@ public class CultivateAbility : HelperAbility
     {
         public Action OnCultivate;
         public bool Spin;
+        public Action OnSpinStart;
+        public Action OnSpinComplete;
         public bool EpicLook;
         public bool EpicLookLeft = true;
         public bool EpicLookRight = true;
@@ -132,6 +134,7 @@ public class CultivateAbility : HelperAbility
 
         if (cultivationParams.Spin)
         {
+            cultivationParams.OnSpinStart?.Invoke();
             float elapsed = 0f;
             while (elapsed < _spinDuration)
             {
@@ -139,6 +142,7 @@ public class CultivateAbility : HelperAbility
                 elapsed += Time.deltaTime;
                 yield return null;
             }
+            cultivationParams.OnSpinComplete?.Invoke();
         }
 
         Vector3 returnPosition = parentBackup != null ? parentBackup.position : _owner.PlayerOwner.transform.position;
