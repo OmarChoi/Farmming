@@ -65,10 +65,10 @@ public class NpcDialogueController : MonoBehaviour
         _uiDialogue.BindDialoguePanel(OnClickDialoguePanel);
     }
 
-    public void Open(NpcController npc, Transform interactor)
+    public void Open(NpcController npc, PlayerController player)
     {
         _currentNpc = npc;
-        _currentInteractor = interactor;
+        _currentInteractor = player.transform;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
         _anim = npc.Anim;
 
@@ -327,5 +327,23 @@ public class NpcDialogueController : MonoBehaviour
             _currentNpc,
             _currentInteractor,
             _currentInteractionComponent);
+    }
+
+    public void HideDialogueUiOnly()
+    {
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.None;
+        _onDialogueEnded = null;
+
+        if (_uiFriendshipBar != null)
+        {
+            _uiFriendshipBar.gameObject.SetActive(false);
+        }
+
+        if (_uiDialogue != null)
+        {
+            _uiDialogue.Close();
+        }
     }
 }
