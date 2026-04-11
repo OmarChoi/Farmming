@@ -8,6 +8,7 @@ public class UI_Inventory : MonoBehaviour
 {
     private const int Columns = 4;
     public static event Func<SeedItemDataSO, bool> SeedSelectionRequested;
+    public static event Func<ItemDataSO, bool> GroundSelectionRequested;
 
     [Header("참조")]
     [SerializeField] private GameObject _panel;
@@ -293,6 +294,9 @@ public class UI_Inventory : MonoBehaviour
         if (clicked.CurrentItem is SeedItemDataSO seedItem && RequestSeedSelection(seedItem))
             return;
 
+        if (clicked.CurrentItem.IsGround && RequestGroundSelection(clicked.CurrentItem))
+            return;
+
         if (!(clicked.CurrentItem is PotionDataSO)) return;
 
         bool used = _potionAbility != null && _potionAbility.TryUsePotion(clicked.SlotIndex);
@@ -317,6 +321,20 @@ public class UI_Inventory : MonoBehaviour
         foreach (Func<SeedItemDataSO, bool> handler in SeedSelectionRequested.GetInvocationList())
         {
             if (handler.Invoke(seedItem))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool RequestGroundSelection(ItemDataSO groundItem)
+    {
+        if (groundItem == null || GroundSelectionRequested == null)
+            return false;
+
+        foreach (Func<ItemDataSO, bool> handler in GroundSelectionRequested.GetInvocationList())
+        {
+            if (handler.Invoke(groundItem))
                 return true;
         }
 
