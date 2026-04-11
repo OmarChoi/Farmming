@@ -3,5 +3,6 @@ public enum EQuestRewardType
 {
     Gold,
     Item,
-    Friendship
+    Friendship,
+    HelperUnlock
 }

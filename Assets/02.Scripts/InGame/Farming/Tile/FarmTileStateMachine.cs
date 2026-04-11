@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,9 @@ public class FarmTileStateMachine : MonoBehaviour
     private Dictionary<EFarmTileStateType, IFarmTileState> _states;
 
     public EFarmTileStateType CurrentStateType => _currentState.StateType;
+
+    public static event Action<FarmTile> OnTileBecameDry;
+    public static event Action<FarmTile> OnTileBecameWet;
 
     private void Awake()
     {
@@ -24,7 +28,8 @@ public class FarmTileStateMachine : MonoBehaviour
         _currentState.EnterState(_tile);
     }
 
-    public void FarmTransition(EFarmTileStateType nextStateType)
+    // invokeEvent는 플레이어 행동에 의한 상태 변화일 때만 true입니다. (세이브/로드 등은 false)
+    public void FarmTransition(EFarmTileStateType nextStateType, bool invokeEvent = true)
     {
         if(!CanFarmTransition(nextStateType))
         {
@@ -34,6 +39,19 @@ public class FarmTileStateMachine : MonoBehaviour
 
         _currentState.ExitState(_tile);
         _currentState = _states[nextStateType];
+
+        if (invokeEvent)
+        {
+            if (nextStateType == EFarmTileStateType.FarmDry)
+            {
+                OnTileBecameDry?.Invoke(_tile);
+            }
+            else if (nextStateType == EFarmTileStateType.FarmWet)
+            {
+                OnTileBecameWet?.Invoke(_tile);
+            }
+        }
+
         _currentState.EnterState(_tile);
     }
 

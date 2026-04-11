@@ -44,7 +44,8 @@ public class NpcSpawnManager : MonoBehaviour
     {
         if (controller == null) return;
 
-        if (PhotonNetwork.IsConnected && controller.PhotonView != null)
+        PhotonView view = controller.PhotonView;
+        if (PhotonNetwork.IsConnected && view != null && view.IsMine)
         {
             PhotonNetwork.Destroy(controller.gameObject);
         }
@@ -81,35 +82,34 @@ public class NpcSpawnManager : MonoBehaviour
     private NpcController SpawnNew(NpcSpawnRequest request)
     {
         GameObject prefab = request.Prefab != null ? request.Prefab : _defaultNpcPrefab;
-        Vector3 finalPos = ResolveSpawnPosition(request.RequestedPosition);
+        Vector3 finalPosition = ResolveSpawnPosition(request.RequestedPosition);
 
-        GameObject npcObj;
-        if (PhotonNetwork.IsConnected)
+        GameObject npcObject;
+        if (PhotonNetwork.IsConnected && !request.IsLocalOnly)
         {
-            npcObj = PhotonNetwork.Instantiate(prefab.name, finalPos, request.Rotation);
+            npcObject = PhotonNetwork.Instantiate(prefab.name, finalPosition, request.Rotation);
         }
         else
         {
-            npcObj = Instantiate(prefab, finalPos, request.Rotation, request.Parent);
+            npcObject = Instantiate(prefab, finalPosition, request.Rotation, request.Parent);
         }
 
-        if (!npcObj.TryGetComponent(out NpcController controller))
+        if (!npcObject.TryGetComponent(out NpcController controller))
         {
             Debug.LogWarning($"[NpcSpawnManager] NpcController가 없습니다: {request.NpcId}");
-            Destroy(npcObj);
+            Destroy(npcObject);
             return null;
         }
 
-        controller.Initialize(request.Data);
+        controller.Initialize(request.Data, request.IsLocalOnly);
 
-        if (npcObj.TryGetComponent(out NpcMovement movement))
+        if (npcObject.TryGetComponent(out NpcMovement movement))
         {
-            movement.TeleportTo(finalPos);
+            movement.TeleportTo(finalPosition);
         }
-
-        if (!npcObj.TryGetComponent(out NpcRuntimeIdentity identity))
+        if (!npcObject.TryGetComponent(out NpcRuntimeIdentity identity))
         {
-            identity = npcObj.AddComponent<NpcRuntimeIdentity>();
+            identity = npcObject.AddComponent<NpcRuntimeIdentity>();
         }
 
         identity.Initialize(request.NpcId, controller);

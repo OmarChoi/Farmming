@@ -1,17 +1,17 @@
-
 using System.Collections.Generic;
 
 public class QuestRewardService
 {
     private readonly Dictionary<EQuestRewardType, IQuestRewardHandler> _rewardHandlers;
 
-    public QuestRewardService(PlayerInventoryAbility inventory)
+    public QuestRewardService(PlayerInventoryAbility inventory, PlayerHelperInventoryAbility HelperInventory)
     {
         _rewardHandlers = new Dictionary<EQuestRewardType, IQuestRewardHandler>
         {
             { EQuestRewardType.Gold, new QuestGoldRewardHandler() },
             { EQuestRewardType.Item, new QuestItemRewardHandler(inventory) },
-            { EQuestRewardType.Friendship, new QuestFriendshipRewardHandler() }
+            { EQuestRewardType.Friendship, new QuestFriendshipRewardHandler() },
+            { EQuestRewardType.HelperUnlock, new QuestHelperUnlockRewardHandler(HelperInventory) }
         };
     }
 

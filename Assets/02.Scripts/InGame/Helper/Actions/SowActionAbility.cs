@@ -242,8 +242,11 @@ public class SowActionAbility : HelperAbility, IHelperAction
             {
                 OnCultivate = () =>
                 {
-                    cell.TryConvertToFarm();
-                    _owner.Experience.Add(_cultivateExperience);
+                    if (cell.TryConvertToFarm())
+                    {
+                        _owner.Experience.Add(_cultivateExperience);
+                        BroadcastTerrainCellStateFromMaster(cell);
+                    }
                     ConvertLateralFarmTiles(cell);
                 }
             });
@@ -309,7 +312,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
                 OnCultivate = () =>
                 {
                     if (TryConvertToFarmWithCultivateEffect(leftCell, true))
+                    {
                         _owner.Experience.Add(_cultivateExperience);
+                        BroadcastTerrainCellStateFromMaster(leftCell);
+                    }
                     ReplayEpicSow();
                 },
                 EpicLook = true,
@@ -336,6 +342,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
                 {
                     if (TryConvertToFarmWithCultivateEffect(cell, true))
                         _owner.Experience.Add(_cultivateExperience);
+                    BroadcastTerrainCellStateFromMaster(cell);
                     ReplayEpicSow();
                 },
                 EpicLook = true,
@@ -374,7 +381,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
                 bool convertedCenter = TryConvertToFarmWithCultivateEffect(cell, true);
                 bool convertedLateral = ConvertLateralFarmTiles(cell, true);
                 if (convertedCenter || convertedLateral)
+                {
                     _owner.Experience.Add(_cultivateExperience);
+                    BroadcastTerrainCellStateFromMaster(cell);
+                }
             },
             OnSpinStart = PlayCultivateLegendarySpinEffect,
             OnSpinComplete = StopCultivateLegendarySpinEffect,
@@ -414,6 +424,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
             {
                 if (TryConvertToFarmWithCultivateEffect(cell, true))
                     _owner.Experience.Add(_cultivateExperience);
+                BroadcastTerrainCellStateFromMaster(cell);
                 ReplayEpicSow();
             }
         });
@@ -437,6 +448,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
             if (NeedsFarmConversion(lateralCell))
             {
                 anyConverted |= TryConvertToFarmWithCultivateEffect(lateralCell, spawnCultivateEffect);
+                BroadcastTerrainCellStateFromMaster(lateralCell);
             }
         }
 
@@ -553,7 +565,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
     {
         TerrainCell lateralCell = GetLateralCell(centerCell, directionSign);
         if (lateralCell != null && NeedsFarmConversion(lateralCell))
+        {
             TryConvertToFarmWithCultivateEffect(lateralCell, true);
+            BroadcastTerrainCellStateFromMaster(lateralCell);
+        }
     }
 
     private bool TryConvertToFarmWithCultivateEffect(TerrainCell cell, bool spawnCultivateEffect)
@@ -722,6 +737,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
         farmTile.PlantSeed(seed);
         _anySeedPlanted = true;
+        BroadcastFarmTileStateFromMaster(farmTile);
     }
 
     private bool HasAvailableSelectedSeed()
@@ -774,4 +790,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _owner?.EndAction();
     }
 
+    private static void BroadcastTerrainCellStateFromMaster(TerrainCell cell)
+    {
+        if (!PhotonNetwork.IsMasterClient || cell == null) return;
+        MapSyncManager.Instance?.BroadcastTerrainCellStateFromMaster(cell.GridPosition);
+    }
+
+    private static void BroadcastFarmTileStateFromMaster(FarmTile farmTile)
+    {
+        if (farmTile == null) return;
+        BroadcastTerrainCellStateFromMaster(farmTile.GetComponentInParent<TerrainCell>());
+    }
 }

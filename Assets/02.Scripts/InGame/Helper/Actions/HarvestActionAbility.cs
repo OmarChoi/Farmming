@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 // 수확 공룡: IsHarvestable -> 수확
@@ -91,6 +92,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             _owner.Experience.Add(_harvestExperience);
 
         farmTile.Interact();
+        BroadcastFarmTileStateFromMaster(farmTile);
         _animAbility?.Play(EHelperAnim.Idle);
         _owner.EndAction();
     }
@@ -178,6 +180,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
         bool success = HarvestCell(farmTile, farmTile.PlantedSeed);
         farmTile.Interact();
+        BroadcastFarmTileStateFromMaster(farmTile);
         return success;
     }
 
@@ -261,4 +264,13 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         return null;
     }
 
+    private static void BroadcastFarmTileStateFromMaster(FarmTile farmTile)
+    {
+        if (!PhotonNetwork.IsMasterClient || farmTile == null) return;
+
+        TerrainCell cell = farmTile.GetComponentInParent<TerrainCell>();
+        if (cell == null) return;
+
+        MapSyncManager.Instance?.BroadcastTerrainCellStateFromMaster(cell.GridPosition);
+    }
 }

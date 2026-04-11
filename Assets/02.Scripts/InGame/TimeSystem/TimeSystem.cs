@@ -15,6 +15,8 @@ public class TimeSystem : MonoBehaviour
 
     public int CurrentDay => _clock?.CurrentDay ?? 0;
     public GameTime CurrentTime => _clock?.CurrentTime ?? default;
+    // 다음 게임 분까지의 진행도(0~1). 분 경계 사이를 프레임 단위로 보간할 때 사용
+    public float CurrentMinuteProgress => _accumulatedGameMinutes;
     private bool IsDayTime => _clock is { IsDayTime: true };
     private int ElapsedDays => _clock?.ElapsedDays ?? 0;
 

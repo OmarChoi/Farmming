@@ -1,4 +1,5 @@
 using System.Collections;
+using Photon.Pun;
 using UnityEngine;
 
 public class LavaTileTransition : MonoBehaviour
@@ -55,5 +56,8 @@ public class LavaTileTransition : MonoBehaviour
                 cell.Data.IsIndestructible,
                 cell.Data.IsTop
             ));
+
+        if (PhotonNetwork.IsMasterClient)
+            MapSyncManager.Instance?.BroadcastTerrainCellStateFromMaster(cell.GridPosition);
     }
 }
