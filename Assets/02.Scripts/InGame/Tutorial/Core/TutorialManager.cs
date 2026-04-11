@@ -143,7 +143,7 @@ public class TutorialManager : MonoBehaviour
         if (SaveManager.Instance != null && RoomManager.Instance != null)
         {
             int slot = RoomManager.Instance.SelectedSlot;
-            SaveManager.Instance.SaveAsync(slot).Forget();
+            SaveManager.Instance.RequestPlayerOnlySave(slot);
         }
     }
 

@@ -128,17 +128,17 @@ public class DungeonPortal : MonoBehaviour, IInteraction
 
     private void OnMasterReceiveEntry(int floor)
     {
-        MasterEnterDungeon(floor).Forget();
+        MasterEnterDungeon(floor);
     }
 
-    private async UniTaskVoid MasterEnterDungeon(int floor)
+    private void MasterEnterDungeon(int floor)
     {
         DungeonSceneInit.FloorOverride = floor;
 
         if (SaveManager.Instance != null)
         {
             int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
-            await SaveManager.Instance.SaveAsync(slot);
+            SaveManager.Instance.RequestSave(slot);
         }
 
         SceneTransitionData.Type = ETransitionType.VillageToDungeon;
