@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 
-public class SaveManager : MonoBehaviour
+public class SaveManager : MonoBehaviourPun
 {
     public static SaveManager Instance { get; private set; }
 
@@ -201,7 +201,45 @@ public class SaveManager : MonoBehaviour
 
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
     }
-    
+
+    public void RequestSave(int slot = 0)
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            SaveAsync(slot).Forget();
+            return;
+        }
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            SaveAsync(slot).Forget();
+            return;
+        }
+
+        if (photonView == null)
+        {
+            Debug.LogWarning("SaveManager의 PhotonView가 없어 마스터에게 저장 요청을 보낼 수 없습니다.");
+            return;
+        }
+
+        photonView.RPC(nameof(RPC_RequestWorldSave), RpcTarget.MasterClient, slot);
+    }
+
+    [PunRPC]
+    private void RPC_RequestWorldSave(int slot, PhotonMessageInfo info)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        if (_isSaving)
+        {
+            Debug.Log($"이미 저장 중이라 저장 요청을 무시했습니다. 요청자: {info.Sender?.NickName}");
+            return;
+        }
+
+        Debug.Log($"마스터가 저장 요청을 받았습니다. 요청자: {info.Sender?.NickName}, 슬롯: {slot}");
+        SaveAsync(slot).Forget();
+    }
+
     public UniTask<bool> HasSaveAsync(int slot = 0) => _repository.HasSaveAsync(slot);
 
     public bool HasPlayerData(string playerId)
