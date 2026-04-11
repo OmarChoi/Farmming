@@ -43,7 +43,6 @@ public class GroundSelectAbility : HelperAbility
         _helperController = GetComponent<HelperController>() ?? GetComponentInParent<HelperController>();
         _groundActionAbility = GetComponent<GroundActionAbility>() ?? GetComponentInParent<GroundActionAbility>();
 
-        ResolveBubbleReferences();
         if (_bubbleRoot != null)
             _bubbleRoot.SetActive(false);
     }
@@ -217,30 +216,6 @@ public class GroundSelectAbility : HelperAbility
                && !_helperController.IsActing;
     }
 
-    private void ResolveBubbleReferences()
-    {
-        if (_bubbleRoot == null)
-        {
-            Transform bubbleTransform = FindChildRecursive(transform, "GroundBubble");
-            if (bubbleTransform != null)
-                _bubbleRoot = bubbleTransform.gameObject;
-        }
-
-        if (_groundIcon == null)
-        {
-            Transform iconTransform = FindChildRecursive(transform, "SeedIcon");
-            if (iconTransform != null)
-                _groundIcon = iconTransform.GetComponent<Image>();
-        }
-
-        if (_countText == null)
-        {
-            Transform countTransform = FindChildRecursive(transform, "SeedCountText");
-            if (countTransform != null)
-                _countText = countTransform.GetComponent<TextMeshProUGUI>();
-        }
-    }
-
     private void UpdateBubbleTransform()
     {
         if (_helperController == null || _bubbleRoot == null || _mainCamera == null)
@@ -260,24 +235,5 @@ public class GroundSelectAbility : HelperAbility
         Vector3 worldOffset = horizontalCameraRight * _sideOffset - towardCamera * _forwardOffset;
 
         _bubbleRoot.transform.position = anchorPosition + worldOffset;
-    }
-
-    private static Transform FindChildRecursive(Transform parent, string childName)
-    {
-        if (parent == null)
-            return null;
-
-        for (int i = 0; i < parent.childCount; i++)
-        {
-            Transform child = parent.GetChild(i);
-            if (child.name == childName)
-                return child;
-
-            Transform found = FindChildRecursive(child, childName);
-            if (found != null)
-                return found;
-        }
-
-        return null;
     }
 }
