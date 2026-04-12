@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -9,9 +9,10 @@ using UnityEngine.Audio;
 /// </summary>
 public class BgmPlayer : MonoBehaviour, IBgmPlayer
 {
+    private const float DefaultBgmBaseVolume = 0.2f;
     private AudioSource _source;
     private AudioMixerGroup _musicGroup;
-    private float _baseVolume = 1f;
+    private float _baseVolume = DefaultBgmBaseVolume;
     private CancellationTokenSource _fadeCts;
 
     // 초기화: BGM 전용 AudioSource를 생성한다
@@ -31,6 +32,18 @@ public class BgmPlayer : MonoBehaviour, IBgmPlayer
     // 단일 클립으로 크로스페이드 전환한다
     public async UniTask CrossfadeAsync(string clipKey, BgmTransitionConfig config, CancellationToken ct = default)
     {
+        if (_source == null)
+        {
+            Debug.LogWarning("[BgmPlayer] AudioSource가 아직 초기화되지 않아 BGM 재생을 건너뜁니다.");
+            return;
+        }
+
+        if (ResourceManager.Instance == null)
+        {
+            Debug.LogWarning($"[BgmPlayer] ResourceManager가 아직 초기화되지 않아 BGM 재생을 건너뜁니다: {clipKey}");
+            return;
+        }
+
         // 진행 중인 페이드 취소
         CancelCurrentFade();
         CancellationToken linkedCt = CreateLinkedToken(ct);
@@ -82,7 +95,7 @@ public class BgmPlayer : MonoBehaviour, IBgmPlayer
         _source.Stop();
         _source.clip = null;
         _source.loop = true;
-        _baseVolume = 1f;
+        _baseVolume = DefaultBgmBaseVolume;
     }
 
     // 일시 정지한다

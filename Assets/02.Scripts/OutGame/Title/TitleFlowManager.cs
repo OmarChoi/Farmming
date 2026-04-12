@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
@@ -19,6 +19,18 @@ public class TitleFlowManager : MonoBehaviour
     private void Awake()
     {
         SlotService = new SaveSlotService(new LocalJsonSaveRepository(), _maxSlots);
+    }
+
+    private void Start()
+    {
+        PlayStartSceneBgm().Forget();
+    }
+
+    private async UniTaskVoid PlayStartSceneBgm()
+    {
+        await UniTask.WaitUntil(() => SoundManager.Instance != null && ResourceManager.Instance != null);
+        await UniTask.Yield();
+        SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.StartScene);
     }
 
     public async UniTask RefreshSlotsAsync()

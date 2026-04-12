@@ -108,6 +108,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         if (!_owner.IsMine) return;
         TimeEvents.OnNetDayStarted += HandleMorning;
         UI_Inventory.SeedSelectionRequested += HandleSeedSelectionRequested;
+        UI_Inventory.GroundSelectionRequested += HandleGroundSelectionRequested;
         OnLocalPlayerReady?.Invoke(this);
     }
 
@@ -115,7 +116,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         TimeEvents.OnNetDayStarted -= HandleMorning;
         if (_owner != null && _owner.IsMine)
+        {
             UI_Inventory.SeedSelectionRequested -= HandleSeedSelectionRequested;
+            UI_Inventory.GroundSelectionRequested -= HandleGroundSelectionRequested;
+        }
     }
 
     private void Update()
@@ -291,8 +295,13 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void RestoreHelperState(HelperController helper)
     {
+        if (helper == null)
+            return;
+
         if (_savedStates.TryGetValue(helper.HelperId, out var state))
             helper.LoadState(state);
+
+        helper.SyncRuntimeState();
     }
 
     private void HandleMorning()
@@ -525,6 +534,27 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 #if UNITY_EDITOR
         if (selected)
             Debug.Log($"Sow seed selected: {seedItem.DisplayName}");
+#endif
+
+        return selected;
+    }
+
+    private bool HandleGroundSelectionRequested(ItemDataSO groundItem)
+    {
+        if (groundItem == null || _activeMainHelper == null)
+            return false;
+        if (_activeMainHelper.GetAbility<GroundActionAbility>() == null)
+            return false;
+
+        GroundSelectAbility groundSelectAbility = _activeMainHelper.GetAbility<GroundSelectAbility>();
+        if (groundSelectAbility == null)
+            return false;
+
+        bool selected = groundSelectAbility.TrySelectGround(groundItem);
+
+#if UNITY_EDITOR
+        if (selected)
+            Debug.Log($"Ground selected: {groundItem.DisplayName}");
 #endif
 
         return selected;
