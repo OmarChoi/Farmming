@@ -246,49 +246,111 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         Photon.Realtime.Player rewardTarget,
         bool broadcastAnimationToOthers)
     {
-        if (cell == null || !CanRemoveCell(cell))
+        if (!CanExecutePrimaryDig(cell))
             return;
 
-        ETileType removedTileType = cell.Data.TileType;
-        bool isFarmLand = cell.Data.ObjectType == EGridObjectType.FarmLand;
+        ETileType removedTileType = GetRemovedTileType(cell);
+        bool isFarmLand = IsFarmLandCell(cell);
+        TerrainCell detachedCell = DetachCellForPrimaryDig(cell, isFarmLand);
+        if (detachedCell == null)
+            return;
 
-        if (isFarmLand)
-        {
-            cell.Data.RemoveObject();
-            cell.Refresh();
-        }
+        StartPrimaryDigAction();
+        PlayPrimaryDigAnimation(detachedCell);
+        SyncPrimaryDigState(detachedCell.GridPosition, cell.GridPosition, isFarmLand, broadcastAnimationToOthers);
+        HandlePrimaryDigRewards(removedTileType, grantLocalReward, rewardTarget);
+        FinishPrimaryDigAction();
+    }
+
+    private bool CanExecutePrimaryDig(TerrainCell cell)
+    {
+        return cell != null && CanRemoveCell(cell);
+    }
+
+    private static ETileType GetRemovedTileType(TerrainCell cell)
+    {
+        return cell.Data.TileType;
+    }
+
+    private static bool IsFarmLandCell(TerrainCell cell)
+    {
+        return cell.Data.ObjectType == EGridObjectType.FarmLand;
+    }
+
+    private TerrainCell DetachCellForPrimaryDig(TerrainCell cell, bool isFarmLand)
+    {
+        PrepareFarmLandForPrimaryDig(cell, isFarmLand);
 
         TerrainCell detachedCell = TerrainGridManager.Instance.TryDetachForAnimation(cell.GridPosition, _canDigLevel);
         if (detachedCell == null)
-        {
-            if (isFarmLand)
-            {
-                cell.Data.SetObject(EGridObjectType.FarmLand);
-                cell.Refresh();
-            }
+            RestoreFarmLandAfterFailedDetach(cell, isFarmLand);
+
+        return detachedCell;
+    }
+
+    private static void PrepareFarmLandForPrimaryDig(TerrainCell cell, bool isFarmLand)
+    {
+        if (!isFarmLand)
             return;
-        }
 
+        cell.Data.RemoveObject();
+        cell.Refresh();
+    }
+
+    private static void RestoreFarmLandAfterFailedDetach(TerrainCell cell, bool isFarmLand)
+    {
+        if (!isFarmLand)
+            return;
+
+        cell.Data.SetObject(EGridObjectType.FarmLand);
+        cell.Refresh();
+    }
+
+    private void StartPrimaryDigAction()
+    {
         _owner.BeginAction();
+    }
 
+    private void PlayPrimaryDigAnimation(TerrainCell detachedCell)
+    {
         AnimateCellToMouth(detachedCell);
-        BroadcastGroundStateFromMaster(detachedCell.GridPosition);
+    }
+
+    private void SyncPrimaryDigState(
+        Vector3Int detachedGridPosition,
+        Vector3Int originalGridPosition,
+        bool isFarmLand,
+        bool broadcastAnimationToOthers)
+    {
+        BroadcastGroundStateFromMaster(detachedGridPosition);
 
         if (broadcastAnimationToOthers)
-            BroadcastDigAnimation(cell.GridPosition, isFarmLand);
+            BroadcastDigAnimation(originalGridPosition, isFarmLand);
+    }
 
+    private void HandlePrimaryDigRewards(
+        ETileType removedTileType,
+        bool grantLocalReward,
+        Photon.Realtime.Player rewardTarget)
+    {
         if (grantLocalReward)
             GrantDigReward(removedTileType, _getDirtAmount);
 
         if (rewardTarget != null)
-        {
-            _owner.PhotonView.RPC(
-                nameof(RPC_GrantDigReward),
-                rewardTarget,
-                (int)removedTileType,
-                _getDirtAmount);
-        }
+            GrantDigRewardToRemotePlayer(removedTileType, rewardTarget);
+    }
 
+    private void GrantDigRewardToRemotePlayer(ETileType removedTileType, Photon.Realtime.Player rewardTarget)
+    {
+        _owner.PhotonView.RPC(
+            nameof(RPC_GrantDigReward),
+            rewardTarget,
+            (int)removedTileType,
+            _getDirtAmount);
+    }
+
+    private void FinishPrimaryDigAction()
+    {
         _owner.EndAction();
     }
 
