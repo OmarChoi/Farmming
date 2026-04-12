@@ -17,6 +17,13 @@ public class SaveManager : MonoBehaviourPun
     private const float RemoteSaveTimeout = 5f;
     private bool _isSaving;
 
+    private bool _pendingWorldSave;
+    private bool _pendingPlayerOnlySave;
+
+    private string _pendingPlayerId;
+    private PlayerSaveData _pendingPlayerSave;
+    private int _pendingSlot;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -84,15 +91,17 @@ public class SaveManager : MonoBehaviourPun
 
     public async UniTask SaveAsync(int slot = 0)
     {
-        if (_isSaving)
-        {
-            Debug.LogWarning("이미 저장 중입니다.");
-            return;
-        }
-
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
         {
             Debug.LogWarning("저장은 마스터 클라이언트만 실행할 수 있습니다.");
+            return;
+        }
+
+        if (_isSaving)
+        {
+            _pendingWorldSave = true;
+            _pendingSlot = slot;
+            Debug.LogWarning("이미 저장 중입니다.");
             return;
         }
 
@@ -120,6 +129,7 @@ public class SaveManager : MonoBehaviourPun
             foreach (var kvp in _players)
             {
                 var player = kvp.Value;
+                if (player == null) continue;
                 if (player.IsMine)
                 {
                     data.Players.Add(player.ExportSaveData(kvp.Key));
@@ -153,6 +163,7 @@ public class SaveManager : MonoBehaviourPun
 
                 foreach (var saved in _loadedData.Players)
                 {
+                    if (saved == null) continue;
                     if (!onlineIds.Contains(saved.PlayerId))
                         data.Players.Add(saved);
                 }
@@ -176,6 +187,34 @@ public class SaveManager : MonoBehaviourPun
         finally
         {
             _isSaving = false;
+            await FlushPendingSaves();
+        }
+    }
+
+    private async UniTask FlushPendingSaves()
+    {
+        if (_isSaving) return;
+
+        if (_pendingWorldSave)
+        {
+            _pendingWorldSave = false;
+            int slot = _pendingSlot;
+            await SaveAsync(slot);
+            return;
+        }
+
+        if (_pendingPlayerOnlySave)
+        {
+            _pendingPlayerOnlySave = false;
+
+            string playerId = _pendingPlayerId;
+            PlayerSaveData playerSave = _pendingPlayerSave;
+            int slot = _pendingSlot;
+
+            _pendingPlayerId = null;
+            _pendingPlayerSave = null;
+
+            await SavePlayerOnlyAsync(playerId, playerSave, slot);
         }
     }
 
@@ -232,7 +271,9 @@ public class SaveManager : MonoBehaviourPun
 
         if (_isSaving)
         {
-            Debug.Log($"이미 저장 중이라 저장 요청을 무시했습니다. 요청자: {info.Sender?.NickName}");
+            _pendingWorldSave = true;
+            _pendingSlot = slot;
+            Debug.Log($"저장 중이라 월드 저장 요청을 대기열에 보관했습니다. 요청자: {info.Sender?.NickName}");
             return;
         }
 
@@ -266,28 +307,39 @@ public class SaveManager : MonoBehaviourPun
 
     public async UniTask SavePlayerOnlyAsync(string playerId, PlayerSaveData playerSave, int slot = 0)
     {
-        if (_isSaving) return;
         if (string.IsNullOrEmpty(playerId) || playerSave == null) return;
+
+        if (_isSaving)
+        {
+            _pendingPlayerOnlySave = true;
+            _pendingPlayerId = playerId;
+            _pendingPlayerSave = playerSave;
+            _pendingSlot = slot;
+            return;
+        }
+        if (_loadedData == null)
+        {
+            Debug.Log("기반 저장 데이터가 없어 전체 저장으로 전환합니다.");
+            await SaveAsync(slot);
+            return;
+        }
 
         _isSaving = true;
 
         try
         {
-            SaveData data = _loadedData ?? new SaveData();
+            if (_loadedData.Players == null)
+                _loadedData.Players = new List<PlayerSaveData>();
 
-            if (data.Players == null)
-                data.Players = new List<PlayerSaveData>();
+            _loadedData.Players.RemoveAll(p => p != null && p.PlayerId == playerId);
+            _loadedData.Players.Add(playerSave);
 
-            data.Players.RemoveAll(p => p != null && p.PlayerId == playerId);
-            data.Players.Add(playerSave);
-
-            _loadedData = data;
-
-            await _repository.SaveAsync(data, slot);
+            await _repository.SaveAsync(_loadedData, slot);
         }
         finally
         {
             _isSaving = false;
+            await FlushPendingSaves();
         }
     }
 
