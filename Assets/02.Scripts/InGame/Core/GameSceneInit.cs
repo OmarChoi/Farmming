@@ -39,9 +39,7 @@ public class GameSceneInit : MonoBehaviour
                 PlayerController localPlayer = SpawnPlayer(spawnPos);
                 CacheVillageData();
 
-                SaveManager.Instance?.EnsureBaseLoadedData();
-                SaveManager.Instance?.MarkLoadCompleted();
-                QuestManager.Instance?.MarkLoaded();
+                QuestDataMarkLoaded();
                 TryStartTutorial(localPlayer);
 
                 var props = new Hashtable { { PropTerrainReady, true } };
@@ -85,9 +83,7 @@ public class GameSceneInit : MonoBehaviour
             VillageCache.RestorePlayerPositions();
             LoadingProgress.Value = 0.6f;
 
-            SaveManager.Instance?.EnsureBaseLoadedData();
-            SaveManager.Instance?.MarkLoadCompleted();
-            QuestManager.Instance?.MarkLoaded();
+            QuestDataMarkLoaded();
 
             ReturningFromDungeon = false;
 
@@ -205,9 +201,7 @@ public class GameSceneInit : MonoBehaviour
 
             VillageCache.RestorePlayerPositions();
 
-            SaveManager.Instance?.EnsureBaseLoadedData();
-            SaveManager.Instance?.MarkLoadCompleted();
-            QuestManager.Instance?.MarkLoaded();
+            QuestDataMarkLoaded();
         }
         else
         {
@@ -474,5 +468,12 @@ public class GameSceneInit : MonoBehaviour
     {
         if (!ShouldStartTutorial(player)) return;
         TutorialManager.Instance.TryStartTutorial(player);
+    }
+
+    private void QuestDataMarkLoaded()
+    {
+        SaveManager.Instance?.EnsureBaseLoadedData();
+        SaveManager.Instance?.MarkLoadCompleted();
+        QuestManager.Instance?.MarkLoaded();
     }
 }

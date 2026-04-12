@@ -169,7 +169,7 @@ public class TutorialProgressController : MonoBehaviour
 
     private async UniTaskVoid AcceptNextTutorialQuestDeferred(QuestDataSO questData)
     {
-        await UniTask.Yield();
+        await UniTask.Yield(this.GetCancellationTokenOnDestroy());
         TryAcceptTutorialQuest(questData);
     }
 
