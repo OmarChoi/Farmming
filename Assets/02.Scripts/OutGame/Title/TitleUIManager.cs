@@ -106,4 +106,9 @@ public class TitleUIManager : MonoBehaviour
         _roomPanel.SetActive(panel == ETitlePanel.Room);
         _connectingPanel.SetActive(panel == ETitlePanel.Connecting);
     }
+
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
 }
