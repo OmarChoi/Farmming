@@ -13,6 +13,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _iceSpawnOffset = 17.5f;
     [SerializeField] private float _secondaryIceOpenDelay = 0.2f;
     [SerializeField] private float _secondaryIceCompleteDelay = 1.0f;
+    [SerializeField] private float _waterOpenFallbackDelay = 0.4f;
+    [SerializeField] private float _waterResetFallbackDelay = 5f;
     [SerializeField] private int _waterExperience = 10;
 
     private static readonly int WaterStateHash = Animator.StringToHash("Water");
@@ -31,6 +33,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     private bool _waterOpened;
     private TerrainCell _currentCell;
     private Coroutine _secondaryIceCoroutine;
+    private Coroutine _waterOpenFallbackCoroutine;
+    private Coroutine _waterResetFallbackCoroutine;
 
     public float GetSecondaryCost() => _secondaryEnergyCost;
 
@@ -110,6 +114,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _currentCell = cell;
 
         _owner.BeginAction();
+        StartWaterFallbacks(isSecondary);
 
         if (isSecondary)
         {
@@ -147,6 +152,7 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         if (_waterOpened) return;
 
         _waterOpened = true;
+        StopWaterOpenFallback();
 
         Vector3 spawnPos = _mouthPoint != null ? _mouthPoint.position : _owner.transform.position;
 
@@ -223,6 +229,8 @@ public class WaterActionAbility : HelperAbility, IHelperAction
     {
         if (!_isActing) return;
 
+        CancelWaterFallbacks();
+
         if (_secondaryIceCoroutine != null)
         {
             StopCoroutine(_secondaryIceCoroutine);
@@ -238,6 +246,61 @@ public class WaterActionAbility : HelperAbility, IHelperAction
         _currentCell = null;
         _animAbility?.Play(EHelperAnim.Idle);
         _owner?.EndAction();
+    }
+
+    private void StartWaterFallbacks(bool isSecondary)
+    {
+        CancelWaterFallbacks();
+
+        float openDelay = isSecondary
+            ? _secondaryIceOpenDelay + 0.25f
+            : Mathf.Max(0.05f, _waterOpenFallbackDelay);
+        float resetDelay = isSecondary
+            ? _secondaryIceOpenDelay + _secondaryIceCompleteDelay + 1f
+            : Mathf.Max(openDelay + 0.5f, _waterResetFallbackDelay);
+
+        _waterOpenFallbackCoroutine = StartCoroutine(WaterOpenFallbackCoroutine(openDelay));
+        _waterResetFallbackCoroutine = StartCoroutine(WaterResetFallbackCoroutine(resetDelay));
+    }
+
+    private IEnumerator WaterOpenFallbackCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (_isActing && !_waterOpened)
+            WaterOpen();
+    }
+
+    private IEnumerator WaterResetFallbackCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (_isActing)
+            ResetState();
+    }
+
+    private void StopWaterOpenFallback()
+    {
+        if (_waterOpenFallbackCoroutine == null)
+            return;
+
+        StopCoroutine(_waterOpenFallbackCoroutine);
+        _waterOpenFallbackCoroutine = null;
+    }
+
+    private void CancelWaterFallbacks()
+    {
+        if (_waterOpenFallbackCoroutine != null)
+        {
+            StopCoroutine(_waterOpenFallbackCoroutine);
+            _waterOpenFallbackCoroutine = null;
+        }
+
+        if (_waterResetFallbackCoroutine != null)
+        {
+            StopCoroutine(_waterResetFallbackCoroutine);
+            _waterResetFallbackCoroutine = null;
+        }
     }
 
     private IWaterGradeVFX GetCurrentGradeVFX() => CurrentGrade switch
