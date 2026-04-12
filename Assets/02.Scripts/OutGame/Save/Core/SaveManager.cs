@@ -399,6 +399,11 @@ public class SaveManager : MonoBehaviourPun
 
         return null;
     }
+    public void EnsureBaseLoadedData()
+    {
+        if (_loadedData != null) return;
+        _loadedData = new SaveData();
+    }
 
     public void MarkLoadCompleted()
     {
