@@ -18,12 +18,15 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     private const int CHUNK_SIZE = 4096;
     private const int SEND_INTERVAL_MS = 50;
     private const string PropTerrainReady = "tRdy";
+    private const string PropVillageCacheReady = "vCache";
+    private const float VILLAGE_CACHE_READY_TIMEOUT_SECONDS = 3f;
 
     private readonly Dictionary<int, byte[][]> _pendingChunks = new();
     private readonly List<Photon.Realtime.Player> _pendingMapRequests = new();
     private readonly HashSet<int> _pendingTerrainReplayActors = new();
     private readonly Dictionary<Vector3Int, TerrainCellDelta> _pendingTerrainReplayDeltas = new();
     private bool _mapReady = true;
+    private int _villageCacheSyncId;
 
     public event Action OnMapSynced;
 
@@ -41,6 +44,9 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
             return;
         }
         Instance = this;
+
+        if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient && GameSceneInit.ReturningFromDungeon)
+            _mapReady = false;
     }
 
     /// 마스터가 특정 플레이어에게 현재 맵 데이터를 전송
@@ -93,17 +99,35 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     }
 
     /// 마스터가 모든 클라이언트에게 맵 전송
-    public void BroadcastMap()
+    public void BroadcastMap(bool includeAll = true)
     {
         if (!PhotonNetwork.IsMasterClient) return;
         _mapReady = true;
 
         // 맵 로딩 중 도착한 요청을 개별 전송 (씬 전환 타이밍에 브로드캐스트가 누락될 수 있으므로)
+        var individuallySentActors = new HashSet<int>();
         foreach (var player in _pendingMapRequests)
+        {
+            if (player == null) continue;
+            individuallySentActors.Add(player.ActorNumber);
             SendMapTo(player);
+        }
         _pendingMapRequests.Clear();
 
-        BroadcastChunksAsync().Forget();
+        if (!includeAll) return;
+
+        if (individuallySentActors.Count == 0)
+        {
+            BroadcastChunksAsync().Forget();
+            return;
+        }
+
+        foreach (Player player in PhotonNetwork.PlayerListOthers)
+        {
+            if (player == null) continue;
+            if (individuallySentActors.Contains(player.ActorNumber)) continue;
+            SendMapTo(player);
+        }
     }
 
     private async UniTaskVoid SendChunksAsync(Photon.Realtime.Player target)
@@ -161,7 +185,10 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
             Terrain = _terrainGridManager.ExportSaveData(),
             Buildings = BuildingManager.Instance != null
                 ? BuildingManager.Instance.ExportBuildings()
-                : new System.Collections.Generic.List<BuildingSaveData>()
+                : new System.Collections.Generic.List<BuildingSaveData>(),
+            Village = VillageLevelManager.Instance != null
+                ? VillageLevelManager.Instance.ExportSaveData()
+                : null
         };
         string json = JsonUtility.ToJson(syncData);
         byte[] raw = Encoding.UTF8.GetBytes(json);
@@ -198,6 +225,11 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RPC_MapSyncEnd(int syncId)
     {
+        ApplyMapSyncEndAsync(syncId).Forget();
+    }
+
+    private async UniTaskVoid ApplyMapSyncEndAsync(int syncId)
+    {
         if (!_pendingChunks.TryGetValue(syncId, out var chunks)) return;
 
         int totalLength = 0;
@@ -218,10 +250,15 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         var syncData = JsonUtility.FromJson<MapSyncData>(json);
 
         _terrainGridManager.ImportSaveData(syncData.Terrain);
+        
+        if (syncData.Village != null && VillageLevelManager.Instance != null)
+        {
+            VillageLevelManager.Instance.ImportSaveData(syncData.Village);
+        }
             
         if (syncData.Buildings != null && syncData.Buildings.Count > 0 && BuildingManager.Instance != null)
         {
-            BuildingManager.Instance.ImportBuildings(syncData.Buildings).Forget();
+            await BuildingManager.Instance.ImportBuildings(syncData.Buildings);
         }
 
         Debug.Log($"맵 동기화 완료 (압축 {compressed.Length} bytes)");
@@ -270,6 +307,11 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     {
         if (PhotonNetwork.IsMasterClient)
         {
+            TerrainGridManager gridManager = _terrainGridManager != null
+                ? _terrainGridManager
+                : TerrainGridManager.Instance;
+            if (gridManager != null)
+                VillageCache.Capture(gridManager);
             OnDungeonEntryRequested?.Invoke(floor);
             return;
         }
@@ -280,12 +322,65 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
     private void RPC_RequestDungeonEntry(int floor)
     {
         if (!PhotonNetwork.IsMasterClient) return;
+        TerrainGridManager gridManager = _terrainGridManager != null
+            ? _terrainGridManager
+            : TerrainGridManager.Instance;
+        if (gridManager != null)
+            VillageCache.Capture(gridManager);
         OnDungeonEntryRequested?.Invoke(floor);
     }
 
     // === 마을 맵 동기화 ===
 
     /// 클라이언트가 GameScene에 도착한 후 마스터에게 맵 요청
+    public async UniTask PrepareVillageCacheForDungeonEntry()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        int syncId = ++_villageCacheSyncId;
+        photonView.RPC(nameof(RPC_CaptureVillageCacheForDungeonEntry), RpcTarget.All, syncId);
+
+        float timeout = Time.realtimeSinceStartup + VILLAGE_CACHE_READY_TIMEOUT_SECONDS;
+        await UniTask.WaitUntil(() =>
+            AllPlayersVillageCacheReady(syncId) || Time.realtimeSinceStartup > timeout);
+
+        if (!AllPlayersVillageCacheReady(syncId))
+            Debug.LogWarning("[MapSyncManager] Village cache capture timed out before dungeon entry");
+    }
+
+    [PunRPC]
+    private void RPC_CaptureVillageCacheForDungeonEntry(int syncId)
+    {
+        VillageCache.CapturePlayerPositions();
+
+        TerrainGridManager gridManager = _terrainGridManager != null
+            ? _terrainGridManager
+            : TerrainGridManager.Instance;
+        if (gridManager != null)
+            VillageCache.Capture(gridManager);
+
+        if (PhotonNetwork.LocalPlayer == null) return;
+
+        var props = new Hashtable
+        {
+            { PropVillageCacheReady, syncId }
+        };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+    }
+
+    private static bool AllPlayersVillageCacheReady(int syncId)
+    {
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            if (player == null) return false;
+            if (!player.CustomProperties.TryGetValue(PropVillageCacheReady, out object value)) return false;
+            if (value is int readyId && readyId == syncId) continue;
+            return false;
+        }
+
+        return true;
+    }
+
     public void RequestMapFromMaster()
     {
         if (PhotonNetwork.IsMasterClient) return;

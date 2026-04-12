@@ -41,6 +41,9 @@ public class UI_VillageState : UIBase
 
     protected override void OnOpen()
     {
+        if (VillageLevelManager.Instance == null) return;
+        
+        VillageLevelManager.Instance.OnVillageStateChanged -= UpdateState;
         VillageLevelManager.Instance.OnVillageStateChanged += UpdateState;
         UpdateState();
     }
@@ -56,6 +59,8 @@ public class UI_VillageState : UIBase
     private void UpdateState()
     {
         VillageLevelManager villageManager = VillageLevelManager.Instance;
+        if (villageManager == null) return;
+
         int currentLevel = villageManager.CurrentLevel;
 
         _currentLevelText.SetText(LevelFormat, currentLevel);
@@ -72,7 +77,7 @@ public class UI_VillageState : UIBase
 
         LevelUpRequirement needs = villageManager.LevelUpRequirement;
         int currentVitality = villageManager.CurrentVitality;
-        int currentBuilding = BuildingManager.Instance.BuildingCount;
+        int currentBuilding = BuildingManager.Instance != null ? BuildingManager.Instance.BuildingCount : 0;
 
         _vitalityGaugeText.SetText(GaugeFormat, currentVitality, needs.VitalityThreshold);
         _vitalityGaugeImage.DOFillAmount(needs.GetVitalityRatio(currentVitality), _gaugeDuration).SetEase(Ease.OutCubic).SetUpdate(true);
