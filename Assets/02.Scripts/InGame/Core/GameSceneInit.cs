@@ -73,12 +73,23 @@ public class GameSceneInit : MonoBehaviour
         PlayerController localPlayer = null;
 
         // 던전 복귀 시 캐시에서 마을 복원
-        if (ReturningFromDungeon && VillageCache.HasCache)
+        if (ReturningFromDungeon)
         {
-            _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            if (VillageCache.HasCache)
+            {
+                _mapManager.ImportVillageSaveData(VillageCache.Terrain);
 
-            if (VillageCache.Buildings != null && BuildingManager.Instance != null)
-                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+                if (VillageCache.Buildings != null && BuildingManager.Instance != null)
+                    await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+            }
+            else if (!await SyncMapFromMaster())
+            {
+                Debug.LogError("[GameSceneInit] Returning map sync failed and no local village cache exists");
+                LoadingProgress.Value = 1f;
+                LoadingProgress.Complete();
+                UnfreezeExistingPlayers();
+                return;
+            }
 
             VillageCache.RestorePlayerPositions();
             LoadingProgress.Value = 0.6f;
@@ -86,6 +97,7 @@ public class GameSceneInit : MonoBehaviour
             QuestDataMarkLoaded();
 
             ReturningFromDungeon = false;
+            CacheVillageData();
 
             await WaitForAllTerrainReady();
 
@@ -96,17 +108,7 @@ public class GameSceneInit : MonoBehaviour
         }
 
         // 일반 입장: 마스터로부터 맵 동기화
-        if (!PhotonNetwork.InRoom) return;
-        if (MapSyncManager.Instance == null) return;
-
-        bool synced = false;
-        MapSyncManager.Instance.OnMapSynced += () => synced = true;
-        MapSyncManager.Instance.RequestMapFromMaster();
-
-        float timeout = Time.realtimeSinceStartup + MapSyncTimeoutSeconds;
-        await UniTask.WaitUntil(() => synced || Time.realtimeSinceStartup > timeout);
-
-        if (!synced)
+        if (!await SyncMapFromMaster())
         {
             Debug.LogError("[GameSceneInit] Map sync failed");
             LoadingProgress.Value = 1f;
@@ -128,6 +130,27 @@ public class GameSceneInit : MonoBehaviour
         await WaitForAllTerrainReady();
         TryStartTutorial(localPlayer);
         OnCompleteInitialize?.Invoke();
+    }
+
+    private async UniTask<bool> SyncMapFromMaster()
+    {
+        if (!PhotonNetwork.InRoom) return false;
+        MapSyncManager mapSyncManager = MapSyncManager.Instance;
+        if (mapSyncManager == null) return false;
+
+        bool synced = false;
+        void HandleMapSynced() => synced = true;
+
+        mapSyncManager.OnMapSynced += HandleMapSynced;
+        mapSyncManager.RequestMapFromMaster();
+
+        float timeout = Time.realtimeSinceStartup + MapSyncTimeoutSeconds;
+        await UniTask.WaitUntil(() => synced || Time.realtimeSinceStartup > timeout);
+
+        if (mapSyncManager != null)
+            mapSyncManager.OnMapSynced -= HandleMapSynced;
+
+        return synced;
     }
 
     private Vector3 FindSpawnPosition()
@@ -237,6 +260,9 @@ public class GameSceneInit : MonoBehaviour
 
         if (returning && VillageCache.HasCache)
         {
+            if (MapSyncManager.Instance != null)
+                MapSyncManager.Instance.HoldRequests();
+
             // 캐시에서 마을 복원 (파일 I/O 없이)
             _mapManager.ImportVillageSaveData(VillageCache.Terrain);
             
@@ -257,6 +283,10 @@ public class GameSceneInit : MonoBehaviour
 
             ReturningFromDungeon = false;
             localPlayer = FindLocalPlayer();
+            CacheVillageData();
+
+            if (MapSyncManager.Instance != null)
+                MapSyncManager.Instance.BroadcastMap(false);
         }
         else
         {
