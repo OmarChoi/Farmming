@@ -39,6 +39,7 @@ public class GameSceneInit : MonoBehaviour
                 PlayerController localPlayer = SpawnPlayer(spawnPos);
                 CacheVillageData();
 
+                SaveManager.Instance?.EnsureBaseLoadedData();
                 SaveManager.Instance?.MarkLoadCompleted();
                 QuestManager.Instance?.MarkLoaded();
                 TryStartTutorial(localPlayer);
@@ -84,6 +85,7 @@ public class GameSceneInit : MonoBehaviour
             VillageCache.RestorePlayerPositions();
             LoadingProgress.Value = 0.6f;
 
+            SaveManager.Instance?.EnsureBaseLoadedData();
             SaveManager.Instance?.MarkLoadCompleted();
             QuestManager.Instance?.MarkLoaded();
 
@@ -203,6 +205,7 @@ public class GameSceneInit : MonoBehaviour
 
             VillageCache.RestorePlayerPositions();
 
+            SaveManager.Instance?.EnsureBaseLoadedData();
             SaveManager.Instance?.MarkLoadCompleted();
             QuestManager.Instance?.MarkLoaded();
         }
@@ -253,6 +256,7 @@ public class GameSceneInit : MonoBehaviour
             
             VillageCache.RestorePlayerPositions();
 
+            SaveManager.Instance?.EnsureBaseLoadedData();
             SaveManager.Instance?.MarkLoadCompleted();
             RegisterExistingPlayersOnly();
             QuestManager.Instance?.MarkLoaded();
