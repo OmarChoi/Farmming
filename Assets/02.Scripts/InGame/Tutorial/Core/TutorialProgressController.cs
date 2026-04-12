@@ -1,5 +1,6 @@
-using UnityEngine;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class TutorialProgressController : MonoBehaviour
 {
@@ -155,17 +156,21 @@ public class TutorialProgressController : MonoBehaviour
             return false;
         }
 
-        // 아직 진행 중인 튜토리얼 퀘스트가 남아 있으면 종료 처리합니다.
         if (currentQuest != null) return false;
 
-        // 진행 중인 퀘스트는 없고, 다음 퀘스트를 받을 수 있으면 이어서 수락합니다.
         if (nextQuest != null)
         {
-            TryAcceptTutorialQuest(nextQuest);
+            AcceptNextTutorialQuestDeferred(nextQuest).Forget();
             return true;
         }
 
         return false;
+    }
+
+    private async UniTaskVoid AcceptNextTutorialQuestDeferred(QuestDataSO questData)
+    {
+        await UniTask.Yield();
+        TryAcceptTutorialQuest(questData);
     }
 
     private void TryAcceptTutorialQuest(QuestDataSO questData)

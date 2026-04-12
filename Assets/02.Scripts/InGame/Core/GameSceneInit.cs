@@ -39,6 +39,7 @@ public class GameSceneInit : MonoBehaviour
                 PlayerController localPlayer = SpawnPlayer(spawnPos);
                 CacheVillageData();
 
+                SaveManager.Instance?.MarkLoadCompleted();
                 QuestManager.Instance?.MarkLoaded();
                 TryStartTutorial(localPlayer);
 
@@ -218,7 +219,12 @@ public class GameSceneInit : MonoBehaviour
 
         var existing = FindAnyObjectByType<PlayerController>();
         if (existing != null && SaveManager.Instance != null)
-            SaveManager.Instance.RegisterPlayer(existing.PlayerId, existing);
+        {
+            if (VillageCache.HasCache)
+                SaveManager.Instance.RegisterPlayerOnly(existing.PlayerId, existing);
+            else
+                SaveManager.Instance.RegisterPlayer(existing.PlayerId, existing);
+        }
 
         ReturningFromDungeon = false;
         UnfreezeExistingPlayers();
@@ -248,7 +254,7 @@ public class GameSceneInit : MonoBehaviour
             VillageCache.RestorePlayerPositions();
 
             SaveManager.Instance?.MarkLoadCompleted();
-            RestoreExistingPlayers();
+            RegisterExistingPlayersOnly();
             QuestManager.Instance?.MarkLoaded();
 
             ReturningFromDungeon = false;
@@ -395,6 +401,16 @@ public class GameSceneInit : MonoBehaviour
         {
             if (p.IsMine)
                 p.LockAction();
+        }
+    }
+
+    private void RegisterExistingPlayersOnly()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.RegisterPlayerOnly(player.PlayerId, player);
         }
     }
 

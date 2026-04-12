@@ -40,10 +40,19 @@ public class SaveManager : MonoBehaviourPun
         _isLoadCompleted = false;
     }
 
+    // 등록만 합니다. 복원은 하지 않습니다.
+    public void RegisterPlayerOnly(string playerId, PlayerController player)
+    {
+        if (string.IsNullOrEmpty(playerId) || player == null) return;
+        _players[playerId] = player;
+    }
+
+    // 등록과 동시에 복원을 시도합니다.
     public void RegisterPlayer(string playerId, PlayerController player)
     {
-        _players[playerId] = player;
+        if (string.IsNullOrEmpty(playerId) || player == null) return;
 
+        _players[playerId] = player;
         TryRestorePlayer(playerId, player);
 
         bool isNewPlayer =
@@ -59,19 +68,10 @@ public class SaveManager : MonoBehaviourPun
 
     private void TryRestorePlayer(string playerId, PlayerController player)
     {
+        Debug.Log($"[TryRestorePlayer] playerId={playerId}, isLoadCompleted={_isLoadCompleted}, loadedDataNull={_loadedData == null}");
         PlayerQuestAbility questAbility = player != null ? player.GetAbility<PlayerQuestAbility>() : null;
-        if (!_isLoadCompleted)
-        {
-            return;
-        }
-        if (_loadedData == null)
-        {
-            if (player != null && player.IsMine && questAbility != null)
-            {
-                questAbility.InitializeEmptyState();
-            }
-            return;
-        }
+        if (!_isLoadCompleted || _loadedData == null) return;
+
         var save = _loadedData.Players.Find(p => p.PlayerId == playerId);
         if (save == null)
         {
@@ -189,7 +189,6 @@ public class SaveManager : MonoBehaviourPun
             }
 
             _loadedData = data;
-
             await _repository.SaveAsync(data, slot);
 
             // 방 커스텀 프로퍼티에 방문 플레이어 목록 갱신
@@ -278,13 +277,7 @@ public class SaveManager : MonoBehaviourPun
 
     public void RequestSave(int slot = 0)
     {
-        if (!PhotonNetwork.IsConnected)
-        {
-            SaveAsync(slot).Forget();
-            return;
-        }
-
-        if (PhotonNetwork.IsMasterClient)
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
         {
             SaveAsync(slot).Forget();
             return;
