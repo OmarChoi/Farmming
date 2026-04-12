@@ -78,6 +78,7 @@ public class GameSceneInit : MonoBehaviour
             if (VillageCache.HasCache)
             {
                 _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+                ImportCachedVillageState();
 
                 if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                     await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
@@ -217,6 +218,7 @@ public class GameSceneInit : MonoBehaviour
         if (VillageCache.HasCache)
         {
             _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            ImportCachedVillageState();
             _mapNavMeshController.BuildInitialNavMesh();
 
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
@@ -265,6 +267,7 @@ public class GameSceneInit : MonoBehaviour
 
             // 캐시에서 마을 복원 (파일 I/O 없이)
             _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            ImportCachedVillageState();
             
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
@@ -455,6 +458,12 @@ public class GameSceneInit : MonoBehaviour
     private void CacheVillageData()
     {
         VillageCache.Capture(_mapManager.GridManager);
+    }
+
+    private static void ImportCachedVillageState()
+    {
+        if (VillageCache.Village == null || VillageLevelManager.Instance == null) return;
+        VillageLevelManager.Instance.ImportSaveData(VillageCache.Village);
     }
 
     private void ClearSceneTransitionRoomProps()

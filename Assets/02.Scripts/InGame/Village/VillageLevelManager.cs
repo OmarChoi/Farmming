@@ -151,12 +151,21 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
     
     public void ImportSaveData(VillageSaveData saveData)
     {
+        if (saveData == null) return;
+
         CurrentLevel = Math.Max(saveData.Level, 1);
         CurrentVitality = saveData.Gauge;
-        foreach (string id in saveData.BuiltBuildings)
+        _builtOnceIds.Clear();
+
+        if (saveData.BuiltBuildings != null)
         {
-            _builtOnceIds.Add(id);
+            foreach (string id in saveData.BuiltBuildings)
+            {
+                if (string.IsNullOrEmpty(id)) continue;
+                _builtOnceIds.Add(id);
+            }
         }
+
         OnVillageStateChanged?.Invoke();
     }
 
