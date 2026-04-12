@@ -70,6 +70,8 @@ public class GameSceneInit : MonoBehaviour
             PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         }
 
+        PlayerController localPlayer = null;
+
         // 던전 복귀 시 캐시에서 마을 복원
         if (ReturningFromDungeon && VillageCache.HasCache)
         {
@@ -80,9 +82,17 @@ public class GameSceneInit : MonoBehaviour
 
             VillageCache.RestorePlayerPositions();
             LoadingProgress.Value = 0.6f;
+
+            SaveManager.Instance?.MarkLoadCompleted();
+            QuestManager.Instance?.MarkLoaded();
+
             ReturningFromDungeon = false;
 
             await WaitForAllTerrainReady();
+
+            localPlayer = FindLocalPlayer();
+            TryStartTutorial(localPlayer);
+            OnCompleteInitialize?.Invoke();
             return;
         }
 
@@ -108,8 +118,7 @@ public class GameSceneInit : MonoBehaviour
 
         LoadingProgress.Value = 0.6f;
 
-        PlayerController localPlayer = FindLocalPlayer();
-
+        localPlayer = FindLocalPlayer();
         if (localPlayer == null)
         {
             var pos = FindSpawnPosition();
@@ -192,6 +201,9 @@ public class GameSceneInit : MonoBehaviour
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
 
             VillageCache.RestorePlayerPositions();
+
+            SaveManager.Instance?.MarkLoadCompleted();
+            QuestManager.Instance?.MarkLoaded();
         }
         else
         {
@@ -234,7 +246,11 @@ public class GameSceneInit : MonoBehaviour
                 BuildingManager.Instance.SpawnBuildingNpcs();
             
             VillageCache.RestorePlayerPositions();
+
+            SaveManager.Instance?.MarkLoadCompleted();
             RestoreExistingPlayers();
+            QuestManager.Instance?.MarkLoaded();
+
             ReturningFromDungeon = false;
             localPlayer = FindLocalPlayer();
         }

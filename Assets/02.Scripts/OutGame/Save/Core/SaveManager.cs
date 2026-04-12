@@ -17,6 +17,9 @@ public class SaveManager : MonoBehaviourPun
     private const float RemoteSaveTimeout = 5f;
     private bool _isSaving;
 
+    private bool _isLoadCompleted;
+    public bool IsLoadCompleted => _isLoadCompleted;
+
     private bool _pendingWorldSave;
     private bool _pendingPlayerOnlySave;
 
@@ -34,24 +37,33 @@ public class SaveManager : MonoBehaviourPun
         Instance = this;
 
         _repository = new LocalJsonSaveRepository();
+        _isLoadCompleted = false;
     }
 
     public void RegisterPlayer(string playerId, PlayerController player)
     {
         _players[playerId] = player;
 
-        bool isNewPlayer = _loadedData == null
-            || !_loadedData.Players.Exists(p => p.PlayerId == playerId);
-
         TryRestorePlayer(playerId, player);
 
+        bool isNewPlayer =
+            _isLoadCompleted &&
+            (_loadedData == null || !_loadedData.Players.Exists(p => p.PlayerId == playerId));
+
         if (isNewPlayer && PhotonNetwork.IsMasterClient)
-            SaveAsync(RoomManager.Instance.SelectedSlot).Forget();
+        {
+            int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+            SaveAsync(slot).Forget();
+        }
     }
 
     private void TryRestorePlayer(string playerId, PlayerController player)
     {
         PlayerQuestAbility questAbility = player != null ? player.GetAbility<PlayerQuestAbility>() : null;
+        if (!_isLoadCompleted)
+        {
+            return;
+        }
         if (_loadedData == null)
         {
             if (player != null && player.IsMine && questAbility != null)
@@ -61,7 +73,14 @@ public class SaveManager : MonoBehaviourPun
             return;
         }
         var save = _loadedData.Players.Find(p => p.PlayerId == playerId);
-        if (save == null) return;
+        if (save == null)
+        {
+            if (player.IsMine && questAbility != null)
+            {
+                questAbility.InitializeEmptyState();
+            }
+            return;
+        }
 
         if (player.PhotonView == null || player.PhotonView.IsMine)
         {
@@ -220,10 +239,14 @@ public class SaveManager : MonoBehaviourPun
 
     public async UniTask LoadAsync(int slot = 0)
     {
+        _isLoadCompleted = false;
+
         _loadedData = await _repository.LoadAsync(slot);
         if (_loadedData == null)
         {
             Debug.Log($"저장 데이터 없음 (슬롯 {slot})");
+            _isLoadCompleted = true;
+            RestoreRegisteredPlayers();
             return;
         }
 
@@ -238,7 +261,19 @@ public class SaveManager : MonoBehaviourPun
         if (_timeSystem != null)
             _timeSystem.ImportTimeSaveData(_loadedData.Time);
 
+        _isLoadCompleted = true;
+        RestoreRegisteredPlayers();
+
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
+    }
+
+    private void RestoreRegisteredPlayers()
+    {
+        foreach (var kvp in _players)
+        {
+            if (kvp.Value == null) continue;
+            TryRestorePlayer(kvp.Key, kvp.Value);
+        }
     }
 
     public void RequestSave(int slot = 0)
@@ -370,5 +405,10 @@ public class SaveManager : MonoBehaviourPun
         }
 
         return null;
+    }
+
+    public void MarkLoadCompleted()
+    {
+        _isLoadCompleted = true;
     }
 }
