@@ -39,7 +39,7 @@ public class GameSceneInit : MonoBehaviour
                 PlayerController localPlayer = SpawnPlayer(spawnPos);
                 CacheVillageData();
 
-                QuestManager.Instance?.MarkLoaded();
+                QuestDataMarkLoaded();
                 TryStartTutorial(localPlayer);
 
                 var props = new Hashtable { { PropTerrainReady, true } };
@@ -70,6 +70,8 @@ public class GameSceneInit : MonoBehaviour
             PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         }
 
+        PlayerController localPlayer = null;
+
         // 던전 복귀 시 캐시에서 마을 복원
         if (ReturningFromDungeon && VillageCache.HasCache)
         {
@@ -80,9 +82,16 @@ public class GameSceneInit : MonoBehaviour
 
             VillageCache.RestorePlayerPositions();
             LoadingProgress.Value = 0.6f;
+
+            QuestDataMarkLoaded();
+
             ReturningFromDungeon = false;
 
             await WaitForAllTerrainReady();
+
+            localPlayer = FindLocalPlayer();
+            TryStartTutorial(localPlayer);
+            OnCompleteInitialize?.Invoke();
             return;
         }
 
@@ -108,8 +117,7 @@ public class GameSceneInit : MonoBehaviour
 
         LoadingProgress.Value = 0.6f;
 
-        PlayerController localPlayer = FindLocalPlayer();
-
+        localPlayer = FindLocalPlayer();
         if (localPlayer == null)
         {
             var pos = FindSpawnPosition();
@@ -192,6 +200,8 @@ public class GameSceneInit : MonoBehaviour
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
 
             VillageCache.RestorePlayerPositions();
+
+            QuestDataMarkLoaded();
         }
         else
         {
@@ -206,7 +216,12 @@ public class GameSceneInit : MonoBehaviour
 
         var existing = FindAnyObjectByType<PlayerController>();
         if (existing != null && SaveManager.Instance != null)
-            SaveManager.Instance.RegisterPlayer(existing.PlayerId, existing);
+        {
+            if (VillageCache.HasCache)
+                SaveManager.Instance.RegisterPlayerOnly(existing.PlayerId, existing);
+            else
+                SaveManager.Instance.RegisterPlayer(existing.PlayerId, existing);
+        }
 
         ReturningFromDungeon = false;
         UnfreezeExistingPlayers();
@@ -234,7 +249,12 @@ public class GameSceneInit : MonoBehaviour
                 BuildingManager.Instance.SpawnBuildingNpcs();
             
             VillageCache.RestorePlayerPositions();
-            RestoreExistingPlayers();
+
+            SaveManager.Instance?.EnsureBaseLoadedData();
+            SaveManager.Instance?.MarkLoadCompleted();
+            RegisterExistingPlayersOnly();
+            QuestManager.Instance?.MarkLoaded();
+
             ReturningFromDungeon = false;
             localPlayer = FindLocalPlayer();
         }
@@ -382,6 +402,16 @@ public class GameSceneInit : MonoBehaviour
         }
     }
 
+    private void RegisterExistingPlayersOnly()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.RegisterPlayerOnly(player.PlayerId, player);
+        }
+    }
+
     private void RestoreExistingPlayers()
     {
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
@@ -438,5 +468,12 @@ public class GameSceneInit : MonoBehaviour
     {
         if (!ShouldStartTutorial(player)) return;
         TutorialManager.Instance.TryStartTutorial(player);
+    }
+
+    private void QuestDataMarkLoaded()
+    {
+        SaveManager.Instance?.EnsureBaseLoadedData();
+        SaveManager.Instance?.MarkLoadCompleted();
+        QuestManager.Instance?.MarkLoaded();
     }
 }
