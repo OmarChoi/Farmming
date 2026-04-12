@@ -16,6 +16,7 @@ public class TutorialManager : MonoBehaviour
     private Transform _playerTransform;
     private NpcController _tutorialNpcController;
     private bool _isTutorialStarted;
+    private bool _isWaitingToStartTutorial;
 
     private void Awake()
     {
@@ -34,7 +35,7 @@ public class TutorialManager : MonoBehaviour
 
     public void TryStartTutorial(PlayerController player)
     {
-        if (_isTutorialStarted || player == null || _tutorialNpc == null) return;
+        if (_isTutorialStarted || _isWaitingToStartTutorial || player == null || _tutorialNpc == null) return;
 
         PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
         if (questAbility == null) return;
@@ -43,32 +44,41 @@ public class TutorialManager : MonoBehaviour
         _currentPlayer = player;
         _playerTransform = player.transform;
 
-        if (QuestManager.Instance == null || !QuestManager.Instance.IsLoaded)
+        bool saveLoaded = SaveManager.Instance == null || SaveManager.Instance.IsLoadCompleted;
+        bool questLoaded = QuestManager.Instance != null && QuestManager.Instance.IsLoaded;
+
+        if (!saveLoaded || !questLoaded)
         {
-            StartCoroutine(WaitAndStartTutorialCoroutine());
+            _isWaitingToStartTutorial = true;
+            WaitAndStartTutorialAsync().Forget();
             return;
         }
 
         StartTutorial();
     }
 
-    private IEnumerator WaitAndStartTutorialCoroutine()
+    private async UniTaskVoid WaitAndStartTutorialAsync()
     {
-        while (QuestManager.Instance == null || !QuestManager.Instance.IsLoaded)
+        try
         {
-            yield return null;
-        }
-        if (_currentPlayer == null)
-        {
-            yield break;
-        }
-        PlayerQuestAbility questAbility = _currentPlayer.GetAbility<PlayerQuestAbility>();
-        if (questAbility == null || questAbility.TutorialState == ETutorialState.Completed)
-        {
-            yield break;
-        }
+            await UniTask.WaitUntil(() =>
+            {
+                bool saveLoaded = SaveManager.Instance == null || SaveManager.Instance.IsLoadCompleted;
+                bool questLoaded = QuestManager.Instance != null && QuestManager.Instance.IsLoaded;
+                return saveLoaded && questLoaded;
+            }, cancellationToken: this.GetCancellationTokenOnDestroy());
 
-        StartTutorial();
+            if (_currentPlayer == null) return;
+
+            PlayerQuestAbility questAbility = _currentPlayer.GetAbility<PlayerQuestAbility>();
+            if (questAbility == null || questAbility.TutorialState == ETutorialState.Completed) return;
+
+            StartTutorial();
+        }
+        finally
+        {
+            _isWaitingToStartTutorial = false;
+        }
     }
 
     private void StartTutorial()
@@ -136,6 +146,7 @@ public class TutorialManager : MonoBehaviour
                 questAbility.SetTutorialState(ETutorialState.Completed);
             }
         }
+        _tutorialProgressController?.ResetRuntimeState();
         _isTutorialStarted = false;
         _currentPlayer = null;
         _playerTransform = null;
@@ -150,13 +161,14 @@ public class TutorialManager : MonoBehaviour
     private void ClearTutorial()
     {
         DespawnTutorialNpc();
+        _tutorialProgressController?.ResetRuntimeState();
         _isTutorialStarted = false;
         _currentPlayer = null;
         _playerTransform = null;
     }
 
     // 기존에 존재하는 튜토리얼 NPC가 있다면 제거합니다.
-    private void DespawnTutorialNpc()
+    public void DespawnTutorialNpc()
     {
         if (_tutorialNpcController == null) return;
 
