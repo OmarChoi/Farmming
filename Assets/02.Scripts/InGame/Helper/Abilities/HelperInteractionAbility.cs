@@ -28,10 +28,13 @@ public class HelperInteractionAbility : HelperAbility
 
         _action.InteractPrimary(cell);
 
-        var pos = cell.GridPosition;
-        _owner.PhotonView.RpcSafe(
-            nameof(RPC_InteractPrimary), RpcTarget.Others,
-            pos.x, pos.y, pos.z);
+        if (_action is not GroundActionAbility)
+        {
+            var pos = cell.GridPosition;
+            _owner.PhotonView.RpcSafe(
+                nameof(RPC_InteractPrimary), RpcTarget.Others,
+                pos.x, pos.y, pos.z);
+        }
         return true;
     }
 
