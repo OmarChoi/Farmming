@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HelperUpgradeService : MonoBehaviour
 {
-    [Header("Components")]
+    [Header("참조 컴포넌트")]
     [SerializeField] private UI_HelperUpgrade _uiHelperUpgrade;
     [SerializeField] private NpcDialogueController _dialogueController;
     [SerializeField] private EvolutionManager _evolutionManager;
@@ -21,11 +21,17 @@ public class HelperUpgradeService : MonoBehaviour
     private void Awake()
     {
         if (_uiHelperUpgrade == null)
+        {
             _uiHelperUpgrade = FindFirstObjectByType<UI_HelperUpgrade>();
+        }
         if (_dialogueController == null)
+        {
             _dialogueController = FindFirstObjectByType<NpcDialogueController>();
+        }
         if (_evolutionManager == null)
+        {
             _evolutionManager = FindFirstObjectByType<EvolutionManager>();
+        }
     }
 
     private void OnEnable()
@@ -105,17 +111,14 @@ public class HelperUpgradeService : MonoBehaviour
 
     public bool CanUpgrade(HelperDataSO data)
     {
-        if (_helperInventoryAbility == null || data == null)
-            return false;
+        if (_helperInventoryAbility == null || data == null) return false;
 
         EHelperGrade grade = _helperInventoryAbility.GetHelperGrade(data);
-        if (grade == EHelperGrade.Legendary)
-            return false;
+        if (grade == EHelperGrade.Legendary) return false;
 
         int exp = _helperInventoryAbility.GetHelperExperience(data);
         int maxExp = _helperInventoryAbility.GetMaxExpByGrade(data, grade);
-        if (maxExp <= 0)
-            return false;
+        if (maxExp <= 0) return false;
 
         return exp >= maxExp;
     }
@@ -160,18 +163,14 @@ public class HelperUpgradeService : MonoBehaviour
         }
 
         EHelperGrade currentGrade = _helperInventoryAbility.GetHelperGrade(data);
-        if (TryPlayEvolutionCutscene(data, currentGrade))
-            return;
+        if (TryPlayEvolutionCutscene(data, currentGrade)) return;
 
         CompleteUpgrade(data);
     }
 
     private bool TryPlayEvolutionCutscene(HelperDataSO data, EHelperGrade currentGrade)
     {
-        if (_evolutionManager == null || data == null)
-            return false;
-        if (currentGrade >= EHelperGrade.Legendary)
-            return false;
+        if (_evolutionManager == null || data == null || currentGrade >= EHelperGrade.Legendary) return false;
 
         HelperController liveHelper = FindLiveHelperForEvolution(data);
         bool started = _evolutionManager.BeginEvolution(
@@ -189,8 +188,7 @@ public class HelperUpgradeService : MonoBehaviour
                 CompleteUpgrade(data);
             });
 
-        if (!started)
-            return false;
+        if (!started) return false;
 
         CloseUpgradeUi();
         return true;
@@ -198,12 +196,10 @@ public class HelperUpgradeService : MonoBehaviour
 
     private HelperController FindLiveHelperForEvolution(HelperDataSO data)
     {
-        if (_helperInventoryAbility == null || data == null)
-            return null;
+        if (_helperInventoryAbility == null || data == null) return null;
 
         HelperController activeMainHelper = _helperInventoryAbility.ActiveMainHelper;
-        if (activeMainHelper != null && activeMainHelper.HelperId == data.HelperId)
-            return activeMainHelper;
+        if (activeMainHelper != null && activeMainHelper.HelperId == data.HelperId) return activeMainHelper;
 
         return null;
     }
@@ -232,32 +228,28 @@ public class HelperUpgradeService : MonoBehaviour
 
     public EHelperGrade GetGrade(HelperDataSO data)
     {
-        if (_helperInventoryAbility == null || data == null)
-            return EHelperGrade.Normal;
+        if (_helperInventoryAbility == null || data == null) return EHelperGrade.Normal;
 
         return _helperInventoryAbility.GetHelperGrade(data);
     }
 
     public int GetExperience(HelperDataSO data)
     {
-        if (_helperInventoryAbility == null || data == null)
-            return 0;
+        if (_helperInventoryAbility == null || data == null) return 0;
 
         return _helperInventoryAbility.GetHelperExperience(data);
     }
 
     public int GetMaxExp(HelperDataSO data, EHelperGrade grade)
     {
-        if (_helperInventoryAbility == null || data == null)
-            return 0;
+        if (_helperInventoryAbility == null || data == null) return 0;
 
         return _helperInventoryAbility.GetMaxExpByGrade(data, grade);
     }
 
     public int GetRange(HelperDataSO data, EHelperGrade grade)
     {
-        if (data == null)
-            return 0;
+        if (data == null) return 0;
 
         return grade switch
         {
@@ -293,13 +285,11 @@ public class HelperUpgradeService : MonoBehaviour
 
     private float GetExpRatio(HelperDataSO data)
     {
-        if (_helperInventoryAbility == null || data == null)
-            return 0f;
+        if (_helperInventoryAbility == null || data == null) return 0f;
 
         EHelperGrade grade = _helperInventoryAbility.GetHelperGrade(data);
         int maxExp = _helperInventoryAbility.GetMaxExpByGrade(data, grade);
-        if (maxExp <= 0)
-            return 0f;
+        if (maxExp <= 0) return 0f;
 
         int currentExp = _helperInventoryAbility.GetHelperExperience(data);
         return (float)currentExp / maxExp;

@@ -11,7 +11,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
     private TerrainCell _rootCell;
     private GameObject _modelInstance;
 
-    public static event Action<GatheringObject> OnGatheringCompleted;
+    public static event Action<GatheringObject, PlayerController> OnGatheringCompleted;
     public GatheringObjectSO GatheringData => _gatheringData;
 
     protected virtual void Awake()
@@ -70,7 +70,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
         if (_currentHealth <= 0)
         {
-            OnGatheringCompleted?.Invoke(this);
+            OnGatheringCompleted?.Invoke(this, info.Player);
             OnDepleted(info);
         }
 
