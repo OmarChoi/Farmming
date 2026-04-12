@@ -115,12 +115,18 @@ public class DungeonPortal : MonoBehaviour, IInteraction
     {
         if (PhotonNetwork.IsConnected)
         {
+            VillageCache.CapturePlayerPositions();
+            if (TerrainGridManager.Instance != null)
+                VillageCache.Capture(TerrainGridManager.Instance);
+
             if (MapSyncManager.Instance != null)
                 MapSyncManager.Instance.RequestDungeonEntry(floor);
         }
         else
         {
             VillageCache.CapturePlayerPositions();
+            if (TerrainGridManager.Instance != null)
+                VillageCache.Capture(TerrainGridManager.Instance);
             DungeonSceneInit.FloorOverride = floor;
             SceneManager.LoadScene(SceneName.Dungeon1);
         }
@@ -134,6 +140,12 @@ public class DungeonPortal : MonoBehaviour, IInteraction
     private async UniTaskVoid MasterEnterDungeon(int floor)
     {
         DungeonSceneInit.FloorOverride = floor;
+
+        if (TerrainGridManager.Instance != null)
+            VillageCache.Capture(TerrainGridManager.Instance);
+
+        if (MapSyncManager.Instance != null)
+            await MapSyncManager.Instance.PrepareVillageCacheForDungeonEntry();
 
         if (SaveManager.Instance != null)
         {
