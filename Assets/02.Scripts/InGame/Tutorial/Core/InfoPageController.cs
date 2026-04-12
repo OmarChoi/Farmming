@@ -9,9 +9,22 @@ public class InfoPageController : MonoBehaviour
 
     public static event Action<InfoPageController> OnInfoPageReady;
 
+    private void Awake()
+    {
+        ResolveUiInfoPage();
+    }
+
     private void Start()
     {
         OnInfoPageReady?.Invoke(this);
+    }
+
+    private bool ResolveUiInfoPage()
+    {
+        if (_uiInfoPage != null) return true;
+
+        _uiInfoPage = FindFirstObjectByType<UI_InfoPage>(FindObjectsInactive.Include);
+        return _uiInfoPage != null;
     }
 
     public async UniTask ShowAsync(InfoPageSetSO pageSet, Action onCompleted = null)
@@ -21,7 +34,12 @@ public class InfoPageController : MonoBehaviour
             onCompleted?.Invoke();
             return;
         }
-
+        if (!ResolveUiInfoPage())
+        {
+            Debug.LogError("[InfoPageController] UI_InfoPage를 찾지 못했습니다.");
+            onCompleted?.Invoke();
+            return;
+        }
         List<InfoPageData> pageList = new(pageSet.Pages);
 
         void Cleanup()
