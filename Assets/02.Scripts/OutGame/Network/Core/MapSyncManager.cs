@@ -185,7 +185,10 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
             Terrain = _terrainGridManager.ExportSaveData(),
             Buildings = BuildingManager.Instance != null
                 ? BuildingManager.Instance.ExportBuildings()
-                : new System.Collections.Generic.List<BuildingSaveData>()
+                : new System.Collections.Generic.List<BuildingSaveData>(),
+            Village = VillageLevelManager.Instance != null
+                ? VillageLevelManager.Instance.ExportSaveData()
+                : null
         };
         string json = JsonUtility.ToJson(syncData);
         byte[] raw = Encoding.UTF8.GetBytes(json);
@@ -247,6 +250,11 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         var syncData = JsonUtility.FromJson<MapSyncData>(json);
 
         _terrainGridManager.ImportSaveData(syncData.Terrain);
+        
+        if (syncData.Village != null && VillageLevelManager.Instance != null)
+        {
+            VillageLevelManager.Instance.ImportSaveData(syncData.Village);
+        }
             
         if (syncData.Buildings != null && syncData.Buildings.Count > 0 && BuildingManager.Instance != null)
         {
