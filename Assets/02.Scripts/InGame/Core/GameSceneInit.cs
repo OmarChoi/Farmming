@@ -9,7 +9,7 @@ public class GameSceneInit : MonoBehaviour
     public static bool ReturningFromDungeon{ get; set; }
     public static event Action OnCompleteInitialize;
 
-    [SerializeField] private string _playerPrefabName = "Player";
+    private const string PlayerPrefabKey = AssetKey.NetworkPrefab.Player;
     [SerializeField] private MapManager _mapManager;
     [SerializeField] private MapNavMeshController _mapNavMeshController;
     private const float MapSyncTimeoutSeconds = 10f;
@@ -184,8 +184,17 @@ public class GameSceneInit : MonoBehaviour
 
     private PlayerController SpawnPlayer(Vector3 spawnPos)
     {
-        var playerObj = PhotonNetwork.Instantiate(_playerPrefabName, spawnPos, Quaternion.identity);
+        // 문자열 리터럴 대신 상수 키를 사용해 Addressables 주소와 Photon prefabId를 맞춘다.
+        var playerObj = PhotonNetwork.Instantiate(PlayerPrefabKey, spawnPos, Quaternion.identity);
+        if (playerObj == null) return null;
+
+        // 잘못된 프리팹 등록은 즉시 로그로 드러내고 이후 초기화를 중단한다.
         var pc = playerObj.GetComponent<PlayerController>();
+        if (pc == null)
+        {
+            Debug.LogError($"[GameSceneInit] Player prefab has no PlayerController: {PlayerPrefabKey}");
+            return null;
+        }
 
         if (CustomizeData.Instance != null)
             pc.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
