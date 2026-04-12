@@ -42,6 +42,8 @@ public class UI_VillageLevelUp : UIBase
 
         _levelUpText.text = $"Level Up! {nextLevel - 1} -> {nextLevel}";
 
+        if (BuildingManager.Instance == null) return;
+
         var buildings = BuildingManager.Instance.AvailableBuildings;
         foreach (var building in buildings)
         {
