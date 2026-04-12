@@ -211,6 +211,14 @@ public class TutorialProgressController : MonoBehaviour
         return false;
     }
 
+    public void ResetRuntimeState()
+    {
+        _tutorialNpcController = null;
+        _playerTransform = null;
+        _pendingNextTutorialQuest = null;
+        _isWaitingForFinalTutorialComplete = false;
+    }
+
     private void OnValidate()
     {
         if (_tutorialQuestSequence == null || _tutorialQuestSequence.Count == 0) return;
