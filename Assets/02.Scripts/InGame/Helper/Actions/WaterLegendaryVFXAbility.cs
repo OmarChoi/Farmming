@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -59,6 +59,7 @@ public class WaterLegendaryVFXAbility : HelperAbility, IWaterGradeVFX
     {
         if (_helperVfxPrefab == null) return;
 
+        PlayWaterSpawnSfx();
         GameObject vfx = Instantiate(_helperVfxPrefab, _owner.transform.position, Quaternion.identity);
         vfx.transform.SetParent(_owner.transform);
         Destroy(vfx, _helperVfxDuration);
@@ -93,5 +94,16 @@ public class WaterLegendaryVFXAbility : HelperAbility, IWaterGradeVFX
             StopCoroutine(_rotationCoroutine);
             _rotationCoroutine = null;
         }
+    }
+
+    private void PlayWaterSpawnSfx()
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.WaterLegendarySplash,
+            spatialMode: ESpatialMode.FollowTransform,
+            followTarget: _owner.transform));
     }
 }

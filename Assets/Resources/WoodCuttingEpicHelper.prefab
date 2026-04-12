@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &229588880894515821
 GameObject:
@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 229588880894515821}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.61, z: 0.89}
+  m_LocalPosition: {x: 0, y: 0.14, z: 0.89}
   m_LocalScale: {x: 0.8000001, y: 0.8000001, z: 0.8000001}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2141,6 +2141,8 @@ MonoBehaviour:
   _woodNormalEffect: {fileID: 0}
   _woodNormalRangeEffect: {fileID: 0}
   _woodEpicRangeEffect: {fileID: 2172247304358701316, guid: 131da5914899cb44baea045b490dd4f6, type: 3}
+  _woodLegendaryRangeEffect: {fileID: 0}
+  _woodLegendaryRangeEffectGround: {fileID: 0}
   _effectStonePrefab: {fileID: 1244961349144190860, guid: cfd3093bdaadef048800bae61ef117ef, type: 3}
   _effectSpawnPoint: {fileID: 5572470803985998500}
   _mouthPoint: {fileID: 4484897684428785056}
@@ -2156,6 +2158,7 @@ MonoBehaviour:
   _wideGatherOffset: 2
   _embeddedNormalWoodEffect: {fileID: 0}
   _embeddedEpicWoodEffect: {fileID: 6855522517503920736}
+  _embeddedLegendaryWoodEffect: {fileID: 0}
 --- !u!114 &8890283815802751499
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2526,7 +2529,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.75573
+      value: 0.39
       objectReference: {fileID: 0}
     - target: {fileID: 1165421903653094114, guid: 47829e305fdc4cd408a54b086e6573b5, type: 3}
       propertyPath: m_LocalPosition.z
