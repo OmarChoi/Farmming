@@ -23,7 +23,7 @@ MonoBehaviour:
   CompleteNpcId: 
   IsForcedAccept: 0
   ObjectiveType: 0
-  TargetId: "\uD1B5\uB098\uBB34"
+  TargetId: "\uB098\uBB34"
   ItemRequirements: []
   TargetNpcId: 
   RequiredAmount: 1
@@ -34,10 +34,12 @@ MonoBehaviour:
     - RewardType: 0
       RewardItem: {fileID: 0}
       Amount: 200
+      RewardHelper: {fileID: 0}
       TargetNpcId: 
     - RewardType: 1
       RewardItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
       Amount: 1
+      RewardHelper: {fileID: 0}
       TargetNpcId: 
   AcceptDialogue: {fileID: 0}
   AcceptResultDialogue: {fileID: 0}
@@ -45,3 +47,5 @@ MonoBehaviour:
   InProgressDialogue: {fileID: 0}
   CompleteDialogue: {fileID: 0}
   NoQuestDialogue: {fileID: 0}
+  AcceptInfoPageSet: {fileID: 0}
+  CompleteInfoPageSet: {fileID: 0}

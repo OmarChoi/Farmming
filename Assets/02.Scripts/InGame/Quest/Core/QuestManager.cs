@@ -184,9 +184,11 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         _requirementService = new QuestRequirementService(_playerInventory);
     }
 
-    private void HandleGatheringCompleted(GatheringObject obj)
+    private void HandleGatheringCompleted(GatheringObject obj, PlayerController player)
     {
+        if (player == null || !player.IsMine) return;
         if (obj == null || obj.GatheringData == null) return;
+
         ReportObjectBroken(obj.GatheringData.ObjectName);
     }
 
@@ -529,7 +531,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         RemoveQuest(questId);
 
         int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
-        SaveManager.Instance.SaveAsync(slot).Forget();
+        SaveManager.Instance?.RequestPlayerOnlySave(slot);
         return true;
     }
 

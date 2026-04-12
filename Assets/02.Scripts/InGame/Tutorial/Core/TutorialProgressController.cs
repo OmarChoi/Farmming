@@ -77,6 +77,22 @@ public class TutorialProgressController : MonoBehaviour
     {
         currentQuest = null;
 
+        if (!TryGetTutorialProgress(out QuestDataSO activeQuest, out QuestDataSO nextQuest, out bool isCompleted))
+        {
+            return false;
+        }
+        if (isCompleted) return false;
+
+        currentQuest = activeQuest ?? nextQuest;
+        return currentQuest != null;
+    }
+
+    public bool TryGetTutorialProgress(out QuestDataSO currentQuest, out QuestDataSO nextQuest, out bool isCompleted)
+    {
+        currentQuest = null;
+        nextQuest = null;
+        isCompleted = false;
+
         if (_tutorialQuestSequence == null || _tutorialQuestSequence.Count == 0) return false;
         if (QuestManager.Instance == null) return false;
 
@@ -84,32 +100,21 @@ public class TutorialProgressController : MonoBehaviour
         {
             if (questData == null) continue;
 
-            bool isCompleted = QuestManager.Instance.IsQuestCompleted(questData.QuestId);
-            bool hasQuest = QuestManager.Instance.HasQuest(questData.QuestId);
-            bool canAccept = QuestManager.Instance.CanAcceptQuest(questData);
-            bool canAcceptByFlow = CanAcceptByTutorialFlow(questData);
-
-            // 이미 완료했으면 다음으로 넘어갑니다.
-            if (isCompleted)
-            {
-                continue;
-            }
-            // 이미 진행 중인 상태라면, 그 퀘스트를 현재 퀘스트로 간주합니다.
-            if (hasQuest)
-            {
-                currentQuest = questData;
-                return true;
-            }
-            // 아직 시작하지 않았고, 지금 수락 가능한 첫 퀘스트면 이걸 반환합니다.
-            if (canAccept && canAcceptByFlow)
+            if (QuestManager.Instance.HasQuest(questData.QuestId))
             {
                 currentQuest = questData;
                 return true;
             }
 
-            return false;
+            if (QuestManager.Instance.IsQuestCompleted(questData.QuestId)) continue;
+            if (!CanAcceptByTutorialFlow(questData)) return false;
+
+            nextQuest = questData;
+            return true;
         }
-        return false;
+
+        isCompleted = true;
+        return true;
     }
 
     private bool CanAcceptByTutorialFlow(QuestDataSO questData)
@@ -120,11 +125,7 @@ public class TutorialProgressController : MonoBehaviour
         foreach (QuestDataSO prerequisite in questData.PrerequisiteQuests)
         {
             if (prerequisite == null || string.IsNullOrEmpty(prerequisite.QuestId)) continue;
-
-            if (!QuestManager.Instance.IsQuestCompleted(prerequisite.QuestId))
-            {
-                return false;
-            }
+            if (!QuestManager.Instance.IsQuestCompleted(prerequisite.QuestId)) return false;
         }
         return true;
     }
@@ -132,73 +133,36 @@ public class TutorialProgressController : MonoBehaviour
     private void HandleQuestCompleted(QuestRuntimeData questRuntime)
     {
         if (questRuntime == null || questRuntime.QuestData == null) return;
+        if (!questRuntime.QuestData.IsTutorial) return;
+        if (!TryGetTutorialProgress(out _, out _, out bool isCompleted)) return;
 
-        QuestDataSO completedQuest = questRuntime.QuestData;
-        if (!completedQuest.IsTutorial) return;
-
-        if (TryGetNextTutorialQuest(completedQuest, out QuestDataSO nextQuest))
+        if (isCompleted)
         {
-            _pendingNextTutorialQuest = nextQuest;
-            return;
+            CompleteTutorial();
         }
-
-        _pendingNextTutorialQuest = null;
-        _isWaitingForFinalTutorialComplete = true;
-    }
-
-    public void TryAcceptPendingTutorialQuest()
-    {
-        if (_pendingNextTutorialQuest == null)
-        {
-            FinishTutorialIfPending();
-            return;
-        }
-
-        QuestDataSO nextQuest = _pendingNextTutorialQuest;
-        _pendingNextTutorialQuest = null;
-
-        TryAcceptTutorialQuest(nextQuest);
-    }
-
-    private void FinishTutorialIfPending()
-    {
-        if (!_isWaitingForFinalTutorialComplete) return;
-
-        _isWaitingForFinalTutorialComplete = false;
-        CompleteTutorial();
     }
 
     public bool HandleTutorialQuestDialogueEnded()
     {
-        // 마지막 퀘스트면 기본 종료 처리를 계속 진행합니다.
-        if (_pendingNextTutorialQuest == null)
+        if (!TryGetTutorialProgress(out QuestDataSO currentQuest, out QuestDataSO nextQuest, out bool isCompleted))
         {
-            FinishTutorialIfPending();
             return false;
         }
 
-        TryAcceptPendingTutorialQuest();
-        return true;
-    }
-
-    private bool TryGetNextTutorialQuest(QuestDataSO completedQuest, out QuestDataSO nextQuest)
-    {
-        nextQuest = null;
-
-        if (completedQuest == null) return false;
-        if (_tutorialQuestSequence == null || _tutorialQuestSequence.Count == 0) return false;
-
-        for (int i = 0; i < _tutorialQuestSequence.Count; i++)
+        if (isCompleted)
         {
-            QuestDataSO current = _tutorialQuestSequence[i];
-            if (current == null) continue;
-            if (current.QuestId != completedQuest.QuestId) continue;
+            CompleteTutorial();
+            return false;
+        }
 
-            int nextIndex = i + 1;
-            if (nextIndex >= _tutorialQuestSequence.Count) return false;
+        // 아직 진행 중인 튜토리얼 퀘스트가 남아 있으면 종료 처리합니다.
+        if (currentQuest != null) return false;
 
-            nextQuest = _tutorialQuestSequence[nextIndex];
-            return nextQuest != null;
+        // 진행 중인 퀘스트는 없고, 다음 퀘스트를 받을 수 있으면 이어서 수락합니다.
+        if (nextQuest != null)
+        {
+            TryAcceptTutorialQuest(nextQuest);
+            return true;
         }
 
         return false;
