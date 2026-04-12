@@ -40,6 +40,17 @@ public class SaveManager : MonoBehaviourPun
         _isLoadCompleted = false;
     }
 
+    public void EnsureBaseLoadedData()
+    {
+        if (_loadedData != null) return;
+        _loadedData = new SaveData();
+    }
+
+    public void MarkLoadCompleted()
+    {
+        _isLoadCompleted = true;
+    }
+
     // 등록만 합니다. 복원은 하지 않습니다.
     public void RegisterPlayerOnly(string playerId, PlayerController player)
     {
@@ -68,7 +79,6 @@ public class SaveManager : MonoBehaviourPun
 
     private void TryRestorePlayer(string playerId, PlayerController player)
     {
-        Debug.Log($"[TryRestorePlayer] playerId={playerId}, isLoadCompleted={_isLoadCompleted}, loadedDataNull={_loadedData == null}");
         PlayerQuestAbility questAbility = player != null ? player.GetAbility<PlayerQuestAbility>() : null;
         if (!_isLoadCompleted || _loadedData == null) return;
 
@@ -268,45 +278,33 @@ public class SaveManager : MonoBehaviourPun
 
     private void RestoreRegisteredPlayers()
     {
+        bool hasNewPlayer = false;
+
         foreach (var kvp in _players)
         {
-            if (kvp.Value == null) continue;
-            TryRestorePlayer(kvp.Key, kvp.Value);
-        }
-    }
+            string playerId = kvp.Key;
+            PlayerController player = kvp.Value;
 
-    public void RequestSave(int slot = 0)
-    {
-        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
+            if (player == null) continue;
+
+            bool existsInLoadedData =
+                _loadedData != null &&
+                _loadedData.Players != null &&
+                _loadedData.Players.Exists(p => p != null && p.PlayerId == playerId);
+
+            TryRestorePlayer(playerId, player);
+
+            if (!existsInLoadedData)
+            {
+                hasNewPlayer = true;
+            }
+        }
+
+        if (hasNewPlayer && PhotonNetwork.IsMasterClient)
         {
+            int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
             SaveAsync(slot).Forget();
-            return;
         }
-
-        if (photonView == null)
-        {
-            Debug.LogWarning("SaveManager의 PhotonView가 없어 마스터에게 저장 요청을 보낼 수 없습니다.");
-            return;
-        }
-
-        photonView.RPC(nameof(RPC_RequestWorldSave), RpcTarget.MasterClient, slot);
-    }
-
-    [PunRPC]
-    private void RPC_RequestWorldSave(int slot, PhotonMessageInfo info)
-    {
-        if (!PhotonNetwork.IsMasterClient) return;
-
-        if (_isSaving)
-        {
-            _pendingWorldSave = true;
-            _pendingSlot = slot;
-            Debug.Log($"저장 중이라 월드 저장 요청을 대기열에 보관했습니다. 요청자: {info.Sender?.NickName}");
-            return;
-        }
-
-        Debug.Log($"마스터가 저장 요청을 받았습니다. 요청자: {info.Sender?.NickName}, 슬롯: {slot}");
-        SaveAsync(slot).Forget();
     }
 
     public void RequestPlayerOnlySave(int slot = 0)
@@ -398,15 +396,5 @@ public class SaveManager : MonoBehaviourPun
         }
 
         return null;
-    }
-    public void EnsureBaseLoadedData()
-    {
-        if (_loadedData != null) return;
-        _loadedData = new SaveData();
-    }
-
-    public void MarkLoadCompleted()
-    {
-        _isLoadCompleted = true;
     }
 }
