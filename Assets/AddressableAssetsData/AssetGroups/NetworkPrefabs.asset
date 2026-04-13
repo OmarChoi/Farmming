@@ -1,0 +1,131 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: NetworkPrefabs
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: NetworkPrefabs
+  m_GUID: 8703f340ff4132648bef16f962914d94
+  m_SerializeEntries:
+  - m_GUID: 1a3d96359e1e0bc4c8f5140ab477066b
+    m_Address: NpcTest
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c8d89a9e58b0ca46b8b719413e66fb6
+    m_Address: HarvestHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 266f408554e7f614b923bf0d304d1590
+    m_Address: WaterEpicHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2acd9ac415526ee47b7cd11033dfe06f
+    m_Address: SowLegendaryHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 33d4fbbdafcf8ea4ea3c7cd8802e88f1
+    m_Address: Player
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5cd8f8312c13fbf478f83d764cbea195
+    m_Address: HarvestLegendaryHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6deb9ad1fc1c8844c89e3b3041e49b75
+    m_Address: Hairdresser
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 766afbc23d7837143ac7b4a6ec1f8c3b
+    m_Address: HarvestEpicHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 773c654ebe113674f81f820fc2a57603
+    m_Address: WoodCuttingEpicHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 88e48ce30b775604e9bd14c0593a7c27
+    m_Address: WaterLegendaryHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a9808f16d9fefed4f9e81b1c641f5dfb
+    m_Address: WaterHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b36310dbb9e54924dbb604bc4b7ba706
+    m_Address: GroundHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cdbe9066023b22342960effad45c6952
+    m_Address: LightHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce00054f389338740a5954f443506c40
+    m_Address: WoodCuttingLegendaryHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d9857392163d00940a23e898bfbaf850
+    m_Address: SowHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e644ab8b0cf9a87479ee331e0b4303ea
+    m_Address: WoodCuttingHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eed40b82e23022a46b900e549b777f16
+    m_Address: SowEpicHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2fc2ee24a63c344d8bc3779805247af
+    m_Address: Blacksmith
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: c8899227771d30747848a9950547dcec, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: bf81386dd609764439a8a0ca6b55ab99, type: 2}
+    - {fileID: 11400000, guid: ec628df545d639d419d02e345de03893, type: 2}
