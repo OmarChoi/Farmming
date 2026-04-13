@@ -70,4 +70,17 @@ public class PlayerStamina
         OnChanged?.Invoke(Current);
         OnRecovered?.Invoke();
     }
+
+    public bool TryRecover(float amount)
+    {
+        if (amount <= 0f)
+            return false;
+        if (_current >= _max)
+            return false;
+
+        _current = Math.Clamp(_current + amount, 0f, _max);
+        OnChanged?.Invoke(Current);
+        OnRecovered?.Invoke();
+        return true;
+    }
 }

@@ -2,5 +2,7 @@ using UnityEngine;
 
 public enum EPotionType
 {
-    RangeBoost
+    RangeBoost,
+    HelperStaminaHeal,
+    PlayerStaminaHeal
 }
