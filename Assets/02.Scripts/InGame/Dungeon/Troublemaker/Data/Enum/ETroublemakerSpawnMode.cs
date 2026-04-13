@@ -2,5 +2,7 @@
 public enum ETroublemakerSpawnMode
 {
     FixedAnchor,
-    RandomCell
+    RandomCell,
+    NearestPlayer,
+    RoomCenter
 }

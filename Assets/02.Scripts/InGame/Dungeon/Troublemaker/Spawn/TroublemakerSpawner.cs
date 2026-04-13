@@ -1,28 +1,111 @@
+using Photon.Pun;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class TroublemakerSpawner : MonoBehaviour
 {
+    [Header("방해꾼 스폰 리스트")]
     [SerializeField] private TroublemakerSpawnListSO _spawnList;
+
+    [Header("방해꾼 스폰 수")]
+    [SerializeField] private int _minSpawnCount = 3;
+    [SerializeField] private int _maxSpawnCount = 5;
 
     public void SpawnAll(int floor, int seed)
     {
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
         if (_spawnList == null || _spawnList.Entries == null) return;
+
+        List<TroublemakerSpawnEntry> spawnableEntries = GetSpawnableEntries();
+        if (spawnableEntries.Count == 0) return;
+
+        var random = new System.Random(seed);
+
+        SpawnByMode(spawnableEntries, random);
+    }
+
+    private void SpawnByMode(List<TroublemakerSpawnEntry> entries, System.Random random)
+    {
+        var fixedAnchorEntries = FilterByMode(entries, ETroublemakerSpawnMode.FixedAnchor);
+        var randomCellEntries = FilterByMode(entries, ETroublemakerSpawnMode.RandomCell);
+        var nearestPlayerEntries = FilterByMode(entries, ETroublemakerSpawnMode.NearestPlayer);
+        var roomCenterEntries = FilterByMode(entries, ETroublemakerSpawnMode.RoomCenter);
+
+        if (fixedAnchorEntries.Count > 0)
+        {
+            // SpawnByFixedAnchor(fixedAnchorEntries);
+        }
+        if (randomCellEntries.Count > 0)
+        {
+            SpawnByRandomCell(randomCellEntries, random);
+        }
+        if (nearestPlayerEntries.Count > 0)
+        {
+            // SpawnByNearestPlayer(nearestPlayerEntries);
+        }
+        if (roomCenterEntries.Count > 0)
+        {
+            // SpawnByRoomCenter(roomCenterEntries);
+        }
+    }
+
+    private List<TroublemakerSpawnEntry> FilterByMode(List<TroublemakerSpawnEntry> entries, ETroublemakerSpawnMode mode)
+    {
+        return entries.Where(e => e.SpawnMode == mode).ToList();
+    }
+
+    private void SpawnByRandomCell(List<TroublemakerSpawnEntry> spawnableEntries, System.Random random)
+    {
+        List<TroublemakerSpawnEntry> randomCellEntries = new();
+        for (int i = 0; i < spawnableEntries.Count; i++)
+        {
+            if (spawnableEntries[i].SpawnMode == ETroublemakerSpawnMode.RandomCell)
+            {
+                randomCellEntries.Add(spawnableEntries[i]);
+            }
+        }
+
+        if (randomCellEntries.Count == 0) return;
+
+        List<TerrainCell> candidates = FindRandomCellCandidates();
+        if (candidates.Count == 0) return;
+
+        Shuffle(randomCellEntries, random);
+        Shuffle(candidates, random);
+
+        int desiredCount = random.Next(_minSpawnCount, _maxSpawnCount + 1);
+        int spawnCount = Mathf.Min(desiredCount, randomCellEntries.Count, candidates.Count);
+
+        for (int i = 0; i < spawnCount; i++)
+        {
+            TroublemakerSpawnEntry entry = randomCellEntries[i];
+            TerrainCell cell = candidates[i];
+
+            if (!TryGetSpawnPositionFromCell(cell, out Vector3 spawnPosition))
+            {
+                Debug.LogWarning($"[TroublemakerSpawner] 셀 스폰 위치 계산 실패: {entry.TroublemakerId}");
+                continue;
+            }
+
+            Spawn(entry, spawnPosition);
+        }
+    }
+
+    private List<TroublemakerSpawnEntry> GetSpawnableEntries()
+    {
+        List<TroublemakerSpawnEntry> result = new();
 
         foreach (var entry in _spawnList.Entries)
         {
             if (entry == null || entry.Data == null) continue;
             if (!CanSpawn(entry)) continue;
 
-            if (!TryResolveSpawnPosition(entry, floor, seed, out Vector3 spawnPosition))
-            {
-                Debug.LogWarning($"[TroublemakerSpawner] 스폰 위치를 찾지 못했습니다. id={entry.Data.TroublemakerId}");
-                continue;
-            }
-
-            Spawn(entry, spawnPosition);
+            result.Add(entry);
         }
+
+        return result;
     }
 
     private bool CanSpawn(TroublemakerSpawnEntry entry)
@@ -37,35 +120,12 @@ public class TroublemakerSpawner : MonoBehaviour
         return true;
     }
 
-    private bool TryResolveSpawnPosition(TroublemakerSpawnEntry entry, int floor, int seed, out Vector3 spawnPosition)
+    private List<TerrainCell> FindRandomCellCandidates()
     {
-        spawnPosition = Vector3.zero;
-
-        switch (entry.SpawnMode)
-        {
-            case ETroublemakerSpawnMode.FixedAnchor:
-                return NpcLocationManager.Instance != null &&
-                       NpcLocationManager.Instance.TryGetLocation(
-                           entry.TroublemakerId,
-                           ENpcLocationType.Dungeon,
-                           entry.LocationKey,
-                           out spawnPosition);
-
-            case ETroublemakerSpawnMode.RandomCell:
-                return TryFindRandomCellSpawnPosition(floor, seed, out spawnPosition);
-        }
-
-        return false;
-    }
-
-    private bool TryFindRandomCellSpawnPosition(int floor, int seed, out Vector3 spawnPosition)
-    {
-        spawnPosition = Vector3.zero;
+        List<TerrainCell> candidates = new();
 
         var gridManager = MapManager.Instance.GridManager;
-        if (gridManager == null) return false;
-
-        List<TerrainCell> candidates = new();
+        if (gridManager == null) return candidates;
 
         Vector3 playerPosition = GetPlayerPosition();
 
@@ -81,7 +141,6 @@ public class TroublemakerSpawner : MonoBehaviour
             if (!cell.Data.IsTop) continue;
             if (cell.Data.ObjectType != EGridObjectType.None) continue;
             if (cell.Data.TileType == ETileType.Dungeon3Lava) continue;
-            if (!cell.HasObjectPoint) continue;
 
             float sqrDistance = (cell.transform.position - playerPosition).sqrMagnitude;
             if (sqrDistance < sqrMin || sqrDistance > sqrMax) continue;
@@ -89,12 +148,19 @@ public class TroublemakerSpawner : MonoBehaviour
             candidates.Add(cell);
         }
 
-        if (candidates.Count == 0) return false;
+        return candidates;
+    }
 
-        var random = new System.Random(seed);
-        int index = random.Next(candidates.Count);
+    private bool TryGetSpawnPositionFromCell(TerrainCell cell, out Vector3 spawnPosition)
+    {
+        spawnPosition = Vector3.zero;
 
-        Vector3 rawPosition = gridManager.GridToWorld(candidates[index].GridPosition + Vector3Int.up);
+        if (cell == null) return false;
+
+        var gridManager = MapManager.Instance.GridManager;
+        if (gridManager == null) return false;
+
+        Vector3 rawPosition = gridManager.GridToWorld(cell.GridPosition + Vector3Int.up);
 
         if (NavMesh.SamplePosition(rawPosition, out NavMeshHit hit, 2f, NavMesh.AllAreas))
         {
@@ -135,8 +201,17 @@ public class TroublemakerSpawner : MonoBehaviour
             {
                 return p.transform.position;
             }
-
         }
+
         return Vector3.zero;
+    }
+
+    private void Shuffle<T>(List<T> list, System.Random random)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = random.Next(i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
     }
 }

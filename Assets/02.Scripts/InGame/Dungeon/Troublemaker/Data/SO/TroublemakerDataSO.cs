@@ -11,8 +11,8 @@ public class TroublemakerDataSO : ScriptableObject
     public GameObject Prefab;
 
     [Header("이동")]
-    public float WalkSpeed = 2f;
-    public float RunSpeed = 4f;
+    public float WalkSpeed = 3f;
+    public float RunSpeed = 6f;
     public float JumpDuration = 0.8f;
     public float JumpHeight = 1.6f;
 
