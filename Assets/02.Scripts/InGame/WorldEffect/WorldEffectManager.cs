@@ -8,10 +8,13 @@ public class WorldEffectManager : MonoBehaviour
 
     private const int PermanentDuration = -1;
 
+    [SerializeField] private WorldEffectDatabase _database;
+
     private readonly List<WorldEffectEntry> _activeEffects = new();
     private WorldEffectNetworkSync _sync;
 
     public IReadOnlyList<WorldEffectEntry> ActiveEffects => _activeEffects;
+    public WorldEffectDatabase Database => _database;
 
     private bool HasAuthority => !PhotonNetwork.IsConnected || !PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient;
     private bool CanUseNetworkSync => PhotonNetwork.IsConnected && PhotonNetwork.InRoom && _sync != null;
@@ -100,6 +103,34 @@ public class WorldEffectManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    public float GetAcquireMultiplier() => ComputeMultiplier(EWorldEffectCategory.Acquire);
+    public float GetSellPriceMultiplier() => ComputeMultiplier(EWorldEffectCategory.SellPrice);
+
+    public static int ApplyMultiplier(int baseValue, float multiplier)
+    {
+        return multiplier switch
+        {
+            > 0 => Mathf.Max(0, Mathf.CeilToInt(baseValue * multiplier)),
+            < 0 => Mathf.Max(0, Mathf.FloorToInt(baseValue * multiplier)),
+            _   => 0
+        };
+    }
+
+    private float ComputeMultiplier(EWorldEffectCategory category)
+    {
+        if (_database == null) return 1f;
+
+        var sum = 0f;
+        foreach (WorldEffectEntry effectEntry in _activeEffects)
+        {
+            WorldEffectDataSO data = _database.GetById(effectEntry.EffectId);
+            if (data == null || data.Category != category) continue;
+            sum += data.PercentModifier;
+        }
+
+        return Mathf.Max(0f, 1f + sum);
     }
 
     public WorldEffectSaveData ExportSaveData()

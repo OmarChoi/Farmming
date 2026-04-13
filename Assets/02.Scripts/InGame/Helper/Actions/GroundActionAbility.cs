@@ -474,7 +474,15 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (inventory == null || rewardItem == null || amount <= 0)
             return;
 
-        QuestReportItemHelper.AddItemAndReportQuest(inventory, rewardItem, amount);
+        int finalAmount = amount;
+        if (WorldEffectManager.Instance != null)
+        {
+            finalAmount = WorldEffectManager.ApplyMultiplier(
+                finalAmount, WorldEffectManager.Instance.GetAcquireMultiplier());
+        }
+        if (finalAmount <= 0) return;
+
+        QuestReportItemHelper.AddItemAndReportQuest(inventory, rewardItem, finalAmount);
     }
 
     private void ConsumePlacedGroundItem(ETileType placedTileType, int amount)
