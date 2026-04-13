@@ -258,7 +258,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         {
             // 온라인에서는 등록된 AssetKey만 Photon prefabId로 사용해 주소 누락을 즉시 드러낸다.
             string prefabKey = AssetKey.NetworkPrefab.GetKey(prefab);
-            if (string.IsNullOrEmpty(prefabKey)) throw new NullReferenceException($"[PlayerHelperInventoryAbility] Could not find {prefabKey} prefab in AssetKey");
+            if (string.IsNullOrEmpty(prefabKey)) throw new InvalidOperationException($"[PlayerHelperInventoryAbility] Could not find {prefabKey} prefab in AssetKey");
             var go = PhotonNetwork.Instantiate(prefabKey, spawnPos, Quaternion.identity);
             if (go == null) return null;
 
