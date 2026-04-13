@@ -135,9 +135,34 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
 
         ETileType tileType = GetTileTypeForItem(selectedGround, cell.Data.TileType);
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+        {
+            Vector3Int pos = cell.GridPosition;
+            _owner.PhotonView.RpcSafe(
+                nameof(RPC_RequestPlaceSecondary),
+                RpcTarget.MasterClient,
+                pos.x, pos.y, pos.z, (int)tileType, _generateDirtAmount);
+            return;
+        }
+
+        ExecuteSecondaryPlace(
+            cell,
+            tileType,
+            _generateDirtAmount,
+            consumeLocalInventory: true,
+            consumeTarget: null);
+    }
+
+    private void ExecuteSecondaryPlace(
+        TerrainCell cell,
+        ETileType tileType,
+        int dirtAmount,
+        bool consumeLocalInventory,
+        Photon.Realtime.Player consumeTarget)
+    {
         Vector3Int targetGridPos = GetPlacePosition(cell);
 
-        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, _generateDirtAmount);
+        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, dirtAmount);
         if (!placed) return;
 
         bool destroyedByLava = ShouldDestroyPlacedGroundImmediately(tileType, targetGridPos);
@@ -162,7 +187,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
         _owner.PhotonView.RpcSafe(
             nameof(RPC_PlaceBlockWithAnimation), RpcTarget.Others,
-            targetGridPos.x, targetGridPos.y, targetGridPos.z, (int)tileType, _generateDirtAmount);
+            targetGridPos.x, targetGridPos.y, targetGridPos.z, (int)tileType, dirtAmount);
 
         if (PhotonNetwork.IsConnected)
         {
@@ -180,7 +205,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             BroadcastGroundStateFromMaster(targetGridPos);
         }
 
-        inventory.RemoveAt(groundSlotIndex, _generateDirtAmount);
+        HandleSecondaryPlaceConsumption(tileType, dirtAmount, consumeLocalInventory, consumeTarget);
 
         _owner.EndAction();
     }
@@ -380,6 +405,25 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             GrantDigRewardToRemotePlayer(removedTileType, rewardTarget);
     }
 
+    private void HandleSecondaryPlaceConsumption(
+        ETileType placedTileType,
+        int amount,
+        bool consumeLocalInventory,
+        Photon.Realtime.Player consumeTarget)
+    {
+        if (consumeLocalInventory)
+            ConsumePlacedGroundItem(placedTileType, amount);
+
+        if (consumeTarget != null)
+        {
+            _owner.PhotonView.RPC(
+                nameof(RPC_ConsumePlacedGroundItem),
+                consumeTarget,
+                (int)placedTileType,
+                amount);
+        }
+    }
+
     private void GrantDigRewardToRemotePlayer(ETileType removedTileType, Photon.Realtime.Player rewardTarget)
     {
         _owner.PhotonView.RPC(
@@ -430,6 +474,19 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
 
         QuestReportItemHelper.AddItemAndReportQuest(inventory, rewardItem, amount);
+    }
+
+    private void ConsumePlacedGroundItem(ETileType placedTileType, int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        PlayerInventoryAbility inventory = GetInventory();
+        ItemDataSO placedItem = GetRewardItemForTile(placedTileType);
+        if (inventory == null || placedItem == null)
+            return;
+
+        inventory.RemoveItem(placedItem, amount);
     }
 
     private void AnimateCellToMouth(TerrainCell cell)
@@ -563,9 +620,34 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     }
 
     [PunRPC]
+    internal void RPC_RequestPlaceSecondary(int gridX, int gridY, int gridZ, int tileType, int dirtAmount, PhotonMessageInfo info)
+    {
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        TerrainCell cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        cell = GetInteractableCell(cell);
+        if (cell == null || !CanPlaceGroundOnCell(cell))
+            return;
+
+        ExecuteSecondaryPlace(
+            cell,
+            (ETileType)tileType,
+            dirtAmount,
+            consumeLocalInventory: false,
+            consumeTarget: info.Sender);
+    }
+
+    [PunRPC]
     internal void RPC_GrantDigReward(int removedTileType, int amount)
     {
         GrantDigReward((ETileType)removedTileType, amount);
+    }
+
+    [PunRPC]
+    internal void RPC_ConsumePlacedGroundItem(int placedTileType, int amount)
+    {
+        ConsumePlacedGroundItem((ETileType)placedTileType, amount);
     }
 
     [PunRPC]
