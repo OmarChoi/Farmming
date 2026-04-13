@@ -21,4 +21,6 @@ public enum EHelperAnim
     EpicSow = 15,
     LegendarySow = 44,
     LegendaryIce = 22,
+    EpicFertilizer = 4,
+    LegendaryFertilizer = 4,
 }
