@@ -80,6 +80,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (PhotonNetwork.IsConnected && !_owner.IsMine) return;
 
         if (!CanRemoveCell(cell)) return;
+        _groundSelector?.ClearSelection();
         SuppressSelectionBubble();
 
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
