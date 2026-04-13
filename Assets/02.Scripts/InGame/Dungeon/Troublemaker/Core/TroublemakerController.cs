@@ -32,12 +32,16 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     private float _homeArrivalDistance = 1.5f;
     private float _sampleMaxDistance = 2f;
 
+    private bool _hasDetectedTarget;
+
     private float _separationRadius => Mathf.Lerp(_minSeparationRadius, _maxSeparationRadius, Random.value);
     private float _separationWeight => Mathf.Lerp(_minSeparationWeight, _maxSeparationWeight, Random.value);
 
     public TroublemakerDataSO Data => _data;
     public Vector3 HomePosition => _homePosition;
     public Transform CurrentTarget => _currentTarget;
+    public NpcMovement Movement => _movement;
+    public TroublemakerAnimatorController Anim => _anim;
 
 
     private void Awake()
@@ -96,10 +100,10 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         {
             _movement.SetOwner(HasAuthority);
         }
-
         if (!HasAuthority)
         {
             _currentTarget = null;
+            _hasDetectedTarget = false;
         }
     }
 
@@ -109,7 +113,19 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
 
         if (_currentTarget == null)
         {
-            _currentTarget = _sensor.FindNearestTarget(_data.DetectRange);
+            Transform newTarget = _sensor.FindNearestTarget(_data.DetectRange);
+
+            if (newTarget != null)
+            {
+                _currentTarget = newTarget;
+
+                if (!_hasDetectedTarget)
+                {
+                    _anim?.PlayDetect();
+                    _hasDetectedTarget = true;
+                }
+            }
+
             return;
         }
 
@@ -117,6 +133,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         if (distance > _data.LoseTargetRange)
         {
             _currentTarget = null;
+            _hasDetectedTarget = false;
         }
     }
 
@@ -133,7 +150,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         if (distance > _data.StopDistance)
         {
             Vector3 desiredPosition = GetApproachPosition(_currentTarget.position);
-            _movement?.MoveTo(desiredPosition, _data.StopDistance);
+            _movement?.MoveTo(desiredPosition, _data.StopDistance, true);
             _behaviour?.OnChase(_currentTarget);
         }
         else

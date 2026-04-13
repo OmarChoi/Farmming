@@ -76,15 +76,28 @@ public class NpcMovement : MonoBehaviour
         }
     }
 
-    public void MoveTo(Vector3 destination, float stoppingDistance = 0f)
+    public void MoveTo(Vector3 destination, float stoppingDistance, bool forceRun)
     {
         if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh) return;
 
-        float distance = Vector3.Distance(transform.position, destination);
-        _agent.speed = distance <= _walkDistance ? _walkSpeed : _runSpeed;
+        if (forceRun)
+        {
+            _agent.speed = _runSpeed;
+        }
+        else
+        {
+            float distance = Vector3.Distance(transform.position, destination);
+            _agent.speed = distance <= _walkDistance ? _walkSpeed : _runSpeed;
+        }
+
         _agent.stoppingDistance = Mathf.Max(0f, stoppingDistance);
         _agent.isStopped = false;
         _agent.SetDestination(destination);
+    }
+
+    public void MoveTo(Vector3 destination, float stoppingDistance = 0f)
+    {
+        MoveTo(destination, stoppingDistance, false);
     }
 
     public void Stop()

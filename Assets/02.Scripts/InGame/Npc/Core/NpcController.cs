@@ -215,7 +215,7 @@ public class NpcController : MonoBehaviour
 #endif
             return;
         }
-        _movement.MoveTo(targetPosition);
+        _movement.MoveTo(targetPosition, 0f);
 
         if (entry.NpcLocationType != ENpcLocationType.Wandering)
         {
