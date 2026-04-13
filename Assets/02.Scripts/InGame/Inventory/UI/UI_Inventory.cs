@@ -282,6 +282,15 @@ public class UI_Inventory : MonoBehaviour
     {
         if (_isDragging) return;
 
+        if (_clickMode == EInventoryClickMode.Normal)
+        {
+            if (clicked.CurrentItem is PotionDataSO)
+            {
+                bool used = _potionAbility != null && _potionAbility.TryUsePotion(clicked.SlotIndex);
+                return;
+            }
+        }
+
         if (_clickMode == EInventoryClickMode.Trading)
             HandleSellClick(clicked);
     }
