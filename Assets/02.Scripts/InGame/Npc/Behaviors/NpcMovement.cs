@@ -1,8 +1,9 @@
-using Cysharp.Threading.Tasks;
-using System.Collections;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.AI;
+using Cysharp.Threading.Tasks;
+using System;
+using System.Collections;
+using System.Threading;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class NpcMovement : MonoBehaviour
@@ -29,6 +30,8 @@ public class NpcMovement : MonoBehaviour
     private const float JumpCurveScale = 4f;  // t * (1-t)의 최대값(0.25)을 1로 정규화하기 위한 값입니다.
     private bool _isJumping;
 
+    public Action<Vector3, Vector3, float> OnJumpStarted;
+
     public float MoveSpeed => _agent != null && _agent.enabled ? Mathf.Clamp01(_agent.desiredVelocity.magnitude / _runSpeed) : 0f;
     public bool IsOnNavMesh => _agent != null && _agent.isOnNavMesh;
     public bool IsJumping => _isJumping;
@@ -44,9 +47,14 @@ public class NpcMovement : MonoBehaviour
         _isOwner = isOwner;
 
         if (_agent == null) return;
+
+        _agent.enabled = true;
+
         if (!_isOwner)
         {
-            _agent.enabled = false;
+            _agent.isStopped = true;
+            _agent.ResetPath();
+            _agent.velocity = Vector3.zero;
         }
     }
 
@@ -198,6 +206,9 @@ public class NpcMovement : MonoBehaviour
         Vector3 startPosition = transform.position;
         Vector3 endPosition = linkData.endPos + Vector3.up * _agent.baseOffset;
 
+        // 점프 시작을 외부에 알려 RPC 전송 등을 처리합니다.
+        OnJumpStarted?.Invoke(startPosition, endPosition, _jumpDuration);
+
         Vector3 direction = endPosition - startPosition;
         direction.y = 0f;
         if (direction.sqrMagnitude > 0.001f)
@@ -242,6 +253,63 @@ public class NpcMovement : MonoBehaviour
             _agent.updatePosition = true;
             _agent.updateRotation = true;
             _agent.isStopped = false;
+            _isJumping = false;
+        }
+    }
+
+    // 마스터가 아닌 클라이언트에서 점프 RPC를 받았을 때 호출합니다.
+
+    public void PlayRemoteJump(Vector3 startPosition, Vector3 endPosition, float duration)
+    {
+        if (_isJumping) return;
+        PlayRemoteJumpAsync(startPosition, endPosition, duration, this.GetCancellationTokenOnDestroy()).Forget();
+    }
+
+    private async UniTask PlayRemoteJumpAsync(Vector3 startPosition, Vector3 endPosition, float duration, CancellationToken cancellationToken)
+    {
+        _isJumping = true;
+
+        if (_agent != null && _agent.enabled && _agent.isOnNavMesh)
+        {
+            _agent.isStopped = true;
+            _agent.updatePosition = false;
+            _agent.updateRotation = false;
+        }
+
+        Vector3 direction = endPosition - startPosition;
+        direction.y = 0f;
+        if (direction.sqrMagnitude > 0.001f)
+        {
+            transform.rotation = Quaternion.LookRotation(direction.normalized);
+        }
+
+        float elapsed = 0f;
+
+        try
+        {
+            while (elapsed < duration)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                float t = elapsed / duration;
+                Vector3 position = Vector3.Lerp(startPosition, endPosition, t);
+                position.y += _jumpHeight * JumpCurveScale * (t * (1f - t));
+                transform.position = position;
+
+                elapsed += Time.deltaTime;
+                await UniTask.Yield(cancellationToken);
+            }
+            transform.position = endPosition;
+        }
+        finally
+        {
+            if (_agent != null && _agent.enabled)
+            {
+                _agent.updatePosition = true;
+                _agent.updateRotation = true;
+                _agent.Warp(endPosition);
+                _agent.isStopped = !_isOwner;
+            }
             _isJumping = false;
         }
     }

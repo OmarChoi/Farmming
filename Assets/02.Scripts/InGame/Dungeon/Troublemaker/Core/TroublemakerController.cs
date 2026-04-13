@@ -9,7 +9,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
 {
     public PhotonView PhotonView { get; private set; }
 
-    private bool HasAuthority => !PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient;
+    private bool HasAuthority => !PhotonNetwork.IsConnected || (PhotonView != null && PhotonView.IsMine);
 
     [Header("참조 컴포넌트")]
     [SerializeField] private NpcMovement _movement;
@@ -82,7 +82,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
                 _data.JumpDuration,
                 _data.JumpHeight);
         }
-
+        _movement.OnJumpStarted += OnMovementJumpStarted;
         _behaviour?.Initialize(this);
     }
 
@@ -94,14 +94,30 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         UpdateState();
         _behaviour?.Tick(Time.deltaTime);
     }
-
-    public override void OnMasterClientSwitched(Player newMasterClient)
+    private void OnDestroy()
     {
         if (_movement != null)
         {
-            _movement.SetOwner(HasAuthority);
+            _movement.OnJumpStarted -= OnMovementJumpStarted;
         }
-        if (!HasAuthority)
+    }
+
+    private void OnMovementJumpStarted(Vector3 startPos, Vector3 endPos, float duration)
+    {
+        if (!PhotonNetwork.IsConnected || PhotonView == null) return;
+        PhotonView.RPC(nameof(RPC_PlayJump), RpcTarget.Others, startPos, endPos, duration);
+    }
+
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        if (PhotonNetwork.IsMasterClient && PhotonView != null && !PhotonView.IsMine)
+        {
+            PhotonView.RequestOwnership();
+        }
+
+        bool isOwner = HasAuthority;
+        if (_movement != null) _movement.SetOwner(isOwner);
+        if (!isOwner)
         {
             _currentTarget = null;
             _hasDetectedTarget = false;
@@ -294,5 +310,11 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     private void RPC_PlayTrouble()
     {
         _anim?.PlayTrouble();
+    }
+
+    [PunRPC]
+    private void RPC_PlayJump(Vector3 startPos, Vector3 endPos, float duration)
+    {
+        _movement?.PlayRemoteJump(startPos, endPos, duration);
     }
 }
