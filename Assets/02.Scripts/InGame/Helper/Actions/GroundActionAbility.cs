@@ -158,8 +158,12 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
         if (PhotonNetwork.IsConnected)
         {
+            float stateSyncDelay = destroyedByLava
+                ? Mathf.Max(0f, _remotePlaceStateSyncDelay)
+                : Mathf.Max(GetRemotePlaceAnimationDuration(), _remotePlaceStateSyncDelay);
+
             DOVirtual.DelayedCall(
-                Mathf.Max(0f, _remotePlaceStateSyncDelay),
+                stateSyncDelay,
                 () => BroadcastGroundStateFromMaster(targetGridPos))
                 .SetTarget(gameObject);
         }
@@ -461,6 +465,13 @@ public class GroundActionAbility : HelperAbility, IHelperAction
                 cell.transform.DOPunchScale(Vector3.one * 0.2f, 0.2f, 5, 0.5f);
                 _animAbility?.Play(EHelperAnim.Idle);
             });
+    }
+
+    private float GetRemotePlaceAnimationDuration()
+    {
+        return Mathf.Max(
+            0f,
+            _placeAnimLeadTime + _placeHorizontalDuration + _placeHoverDuration + _placeDropDuration);
     }
 
     private ETileType GetTileTypeForItem(ItemDataSO item, ETileType fallback)
