@@ -10,6 +10,8 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
     [SerializeField] private DungeonEnvironmentController _environmentController;
     [SerializeField] private DungeonTimer _dungeonTimer;
 
+    [SerializeField] private MapNavMeshController _mapNavMeshController;
+
     private GameObject _spawnedCliff;
 
     public static int? FloorOverride { get; set; }
@@ -57,6 +59,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
+        _mapNavMeshController.BuildInitialNavMesh();
         DungeonSpawnHelper.SpawnChests(_floor, seed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
@@ -147,7 +150,10 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         PlaceAllPlayers();
         await UniTask.Yield();
 
-        SpawnTroublemakers();
+        if (PhotonNetwork.IsMasterClient)
+        {
+            SpawnTroublemakers();
+        }
 
         RestoreLocalPlayersAfterDungeonLoad();
         RefreshLocalPlayerCameras();
