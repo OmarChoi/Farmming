@@ -179,4 +179,19 @@ public class PlayerController : MonoBehaviour
         if (SaveManager.Instance != null)
             SaveManager.Instance.ReceiveSaveData(saveData);
     }
+
+    [PunRPC]
+    public void RPC_ApplyTrouble(int effectType, Vector3 direction, float power, float duration)
+    {
+        TroubleContext context = new TroubleContext
+        {
+            Source = null,
+            EffectType = (ETroubleEffectType)effectType,
+            Direction = direction,
+            Power = power,
+            Duration = duration
+        };
+
+        GetAbility<PlayerTroubleAbility>()?.ApplyTrouble(context);
+    }
 }

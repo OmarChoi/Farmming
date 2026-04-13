@@ -34,6 +34,8 @@ public class MapNavMeshController : MonoBehaviour
         {
             _linkBuilder = GetComponent<NavMeshLinkBuilder>();
         }
+
+        IsReady = false;
     }
 
     public void BuildInitialNavMesh()
@@ -46,6 +48,7 @@ public class MapNavMeshController : MonoBehaviour
             return;
         }
 
+        IsReady = false;
         _navMeshSurface.BuildNavMesh();
         _linkBuilder?.RebuildLinks();
         IsReady = true;
@@ -55,5 +58,13 @@ public class MapNavMeshController : MonoBehaviour
     public void ClearRuntimeLinks()
     {
         _linkBuilder?.ClearLinks();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 }

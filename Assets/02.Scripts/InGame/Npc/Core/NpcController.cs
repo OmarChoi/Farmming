@@ -50,8 +50,6 @@ public class NpcController : MonoBehaviour
         if (_movement == null) _movement = GetComponent<NpcMovement>();
         if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
         if (_npcQuest == null) _npcQuest = GetComponent<NpcQuest>();
-
-        _movement?.SetOwner(IsMine);
     }
 
     public void Initialize(NpcDataSO data, bool isLocalOnly = false)
@@ -59,7 +57,19 @@ public class NpcController : MonoBehaviour
         _npcData = data;
         IsLocalOnly = isLocalOnly;
         GenerateTimeOffset();
-        _movement.Initialize(_anim, data.WalkSpeed, data.RunSpeed, data.JumpDuration, data.JumpHeight);
+
+        IMovementAnimator movementAnimator = _anim;
+
+        if (_movement != null && _npcData != null)
+        {
+            _movement.SetOwner(IsMine);
+            _movement.Initialize(
+                movementAnimator,
+                _npcData.WalkSpeed,
+                _npcData.RunSpeed,
+                _npcData.JumpDuration,
+                _npcData.JumpHeight);
+        }
     }
 
     private void Start()
@@ -205,7 +215,7 @@ public class NpcController : MonoBehaviour
 #endif
             return;
         }
-        _movement.MoveTo(targetPosition);
+        _movement.MoveTo(targetPosition, 0f);
 
         if (entry.NpcLocationType != ENpcLocationType.Wandering)
         {
