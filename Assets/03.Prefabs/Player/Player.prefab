@@ -50,6 +50,7 @@ GameObject:
   - component: {fileID: 1445132337226200713}
   - component: {fileID: 4168066349458401290}
   - component: {fileID: 7513555976057043112}
+  - component: {fileID: 6209173814562395484}
   m_Layer: 6
   m_Name: Ability
   m_TagString: Untagged
@@ -222,6 +223,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCustomizeAbility
   _partSwapper: {fileID: 941056664359031014}
+--- !u!114 &6209173814562395484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63ff699f4e6cec640a331c41f7aefbe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCurrencyAbility
 --- !u!1 &2199154177915326263
 GameObject:
   m_ObjectHideFlags: 0
