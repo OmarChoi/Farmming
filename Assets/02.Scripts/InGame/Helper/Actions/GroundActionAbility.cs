@@ -182,6 +182,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (destroyedByLava)
         {
             TerrainGridManager.Instance.RemoveCell(targetGridPos);
+            RestoreBelowCellTopAfterImmediateDestroy(targetGridPos);
             _animAbility?.Play(EHelperAnim.Idle);
         }
 
@@ -595,6 +596,19 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             changedCellPos + Vector3Int.down);
     }
 
+    private static void RestoreBelowCellTopAfterImmediateDestroy(Vector3Int removedGridPos)
+    {
+        TerrainCell belowCell = TerrainGridManager.Instance?.GetCell(removedGridPos + Vector3Int.down);
+        if (belowCell == null || belowCell.Data == null)
+            return;
+
+        if (belowCell.Data.CellType != ECellType.Dirt)
+            return;
+
+        belowCell.Data.SetTop(true);
+        belowCell.Refresh();
+    }
+
     private void OnDisable()
     {
         RestoreSelectionBubble();
@@ -694,6 +708,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (ShouldDestroyPlacedGroundImmediately(placedTileType, targetGridPos))
         {
             TerrainGridManager.Instance.RemoveCell(targetGridPos);
+            RestoreBelowCellTopAfterImmediateDestroy(targetGridPos);
             _animAbility?.Play(EHelperAnim.Idle);
             return;
         }
