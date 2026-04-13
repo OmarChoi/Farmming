@@ -62,6 +62,11 @@ public class GroundSelectAbility : HelperAbility
 
     private void LateUpdate()
     {
+        if (_helperController != null && _helperController.State != EHelperState.Equipped && _selectedGround != null)
+        {
+            ClearSelection();
+        }
+
         bool canShowBubble = CanShowBubble();
         if (canShowBubble != _lastCanShowBubble)
         {
@@ -126,6 +131,15 @@ public class GroundSelectAbility : HelperAbility
         _selectedGround = groundItem;
         NotifySelectionChanged();
         return true;
+    }
+
+    public void ClearSelection()
+    {
+        if (_selectedGround == null)
+            return;
+
+        _selectedGround = null;
+        NotifySelectionChanged();
     }
 
     private void RefreshGrounds()
@@ -238,8 +252,7 @@ public class GroundSelectAbility : HelperAbility
     {
         return _helperController != null
                && _helperController.State == EHelperState.Equipped
-               && (_groundActionAbility == null || _groundActionAbility.ShouldShowSelectionBubble)
-               && !_helperController.IsActing;
+               && (_groundActionAbility == null || _groundActionAbility.ShouldShowSelectionBubble);
     }
 
     private void UpdateBubbleTransform()
