@@ -286,6 +286,9 @@ public class GameSceneInit : MonoBehaviour
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 BuildingManager.Instance.SpawnBuildingNpcs();
             
+            if (VillageCache.Time != null && TimeSystem.Instance != null)
+                TimeSystem.Instance.ImportTimeSaveData(VillageCache.Time);
+            
             VillageCache.RestorePlayerPositions();
 
             SaveManager.Instance?.EnsureBaseLoadedData();
