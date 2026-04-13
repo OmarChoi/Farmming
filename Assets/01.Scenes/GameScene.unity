@@ -356,6 +356,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+--- !u!114 &69070361 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2930089380795897997, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+  m_PrefabInstance: {fileID: 69070360}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 544fd01939d0492e94ac8164086b6854, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TimeSystem
 --- !u!1001 &95179862
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1029,7 +1040,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b6b489a449cd8140871c969b01ff826, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSceneInit
-  _playerPrefabName: Player
   _mapManager: {fileID: 1173538006}
   _mapNavMeshController: {fileID: 1726496944}
 --- !u!4 &395103922
@@ -1427,7 +1437,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SaveManager
   _terrainGridManager: {fileID: 798923366}
   _mapManager: {fileID: 1173538006}
-  _timeSystem: {fileID: 0}
+  _timeSystem: {fileID: 69070361}
 --- !u!4 &539819332
 Transform:
   m_ObjectHideFlags: 0

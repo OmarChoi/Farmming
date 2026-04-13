@@ -200,7 +200,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                     _activeLightHelper = null;
                 }
 
+                // 헬퍼 생성 실패 시 소환 상태를 갱신하지 않고 현재 흐름을 중단한다.
                 HelperController helper = InstantiateHelper(data);
+                if (helper == null) return;
+
                 _activeLightHelper = helper;
                 _activeLightHelper.OnGradeChanged += OnLightHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
@@ -229,7 +232,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                     _activeMainHelper = null;
                 }
 
+                // 헬퍼 생성 실패 시 소환 상태를 갱신하지 않고 현재 흐름을 중단한다.
                 HelperController helper = InstantiateHelper(data);
+                if (helper == null) return;
+
                 _activeMainHelper = helper;
                 _activeMainHelper.OnGradeChanged += OnMainHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
@@ -245,14 +251,20 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         EHelperGrade grade = GetHelperGrade(data);
         HelperController prefab = data.GetPrefabForGrade(grade);
+        if (prefab == null) return null;
 
         Vector3 spawnPos = _owner.transform.position + _owner.transform.right * 1.5f;
         if (PhotonNetwork.IsConnected)
         {
-            var go = PhotonNetwork.Instantiate(prefab.name, spawnPos, Quaternion.identity);
-            return go.GetComponent<HelperController>();
+            // 온라인에서는 등록된 AssetKey만 Photon prefabId로 사용해 주소 누락을 즉시 드러낸다.
+            string prefabKey = AssetKey.NetworkPrefab.GetKey(prefab);
+            if (string.IsNullOrEmpty(prefabKey)) throw new InvalidOperationException($"[PlayerHelperInventoryAbility] Could not find {prefabKey} prefab in AssetKey");
+            var go = PhotonNetwork.Instantiate(prefabKey, spawnPos, Quaternion.identity);
+            if (go == null) return null;
 
+            return go.GetComponent<HelperController>();
         }
+
         return Instantiate(prefab, spawnPos, Quaternion.identity);
     }
 
@@ -466,6 +478,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             _activeLightHelper = null;
 
             HelperController newHelper = InstantiateHelper(data);
+            if (newHelper == null) return;
+
             _activeLightHelper = newHelper;
 
             HelperAnimationAbility animationAbility = newHelper.GetAbility<HelperAnimationAbility>();
@@ -485,6 +499,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             _activeMainHelper = null;
 
             HelperController newHelper = InstantiateHelper(data);
+            if (newHelper == null) return;
+
             _activeMainHelper = newHelper;
 
 

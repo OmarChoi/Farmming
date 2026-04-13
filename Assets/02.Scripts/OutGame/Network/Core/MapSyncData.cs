@@ -7,4 +7,5 @@ public class MapSyncData
     public TerrainSaveData Terrain;
     public List<BuildingSaveData> Buildings;
     public VillageSaveData Village;
+    public int MaxHeight;
 }
