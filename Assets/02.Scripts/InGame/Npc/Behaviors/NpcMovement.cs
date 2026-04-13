@@ -31,6 +31,7 @@ public class NpcMovement : MonoBehaviour
 
     public float MoveSpeed => _agent != null && _agent.enabled ? Mathf.Clamp01(_agent.desiredVelocity.magnitude / _runSpeed) : 0f;
     public bool IsOnNavMesh => _agent != null && _agent.isOnNavMesh;
+    public bool IsJumping => _isJumping;
 
     private void Awake()
     {
@@ -67,9 +68,15 @@ public class NpcMovement : MonoBehaviour
     {
         if (!_isOwner || _agent == null || !_agent.enabled) return;
 
+        if (_isJumping)
+        {
+            _anim?.SetMove(1f);
+            return;
+        }
+
         _anim?.SetMove(MoveSpeed);
 
-        if (_agent.isOnOffMeshLink && !_isJumping)
+        if (_agent.isOnOffMeshLink)
         {
             // Npc가 삭제될 때 점프 도중이여도 안전하게 작업을 마무리하기 위해 CancellationToken을 사용했습니다.
             HandleOffMeshLink(this.GetCancellationTokenOnDestroy()).Forget();
@@ -78,7 +85,7 @@ public class NpcMovement : MonoBehaviour
 
     public void MoveTo(Vector3 destination, float stoppingDistance, bool forceRun)
     {
-        if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh) return;
+        if (_isJumping || _agent == null || !_agent.enabled || !_agent.isOnNavMesh) return;
 
         if (forceRun)
         {
@@ -102,7 +109,7 @@ public class NpcMovement : MonoBehaviour
 
     public void Stop()
     {
-        if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh) return;
+        if (_isJumping || _agent == null || !_agent.enabled || !_agent.isOnNavMesh) return;
 
         _agent.isStopped = true;
         _agent.ResetPath();
@@ -183,6 +190,7 @@ public class NpcMovement : MonoBehaviour
     // NavMeshLink를 만나면 포물선 모양으로 점프합니다.
     private async UniTask HandleOffMeshLink(CancellationToken cancellationToken)
     {
+        if (_isJumping || _agent == null || !_agent.enabled || !_agent.isOnOffMeshLink) return;
         _isJumping = true;
 
         var linkData = _agent.currentOffMeshLinkData;
@@ -190,36 +198,51 @@ public class NpcMovement : MonoBehaviour
         Vector3 startPosition = transform.position;
         Vector3 endPosition = linkData.endPos + Vector3.up * _agent.baseOffset;
 
-        float time = 0f;
+        Vector3 direction = endPosition - startPosition;
+        direction.y = 0f;
+        if (direction.sqrMagnitude > 0.001f)
+        {
+            transform.rotation = Quaternion.LookRotation(direction.normalized);
+        }
+
+        float elapsed = 0f;
 
         _agent.isStopped = true;
         _agent.updatePosition = false;
+        _agent.updateRotation = false;
 
-        while (time < _jumpDuration)
+        try
         {
-            // 이미 행동이 취소되었다면 예외 처리를 합니다.
-            cancellationToken.ThrowIfCancellationRequested();
+            while (elapsed < _jumpDuration)
+            {
+                // 이미 행동이 취소되었다면 예외 처리를 합니다.
+                cancellationToken.ThrowIfCancellationRequested();
 
-            float t = time / _jumpDuration;
+                float t = elapsed / _jumpDuration;
 
-            // 부드러운 움직임을 위해 기본 위치를 보간합니다.
-            Vector3 position = Vector3.Lerp(startPosition, endPosition, t);
+                // 부드러운 움직임을 위해 기본 위치를 보간합니다.
+                Vector3 position = Vector3.Lerp(startPosition, endPosition, t);
 
-            // 포물선의 높이를 추가합니다.
-            position.y += _jumpHeight * JumpCurveScale * (t * (1f - t));
+                // 포물선의 높이를 추가합니다.
+                position.y += _jumpHeight * JumpCurveScale * (t * (1f - t));
 
-            transform.position = position;
+                transform.position = position;
 
-            time += Time.deltaTime;
+                elapsed += Time.deltaTime;
 
-            // 토큰을 전달하여 취소 시 반응하도록 합니다.
-            await UniTask.Yield(cancellationToken);
+                // 토큰을 전달하여 취소 시 반응하도록 합니다.
+                await UniTask.Yield(cancellationToken);
+            }
+            transform.position = endPosition;
+            _agent.nextPosition = endPosition;
+            _agent.CompleteOffMeshLink();
         }
-        transform.position = endPosition;
-
-        _agent.CompleteOffMeshLink();
-        _agent.isStopped = false;
-        _agent.updatePosition = true;
-        _isJumping = false;
+        finally
+        {
+            _agent.updatePosition = true;
+            _agent.updateRotation = true;
+            _agent.isStopped = false;
+            _isJumping = false;
+        }
     }
 }

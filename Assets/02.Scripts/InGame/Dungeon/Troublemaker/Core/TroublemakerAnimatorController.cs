@@ -10,9 +10,14 @@ public class TroublemakerAnimatorController : MonoBehaviour, IMovementAnimator
     [SerializeField] private string _detectTriggerName = "Detect";
     [SerializeField] private string _troubleTriggerName = "Trouble";
 
+    [Header("감지 애니메이션 길이")]
+    [SerializeField] private float _detectDuration = 0.6f;
+
     private int _moveHash;
     private int _detectHash;
     private int _troubleHash;
+
+    public float DetectDuration => _detectDuration;
 
     private void Awake()
     {

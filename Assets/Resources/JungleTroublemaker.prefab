@@ -164,9 +164,9 @@ MonoBehaviour:
   _anim: {fileID: 1154992744956083423}
   _data: {fileID: 11400000, guid: 8733bcf3482095344a3922e774fa215e, type: 2}
   _minSeparationRadius: 1.8
-  _maxSeparationRadius: 2.2
+  _maxSeparationRadius: 2.6
   _minSeparationWeight: 1.2
-  _maxSeparationWeight: 1.5
+  _maxSeparationWeight: 1.8
   _troublemakerLayerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -201,6 +201,7 @@ MonoBehaviour:
   _moveFloatName: Move
   _detectTriggerName: Detect
   _troubleTriggerName: Trouble
+  _detectDuration: 0.6
 --- !u!114 &7997593495587374509
 MonoBehaviour:
   m_ObjectHideFlags: 0

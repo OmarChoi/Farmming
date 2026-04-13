@@ -1,7 +1,9 @@
-using UnityEngine;
-using UnityEngine.AI;
+using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using Photon.Realtime;
+using System;
+using UnityEngine;
+using UnityEngine.AI;
 
 public class TroublemakerController : MonoBehaviourPunCallbacks
 {
@@ -32,9 +34,10 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     private float _sampleMaxDistance = 2f;
 
     private bool _hasDetectedTarget;
+    private bool _isDetectingTarget;
 
-    private float _separationRadius => Mathf.Lerp(_minSeparationRadius, _maxSeparationRadius, Random.value);
-    private float _separationWeight => Mathf.Lerp(_minSeparationWeight, _maxSeparationWeight, Random.value);
+    private float _separationRadius => Mathf.Lerp(_minSeparationRadius, _maxSeparationRadius, UnityEngine.Random.value);
+    private float _separationWeight => Mathf.Lerp(_minSeparationWeight, _maxSeparationWeight, UnityEngine.Random.value);
 
     public TroublemakerDataSO Data => _data;
     public Vector3 HomePosition => _homePosition;
@@ -102,6 +105,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         {
             _currentTarget = null;
             _hasDetectedTarget = false;
+            _isDetectingTarget = false;
         }
     }
 
@@ -117,10 +121,9 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
             {
                 _currentTarget = newTarget;
 
-                if (!_hasDetectedTarget)
+                if (!_hasDetectedTarget && !_isDetectingTarget)
                 {
-                    _anim?.PlayDetect();
-                    _hasDetectedTarget = true;
+                    StartDetectAsync().Forget();
                 }
             }
 
@@ -132,11 +135,47 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         {
             _currentTarget = null;
             _hasDetectedTarget = false;
+            _isDetectingTarget = false;
         }
+    }
+
+    private async UniTaskVoid StartDetectAsync()
+    {
+        _isDetectingTarget = true;
+        _movement?.Stop();
+
+        try
+        {
+            if (_currentTarget != null && _movement != null)
+            {
+                await _movement.FaceTargetAsync(_currentTarget.position);
+            }
+
+            _anim?.PlayDetect();
+
+            await UniTask.Delay(
+                TimeSpan.FromSeconds(_anim.DetectDuration),
+                cancellationToken: this.GetCancellationTokenOnDestroy());
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        _hasDetectedTarget = true;
+        _isDetectingTarget = false;
     }
 
     private void UpdateState()
     {
+        if (_movement != null && _movement.IsJumping) return;
+
+        if (_isDetectingTarget)
+        {
+            _movement?.Stop();
+            return;
+        }
+
         if (_currentTarget == null)
         {
             HandleIdleOrReturn();
