@@ -1,8 +1,8 @@
+using UnityEngine;
+using UnityEngine.AI;
 using Photon.Pun;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.AI;
 
 public class TroublemakerSpawner : MonoBehaviour
 {
@@ -12,6 +12,8 @@ public class TroublemakerSpawner : MonoBehaviour
     [Header("방해꾼 스폰 수")]
     [SerializeField] private int _minSpawnCount = 3;
     [SerializeField] private int _maxSpawnCount = 5;
+
+    private readonly List<TroublemakerController> _spawnedTroublemakers = new();
 
     public void SpawnAll(int floor, int seed)
     {
@@ -56,38 +58,30 @@ public class TroublemakerSpawner : MonoBehaviour
         return entries.Where(e => e.SpawnMode == mode).ToList();
     }
 
-    private void SpawnByRandomCell(List<TroublemakerSpawnEntry> spawnableEntries, System.Random random)
+    private void SpawnByRandomCell(List<TroublemakerSpawnEntry> randomCellEntries, System.Random random)
     {
-        List<TroublemakerSpawnEntry> randomCellEntries = new();
-        for (int i = 0; i < spawnableEntries.Count; i++)
-        {
-            if (spawnableEntries[i].SpawnMode == ETroublemakerSpawnMode.RandomCell)
-            {
-                randomCellEntries.Add(spawnableEntries[i]);
-            }
-        }
-
-        if (randomCellEntries.Count == 0) return;
+        if (randomCellEntries == null || randomCellEntries.Count == 0) return;
 
         List<TerrainCell> candidates = FindRandomCellCandidates();
         if (candidates.Count == 0) return;
 
-        Shuffle(randomCellEntries, random);
         Shuffle(candidates, random);
 
         int desiredCount = random.Next(_minSpawnCount, _maxSpawnCount + 1);
-        int spawnCount = Mathf.Min(desiredCount, randomCellEntries.Count, candidates.Count);
+        int spawnCount = Mathf.Min(desiredCount, candidates.Count);
 
         for (int i = 0; i < spawnCount; i++)
         {
-            TroublemakerSpawnEntry entry = randomCellEntries[i];
             TerrainCell cell = candidates[i];
 
             if (!TryGetSpawnPositionFromCell(cell, out Vector3 spawnPosition))
             {
-                Debug.LogWarning($"[TroublemakerSpawner] 셀 스폰 위치 계산 실패: {entry.TroublemakerId}");
+                Debug.LogWarning($"[TroublemakerSpawner] 셀 스폰 위치 계산 실패");
                 continue;
             }
+
+            int entryIndex = random.Next(randomCellEntries.Count);
+            TroublemakerSpawnEntry entry = randomCellEntries[entryIndex];
 
             Spawn(entry, spawnPosition);
         }
@@ -179,7 +173,15 @@ public class TroublemakerSpawner : MonoBehaviour
             return;
         }
 
-        GameObject obj = Instantiate(entry.Prefab, spawnPosition, Quaternion.identity);
+        GameObject obj;
+        if (PhotonNetwork.IsConnected)
+        {
+            obj = PhotonNetwork.Instantiate(entry.Prefab.name, spawnPosition, Quaternion.identity);
+        }
+        else
+        {
+            obj = Instantiate(entry.Prefab, spawnPosition, Quaternion.identity);
+        }
 
         if (!obj.TryGetComponent(out TroublemakerController controller))
         {
@@ -189,6 +191,7 @@ public class TroublemakerSpawner : MonoBehaviour
         }
 
         controller.Initialize(entry.Data, spawnPosition);
+        _spawnedTroublemakers.Add(controller);
     }
 
     private Vector3 GetPlayerPosition()
@@ -213,5 +216,29 @@ public class TroublemakerSpawner : MonoBehaviour
             int j = random.Next(i + 1);
             (list[i], list[j]) = (list[j], list[i]);
         }
+    }
+
+    public void DespawnAll()
+    {
+        for (int i = _spawnedTroublemakers.Count - 1; i >= 0; i--)
+        {
+            TroublemakerController controller = _spawnedTroublemakers[i];
+            if (controller == null) continue;
+
+            if (PhotonNetwork.IsConnected)
+            {
+                PhotonView view = controller.GetComponent<PhotonView>();
+                if (view != null && PhotonNetwork.IsMasterClient)
+                {
+                    PhotonNetwork.Destroy(controller.gameObject);
+                }
+            }
+            else
+            {
+                Destroy(controller.gameObject);
+            }
+        }
+
+        _spawnedTroublemakers.Clear();
     }
 }

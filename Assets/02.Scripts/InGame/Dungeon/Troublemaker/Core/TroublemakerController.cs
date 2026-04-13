@@ -19,10 +19,10 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     [SerializeField] private TroublemakerDataSO _data;
 
     [Header("거리 유지 옵션")]
-    [SerializeField] private float _separationMinRadius = 1.8f;
-    [SerializeField] private float _separationMaxRadius = 2.2f;
-    [SerializeField] private float _separationMinWeight = 1.2f;
-    [SerializeField] private float _separationMaxWeight = 1.5f;
+    [SerializeField] private float _minSeparationRadius = 1.8f;
+    [SerializeField] private float _maxSeparationRadius = 2.2f;
+    [SerializeField] private float _minSeparationWeight = 1.2f;
+    [SerializeField] private float _maxSeparationWeight = 1.5f;
     [SerializeField] private LayerMask _troublemakerLayerMask = ~0;
 
     private ITroublemakerBehaviour _behaviour;
@@ -32,8 +32,8 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     private float _homeArrivalDistance = 1.5f;
     private float _sampleMaxDistance = 2f;
 
-    private float _separationRadius => Mathf.Lerp(_separationMinRadius, _separationMaxRadius, Random.value);
-    private float _separationWeight => Mathf.Lerp(_separationMinWeight, _separationMaxWeight, Random.value);
+    private float _separationRadius => Mathf.Lerp(_minSeparationRadius, _maxSeparationRadius, Random.value);
+    private float _separationWeight => Mathf.Lerp(_minSeparationWeight, _maxSeparationWeight, Random.value);
 
     public TroublemakerDataSO Data => _data;
     public Vector3 HomePosition => _homePosition;
