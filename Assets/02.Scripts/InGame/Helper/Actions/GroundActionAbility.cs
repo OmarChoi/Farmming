@@ -39,6 +39,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     private HelperAnimationAbility _animAbility;
     private GroundSelectAbility _groundSelector;
+    private bool _suppressSelectionBubble;
+
+    public bool ShouldShowSelectionBubble => !_suppressSelectionBubble;
 
     protected override void Awake()
     {
@@ -77,6 +80,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (PhotonNetwork.IsConnected && !_owner.IsMine) return;
 
         if (!CanRemoveCell(cell)) return;
+        SuppressSelectionBubble();
 
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
         {
@@ -85,7 +89,10 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             bool isFarmLand = IsFarmLandCell(cell);
             TerrainCell detachedCell = DetachCellForPrimaryDig(cell, isFarmLand);
             if (detachedCell == null)
+            {
+                RestoreSelectionBubble();
                 return;
+            }
 
             StartPrimaryDigAction();
             PlayPrimaryDigAnimation(detachedCell);
@@ -386,6 +393,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _owner.EndAction();
     }
 
+    private void SuppressSelectionBubble()
+    {
+        _suppressSelectionBubble = true;
+    }
+
+    private void RestoreSelectionBubble()
+    {
+        _suppressSelectionBubble = false;
+    }
+
     private void BroadcastDigAnimation(Vector3Int gridPosition, bool isFarmLand)
     {
         if (isFarmLand)
@@ -419,6 +436,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (_mouthPoint == null)
         {
             Destroy(cell.gameObject);
+            RestoreSelectionBubble();
             _animAbility?.Play(EHelperAnim.Idle);
             return;
         }
@@ -431,6 +449,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
                       .OnComplete(() =>
                       {
                           Destroy(cell.gameObject);
+                          RestoreSelectionBubble();
                           _animAbility?.Play(EHelperAnim.Idle);
                       });
 
@@ -520,6 +539,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     private void OnDisable()
     {
+        RestoreSelectionBubble();
         _owner?.EndAction();
     }
 

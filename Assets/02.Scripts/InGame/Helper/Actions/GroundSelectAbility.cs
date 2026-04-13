@@ -16,23 +16,17 @@ public class GroundSelectAbility : HelperAbility
     [SerializeField] private float _sideOffset = 2.05f;
     [SerializeField] private float _forwardOffset = 0.05f;
 
-    private List<(int slotIndex, ItemDataSO item)> _availableGrounds = new();
-    private int _selectedIndex = -1;
+    private readonly List<ItemDataSO> _availableGrounds = new();
+    private ItemDataSO _selectedGround;
     private PlayerInventoryAbility _inventory;
     private GroundActionAbility _groundActionAbility;
     private HelperController _helperController;
     private Camera _mainCamera;
     private bool _lastCanShowBubble;
 
-    public ItemDataSO SelectedGround =>
-        _selectedIndex >= 0 && _selectedIndex < _availableGrounds.Count
-            ? _availableGrounds[_selectedIndex].item
-            : null;
+    public ItemDataSO SelectedGround => _selectedGround;
 
-    public int SelectedGroundSlotIndex =>
-        _selectedIndex >= 0 && _selectedIndex < _availableGrounds.Count
-            ? _availableGrounds[_selectedIndex].slotIndex
-            : -1;
+    public int SelectedGroundSlotIndex => FindGroundSlotIndex(_selectedGround);
 
     public int SelectedGroundCount => GetGroundCount(SelectedGround);
     public bool HasSelectedGroundAvailable => SelectedGround != null && SelectedGroundCount > 0;
@@ -106,14 +100,18 @@ public class GroundSelectAbility : HelperAbility
     private void SelectNext()
     {
         if (_availableGrounds.Count == 0) return;
-        _selectedIndex = (_selectedIndex + 1) % _availableGrounds.Count;
-        OnGroundSelected?.Invoke(SelectedGround);
+        int currentIndex = GetSelectedGroundIndex();
+        currentIndex = (currentIndex + 1 + _availableGrounds.Count) % _availableGrounds.Count;
+        _selectedGround = _availableGrounds[currentIndex];
+        NotifySelectionChanged();
     }
 
     private void SelectPrev()
     {
         if (_availableGrounds.Count == 0) return;
-        _selectedIndex = (_selectedIndex - 1 + _availableGrounds.Count) % _availableGrounds.Count;
+        int currentIndex = GetSelectedGroundIndex();
+        currentIndex = (currentIndex - 1 + _availableGrounds.Count) % _availableGrounds.Count;
+        _selectedGround = _availableGrounds[currentIndex];
         NotifySelectionChanged();
     }
 
@@ -122,11 +120,10 @@ public class GroundSelectAbility : HelperAbility
         if (groundItem == null || _inventory == null)
             return false;
 
-        int selectedGroundIndex = _availableGrounds.FindIndex(entry => entry.item == groundItem);
-        if (selectedGroundIndex < 0 || GetGroundCount(groundItem) <= 0)
+        if (!_availableGrounds.Contains(groundItem))
             return false;
 
-        _selectedIndex = selectedGroundIndex;
+        _selectedGround = groundItem;
         NotifySelectionChanged();
         return true;
     }
@@ -135,7 +132,7 @@ public class GroundSelectAbility : HelperAbility
     {
         if (_inventory == null)
         {
-            _selectedIndex = -1;
+            _selectedGround = null;
             NotifySelectionChanged();
             return;
         }
@@ -148,15 +145,13 @@ public class GroundSelectAbility : HelperAbility
 
             if (CanUseGroundItem(slot.Item))
             {
-                _availableGrounds.Add((i, slot.Item));
+                if (!_availableGrounds.Contains(slot.Item))
+                    _availableGrounds.Add(slot.Item);
             }
         }
 
-        if (_selectedIndex >= _availableGrounds.Count)
-            _selectedIndex = _availableGrounds.Count - 1;
-
-        if (_selectedIndex < 0 && _availableGrounds.Count > 0)
-            _selectedIndex = 0;
+        if (_selectedGround == null && _availableGrounds.Count > 0)
+            _selectedGround = _availableGrounds[0];
 
         NotifySelectionChanged();
     }
@@ -180,6 +175,36 @@ public class GroundSelectAbility : HelperAbility
         return _inventory.GetItemCount(groundItem);
     }
 
+    private int FindGroundSlotIndex(ItemDataSO groundItem)
+    {
+        if (groundItem == null || _inventory == null)
+            return -1;
+
+        for (int i = 0; i < _inventory.SlotCount; i++)
+        {
+            InventorySlot slot = _inventory.GetSlot(i);
+            if (slot == null || slot.IsEmpty)
+                continue;
+
+            if (slot.Item == groundItem)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private int GetSelectedGroundIndex()
+    {
+        if (_availableGrounds.Count == 0)
+            return -1;
+
+        int currentIndex = _availableGrounds.IndexOf(_selectedGround);
+        if (currentIndex < 0)
+            currentIndex = 0;
+
+        return currentIndex;
+    }
+
     private void NotifySelectionChanged()
     {
         ItemDataSO selectedGround = SelectedGround;
@@ -193,7 +218,7 @@ public class GroundSelectAbility : HelperAbility
             return;
 
         int count = SelectedGroundCount;
-        bool shouldShow = groundItem != null && count > 0 && CanShowBubble();
+        bool shouldShow = groundItem != null && CanShowBubble();
         _bubbleRoot.SetActive(shouldShow);
 
         if (!shouldShow)
@@ -213,6 +238,7 @@ public class GroundSelectAbility : HelperAbility
     {
         return _helperController != null
                && _helperController.State == EHelperState.Equipped
+               && (_groundActionAbility == null || _groundActionAbility.ShouldShowSelectionBubble)
                && !_helperController.IsActing;
     }
 
