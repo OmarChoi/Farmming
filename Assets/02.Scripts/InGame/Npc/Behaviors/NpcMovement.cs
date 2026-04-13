@@ -11,7 +11,7 @@ public class NpcMovement : MonoBehaviour
     private NavMeshAgent _agent;
     private IMovementAnimator _anim;
 
-    private Coroutine _rotateCoroutine;
+    private CancellationTokenSource _rotateCts;
     private bool _isOwner;
 
     [Header("이동 옵션")]
@@ -133,43 +133,49 @@ public class NpcMovement : MonoBehaviour
     // Npc가 특정 위치를 바라보도록 합니다.
     public UniTask FaceTargetAsync(Vector3 targetPosition)
     {
-        if (_rotateCoroutine != null)
-        {
-            StopCoroutine(_rotateCoroutine);
-        }
+        CancelRotate();
 
-        var tcs = new UniTaskCompletionSource();
-        _rotateCoroutine = StartCoroutine(RotateCoroutine(targetPosition, tcs));
-        return tcs.Task;
+        _rotateCts = CancellationTokenSource.CreateLinkedTokenSource(
+            this.GetCancellationTokenOnDestroy());
+
+        return RotateAsync(targetPosition, _rotateCts.Token);
     }
 
-    private IEnumerator RotateCoroutine(Vector3 targetPosition, UniTaskCompletionSource tcs)
+    private async UniTask RotateAsync(Vector3 targetPosition, CancellationToken cancellationToken)
     {
         Vector3 direction = targetPosition - transform.position;
         direction.y = 0f;
 
-        if (direction.sqrMagnitude < 0.001f)
-        {
-            tcs.TrySetResult();
-            yield break;
-        }
+        if (direction.sqrMagnitude < 0.001f) return;
 
         Quaternion targetRotation = Quaternion.LookRotation(direction);
 
         while (true)
         {
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRotation,
+                _rotationSpeed * Time.deltaTime);
 
             _anim?.SetMove(_turnMoveSpeed);
 
-            // 거의 다 돌았으면 종료합니다.
             if (Quaternion.Angle(transform.rotation, targetRotation) < MinAngle) break;
-            yield return null;
-        }
-        transform.rotation = targetRotation;
 
-        // 완료 신호를 보내줍니다.
-        tcs.TrySetResult();
+            await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+        }
+
+        transform.rotation = targetRotation;
+    }
+
+    private void CancelRotate()
+    {
+        if (_rotateCts == null) return;
+
+        _rotateCts.Cancel();
+        _rotateCts.Dispose();
+        _rotateCts = null;
     }
 
     // 하루가 지났을 때 Npc의 위치를 처음 스케줄 장소로 이동시킵니다.
@@ -184,15 +190,6 @@ public class NpcMovement : MonoBehaviour
         _agent.ResetPath();
         _agent.Warp(position);
         _agent.velocity = Vector3.zero;
-    }
-
-    public bool HasArrived()
-    {
-        if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh) return false;
-        if (_agent.pathPending) return false;
-
-        return _agent.remainingDistance <= _agent.stoppingDistance
-               && (!_agent.hasPath || _agent.velocity.sqrMagnitude < 0.01f);
     }
 
     // NavMeshLink를 만나면 포물선 모양으로 점프합니다.
@@ -312,5 +309,10 @@ public class NpcMovement : MonoBehaviour
             }
             _isJumping = false;
         }
+    }
+
+    private void OnDestroy()
+    {
+        CancelRotate();
     }
 }

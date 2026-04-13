@@ -24,7 +24,11 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     [SerializeField] private float _maxSeparationRadius = 2.2f;
     [SerializeField] private float _minSeparationWeight = 1.2f;
     [SerializeField] private float _maxSeparationWeight = 1.5f;
-    [SerializeField] private LayerMask _troublemakerLayerMask = ~0;
+    [SerializeField] private LayerMask _troublemakerLayerMask;
+
+    [Header("최적화 옵션")] 
+    [SerializeField] private int _separationBufferSize = 16;
+    private Collider[] _separationHits;
 
     private ITroublemakerBehaviour _behaviour;
     private Transform _currentTarget;
@@ -63,6 +67,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
             _anim = GetComponent<TroublemakerAnimatorController>();
         }
         _behaviour = GetComponent<TroublemakerBehaviourBase>();
+        _separationHits = new Collider[Mathf.Max(1, _separationBufferSize)];
     }
 
     public void Initialize(TroublemakerDataSO data, Vector3 homePosition)
@@ -131,11 +136,11 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
 
         if (_currentTarget == null)
         {
-            Transform newTarget = _sensor.FindNearestTarget(_data.DetectRange);
+            PlayerController newTarget = _sensor.FindNearestTarget(_data.DetectRange);
 
             if (newTarget != null)
             {
-                _currentTarget = newTarget;
+                _currentTarget = newTarget.transform;
 
                 if (!_hasDetectedTarget && !_isDetectingTarget)
                 {
@@ -160,6 +165,8 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         _isDetectingTarget = true;
         _movement?.Stop();
 
+        bool detectCompleted = false;
+
         try
         {
             if (_currentTarget != null && _movement != null)
@@ -172,14 +179,21 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
             await UniTask.Delay(
                 TimeSpan.FromSeconds(_anim.DetectDuration),
                 cancellationToken: this.GetCancellationTokenOnDestroy());
+
+            detectCompleted = true;
         }
         catch (OperationCanceledException)
         {
-            return;
+        }
+        finally
+        {
+            _isDetectingTarget = false;
         }
 
-        _hasDetectedTarget = true;
-        _isDetectingTarget = false;
+        if (detectCompleted)
+        {
+            _hasDetectedTarget = true;
+        }
     }
 
     private void UpdateState()
@@ -244,23 +258,33 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
 
     private Vector3 CalculateSeparationOffset()
     {
-        Collider[] hits = Physics.OverlapSphere(
+        if (_separationHits == null || _separationHits.Length == 0)
+        {
+            return Vector3.zero;
+        }
+
+        float separationRadius = _separationRadius;
+        float separationWeight = _separationWeight;
+
+        int hitCount = Physics.OverlapSphereNonAlloc(
             transform.position,
-            _separationRadius,
+            separationRadius,
+            _separationHits,
             _troublemakerLayerMask,
             QueryTriggerInteraction.Ignore);
 
-        if (hits == null || hits.Length == 0) return Vector3.zero;
+        if (hitCount <= 0) return Vector3.zero;
 
         Vector3 separation = Vector3.zero;
         int count = 0;
 
-        for (int i = 0; i < hits.Length; i++)
+        for (int i = 0; i < hitCount; i++)
         {
-            if (hits[i] == null) continue;
-            if (hits[i].gameObject == gameObject) continue;
+            Collider hit = _separationHits[i];
+            if (hit == null) continue;
+            if (hit.gameObject == gameObject) continue;
 
-            TroublemakerController other = hits[i].GetComponentInParent<TroublemakerController>();
+            TroublemakerController other = hit.GetComponentInParent<TroublemakerController>();
             if (other == null || other == this) continue;
 
             Vector3 away = transform.position - other.transform.position;
@@ -269,7 +293,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
             float distance = away.magnitude;
             if (distance <= 0.001f) continue;
 
-            float strength = 1f - Mathf.Clamp01(distance / _separationRadius);
+            float strength = 1f - Mathf.Clamp01(distance / separationRadius);
             separation += away.normalized * strength;
             count++;
         }
@@ -277,7 +301,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         if (count == 0) return Vector3.zero;
 
         separation /= count;
-        return separation * _separationWeight;
+        return separation * separationWeight;
     }
 
     private void PlayDetectAll()
