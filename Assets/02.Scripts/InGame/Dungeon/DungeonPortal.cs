@@ -51,7 +51,7 @@ public class DungeonPortal : MonoBehaviour, IInteraction
         var config = _dungeonConfigs[floor - 1];
         var inventory = _playerController.GetAbility<PlayerInventoryAbility>();
         int currentGold = CurrencyManager.Instance != null
-            ? (int)(double)CurrencyManager.Instance.GetGold()
+            ? (int)CurrencyManager.Instance.GetGold()
             : 0;
 
         _ui.ShowRequirements(
@@ -64,6 +64,11 @@ public class DungeonPortal : MonoBehaviour, IInteraction
     }
 
     private void OnConfirmEnter(int floor)
+    {
+        OnConfirmEnterAsync(floor).Forget();
+    }
+
+    private async UniTaskVoid OnConfirmEnterAsync(int floor)
     {
         if (!AreAllPlayersNearby())
         {
@@ -97,8 +102,11 @@ public class DungeonPortal : MonoBehaviour, IInteraction
         }
 
         // 골드 차감
-        if (config.EntryCost > 0)
-            CurrencyManager.Instance.TrySpendGold(config.EntryCost);
+        if (config.EntryCost > 0 && !CurrencyManager.Instance.TrySpendGold(config.EntryCost))
+        {
+            _ui.SetDescription("골드가 부족합니다.", backToSelection);
+            return;
+        }
 
         // 재료 차감
         if (config.EntryRequirements != null && config.EntryRequirements.Length > 0)
@@ -108,10 +116,10 @@ public class DungeonPortal : MonoBehaviour, IInteraction
         }
 
         EndInteraction();
-        EnterDungeon(floor);
+        await EnterDungeon(floor);
     }
 
-    private void EnterDungeon(int floor)
+    private async UniTask EnterDungeon(int floor)
     {
         if (PhotonNetwork.IsConnected)
         {
@@ -121,15 +129,28 @@ public class DungeonPortal : MonoBehaviour, IInteraction
 
             if (MapSyncManager.Instance != null)
                 MapSyncManager.Instance.RequestDungeonEntry(floor);
+            return;
         }
-        else
+
+        VillageCache.CapturePlayerPositions();
+        if (TerrainGridManager.Instance != null)
+            VillageCache.Capture(TerrainGridManager.Instance);
+
+        if (SaveManager.Instance != null)
         {
-            VillageCache.CapturePlayerPositions();
-            if (TerrainGridManager.Instance != null)
-                VillageCache.Capture(TerrainGridManager.Instance);
-            DungeonSceneInit.FloorOverride = floor;
-            SceneManager.LoadScene(SceneName.Dungeon1);
+            int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+            try
+            {
+                await SaveManager.Instance.SaveAsync(slot);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[DungeonPortal] Failed to save before offline dungeon entry. {e}");
+            }
         }
+
+        DungeonSceneInit.FloorOverride = floor;
+        SceneManager.LoadScene(SceneName.Dungeon1);
     }
 
     private void OnMasterReceiveEntry(int floor)

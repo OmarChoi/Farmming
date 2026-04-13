@@ -1,5 +1,5 @@
 ﻿[System.Serializable]
-public struct TimeSaveData
+public class TimeSaveData
 {
     public int Day;
     public int Hour;
