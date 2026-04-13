@@ -5,7 +5,6 @@ public class CurrencyManager : MonoBehaviour
 {
     public static CurrencyManager Instance { get; private set; }
 
-    private ICurrencyRepository _repository;
     private Currency _gold;
 
     public event Action<Currency> OnGoldChanged;
@@ -19,8 +18,7 @@ public class CurrencyManager : MonoBehaviour
         }
         Instance = this;
 
-        _repository = new MockCurrencyRepository();
-        _gold = new Currency(_repository.Load());
+        _gold = new Currency(0);
     }
 
     public Currency GetGold()
@@ -28,12 +26,17 @@ public class CurrencyManager : MonoBehaviour
         return _gold;
     }
 
+    internal void LoadGold(int gold)
+    {
+        _gold = new Currency(gold);
+        OnGoldChanged?.Invoke(_gold);
+    }
+
     public void AddGold(int amount)
     {
         if (amount <= 0) return;
 
         _gold += new Currency(amount);
-        _repository.Save((int)_gold);
         OnGoldChanged?.Invoke(_gold);
     }
 
@@ -43,7 +46,6 @@ public class CurrencyManager : MonoBehaviour
         if (!CanAfford(amount)) return false;
 
         _gold -= new Currency(amount);
-        _repository.Save((int)_gold);
         OnGoldChanged?.Invoke(_gold);
         return true;
     }
