@@ -90,7 +90,16 @@ public class NpcSpawnManager : MonoBehaviour
         GameObject npcObject;
         if (PhotonNetwork.IsConnected && !request.IsLocalOnly)
         {
-            npcObject = PhotonNetwork.Instantiate(prefab.name, finalPosition, request.Rotation);
+            // 네트워크 NPC는 등록된 AssetKey만 Photon prefabId로 사용할 수 있게 검증한다.
+            string prefabKey = AssetKey.NetworkPrefab.GetKey(prefab);
+            if (string.IsNullOrEmpty(prefabKey))
+            {
+                Debug.LogError($"[NpcSpawnManager] {prefab.name} Npc doesn't exist in AssetKey.NetworkPrefab");
+                return null;
+            }
+
+            npcObject = PhotonNetwork.Instantiate(prefabKey, finalPosition, request.Rotation);
+            if (npcObject == null) return null;
         }
         else
         {

@@ -44,10 +44,11 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         _onJoinedCallback = onJoined;
         _onFailedCallback = onFailed;
-        RoomId = GenerateRoomId();
-        IsFirstVisit = isFirstVisit;
 
         string vp = visitedPlayerIds != null ? string.Join(",", visitedPlayerIds) : "";
+
+        RoomId = GenerateRoomId();
+        IsFirstVisit = isFirstVisit;
 
         var options = new RoomOptions
         {
@@ -87,21 +88,38 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        _onJoinedCallback?.Invoke();
-        _onJoinedCallback = null;
+        Action joinedCallback = _onJoinedCallback;
+        ClearRoomCallbacks();
+        joinedCallback?.Invoke();
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
         Debug.LogError($"방 생성 실패: {message}");
-        _onFailedCallback?.Invoke();
-        _onFailedCallback = null;
+        Action failedCallback = _onFailedCallback;
+        ClearRoomCallbacks();
+        RoomId = null;
+        failedCallback?.Invoke();
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         Debug.LogError($"방 참가 실패: {message}");
-        _onFailedCallback?.Invoke();
+        Action failedCallback = _onFailedCallback;
+        ClearRoomCallbacks();
+        RoomId = null;
+        PendingRoomId = null;
+        PendingAction = ERoomAction.None;
+        failedCallback?.Invoke();
+    }
+
+    /// <summary>
+    /// 방 생성/입장 1회성 콜백을 정리해 다음 Photon 요청과 섞이지 않게 한다.
+    /// </summary>
+    private void ClearRoomCallbacks()
+    {
+        // 성공/실패 중 어느 쪽으로 끝나도 반대편 콜백까지 함께 비운다.
+        _onJoinedCallback = null;
         _onFailedCallback = null;
     }
 

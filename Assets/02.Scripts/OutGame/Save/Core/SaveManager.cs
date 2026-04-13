@@ -9,7 +9,6 @@ public class SaveManager : MonoBehaviourPun
 
     [SerializeField] private TerrainGridManager _terrainGridManager;
     [SerializeField] private MapManager _mapManager;
-    [SerializeField] private TimeSystem _timeSystem;
 
     private readonly Dictionary<string, PlayerController> _players = new();
     private ISaveRepository _repository;
@@ -146,8 +145,8 @@ public class SaveManager : MonoBehaviourPun
             if (BuildingManager.Instance != null)
                 data.Buildings = BuildingManager.Instance.ExportBuildings();
 
-            if (_timeSystem != null)
-                data.Time = _timeSystem.ExportSaveData();
+            if (TimeSystem.Instance != null)
+                data.Time = TimeSystem.Instance.ExportSaveData();
             
             if (VillageLevelManager.Instance != null)
                 data.Village = VillageLevelManager.Instance.ExportSaveData();
@@ -267,8 +266,8 @@ public class SaveManager : MonoBehaviourPun
         if (BuildingManager.Instance != null && _loadedData.Buildings != null)
             await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
         
-        if (_timeSystem != null)
-            _timeSystem.ImportTimeSaveData(_loadedData.Time);
+        if (TimeSystem.Instance != null)
+            TimeSystem.Instance.ImportTimeSaveData(_loadedData.Time);
 
         _isLoadCompleted = true;
         RestoreRegisteredPlayers();
