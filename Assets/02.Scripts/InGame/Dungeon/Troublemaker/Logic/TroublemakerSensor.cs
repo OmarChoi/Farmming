@@ -2,22 +2,24 @@ using UnityEngine;
 
 public class TroublemakerSensor : MonoBehaviour
 {
-    public Transform FindNearestTarget(float detectRange)
+    public PlayerController FindNearestTarget(float detectRange)
     {
-        PlayerController[] players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        if (SaveManager.Instance == null) return null;
 
-        Transform bestTarget = null;
+        PlayerController bestTarget = null;
         float bestSqrDistance = detectRange * detectRange;
+        Vector3 origin = transform.position;
 
-        for (int i = 0; i < players.Length; i++)
+        foreach (PlayerController player in SaveManager.Instance.RegisteredPlayers)
         {
-            if (players[i] == null) continue;
+            if (player == null) continue;
+            if (!player.gameObject.activeInHierarchy) continue;
 
-            float sqrDistance = (players[i].transform.position - transform.position).sqrMagnitude;
+            float sqrDistance = (player.transform.position - origin).sqrMagnitude;
             if (sqrDistance > bestSqrDistance) continue;
 
             bestSqrDistance = sqrDistance;
-            bestTarget = players[i].transform;
+            bestTarget = player;
         }
 
         return bestTarget;
