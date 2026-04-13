@@ -9,6 +9,8 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
     private CharacterController _characterController;
     private PlayerAnimationAbility _animation;
 
+    private float _minKnockbackDuration = 0.05f;
+
     private bool _isApplyingTrouble;
 
     private void Start()
@@ -57,7 +59,7 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
         _animation?.PlayLavaHit();
 
         float elapsed = 0f;
-        float duration = Mathf.Max(0.05f, context.Duration);
+        float duration = Mathf.Max(_minKnockbackDuration, context.Duration);
 
         while (elapsed < duration)
         {

@@ -47,26 +47,25 @@ public class JungleTroublemakerBehaviour : TroublemakerBehaviourBase
 
     private void ApplyTrouble(Transform target)
     {
-        ITroubleReceiver receiver = target.GetComponentInChildren<ITroubleReceiver>();
-        if (receiver == null || !receiver.CanReceiveTrouble()) return;
+        PlayerController player = target.GetComponentInParent<PlayerController>();
+        if (player == null || player.PhotonView == null) return;
 
-        Vector3 direction = target.position - Controller.transform.position;
+        Vector3 direction = player.transform.position - Controller.transform.position;
         direction.y = 0f;
 
         if (direction.sqrMagnitude < 0.001f)
         {
-            direction = target.forward;
+            direction = player.transform.forward;
         }
 
-        TroubleContext context = new TroubleContext
-        {
-            Source = Controller,
-            EffectType = Controller.Data.TroubleEffectType,
-            Direction = direction.normalized,
-            Power = Controller.Data.TroublePower,
-            Duration = Controller.Data.TroubleDuration
-        };
+        direction.Normalize();
 
-        receiver.ApplyTrouble(context);
+        player.PhotonView.RPC(
+            nameof(PlayerController.RPC_ApplyTrouble),
+            player.PhotonView.Owner,
+            (int)Controller.Data.TroubleEffectType,
+            direction,
+            Controller.Data.TroublePower,
+            Controller.Data.TroubleDuration);
     }
 }
