@@ -13,7 +13,6 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     [SerializeField] private NpcMovement _movement;
     [SerializeField] private TroublemakerSensor _sensor;
     [SerializeField] private TroublemakerAnimatorController _anim;
-    [SerializeField] private MonoBehaviour _behaviourComponent;
 
     [Header("방해꾼 데이터")]
     [SerializeField] private TroublemakerDataSO _data;
@@ -60,8 +59,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         {
             _anim = GetComponent<TroublemakerAnimatorController>();
         }
-
-        _behaviour = _behaviourComponent as ITroublemakerBehaviour;
+        _behaviour = GetComponent<TroublemakerBehaviourBase>();
     }
 
     public void Initialize(TroublemakerDataSO data, Vector3 homePosition)
