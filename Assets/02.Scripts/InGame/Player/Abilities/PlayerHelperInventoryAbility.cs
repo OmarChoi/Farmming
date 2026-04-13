@@ -109,6 +109,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         TimeEvents.OnNetDayStarted += HandleMorning;
         UI_Inventory.SeedSelectionRequested += HandleSeedSelectionRequested;
         UI_Inventory.GroundSelectionRequested += HandleGroundSelectionRequested;
+        UI_Inventory.FertilizerSelectionRequested += HandleFertilizerSelectionRequested;
         OnLocalPlayerReady?.Invoke(this);
     }
 
@@ -119,6 +120,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         {
             UI_Inventory.SeedSelectionRequested -= HandleSeedSelectionRequested;
             UI_Inventory.GroundSelectionRequested -= HandleGroundSelectionRequested;
+            UI_Inventory.FertilizerSelectionRequested -= HandleFertilizerSelectionRequested;
         }
     }
 
@@ -571,6 +573,27 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 #if UNITY_EDITOR
         if (selected)
             Debug.Log($"Ground selected: {groundItem.DisplayName}");
+#endif
+
+        return selected;
+    }
+
+    private bool HandleFertilizerSelectionRequested(ItemDataSO fertilizerItem)
+    {
+        if (fertilizerItem == null || _activeMainHelper == null)
+            return false;
+        if (_activeMainHelper.GetAbility<HarvestActionAbility>() == null)
+            return false;
+
+        HarvestFertilizerSelectAbility fertilizerSelectAbility = _activeMainHelper.GetAbility<HarvestFertilizerSelectAbility>();
+        if (fertilizerSelectAbility == null)
+            return false;
+
+        bool selected = fertilizerSelectAbility.TrySelectFertilizer(fertilizerItem);
+
+#if UNITY_EDITOR
+        if (selected)
+            Debug.Log($"Harvest fertilizer selected: {fertilizerItem.DisplayName}");
 #endif
 
         return selected;
