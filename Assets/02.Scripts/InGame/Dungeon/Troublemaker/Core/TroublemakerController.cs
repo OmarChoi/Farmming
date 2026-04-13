@@ -151,7 +151,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
                 await _movement.FaceTargetAsync(_currentTarget.position);
             }
 
-            _anim?.PlayDetect();
+            PlayDetectAll();
 
             await UniTask.Delay(
                 TimeSpan.FromSeconds(_anim.DetectDuration),
@@ -262,5 +262,37 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
 
         separation /= count;
         return separation * _separationWeight;
+    }
+
+    private void PlayDetectAll()
+    {
+        _anim?.PlayDetect();
+
+        if (HasAuthority && PhotonNetwork.IsConnected && PhotonView != null)
+        {
+            PhotonView.RPC(nameof(RPC_PlayDetect), RpcTarget.Others);
+        }
+    }
+
+    public void PlayTroubleAll()
+    {
+        _anim?.PlayTrouble();
+
+        if (HasAuthority && PhotonNetwork.IsConnected && PhotonView != null)
+        {
+            PhotonView.RPC(nameof(RPC_PlayTrouble), RpcTarget.Others);
+        }
+    }
+
+    [PunRPC]
+    private void RPC_PlayDetect()
+    {
+        _anim?.PlayDetect();
+    }
+
+    [PunRPC]
+    private void RPC_PlayTrouble()
+    {
+        _anim?.PlayTrouble();
     }
 }
