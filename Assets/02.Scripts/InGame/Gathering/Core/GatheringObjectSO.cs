@@ -24,5 +24,13 @@ public class GatheringObjectSO : ScriptableObject
         if (_modelPrefabs == null || _modelPrefabs.Length == 0) return null;
         return _modelPrefabs[Random.Range(0, _modelPrefabs.Length)];
     }
+
+    public GameObject GetModelByIndex(int index)
+    {
+        if (_modelPrefabs == null || _modelPrefabs.Length == 0) return null;
+        return _modelPrefabs[Mathf.Clamp(index, 0, _modelPrefabs.Length - 1)];
+    }
+
+    public int ModelCount => _modelPrefabs != null ? _modelPrefabs.Length : 0;
     public DropEntry[] Drops => _drops;
 }
