@@ -1392,10 +1392,12 @@ MonoBehaviour:
   _absorbDuration: 0.5
   _absorbTargetScale: 0.05
   _digAnimDelay: 0.2
+  _remoteDigStateSyncDelay: 0.05
   _placeAnimLeadTime: 0.3
   _placeHorizontalDuration: 0.1
   _placeHoverDuration: 0.2
   _placeDropDuration: 0.15
+  _remotePlaceStateSyncDelay: 0.05
 --- !u!114 &1475702922432846875
 MonoBehaviour:
   m_ObjectHideFlags: 0
