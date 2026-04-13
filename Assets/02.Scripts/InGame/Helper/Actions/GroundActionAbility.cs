@@ -79,7 +79,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
         {
             Vector3Int pos = cell.GridPosition;
-            _owner.BeginAction();
+
+            bool isFarmLand = IsFarmLandCell(cell);
+            TerrainCell detachedCell = DetachCellForPrimaryDig(cell, isFarmLand);
+            if (detachedCell == null)
+                return;
+
+            StartPrimaryDigAction();
+            PlayPrimaryDigAnimation(detachedCell);
+            FinishPrimaryDigAction();
+
             _owner.PhotonView.RpcSafe(
                 nameof(RPC_RequestDigPrimary),
                 RpcTarget.MasterClient,
