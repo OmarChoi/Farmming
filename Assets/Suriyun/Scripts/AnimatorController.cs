@@ -42,7 +42,10 @@ namespace Suriyun
 
             foreach (Animator a in animators)
             {
-                a.SetInteger(name, value);
+                if (a != null && a.runtimeAnimatorController != null && a.isActiveAndEnabled)
+                {
+                    a.SetInteger(name, value);
+                }
             }
         }
 

@@ -26,6 +26,8 @@ public class SaveManager : MonoBehaviourPun
     private PlayerSaveData _pendingPlayerSave;
     private int _pendingSlot;
 
+    public IReadOnlyCollection<PlayerController> RegisteredPlayers => _players.Values;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
