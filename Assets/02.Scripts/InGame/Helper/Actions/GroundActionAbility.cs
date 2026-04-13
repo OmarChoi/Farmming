@@ -28,6 +28,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _absorbDuration = 0.5f; // 흡수 시간
     [SerializeField] private float _absorbTargetScale = 0.05f;
     [SerializeField] private float _digAnimDelay = 0.2f;
+    [SerializeField] private float _remoteDigStateSyncDelay = 0.05f;
 
     [Header("땅 생성 액션")]
     [SerializeField] private float _placeAnimLeadTime = 0.3f; // cell움직임 보다 먼저 애니메이션 실행
@@ -331,10 +332,17 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         bool isFarmLand,
         bool broadcastAnimationToOthers)
     {
-        BroadcastGroundStateFromMaster(detachedGridPosition);
-
         if (broadcastAnimationToOthers)
+        {
             BroadcastDigAnimation(originalGridPosition, isFarmLand);
+            DOVirtual.DelayedCall(
+                Mathf.Max(0f, _remoteDigStateSyncDelay),
+                () => BroadcastGroundStateFromMaster(detachedGridPosition))
+                .SetTarget(gameObject);
+            return;
+        }
+
+        BroadcastGroundStateFromMaster(detachedGridPosition);
     }
 
     private void HandlePrimaryDigRewards(
