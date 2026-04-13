@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 public static class AssetKey
@@ -36,50 +38,33 @@ public static class AssetKey
         public const string WoodCuttingEpicHelper = "WoodCuttingEpicHelper";
         public const string WoodCuttingLegendaryHelper = "WoodCuttingLegendaryHelper";
 
-        private static readonly string[] _all =
-        {
-            Player,
-            Blacksmith,
-            Hairdresser,
-            NpcTest,
-            GroundHelper,
-            LightHelper,
-            HarvestHelper,
-            HarvestEpicHelper,
-            HarvestLegendaryHelper,
-            SowHelper,
-            SowEpicHelper,
-            SowLegendaryHelper,
-            WaterHelper,
-            WaterEpicHelper,
-            WaterLegendaryHelper,
-            WoodCuttingHelper,
-            WoodCuttingEpicHelper,
-            WoodCuttingLegendaryHelper
-        };
+        // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
+        private static readonly string[] _all = typeof(NetworkPrefab)
+            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+            .Where(f => f.IsLiteral && !f.IsInitOnly && f.FieldType == typeof(string))
+            .Select(f => (string)f.GetRawConstantValue())
+            .ToArray();
 
         private static readonly HashSet<string> _registered = new HashSet<string>(_all);
 
         /// <summary>
-        /// preload와 Addressables 검증에 사용할 전체 네트워크 프리팹 키 목록을 반환한다.
+        /// preload/Addressables 검증에 쓰이는 전체 네트워크 프리팹 키 목록.
         /// </summary>
         public static IReadOnlyList<string> All => _all;
 
         /// <summary>
-        /// 주어진 키가 네트워크 프리팹으로 등록되어 있는지 확인한다.
+        /// 주어진 키가 등록된 네트워크 프리팹인지 확인한다.
         /// </summary>
         public static bool Contains(string key)
         {
-            // 빈 문자열은 주소로 사용할 수 없으므로 등록 여부와 함께 걸러낸다.
             return !string.IsNullOrEmpty(key) && _registered.Contains(key);
         }
 
         /// <summary>
-        /// 프리팹 GameObject에서 네트워크 프리팹 키를 검증해 반환한다.
+        /// 프리팹 GameObject의 이름을 네트워크 프리팹 키로 검증해 반환한다.
         /// </summary>
         public static string GetKey(GameObject prefab)
         {
-            // null 프리팹은 PhotonNetwork.Instantiate까지 흘려보내지 않고 즉시 실패시킨다.
             if (prefab == null)
             {
                 Debug.LogError("[AssetKey.NetworkPrefab] Prefab is null.");
@@ -90,11 +75,10 @@ public static class AssetKey
         }
 
         /// <summary>
-        /// 프리팹 컴포넌트에서 네트워크 프리팹 키를 검증해 반환한다.
+        /// 컴포넌트에서 소속 GameObject의 이름을 네트워크 프리팹 키로 검증해 반환한다.
         /// </summary>
         public static string GetKey(Component prefab)
         {
-            // SO가 컴포넌트 타입 프리팹을 들고 있는 헬퍼 케이스를 GameObject 검증으로 합류시킨다.
             if (prefab == null)
             {
                 Debug.LogError("[AssetKey.NetworkPrefab] Prefab component is null.");
@@ -105,11 +89,10 @@ public static class AssetKey
         }
 
         /// <summary>
-        /// 문자열 프리팹 이름이 등록된 네트워크 프리팹 키인지 검증해 반환한다.
+        /// 문자열 이름이 등록된 네트워크 프리팹 키와 일치하는지 검증해 반환한다.
         /// </summary>
         public static string GetKey(string prefabName)
         {
-            // prefab.name 직접 사용을 허용하되 등록된 상수와 일치하는 경우에만 통과시킨다.
             if (Contains(prefabName)) return prefabName;
 
             Debug.LogError($"[AssetKey.NetworkPrefab] Unregistered network prefab key: {prefabName}");

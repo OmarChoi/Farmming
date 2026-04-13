@@ -92,7 +92,11 @@ public class NpcSpawnManager : MonoBehaviour
         {
             // 네트워크 NPC는 등록된 AssetKey만 Photon prefabId로 사용할 수 있게 검증한다.
             string prefabKey = AssetKey.NetworkPrefab.GetKey(prefab);
-            if (string.IsNullOrEmpty(prefabKey)) return null;
+            if (string.IsNullOrEmpty(prefabKey))
+            {
+                Debug.LogError($"[NpcSpawnManager] {prefabKey} Npc doesn't exist in AssetKey.NetworkPrefab");
+                return null;
+            }
 
             npcObject = PhotonNetwork.Instantiate(prefabKey, finalPosition, request.Rotation);
             if (npcObject == null) return null;
