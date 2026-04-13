@@ -35,6 +35,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _placeHorizontalDuration = 0.1f;
     [SerializeField] private float _placeHoverDuration = 0.2f; //땅이 잠깐 뜨는 시간
     [SerializeField] private float _placeDropDuration = 0.15f;
+    [SerializeField] private float _remotePlaceStateSyncDelay = 0.05f;
 
     private HelperAnimationAbility _animAbility;
     private GroundSelectAbility _groundSelector;
@@ -151,11 +152,21 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             _animAbility?.Play(EHelperAnim.Idle);
         }
 
-        BroadcastGroundStateFromMaster(targetGridPos);
-
         _owner.PhotonView.RpcSafe(
             nameof(RPC_PlaceBlockWithAnimation), RpcTarget.Others,
             targetGridPos.x, targetGridPos.y, targetGridPos.z, (int)tileType, _generateDirtAmount);
+
+        if (PhotonNetwork.IsConnected)
+        {
+            DOVirtual.DelayedCall(
+                Mathf.Max(0f, _remotePlaceStateSyncDelay),
+                () => BroadcastGroundStateFromMaster(targetGridPos))
+                .SetTarget(gameObject);
+        }
+        else
+        {
+            BroadcastGroundStateFromMaster(targetGridPos);
+        }
 
         inventory.RemoveAt(groundSlotIndex, _generateDirtAmount);
 
