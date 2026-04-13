@@ -48,7 +48,20 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
     {
         if (_gatheringData == null || _modelRoot == null) return;
 
-        var modelPrefab = _gatheringData.GetRandomModel();
+        GameObject modelPrefab;
+        if (_rootCell != null && _gatheringData.ModelCount > 1)
+        {
+            // 그리드 좌표 기반 결정적 선택 — 모든 클라이언트가 동일한 모델을 봄
+            var pos = _rootCell.GridPosition;
+            int hash = pos.x * 73856093 ^ pos.y * 19349669 ^ pos.z * 83492791;
+            int index = ((hash % _gatheringData.ModelCount) + _gatheringData.ModelCount) % _gatheringData.ModelCount;
+            modelPrefab = _gatheringData.GetModelByIndex(index);
+        }
+        else
+        {
+            modelPrefab = _gatheringData.GetRandomModel();
+        }
+
         if (modelPrefab == null) return;
 
         if (_modelInstance != null)

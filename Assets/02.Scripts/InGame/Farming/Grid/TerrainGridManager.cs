@@ -30,6 +30,7 @@ public class TerrainGridManager : MonoBehaviour
     public float CellSize => _cellSize;
     public IReadOnlyDictionary<Vector3Int, TerrainCell> Cells => _cells;
 
+    public int MaxHeight => _maxHeight;
     public void SetMaxHeight(int maxHeight) => _maxHeight = maxHeight;
 
     public void OverrideObjectPrefabs(GameObject tree, GameObject rock)
