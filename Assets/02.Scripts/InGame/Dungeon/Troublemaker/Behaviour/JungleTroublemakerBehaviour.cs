@@ -26,7 +26,7 @@ public class JungleTroublemakerBehaviour : TroublemakerBehaviourBase
             await Controller.Movement.FaceTargetAsync(target.position);
         }
 
-        Controller.Anim?.PlayTrouble();
+        Controller.PlayTroubleAll();
 
         await UniTask.Delay(
             TimeSpan.FromSeconds(Controller.Data.TroubleHitDelay),
