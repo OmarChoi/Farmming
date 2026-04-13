@@ -511,6 +511,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     [PunRPC]
     internal void RPC_DigWithAnimation(int gridX, int gridY, int gridZ, int toolLevel)
     {
+        if (_owner.IsMine) return;
         TerrainCell detachedCell = TerrainGridManager.Instance?.TryDetachForAnimation(
             new Vector3Int(gridX, gridY, gridZ), toolLevel);
         if (detachedCell == null) return;
@@ -521,6 +522,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     [PunRPC]
     internal void RPC_DigFarmLandWithAnimation(int gridX, int gridY, int gridZ, int toolLevel)
     {
+        if (_owner.IsMine) return;
         var pos = new Vector3Int(gridX, gridY, gridZ);
         TerrainCell cell = TerrainGridManager.Instance?.GetCell(pos);
         if (cell == null) return;
