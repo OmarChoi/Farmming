@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TroublemakerBehaviourBase : MonoBehaviour, ITroublemakerBehaviour
+public abstract class TroublemakerBehaviourBase : MonoBehaviour, ITroublemakerBehaviour
 {
     protected TroublemakerController Controller { get; private set; }
 

@@ -47,7 +47,7 @@ public class JungleTroublemakerBehaviour : TroublemakerBehaviourBase
 
     private void ApplyTrouble(Transform target)
     {
-        ITroubleReceiver receiver = target.GetComponentInParent<ITroubleReceiver>();
+        ITroubleReceiver receiver = target.GetComponentInChildren<ITroubleReceiver>();
         if (receiver == null || !receiver.CanReceiveTrouble()) return;
 
         Vector3 direction = target.position - Controller.transform.position;
