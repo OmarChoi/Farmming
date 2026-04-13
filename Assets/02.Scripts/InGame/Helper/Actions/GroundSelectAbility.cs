@@ -150,8 +150,8 @@ public class GroundSelectAbility : HelperAbility
             }
         }
 
-        if (_selectedGround == null && _availableGrounds.Count > 0)
-            _selectedGround = _availableGrounds[0];
+        if (_selectedGround != null && !CanUseGroundItem(_selectedGround))
+            _selectedGround = null;
 
         NotifySelectionChanged();
     }
