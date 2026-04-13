@@ -165,6 +165,12 @@ public class PlayerGridIndicatorAbility : PlayerAbility
         if (helper == null || action == null || cell == null)
             return false;
 
+        if (helper.GetAbility<GroundActionAbility>() != null)
+            return CanShowGroundPrimaryIndicator(action, cell);
+
+        if (helper.GetAbility<WoodCuttingMineActionAbility>() != null)
+            return CanShowWoodPrimaryIndicator(action, cell);
+
         if (helper.GetAbility<WaterActionAbility>() != null)
             return CanShowWaterPrimaryIndicator(helper, cell);
 
@@ -172,6 +178,14 @@ public class PlayerGridIndicatorAbility : PlayerAbility
             return CanShowSowPrimaryIndicator(cell);
 
         return action.CanInteractPrimary(cell);
+    }
+
+    private bool CanShowWoodPrimaryIndicator(IHelperAction action, TerrainCell cell)
+    {
+        if (cell == null || action == null)
+            return false;
+
+        return action.CanInteractPrimary(cell) || action.CanInteractSecondary(cell);
     }
 
     private bool CanShowWaterPrimaryIndicator(HelperController helper, TerrainCell cell)
@@ -189,6 +203,17 @@ public class PlayerGridIndicatorAbility : PlayerAbility
         }
 
         return true;
+    }
+
+    private bool CanShowGroundPrimaryIndicator(IHelperAction action, TerrainCell cell)
+    {
+        if (cell == null || action == null)
+            return false;
+
+        if (cell.CurrentObject != null)
+            return false;
+
+        return action.CanInteractPrimary(cell);
     }
 
     private bool CanShowSowPrimaryIndicator(TerrainCell cell)
