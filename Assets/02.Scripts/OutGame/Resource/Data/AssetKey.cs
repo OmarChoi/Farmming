@@ -111,12 +111,14 @@ public static class AssetKey
         private const string MarketStall = "MarketStall";
         private const string Smithy = "Smithy";
         private const string HairShop = "HairShop";
+        private const string Shrine = "Shrine";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
         {
             MarketStall,
             Smithy,
-            HairShop
+            HairShop,
+            Shrine
         };
 
         public static string GetKey(string buildingId)
@@ -145,6 +147,7 @@ public static class AssetKey
         public const string Stamina = "UI_Stamina";
         public const string BuildingList = "UI_BuildingList";
         public const string BuildInfo = "UI_BuildInfo";
+        public const string ShrineTest = "UI_ShrineTest";
         public const string VillageState = "UI_VillageState";
         public const string VillageLevelUp = "UI_VillageLevelUp";
 
@@ -152,6 +155,7 @@ public static class AssetKey
         {
             {typeof(UI_BuildingList), BuildingList},
             {typeof(UI_BuildInfo), BuildInfo},
+            {typeof(UI_ShrineTest), ShrineTest},
             {typeof(UI_VillageState), VillageState},
             {typeof(UI_VillageLevelUp), VillageLevelUp},
         };
