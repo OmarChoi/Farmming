@@ -1765,9 +1765,9 @@ MonoBehaviour:
     \uC6D4\uB4DC \uBC84\uD504/\uB514\uBC84\uD504\uAC00 \uC801\uC6A9\uB429\uB2C8\uB2E4."
   _completionRequestText: "\uC758\uB8B0 \uC644\uB8CC \uACB0\uACFC\uB97C \uC120\uD0DD\uD574
     \uC8FC\uC138\uC694."
-  _successEffectId: Shrine_Test_Blessing
-  _failureEffectId: Shrine_Test_Curse
-  _testEffectDurationDays: 2
+  _successEffectId: IncreaseSellingPrice
+  _failureEffectId: DecreaseSellingPrice
+  _testEffectDurationDays: 7
 --- !u!65 &606606606606606607
 BoxCollider:
   m_ObjectHideFlags: 0

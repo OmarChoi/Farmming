@@ -11,9 +11,9 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
     [SerializeField] private string _completionRequestText = "의뢰 완료 결과를 선택해 주세요.";
 
     [Header("Test World Effects")]
-    [SerializeField] private string _successEffectId = "Shrine_Test_Blessing";
-    [SerializeField] private string _failureEffectId = "Shrine_Test_Curse";
-    [SerializeField] private int _testEffectDurationDays = 2;
+    [SerializeField] private string _successEffectId = "IncreaseSellingPrice";
+    [SerializeField] private string _failureEffectId = "DecreaseSellingPrice";
+    [SerializeField] private int _testEffectDurationDays = 7;
 
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
