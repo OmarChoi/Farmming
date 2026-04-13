@@ -94,7 +94,7 @@ public class NpcSpawnManager : MonoBehaviour
             string prefabKey = AssetKey.NetworkPrefab.GetKey(prefab);
             if (string.IsNullOrEmpty(prefabKey))
             {
-                Debug.LogError($"[NpcSpawnManager] {prefabKey} Npc doesn't exist in AssetKey.NetworkPrefab");
+                Debug.LogError($"[NpcSpawnManager] {prefab.name} Npc doesn't exist in AssetKey.NetworkPrefab");
                 return null;
             }
 

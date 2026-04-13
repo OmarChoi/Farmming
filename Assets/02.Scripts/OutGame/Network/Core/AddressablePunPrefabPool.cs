@@ -84,7 +84,7 @@ public sealed class AddressablePunPrefabPool : IPunPrefabPool
     {
         if (!_prefabs.TryGetValue(prefabId, out GameObject prefab) || prefab == null)
         {
-            throw new NullReferenceException($"[AddressablePunPrefabPool] prefabId '{prefabId}' not preloaded");
+            throw new InvalidOperationException($"[AddressablePunPrefabPool] prefabId '{prefabId}' not preloaded");
         }
 
         // PhotonView ID 할당 전에 Awake/OnEnable이 돌지 않도록 원본을 잠시 비활성화 후 Instantiate.
