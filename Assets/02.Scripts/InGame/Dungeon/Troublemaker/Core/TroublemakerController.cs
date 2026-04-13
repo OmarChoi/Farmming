@@ -1,11 +1,13 @@
-using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class TroublemakerController : MonoBehaviour
+public class TroublemakerController : MonoBehaviourPunCallbacks
 {
     public PhotonView PhotonView { get; private set; }
-    public bool IsMine => PhotonView == null || !PhotonNetwork.IsConnected || PhotonView.IsMine;
+
+    private bool HasAuthority => !PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient;
 
     [Header("참조 컴포넌트")]
     [SerializeField] private NpcMovement _movement;
@@ -17,8 +19,10 @@ public class TroublemakerController : MonoBehaviour
     [SerializeField] private TroublemakerDataSO _data;
 
     [Header("거리 유지 옵션")]
-    [SerializeField] private float _separationRadius = 2.2f;
-    [SerializeField] private float _separationWeight = 1.5f;
+    [SerializeField] private float _separationMinRadius = 1.8f;
+    [SerializeField] private float _separationMaxRadius = 2.2f;
+    [SerializeField] private float _separationMinWeight = 1.2f;
+    [SerializeField] private float _separationMaxWeight = 1.5f;
     [SerializeField] private LayerMask _troublemakerLayerMask = ~0;
 
     private ITroublemakerBehaviour _behaviour;
@@ -27,6 +31,9 @@ public class TroublemakerController : MonoBehaviour
 
     private float _homeArrivalDistance = 1.5f;
     private float _sampleMaxDistance = 2f;
+
+    private float _separationRadius => Mathf.Lerp(_separationMinRadius, _separationMaxRadius, Random.value);
+    private float _separationWeight => Mathf.Lerp(_separationMinWeight, _separationMaxWeight, Random.value);
 
     public TroublemakerDataSO Data => _data;
     public Vector3 HomePosition => _homePosition;
@@ -62,7 +69,7 @@ public class TroublemakerController : MonoBehaviour
 
         if (_movement != null && _data != null)
         {
-            _movement.SetOwner(IsMine);
+            _movement.SetOwner(HasAuthority);
             _movement.Initialize(
                 movementAnimator,
                 _data.WalkSpeed,
@@ -76,12 +83,24 @@ public class TroublemakerController : MonoBehaviour
 
     private void Update()
     {
-        if (!IsMine) return;
-        if (_data == null) return;
+        if (!HasAuthority || _data == null) return;
 
         UpdateTarget();
         UpdateState();
         _behaviour?.Tick(Time.deltaTime);
+    }
+
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        if (_movement != null)
+        {
+            _movement.SetOwner(HasAuthority);
+        }
+
+        if (!HasAuthority)
+        {
+            _currentTarget = null;
+        }
     }
 
     private void UpdateTarget()

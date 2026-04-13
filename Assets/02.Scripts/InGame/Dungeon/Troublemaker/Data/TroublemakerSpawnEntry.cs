@@ -1,5 +1,5 @@
-using System;
 using UnityEngine;
+using System;
 
 [Serializable]
 public class TroublemakerSpawnEntry
@@ -8,7 +8,7 @@ public class TroublemakerSpawnEntry
     public TroublemakerDataSO Data;
 
     [Header("스폰 방식")]
-    public ETroublemakerSpawnMode SpawnMode = ETroublemakerSpawnMode.FixedAnchor;
+    public ETroublemakerSpawnMode SpawnMode = ETroublemakerSpawnMode.RandomCell;
     public string LocationKey;
 
     [Header("스폰 조건")]

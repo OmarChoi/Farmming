@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
+using System;
 
 public class DungeonSceneInit : MonoBehaviourPunCallbacks
 {
@@ -145,6 +146,9 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         PlaceAllPlayers();
         await UniTask.Yield();
+
+        SpawnTroublemakers();
+
         RestoreLocalPlayersAfterDungeonLoad();
         RefreshLocalPlayerCameras();
         StartDungeonTimer();
@@ -330,5 +334,14 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
             { SceneTransitionRoomProps.DungeonFloor, null }
         };
         PhotonNetwork.CurrentRoom.SetCustomProperties(clearRoomProps);
+    }
+
+    private void SpawnTroublemakers()
+    {
+        TroublemakerSpawner spawner = FindFirstObjectByType<TroublemakerSpawner>();
+        if (spawner == null || PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+
+        int seed = SceneTransitionData.SeedReady ? SceneTransitionData.DungeonSeed : Environment.TickCount;
+        spawner.SpawnAll(_floor, seed);
     }
 }
