@@ -4,12 +4,11 @@ using Photon.Pun;
 using UnityEngine;
 
 /// <summary>
-/// Addressables 기반 PUN PrefabPool을 설치하고 네트워크 프리팹 preload를 단일 작업으로 조율한다.
+/// Addressables 기반 PUN PrefabPool 설치 + 네트워크 프리팹 preload 게이트.
+/// 호출은 Unity 메인 스레드에서만 이뤄진다는 전제.
 /// </summary>
 public static class PunPrefabPoolBootstrap
 {
-    private static readonly object _gate = new object();
-
     private static AddressablePunPrefabPool _pool;
     private static UniTaskCompletionSource _preloadCompletion;
     private static bool _preloadInProgress;
@@ -18,43 +17,38 @@ public static class PunPrefabPoolBootstrap
     public static AddressablePunPrefabPool Pool => _pool;
 
     /// <summary>
-    /// PUN PrefabPool이 설치되고 모든 네트워크 프리팹이 로드될 때까지 기다린다.
+    /// PUN PrefabPool을 설치하고 모든 네트워크 프리팹 preload가 끝날 때까지 기다린다.
+    /// 동시 호출은 하나의 preload 작업을 공유한다.
     /// </summary>
     public static async UniTask EnsurePreloadedAsync()
     {
-        // PhotonNetwork.PrefabPool 설정과 Addressables 접근은 Unity 메인 스레드에서 처리한다.
-        await UniTask.SwitchToMainThread();
+#if UNITY_EDITOR
+        // PUN/Addressables는 메인 스레드 전용. 위반 시 스레드풀 컨티뉴에이션에서 터지므로 개발 중 즉시 드러낸다.
+        Debug.Assert(PlayerLoopHelper.MainThreadId == System.Threading.Thread.CurrentThread.ManagedThreadId,
+            "[PunPrefabPoolBootstrap] EnsurePreloadedAsync must run on the Unity main thread.");
+#endif
 
-        UniTask task;
-        lock (_gate)
+        EnsurePoolAssigned();
+
+        if (_pool.IsPreloaded) return;
+
+        if (_preloadCompletion == null || !_preloadInProgress)
         {
-            // 동시에 여러 진입점이 호출되더라도 같은 UniTaskCompletionSource를 공유한다.
-            EnsurePoolAssigned();
-
-            if (_pool.IsPreloaded)
-                return;
-
-            if (_preloadCompletion == null || !_preloadInProgress)
-            {
-                _preloadCompletion = new UniTaskCompletionSource();
-                _preloadInProgress = true;
-                PreloadInternalAsync(_preloadCompletion).Forget();
-            }
-
-            task = _preloadCompletion.Task;
+            _preloadCompletion = new UniTaskCompletionSource();
+            _preloadInProgress = true;
+            PreloadInternalAsync(_preloadCompletion).Forget();
         }
 
-        await task;
+        await _preloadCompletion.Task;
     }
 
     /// <summary>
-    /// 네트워크 프리팹 preload를 시도하고 실패 콜백을 통해 호출부별 복구 처리를 위임한다.
+    /// EnsurePreloadedAsync 래퍼. 실패 시 예외 대신 false와 콜백으로 전달한다.
     /// </summary>
     public static async UniTask<bool> TryEnsurePreloadedAsync(Action<Exception> onFailed = null)
     {
         try
         {
-            // 실패는 예외로 유지하되 반복 호출부의 try-catch 중복은 이 헬퍼에서 흡수한다.
             await EnsurePreloadedAsync();
             return true;
         }
@@ -66,25 +60,20 @@ public static class PunPrefabPoolBootstrap
     }
 
     /// <summary>
-    /// 안전한 종료 시점에 Addressables 프리팹 캐시와 진행 중인 preload 상태를 초기화한다.
+    /// Addressables 캐시와 preload 상태를 초기화한다. 앱 종료 시점에만 호출한다.
     /// </summary>
     public static void ReleaseAll()
     {
-        // 방 이탈이나 일반 씬 전환에서는 호출하지 않고 앱/세션 종료 정책에서만 사용한다.
-        lock (_gate)
-        {
-            _pool?.ReleaseAll();
-            _preloadCompletion = null;
-            _preloadInProgress = false;
-        }
+        _pool?.ReleaseAll();
+        _preloadCompletion = null;
+        _preloadInProgress = false;
     }
 
     /// <summary>
-    /// 현재 PUN PrefabPool을 Addressables 기반 구현으로 보장한다.
+    /// PhotonNetwork.PrefabPool이 AddressablePunPrefabPool 인스턴스인지 확인/보장한다.
     /// </summary>
     private static void EnsurePoolAssigned()
     {
-        // 이미 동일한 풀로 교체된 경우 기존 인스턴스를 계속 사용한다.
         if (PhotonNetwork.PrefabPool is AddressablePunPrefabPool addressablePool)
         {
             _pool = addressablePool;
@@ -92,36 +81,30 @@ public static class PunPrefabPoolBootstrap
             return;
         }
 
-        if (_pool == null)
-        {
-            _pool = new AddressablePunPrefabPool();
-        }
-
+        _pool ??= new AddressablePunPrefabPool();
         PhotonNetwork.PrefabPool = _pool;
         RegisterReleaseOnQuit();
     }
 
     /// <summary>
-    /// 앱 종료 시 Addressables handle을 정리하도록 release 콜백을 한 번만 등록한다.
+    /// 앱 종료 시 Addressables handle을 해제하도록 콜백을 1회 등록한다.
     /// </summary>
     private static void RegisterReleaseOnQuit()
     {
-        if (!_releaseRegistered)
-        {
-            // v1 정책상 방 이탈/씬 전환에서는 유지하고 애플리케이션 종료 때만 handle을 정리한다.
-            Application.quitting += ReleaseAll;
-            _releaseRegistered = true;
-        }
+        if (_releaseRegistered) return;
+        
+        // v1 정책: 방 이탈/씬 전환에서는 유지하고 앱 종료에서만 handle 해제.
+        Application.quitting += ReleaseAll;
+        _releaseRegistered = true;
     }
 
     /// <summary>
-    /// 네트워크 프리팹 preload를 실행하고 실패를 상위 게이트로 전파한다.
+    /// 실제 preload 실행부. 결과/예외를 공유 completion으로 전파한다.
     /// </summary>
     private static async UniTask PreloadInternalAsync(UniTaskCompletionSource completion)
     {
         try
         {
-            // 하나라도 실패하면 방 입장/씬 진입을 막기 위해 completion에 예외를 전파한다.
             await _pool.PreloadAsync(AssetKey.NetworkPrefab.All);
             completion.TrySetResult();
         }
@@ -132,12 +115,8 @@ public static class PunPrefabPoolBootstrap
         }
         finally
         {
-            // 진행 상태만 초기화해 실패 후 다음 호출에서 새 preload를 재시도할 수 있게 한다.
-            lock (_gate)
-            {
-                if (_preloadCompletion == completion)
-                    _preloadInProgress = false;
-            }
+            // 재시도 가능하도록 진행 플래그만 내린다. completion은 교체되지 않으면 놔둔다.
+            if (_preloadCompletion == completion) _preloadInProgress = false;
         }
     }
 }
