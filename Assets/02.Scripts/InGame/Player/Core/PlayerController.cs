@@ -143,6 +143,19 @@ public class PlayerController : MonoBehaviour
             saveable.ImportFrom(saveData);
     }
 
+    public void RequestTrouble(ETroubleEffectType effectType, Vector3 direction, float power, float duration)
+    {
+        if (PhotonView == null) return;
+
+        PhotonView.RPC(
+            nameof(RPC_ApplyTrouble),
+            PhotonView.Owner,
+            (int)effectType,
+            direction,
+            power,
+            duration);
+    }
+
     // === PunRPC ===
 
     [PunRPC]
