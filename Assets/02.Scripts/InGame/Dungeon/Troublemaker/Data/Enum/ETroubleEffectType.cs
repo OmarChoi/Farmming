@@ -4,4 +4,5 @@ public enum ETroubleEffectType
 {
     None,
     Knockback,
+    Slow
 }

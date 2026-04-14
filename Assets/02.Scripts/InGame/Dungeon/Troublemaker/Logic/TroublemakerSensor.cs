@@ -4,13 +4,13 @@ public class TroublemakerSensor : MonoBehaviour
 {
     public PlayerController FindNearestTarget(float detectRange)
     {
-        if (SaveManager.Instance == null) return null;
+        PlayerController[] players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
 
         PlayerController bestTarget = null;
         float bestSqrDistance = detectRange * detectRange;
         Vector3 origin = transform.position;
 
-        foreach (PlayerController player in SaveManager.Instance.RegisteredPlayers)
+        foreach (PlayerController player in players)
         {
             if (player == null) continue;
             if (!player.gameObject.activeInHierarchy) continue;

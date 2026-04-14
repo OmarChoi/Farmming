@@ -19,10 +19,12 @@ MonoBehaviour:
     \uD558\uB098 \uAD6C\uD574\uB2E4 \uC8FC\uC138\uC694. \uBCF4\uC0C1\uC740 \uB450\uB451\uD788
     \uB4DC\uB9BD\uB2C8\uB2E4."
   QuestCategory: 2
+  IsTutorial: 0
   StartNpcId: 
   CompleteNpcId: Shopper
+  IsForcedAccept: 0
   ObjectiveType: 2
-  TargetObjectId: 
+  TargetId: 
   ItemRequirements:
   - _item: {fileID: 11400000, guid: ef234c8f445434c4b99b956a0afdc7e6, type: 2}
     _amount: 1
@@ -35,12 +37,18 @@ MonoBehaviour:
     - RewardType: 0
       RewardItem: {fileID: 0}
       Amount: 1200
+      RewardHelper: {fileID: 0}
       TargetNpcId: 
     - RewardType: 2
       RewardItem: {fileID: 0}
       Amount: 100
-      TargetNpcId: Shopper
+      RewardHelper: {fileID: 0}
+      TargetNpcId: Merchant
   AcceptDialogue: {fileID: 0}
+  AcceptResultDialogue: {fileID: 0}
+  DeclineDialogue: {fileID: 0}
   InProgressDialogue: {fileID: 11400000, guid: 013f4ecc5981ffa4480b7dce38cc4b39, type: 2}
   CompleteDialogue: {fileID: 11400000, guid: e570c84eb74cbf74d8a5cf3625aa19b7, type: 2}
   NoQuestDialogue: {fileID: 0}
+  AcceptInfoPageSet: {fileID: 0}
+  CompleteInfoPageSet: {fileID: 0}

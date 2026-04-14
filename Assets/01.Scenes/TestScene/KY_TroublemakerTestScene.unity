@@ -136,7 +136,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &59217858
 Light:
   m_ObjectHideFlags: 0
@@ -627,9 +627,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc821bc1c20e5644082109dd9d6244b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TroublemakerSpawner
-  _spawnList: {fileID: 11400000, guid: d1964adf91de27f40b7912db39e6c45c, type: 2}
-  _minSpawnCount: 2
-  _maxSpawnCount: 4
+  _minSpawnCount: 3
+  _maxSpawnCount: 5
 --- !u!4 &658088570
 Transform:
   m_ObjectHideFlags: 0

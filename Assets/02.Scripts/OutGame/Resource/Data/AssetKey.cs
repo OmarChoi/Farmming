@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -22,7 +22,7 @@ public static class AssetKey
         public const string Player = "Player";
         public const string Blacksmith = "Blacksmith";
         public const string Hairdresser = "Hairdresser";
-        public const string NpcTest = "NpcTest";
+        public const string Merchant = "Merchant";
         public const string GroundHelper = "GroundHelper";
         public const string LightHelper = "LightHelper";
         public const string HarvestHelper = "HarvestHelper";
@@ -37,6 +37,8 @@ public static class AssetKey
         public const string WoodCuttingHelper = "WoodCuttingHelper";
         public const string WoodCuttingEpicHelper = "WoodCuttingEpicHelper";
         public const string WoodCuttingLegendaryHelper = "WoodCuttingLegendaryHelper";
+        public const string JungleTroublemaker = "JungleTroublemaker";
+        public const string CaveTroublemaker1 = "CaveTroublemaker1";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
