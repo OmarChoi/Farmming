@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 
-public class HelperController : MonoBehaviour
+public class HelperController : MonoBehaviourPunCallbacks
 {
     [SerializeField] private HelperDataSO _data;
     [SerializeField] private Vector3 _rotationEuler = new Vector3(0f, 180f, 0f);
@@ -154,6 +155,8 @@ public class HelperController : MonoBehaviour
             (EHelperGrade)data.Grade,
             data.Experience,
             data.Energy,
+            isRangeBoostActive: false,
+            remainingRangeBoostMinutes: 0,
             elapsed,
             notifyGradeChanged: true);
     }
@@ -175,13 +178,19 @@ public class HelperController : MonoBehaviour
         if (PhotonView == null || !PhotonNetwork.IsConnected || !PhotonView.IsMine)
             return;
 
+        RangeBoostEffect rangeBoostEffect = GetAbility<RangeBoostEffect>();
+        bool isRangeBoostActive = rangeBoostEffect != null && rangeBoostEffect.IsActive;
+        int remainingRangeBoostMinutes = rangeBoostEffect != null ? rangeBoostEffect.RemainingMinutes : 0;
+
         PhotonView.RpcSafe(
             nameof(RPC_SyncRuntimeState),
             RpcTarget.Others,
             Level.CurrentLevel,
             (int)Grade.CurrentGrade,
             Experience.CurrentExp,
-            Energy.Current);
+            Energy.Current,
+            isRangeBoostActive,
+            remainingRangeBoostMinutes);
     }
 
     public void BeginAction()
@@ -251,13 +260,15 @@ public class HelperController : MonoBehaviour
     }
 
     [PunRPC]
-    internal void RPC_SyncRuntimeState(int level, int grade, int experience, float energy)
+    internal void RPC_SyncRuntimeState(int level, int grade, int experience, float energy, bool isRangeBoostActive, int remainingRangeBoostMinutes)
     {
         ApplyRuntimeState(
             level,
             (EHelperGrade)grade,
             experience,
             energy,
+            isRangeBoostActive,
+            remainingRangeBoostMinutes,
             elapsedEnergyRecovery: 0f,
             notifyGradeChanged: true);
     }
@@ -269,6 +280,8 @@ public class HelperController : MonoBehaviour
         EHelperGrade grade,
         int experience,
         float energy,
+        bool isRangeBoostActive,
+        int remainingRangeBoostMinutes,
         float elapsedEnergyRecovery,
         bool notifyGradeChanged)
     {
@@ -278,6 +291,7 @@ public class HelperController : MonoBehaviour
         Grade.CurrentGrade = grade;
         Experience.Load(experience);
         Energy.Load(energy, elapsedEnergyRecovery);
+        GetAbility<RangeBoostEffect>()?.ApplySyncedState(isRangeBoostActive, remainingRangeBoostMinutes);
 
         if (notifyGradeChanged && previousGrade != grade)
             OnGradeChanged?.Invoke();
@@ -298,5 +312,25 @@ public class HelperController : MonoBehaviour
             animationAbility.Play(EHelperAnim.Idle);
         else
             animationAbility.Play(EHelperAnim.Equipped);
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        if (!IsMine || PhotonView == null || !PhotonNetwork.IsConnected || newPlayer == null)
+            return;
+
+        RangeBoostEffect rangeBoostEffect = GetAbility<RangeBoostEffect>();
+        bool isRangeBoostActive = rangeBoostEffect != null && rangeBoostEffect.IsActive;
+        int remainingRangeBoostMinutes = rangeBoostEffect != null ? rangeBoostEffect.RemainingMinutes : 0;
+
+        PhotonView.RPC(
+            nameof(RPC_SyncRuntimeState),
+            newPlayer,
+            Level.CurrentLevel,
+            (int)Grade.CurrentGrade,
+            Experience.CurrentExp,
+            Energy.Current,
+            isRangeBoostActive,
+            remainingRangeBoostMinutes);
     }
 }
