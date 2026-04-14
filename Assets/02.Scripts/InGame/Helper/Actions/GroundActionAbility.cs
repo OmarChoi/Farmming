@@ -352,6 +352,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (!isFarmLand)
             return;
 
+        cell.FarmTile?.ClearFastFertilizer();
         cell.Data.RemoveObject();
         cell.Refresh();
     }
