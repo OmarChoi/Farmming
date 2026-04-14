@@ -8,6 +8,7 @@ public enum EItemType
     Crop,
     Seed,
     Potion,
+    Fertilizer,
 }
 
 [CreateAssetMenu(fileName = "ItemData", menuName = "Data/ItemData")]

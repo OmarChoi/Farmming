@@ -9,6 +9,7 @@ public class UI_Inventory : MonoBehaviour
     private const int Columns = 4;
     public static event Func<SeedItemDataSO, bool> SeedSelectionRequested;
     public static event Func<ItemDataSO, bool> GroundSelectionRequested;
+    public static event Func<ItemDataSO, bool> FertilizerSelectionRequested;
 
     [Header("참조")]
     [SerializeField] private GameObject _panel;
@@ -281,6 +282,15 @@ public class UI_Inventory : MonoBehaviour
     {
         if (_isDragging) return;
 
+        if (_clickMode == EInventoryClickMode.Normal)
+        {
+            if (clicked.CurrentItem is PotionDataSO)
+            {
+                bool used = _potionAbility != null && _potionAbility.TryUsePotion(clicked.SlotIndex);
+                return;
+            }
+        }
+
         if (_clickMode == EInventoryClickMode.Trading)
             HandleSellClick(clicked);
     }
@@ -295,6 +305,9 @@ public class UI_Inventory : MonoBehaviour
             return;
 
         if (clicked.CurrentItem.IsGround && RequestGroundSelection(clicked.CurrentItem))
+            return;
+
+        if (clicked.CurrentItem.Type == EItemType.Fertilizer && RequestFertilizerSelection(clicked.CurrentItem))
             return;
 
         if (!(clicked.CurrentItem is PotionDataSO)) return;
@@ -335,6 +348,20 @@ public class UI_Inventory : MonoBehaviour
         foreach (Func<ItemDataSO, bool> handler in GroundSelectionRequested.GetInvocationList())
         {
             if (handler.Invoke(groundItem))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool RequestFertilizerSelection(ItemDataSO fertilizerItem)
+    {
+        if (fertilizerItem == null || FertilizerSelectionRequested == null)
+            return false;
+
+        foreach (Func<ItemDataSO, bool> handler in FertilizerSelectionRequested.GetInvocationList())
+        {
+            if (handler.Invoke(fertilizerItem))
                 return true;
         }
 
