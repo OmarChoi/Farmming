@@ -230,12 +230,15 @@ public class NpcDialogueController : MonoBehaviour
         switch (_dialogueState)
         {
             case EDialogueUiState.Greeting:
+            case EDialogueUiState.AskCuring:
                 _dialogueState = EDialogueUiState.Choice;
                 ShowChoiceButtons(_currentNpc.InteractionOptions);
                 break;
 
             case EDialogueUiState.Talking:
             case EDialogueUiState.Quest:
+            case EDialogueUiState.CuringAccept:
+            case EDialogueUiState.CuringDecline:
                 _dialogueState = EDialogueUiState.None;
                 EndCurrentInteraction();
                 break;
@@ -263,7 +266,7 @@ public class NpcDialogueController : MonoBehaviour
         ShowChoiceButtons(_currentNpc.InteractionOptions);
     }
 
-    public void ShowQuestChoices(IReadOnlyList<NpcDialogueChoiceData> choices, bool clearText = true)
+    public void ShowCustomChoices(IReadOnlyList<NpcDialogueChoiceData> choices, bool clearText = true)
     {
         if (_uiDialogue == null) return;
 
@@ -271,6 +274,10 @@ public class NpcDialogueController : MonoBehaviour
         {
             _uiDialogue.ClearDialogueText();
         }
+
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.Choice;
 
         _uiDialogue.ShowChoiceButtons(choices);
     }
@@ -292,6 +299,7 @@ public class NpcDialogueController : MonoBehaviour
             case ENpcInteractionType.Upgrade:
             case ENpcInteractionType.Styling:
             case ENpcInteractionType.Quest:
+            case ENpcInteractionType.Curing:
             case ENpcInteractionType.EndTalk:
                 _interactionService.Execute(type, CreateContext());
                 break;
