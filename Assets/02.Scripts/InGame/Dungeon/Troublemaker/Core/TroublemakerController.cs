@@ -130,6 +130,14 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
         }
     }
 
+    public void ClearTarget()
+    {
+        _currentTarget = null;
+        _hasDetectedTarget = false;
+        _isDetectingTarget = false;
+        _movement?.Stop();
+    }
+
     private void UpdateTarget()
     {
         if (_sensor == null) return;

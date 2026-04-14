@@ -147,10 +147,10 @@ GameObject:
   - component: {fileID: 6554929105695030020}
   - component: {fileID: 5051050523007843743}
   - component: {fileID: 7063180019822066502}
+  - component: {fileID: 829126807329258006}
   - component: {fileID: -4455785340700291127}
   - component: {fileID: -1391464947846471761}
   - component: {fileID: -7173147082147116763}
-  - component: {fileID: 6447523364880517932}
   m_Layer: 6
   m_Name: CaveTroublemaker1
   m_TagString: Untagged
@@ -257,10 +257,10 @@ MonoBehaviour:
   _sensor: {fileID: 5051050523007843743}
   _anim: {fileID: 7063180019822066502}
   _data: {fileID: 11400000, guid: 8e2931b705ccf9049a19c10725ab8153, type: 2}
-  _minSeparationRadius: 1.5
-  _maxSeparationRadius: 2
-  _minSeparationWeight: 1.5
-  _maxSeparationWeight: 1.8
+  _minSeparationRadius: 1.8
+  _maxSeparationRadius: 2.2
+  _minSeparationWeight: 1.8
+  _maxSeparationWeight: 2.4
   _troublemakerLayerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -309,6 +309,24 @@ MonoBehaviour:
   _detectTriggerName: Detect
   _troubleTriggerName: Trouble
   _detectDuration: 0.8
+--- !u!114 &829126807329258006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1997902569578628670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93e75f06a341f9f44a9dadc01d9e120a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CaveTroublemakerBehaviour
+  _playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  _overlapBufferSize: 8
+  _troubleEffectPrefab: {fileID: 4809171458859421548, guid: 88f46afa804072542adf0a3cf5202cb3, type: 3}
+  _effectOffset: {x: 0, y: 3, z: 0}
 --- !u!114 &-4455785340700291127
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -376,18 +394,6 @@ MonoBehaviour:
   m_SynchronizeLayers:
   - SynchronizeType: 1
     LayerIndex: 0
---- !u!114 &6447523364880517932
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1997902569578628670}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ebf8c11cb60ae24a89990e019dafcd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JungleTroublemakerBehaviour
 --- !u!1 &2411188951558394283
 GameObject:
   m_ObjectHideFlags: 0
