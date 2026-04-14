@@ -12,20 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47675f7fee7a8ea4ea9bd9c11e51f953, type: 3}
   m_Name: CaveTroublemakerData
   m_EditorClassIdentifier: Assembly-CSharp::TroublemakerDataSO
-  TroublemakerId: 
-  DisplayName: 
+  TroublemakerId: CaveTroublemaker
+  DisplayName: "\uBC84\uC12F\uB465\uC774"
   Prefab: {fileID: 1997902569578628670, guid: e1bee2dd764901240bcfd7913bc9c970, type: 3}
   WalkSpeed: 2
-  RunSpeed: 4
+  RunSpeed: 3
   JumpDuration: 0.8
   JumpHeight: 1.6
-  DetectRange: 10
-  LoseTargetRange: 20
+  DetectRange: 8
+  LoseTargetRange: 14
   StopDistance: 1.5
   RetargetInterval: 0.2
-  TroubleEffectType: 0
-  TroublePower: 2
+  TroubleEffectType: 1
+  TroublePower: 5
   TroubleDuration: 0.5
-  TroubleCooldown: 2
-  TroubleHitDelay: 0.25
-  TroubleRange: 2
+  TroubleCooldown: 3
+  TroubleHitDelay: 2.5
+  TroubleRange: 6

@@ -12,4 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dda6f48bb10c554d94a0aa203925d8f, type: 3}
   m_Name: CaveTroublemakerSpawnList
   m_EditorClassIdentifier: Assembly-CSharp::TroublemakerSpawnListSO
-  Entries: []
+  Entries:
+  - Data: {fileID: 11400000, guid: 8e2931b705ccf9049a19c10725ab8153, type: 2}
+    SpawnMode: 1
+    LocationKey: 
+    AlwaysSpawn: 1
+    RequiredQuestId: 
