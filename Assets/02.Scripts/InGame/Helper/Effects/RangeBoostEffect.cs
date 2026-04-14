@@ -13,6 +13,7 @@ public class RangeBoostEffect : HelperAbility
     public void Activate(int durationGameMinutes = 60)
     {
         ApplyActivation(durationGameMinutes, ShouldSyncToOthers());
+        _owner?.SyncRuntimeState();
     }
 
     private void OnMinuteChanged(GameTime time)
@@ -62,6 +63,19 @@ public class RangeBoostEffect : HelperAbility
                 nameof(RPC_DeactivateRangeBoost),
                 RpcTarget.Others);
         }
+
+        _owner?.SyncRuntimeState();
+    }
+
+    internal void ApplySyncedState(bool isActive, int remainingMinutes)
+    {
+        if (isActive)
+        {
+            ApplyActivation(remainingMinutes, false);
+            return;
+        }
+
+        Deactivate(false);
     }
 
     private bool ShouldSyncToOthers()
