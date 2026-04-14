@@ -111,7 +111,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (farmTile == null)
             return;
 
-        StartFertilizerSecondaryAction(farmTile, null, (EHelperGrade)grade, false);
+        StartFertilizerSecondaryAction(farmTile, null, (EHelperGrade)grade, PhotonNetwork.IsMasterClient);
     }
 
     private void InteractPrimaryNormal(TerrainCell cell)
