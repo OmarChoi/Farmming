@@ -8,6 +8,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
     [SerializeField] private int _gatherExperience = 10;
 
     private int _currentHealth;
+    private int _selectedModelIndex = -1;
     private TerrainCell _rootCell;
     private GameObject _modelInstance;
 
@@ -39,6 +40,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
             Debug.LogError("Terrain Cell이 할당되지 않았습니다.");
             return;
         }
+
         _currentHealth = _gatheringData.MaxHealth;
         SpawnModel();
         Init();
@@ -46,23 +48,35 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
     private void SpawnModel()
     {
-        if (_gatheringData == null || _modelRoot == null) return;
+        if (_gatheringData == null || _modelRoot == null)
+            return;
 
         GameObject modelPrefab;
+        _selectedModelIndex = -1;
+
         if (_rootCell != null && _gatheringData.ModelCount > 1)
         {
-            // 그리드 좌표 기반 결정적 선택 — 모든 클라이언트가 동일한 모델을 봄
-            var pos = _rootCell.GridPosition;
+            // Grid position based deterministic selection so every client sees the same model.
+            Vector3Int pos = _rootCell.GridPosition;
             int hash = pos.x * 73856093 ^ pos.y * 19349669 ^ pos.z * 83492791;
-            int index = ((hash % _gatheringData.ModelCount) + _gatheringData.ModelCount) % _gatheringData.ModelCount;
-            modelPrefab = _gatheringData.GetModelByIndex(index);
+            _selectedModelIndex = ((hash % _gatheringData.ModelCount) + _gatheringData.ModelCount) % _gatheringData.ModelCount;
+            modelPrefab = _gatheringData.GetModelByIndex(_selectedModelIndex);
         }
         else
         {
-            modelPrefab = _gatheringData.GetRandomModel();
+            if (_gatheringData.ModelCount > 0)
+            {
+                _selectedModelIndex = UnityEngine.Random.Range(0, _gatheringData.ModelCount);
+                modelPrefab = _gatheringData.GetModelByIndex(_selectedModelIndex);
+            }
+            else
+            {
+                modelPrefab = _gatheringData.GetRandomModel();
+            }
         }
 
-        if (modelPrefab == null) return;
+        if (modelPrefab == null)
+            return;
 
         if (_modelInstance != null)
             Destroy(_modelInstance);
@@ -76,8 +90,11 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
     public bool TryGather(GatheringInfo info)
     {
-        if (info.HelperGrade.CurrentGrade < _gatheringData.RequiredLevel) return false;
-        if (_currentHealth < 0) return false;
+        if (info.HelperGrade.CurrentGrade < _gatheringData.RequiredLevel)
+            return false;
+        if (_currentHealth < 0)
+            return false;
+
         _currentHealth -= info.Damage;
         Hit();
 
@@ -91,10 +108,12 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
     }
 
     protected abstract void Hit();
+
     protected virtual void OnDepleted(GatheringInfo info)
     {
-        var inventory = info.Player.GetAbility<PlayerInventoryAbility>();
-        foreach (DropEntry entry in _gatheringData.Drops)
+        PlayerInventoryAbility inventory = info.Player.GetAbility<PlayerInventoryAbility>();
+        DropEntry[] drops = _gatheringData.GetDropsForModelIndex(_selectedModelIndex);
+        foreach (DropEntry entry in drops)
         {
             QuestReportItemHelper.AddItemAndReportQuest(inventory, entry.Item, entry.GetRandomQuantity());
         }

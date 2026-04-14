@@ -7,7 +7,7 @@ public class PlayerPotionAbility : PlayerAbility
     private PlayerInventoryAbility _inventoryAbility;
     private PlayerStaminaAbility _playerStaminaAbility;
     private int _usePotionCount = 1;
-    [SerializeField] private float _playerStaminaHealRate = 0.3f;
+    [SerializeField] private float _playerStaminaHealRate = 0.2f;
 
     protected override void Awake()
     {
