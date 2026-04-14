@@ -42,13 +42,13 @@ public class CaveTroublemakerBehaviour : TroublemakerBehaviourBase
                 await Controller.Movement.FaceTargetAsync(target.position);
             }
 
-            PlayTroubleEffect();
             Controller.PlayTroubleAll();
 
             await UniTask.Delay(
                 TimeSpan.FromSeconds(Controller.Data.TroubleHitDelay),
                 cancellationToken: this.GetCancellationTokenOnDestroy());
 
+            PlayTroubleEffect();
             bool applied = ApplySlowInRange();
 
             _lastTroubleTime = Time.time;
@@ -111,10 +111,8 @@ public class CaveTroublemakerBehaviour : TroublemakerBehaviourBase
 
         direction.Normalize();
 
-        player.PhotonView.RPC(
-            nameof(PlayerController.RPC_ApplyTrouble),
-            player.PhotonView.Owner,
-            (int)Controller.Data.TroubleEffectType,
+        player.RequestTrouble(
+            Controller.Data.TroubleEffectType,
             Vector3.zero,
             Controller.Data.TroublePower,
             Controller.Data.TroubleDuration);
