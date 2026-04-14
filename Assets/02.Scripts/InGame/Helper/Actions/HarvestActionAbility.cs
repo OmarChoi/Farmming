@@ -91,9 +91,27 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (!CanApplyFastFertilizerToTile(farmTile))
             return;
 
-        _owner.BeginAction();
-        _animAbility?.Play(GetFertilizerAnimation());
-        StartCoroutine(LaunchFastFertilizerRoutine(farmTile, fertilizerItem));
+        StartFertilizerSecondaryAction(farmTile, fertilizerItem, _owner.Grade.CurrentGrade, true);
+
+        Vector3Int pos = cell.GridPosition;
+        _owner.PhotonView.RpcSafe(
+            nameof(RPC_PlayFastFertilizer),
+            RpcTarget.Others,
+            pos.x, pos.y, pos.z, (int)_owner.Grade.CurrentGrade);
+    }
+
+    [PunRPC]
+    internal void RPC_PlayFastFertilizer(int gridX, int gridY, int gridZ, int grade)
+    {
+        TerrainCell cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null)
+            return;
+
+        FarmTile farmTile = GetFarmTile(cell);
+        if (farmTile == null)
+            return;
+
+        StartFertilizerSecondaryAction(farmTile, null, (EHelperGrade)grade, PhotonNetwork.IsMasterClient);
     }
 
     private void InteractPrimaryNormal(TerrainCell cell)
@@ -297,9 +315,19 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         return farmTile != null && farmTile.CanApplyFastFertilizer();
     }
 
-    private EHelperAnim GetFertilizerAnimation()
+    private void StartFertilizerSecondaryAction(FarmTile farmTile, ItemDataSO fertilizerItem, EHelperGrade grade, bool applyOnImpact)
     {
-        return _owner.Grade.CurrentGrade switch
+        if (farmTile == null)
+            return;
+
+        _owner.BeginAction();
+        _animAbility?.Play(GetFertilizerAnimation(grade));
+        StartCoroutine(LaunchFastFertilizerRoutine(farmTile, fertilizerItem, applyOnImpact));
+    }
+
+    private EHelperAnim GetFertilizerAnimation(EHelperGrade grade)
+    {
+        return grade switch
         {
             EHelperGrade.Epic => EHelperAnim.EpicFertilizer,
             EHelperGrade.Legendary => EHelperAnim.EpicFertilizer,
@@ -307,7 +335,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         };
     }
 
-    private IEnumerator LaunchFastFertilizerRoutine(FarmTile farmTile, ItemDataSO fertilizerItem)
+    private IEnumerator LaunchFastFertilizerRoutine(FarmTile farmTile, ItemDataSO fertilizerItem, bool applyOnImpact)
     {
         yield return new WaitForSeconds(_fertilizerLaunchDelay);
 
@@ -315,10 +343,13 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (farmTile != null && _fertilizerVfxSpawner != null && _fertilizerVfxSpawner.HasMouthPoint && _fertilizerSeedVfxPrefab != null)
         {
             launched = true;
-            _fertilizerVfxSpawner.SpawnTo(farmTile, () => TryApplyFastFertilizer(farmTile, fertilizerItem));
+            System.Action onImpact = applyOnImpact
+                ? () => TryApplyFastFertilizer(farmTile, fertilizerItem)
+                : null;
+            _fertilizerVfxSpawner.SpawnTo(farmTile, onImpact);
         }
 
-        if (!launched)
+        if (!launched && applyOnImpact)
             TryApplyFastFertilizer(farmTile, fertilizerItem);
 
         yield return new WaitForSeconds(_fertilizerActionDuration);

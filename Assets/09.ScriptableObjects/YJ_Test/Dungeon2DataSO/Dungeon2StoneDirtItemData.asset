@@ -10,13 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1a1bb3e5983ccf741bc4e4f70beaf874, type: 3}
-  m_Name: DirtItemData
+  m_Name: Dungeon2StoneDirtItemData
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  _id: 61
-  _displayName: "\uD759"
-  _icon: {fileID: 21300000, guid: 54c39c2b235794746ab4dc7d8e997bc7, type: 3}
+  _id: 64
+  _displayName: "\uAE4A\uC740 \uC554\uBC18\uD1A0"
+  _icon: {fileID: 21300000, guid: 86d515ac6fba4084bbd39bf6b50c1f97, type: 3}
   _type: 1
   _maxStack: 99
-  _buyCost: 200
-  _sellCost: 100
-  _displayExplanation: "\uB9C8\uC744\uC5D0\uC11C \uD37C\uB0B8 \uD759\uB369\uC774\uB2E4."
+  _buyCost: 350
+  _sellCost: 250
+  _displayExplanation: "\uBC14\uC704\uD615\uD0DC\uC758 \uB545\uC774\uB2E4.  \uB545\uACE1\uB8E1\uC73C\uB85C
+    \uC124\uCE58\uD560 \uC218 \uC788\uC744 \uAC83 \uAC19\uB2E4."

@@ -59,7 +59,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
-        _mapNavMeshController.BuildInitialNavMesh();
+        BuildInitialNavMeshIfAvailable();
         DungeonSpawnHelper.SpawnChests(_floor, seed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
@@ -77,6 +77,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
+        BuildInitialNavMeshIfAvailable();
         DungeonSpawnHelper.SpawnChests(_floor, seed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
@@ -119,6 +120,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(receivedFloor);
         MapManager.Instance.EnterDungeon(receivedFloor, receivedSeed);
+        BuildInitialNavMeshIfAvailable();
         DungeonSpawnHelper.SpawnChests(receivedFloor, receivedSeed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
@@ -245,6 +247,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         else
             MapManager.Instance.EnterDungeon(_floor, seed);
 
+        BuildInitialNavMeshIfAvailable();
         DungeonSpawnHelper.SpawnChests(_floor, seed);
         ApplyEnvironment();
         SpawnCliff();
@@ -293,6 +296,20 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         if (config == null || config.TimeLimitSeconds <= 0f) return;
 
         _dungeonTimer.StartTimer(config.TimeLimitSeconds);
+    }
+
+    private void BuildInitialNavMeshIfAvailable()
+    {
+        if (_mapNavMeshController == null)
+            _mapNavMeshController = FindFirstObjectByType<MapNavMeshController>();
+
+        if (_mapNavMeshController == null)
+        {
+            Debug.LogWarning("[DungeonSceneInit] MapNavMeshController is missing. Skipping initial navmesh build.");
+            return;
+        }
+
+        _mapNavMeshController.BuildInitialNavMesh();
     }
 
     private void ApplyObjectPrefabs(int floor)
