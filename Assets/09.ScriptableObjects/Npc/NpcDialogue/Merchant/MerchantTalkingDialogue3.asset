@@ -10,10 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
-  m_Name: ShoperTalkingDialogue1
+  m_Name: MerchantTalkingDialogue3
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
-  Id: ShoperTalkingDialogue1
+  Id: MerchantTalkingDialogue3
   Lines:
-  - Text: "\uB098\uB3C4 \uC790\uB124\uCC98\uB7FC \uB0B4 \uC77C\uC744 \uB3C4\uC640\uC904
-      \uADC0\uC5EC\uC6B4 \uCE5C\uAD6C\uB4E4\uC774 \uC788\uC5C8\uC73C\uBA74 \uC88B\uACA0\uAD6C\uB9CC."
+  - Text: "\uD558\uB098. \uB458. \uC14B..."
+    NextDialogue: {fileID: 0}
+  - Text: "\uC5B4\uC774\uCFE0. \uBB3C\uAC74\uC774 \uC870\uAE08 \uBD80\uC871\uD55C
+      \uAC83 \uAC19\uC740\uB370. \uB0B4\uAC00 \uC798\uBABB \uC13C \uAC74\uAC00?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC790, \uB2E4\uC2DC. \uD558\uB098. \uB458. \uC14B....."
     NextDialogue: {fileID: 0}
