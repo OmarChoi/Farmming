@@ -60,10 +60,8 @@ public class JungleTroublemakerBehaviour : TroublemakerBehaviourBase
 
         direction.Normalize();
 
-        player.PhotonView.RPC(
-            nameof(PlayerController.RPC_ApplyTrouble),
-            player.PhotonView.Owner,
-            (int)Controller.Data.TroubleEffectType,
+        player.RequestTrouble(
+            Controller.Data.TroubleEffectType,
             direction,
             Controller.Data.TroublePower,
             Controller.Data.TroubleDuration);

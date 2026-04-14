@@ -364,7 +364,10 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         TroublemakerSpawner spawner = FindFirstObjectByType<TroublemakerSpawner>();
         if (spawner == null || PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
 
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
+        if (config == null || config.TroublemakerSpawnList == null) return;
+
         int seed = SceneTransitionData.SeedReady ? SceneTransitionData.DungeonSeed : Environment.TickCount;
-        spawner.SpawnAll(_floor, seed);
+        spawner.SpawnAll(config.TroublemakerSpawnList, _floor, seed);
     }
 }

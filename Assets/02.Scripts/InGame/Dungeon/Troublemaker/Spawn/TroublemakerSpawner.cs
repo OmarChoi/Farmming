@@ -6,26 +6,37 @@ using System.Linq;
 
 public class TroublemakerSpawner : MonoBehaviour
 {
-    [Header("방해꾼 스폰 리스트")]
-    [SerializeField] private TroublemakerSpawnListSO _spawnList;
-
     [Header("방해꾼 스폰 수")]
-    [SerializeField] private int _minSpawnCount = 2;
-    [SerializeField] private int _maxSpawnCount = 4;
+    [SerializeField] private int _minSpawnCount = 3;
+    [SerializeField] private int _maxSpawnCount = 5;
 
     private readonly List<TroublemakerController> _spawnedTroublemakers = new();
 
-    public void SpawnAll(int floor, int seed)
+    public void SpawnAll(TroublemakerSpawnListSO spawnList, int floor, int seed)
     {
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
-        if (_spawnList == null || _spawnList.Entries == null) return;
+        if (spawnList == null || spawnList.Entries == null) return;
 
-        List<TroublemakerSpawnEntry> spawnableEntries = GetSpawnableEntries();
+        List<TroublemakerSpawnEntry> spawnableEntries = GetSpawnableEntries(spawnList);
         if (spawnableEntries.Count == 0) return;
 
         var random = new System.Random(seed);
-
         SpawnByMode(spawnableEntries, random);
+    }
+
+    private List<TroublemakerSpawnEntry> GetSpawnableEntries(TroublemakerSpawnListSO spawnList)
+    {
+        List<TroublemakerSpawnEntry> result = new();
+
+        foreach (var entry in spawnList.Entries)
+        {
+            if (entry == null || entry.Data == null) continue;
+            if (!CanSpawn(entry)) continue;
+
+            result.Add(entry);
+        }
+
+        return result;
     }
 
     private void SpawnByMode(List<TroublemakerSpawnEntry> entries, System.Random random)
@@ -85,21 +96,6 @@ public class TroublemakerSpawner : MonoBehaviour
 
             Spawn(entry, spawnPosition);
         }
-    }
-
-    private List<TroublemakerSpawnEntry> GetSpawnableEntries()
-    {
-        List<TroublemakerSpawnEntry> result = new();
-
-        foreach (var entry in _spawnList.Entries)
-        {
-            if (entry == null || entry.Data == null) continue;
-            if (!CanSpawn(entry)) continue;
-
-            result.Add(entry);
-        }
-
-        return result;
     }
 
     private bool CanSpawn(TroublemakerSpawnEntry entry)
