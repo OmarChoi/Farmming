@@ -10,14 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
-  m_Name: ShoperTalkingDialogue2
+  m_Name: MerchantGreetingDialogue1
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
-  Id: ShoperTalkingDialogue2
+  Id: MerchantGreetingDialogue1
   Lines:
-  - Text: "\uD56D\uC0C1 \uC88B\uC740 \uBB3C\uAC74\uC744 \uAD6C\uD558\uAE30 \uC704\uD574
-      \uB178\uB825\uD558\uACE0 \uC788\uC9C0. \uADF8\uB798\uC57C \uC190\uB2D8\uB4E4\uB3C4
-      \uB9CC\uC871\uC744 \uD560 \uD14C\uB2C8\uAE4C. \uD558\uD558\uD558."
+  - Text: "\uC548\uB155\uD558\uC2E0\uAC00! \uC624\uB298\uB3C4 \uB0A0\uC528\uAC00
+      \uC544\uC8FC \uC88B\uAD70!"
     NextDialogue: {fileID: 0}
-  - Text: "\uADF8\uB7EC\uB2C8\uAE4C \uD560\uC778\uC740 \uC808\uB300\uB85C \uC548
-      \uD574\uC904 \uAC70\uB77C\uB124."
+  - Text: "\uB180\uB7EC\uAC00\uAE30 \uC544\uC8FC \uB531 \uC88B\uC740 \uB0A0\uC528\uC77C\uC138.
+      \uC548 \uADF8\uB7F0\uAC00?"
     NextDialogue: {fileID: 0}
