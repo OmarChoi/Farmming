@@ -10,8 +10,8 @@ public class TroublemakerSpawner : MonoBehaviour
     [SerializeField] private TroublemakerSpawnListSO _spawnList;
 
     [Header("방해꾼 스폰 수")]
-    [SerializeField] private int _minSpawnCount = 2;
-    [SerializeField] private int _maxSpawnCount = 4;
+    [SerializeField] private int _minSpawnCount = 3;
+    [SerializeField] private int _maxSpawnCount = 5;
 
     private readonly List<TroublemakerController> _spawnedTroublemakers = new();
 

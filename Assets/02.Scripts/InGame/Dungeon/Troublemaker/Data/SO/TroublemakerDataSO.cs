@@ -12,14 +12,13 @@ public class TroublemakerDataSO : ScriptableObject
 
     [Header("이동")]
     public float WalkSpeed = 3f;
-    public float RunSpeed = 6f;
+    public float RunSpeed = 5f;
     public float JumpDuration = 0.8f;
     public float JumpHeight = 1.6f;
 
     [Header("플레이어 감지")]
     public float DetectRange = 10f;
-    public float ChaseRange = 15f;
-    public float LoseTargetRange = 20f;
+    public float LoseTargetRange = 15f;
 
     [Header("행동 관련")]
     public float StopDistance = 1.5f;
@@ -29,7 +28,7 @@ public class TroublemakerDataSO : ScriptableObject
     public ETroubleEffectType TroubleEffectType = ETroubleEffectType.None;
     public float TroublePower = 2f;
     public float TroubleDuration = 0.5f;
-    public float TroubleCooldown = 2f;
+    public float TroubleCooldown = 2.5f;
     public float TroubleHitDelay = 0.25f;
-    public float TroubleRange = 2f;
+    public float TroubleRange = 4f;
 }

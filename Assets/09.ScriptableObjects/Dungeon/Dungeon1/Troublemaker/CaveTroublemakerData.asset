@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47675f7fee7a8ea4ea9bd9c11e51f953, type: 3}
+  m_Name: CaveTroublemakerData
+  m_EditorClassIdentifier: Assembly-CSharp::TroublemakerDataSO
+  TroublemakerId: 
+  DisplayName: 
+  Prefab: {fileID: 1997902569578628670, guid: e1bee2dd764901240bcfd7913bc9c970, type: 3}
+  WalkSpeed: 2
+  RunSpeed: 4
+  JumpDuration: 0.8
+  JumpHeight: 1.6
+  DetectRange: 10
+  LoseTargetRange: 20
+  StopDistance: 1.5
+  RetargetInterval: 0.2
+  TroubleEffectType: 0
+  TroublePower: 2
+  TroubleDuration: 0.5
+  TroubleCooldown: 2
+  TroubleHitDelay: 0.25
+  TroubleRange: 2
