@@ -6,5 +6,9 @@ public enum EDialogueUiState
     Greeting,
     Choice,
     Talking,
-    Quest
+    Quest,
+    AskCuring,
+    CuringAccept,
+    CuringDecline,
+    CuringAlreadyDone
 }
