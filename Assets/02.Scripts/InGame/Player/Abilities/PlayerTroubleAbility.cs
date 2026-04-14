@@ -1,5 +1,6 @@
-using UnityEngine;
 using Cysharp.Threading.Tasks;
+using System;
+using UnityEngine;
 
 public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
 {
@@ -8,20 +9,24 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
 
     private CharacterController _characterController;
     private PlayerAnimationAbility _animation;
+    private PlayerMoveAbility _moveAbility;
 
     private float _minKnockbackDuration = 0.05f;
 
     private bool _isApplyingTrouble;
 
+    private int _slowRequestId;
+
     private void Start()
     {
         _characterController = _owner.GetComponent<CharacterController>();
         _animation = _owner.GetAbility<PlayerAnimationAbility>();
+        _moveAbility = _owner.GetAbility<PlayerMoveAbility>();
     }
 
     public bool CanReceiveTrouble()
     {
-        return _owner != null && _owner.IsMine && !_isApplyingTrouble;
+        return _owner != null && _owner.IsMine;
     }
 
     public void ApplyTrouble(TroubleContext context)
@@ -31,7 +36,13 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
         switch (context.EffectType)
         {
             case ETroubleEffectType.Knockback:
-                ApplyKnockbackAsync(context).Forget();
+                if (!_isApplyingTrouble)
+                {
+                    ApplyKnockbackAsync(context).Forget();
+                }
+                break;
+            case ETroubleEffectType.Slow:
+                ApplySlowAsync(context).Forget();
                 break;
         }
     }
@@ -82,5 +93,39 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
 
         _owner.UnlockAction();
         _isApplyingTrouble = false;
+    }
+
+    private async UniTaskVoid ApplySlowAsync(TroubleContext context)
+    {
+        if (_moveAbility == null) return;
+
+        _slowRequestId++;
+        int requestId = _slowRequestId;
+
+        float slowMultiplier = 1f - Mathf.Clamp(context.Power, 0f, 1f);
+        _moveAbility.SetExternalMoveSpeedMultiplier(slowMultiplier);
+
+        try
+        {
+            await UniTask.Delay(
+                TimeSpan.FromSeconds(context.Duration),
+                cancellationToken: this.GetCancellationTokenOnDestroy());
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (requestId != _slowRequestId) return;
+
+        _moveAbility.ClearExternalMoveSpeedMultiplier();
+    }
+
+    private void OnDisable()
+    {
+        if (_moveAbility != null)
+        {
+            _moveAbility.ClearExternalMoveSpeedMultiplier();
+        }
     }
 }
