@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 public class PlayerStamina
 {
@@ -78,7 +79,7 @@ public class PlayerStamina
         if (_current >= _max)
             return false;
 
-        _current = Math.Clamp(_current + amount, 0f, _max);
+        _current = Mathf.Clamp(_current + amount, 0f, _max);
         OnChanged?.Invoke(Current);
         OnRecovered?.Invoke();
         return true;
