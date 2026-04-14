@@ -172,23 +172,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3f49665a75b68c4a841e27f836dee64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcController
-  _animator: {fileID: 0}
+  _animator: {fileID: 526476110738173426}
   _movement: {fileID: 5316030158967195761}
   _anim: {fileID: 6185204389369995894}
-  _npcSchedule: {fileID: 11400000, guid: daa31087eb231f046a2e96e5e9962561, type: 2}
+  _npcSchedule: {fileID: 11400000, guid: b862d13797350f245b6c1a092599c8f1, type: 2}
   _interactionOptions:
   - _type: 0
     _buttonName: "\uB300\uD654"
   - _type: 1
     _buttonName: "\uAE4A\uC740 \uB300\uD654"
   - _type: 2
-    _buttonName: "\uC0C1\uC810"
+    _buttonName: "\uC57D\uAD6D"
+  - _type: 7
+    _buttonName: "\uCE58\uB8CC"
   - _type: 5
     _buttonName: "\uD018\uC2A4\uD2B8"
   - _type: 6
     _buttonName: "\uB300\uD654 \uC885\uB8CC"
   _shop: {fileID: 7734502852426753408}
-  _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
+  _npcData: {fileID: 11400000, guid: 4be8c72209b032e4da20190129f57b7a, type: 2}
   _npcQuest: {fileID: 5972451756083613656}
 --- !u!114 &7734502852426753408
 MonoBehaviour:
@@ -202,7 +204,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e6289c5937948946a5b8cf03dbdaf9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Shop
-  _shopData: {fileID: 11400000, guid: a32ba4f7d36718b4899c40bbdfc30245, type: 2}
+  _shopData: {fileID: 11400000, guid: 1414a2643412e2c46ba179223ec7747f, type: 2}
 --- !u!114 &8631433124512019319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -228,7 +230,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4995beb57a49e44088a8cb941c942a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcAnimatorController
-  _animator: {fileID: 0}
+  _animator: {fileID: 526476110738173426}
   _moveFloatName: Move
   _greetTriggerName: Greet
   _talkTriggerName: Talk
@@ -244,8 +246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04bc102508ba35244b56f5645f16abd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcQuest
-  _quests:
-  - {fileID: 11400000, guid: 69d8a0c5e5455a4479bd73b3f2a1902f, type: 2}
+  _quests: []
 --- !u!95 &526476110738173426
 Animator:
   serializedVersion: 7
