@@ -24,7 +24,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
     [Header("땅제거 액션")]
     [SerializeField] private Transform _mouthPoint;
-    [SerializeField] private float _absorbArcHeight = 2f; // 흡수할때 땅블록 튀는높이
+    [SerializeField] private float _absorbArcHeight = 2f;  // 흡수할때 땅블록 튀는높이
     [SerializeField] private float _absorbDuration = 0.5f; // 흡수 시간
     [SerializeField] private float _absorbTargetScale = 0.05f;
     [SerializeField] private float _digAnimDelay = 0.2f;
@@ -158,7 +158,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         ETileType tileType,
         int dirtAmount,
         bool consumeLocalInventory,
-        Photon.Realtime.Player consumeTarget)
+        Photon.Realtime.Player consumeTarget
+    )
     {
         Vector3Int targetGridPos = GetPlacePosition(cell);
 
@@ -197,9 +198,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction
                 : Mathf.Max(GetRemotePlaceAnimationDuration(), _remotePlaceStateSyncDelay);
 
             DOVirtual.DelayedCall(
-                stateSyncDelay,
-                () => BroadcastGroundStateFromMaster(targetGridPos))
-                .SetTarget(gameObject);
+                         stateSyncDelay,
+                         () => BroadcastGroundStateFromMaster(targetGridPos))
+                     .SetTarget(gameObject);
         }
         else
         {
@@ -303,7 +304,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         TerrainCell cell,
         bool grantLocalReward,
         Photon.Realtime.Player rewardTarget,
-        bool broadcastAnimationToOthers)
+        bool broadcastAnimationToOthers
+    )
     {
         if (!CanExecutePrimaryDig(cell))
             return;
@@ -379,15 +381,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         Vector3Int detachedGridPosition,
         Vector3Int originalGridPosition,
         bool isFarmLand,
-        bool broadcastAnimationToOthers)
+        bool broadcastAnimationToOthers
+    )
     {
         if (broadcastAnimationToOthers)
         {
             BroadcastDigAnimation(originalGridPosition, isFarmLand);
             DOVirtual.DelayedCall(
-                Mathf.Max(0f, _remoteDigStateSyncDelay),
-                () => BroadcastGroundStateFromMaster(detachedGridPosition))
-                .SetTarget(gameObject);
+                         Mathf.Max(0f, _remoteDigStateSyncDelay),
+                         () => BroadcastGroundStateFromMaster(detachedGridPosition))
+                     .SetTarget(gameObject);
             return;
         }
 
@@ -397,7 +400,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     private void HandlePrimaryDigRewards(
         ETileType removedTileType,
         bool grantLocalReward,
-        Photon.Realtime.Player rewardTarget)
+        Photon.Realtime.Player rewardTarget
+    )
     {
         if (grantLocalReward)
             GrantDigReward(removedTileType, _getDirtAmount);
@@ -410,7 +414,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         ETileType placedTileType,
         int amount,
         bool consumeLocalInventory,
-        Photon.Realtime.Player consumeTarget)
+        Photon.Realtime.Player consumeTarget
+    )
     {
         if (consumeLocalInventory)
             ConsumePlacedGroundItem(placedTileType, amount);
@@ -477,8 +482,10 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         int finalAmount = amount;
         if (WorldEffectManager.Instance != null)
         {
-            finalAmount = WorldEffectManager.ApplyMultiplier(
-                finalAmount, WorldEffectManager.Instance.GetAcquireMultiplier());
+            finalAmount = WorldEffectManager.ApplyMultiplier
+            (
+                finalAmount, WorldEffectManager.Instance.GetAcquireMultiplier()
+            );
         }
         if (finalAmount <= 0) return;
 
@@ -512,16 +519,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         cell.transform.localScale = Vector3.one;
 
         cell.transform.DOJump(_mouthPoint.position, _absorbArcHeight, 1, _absorbDuration)
-                      .SetEase(Ease.Linear)
-                      .OnComplete(() =>
-                      {
-                          Destroy(cell.gameObject);
-                          RestoreSelectionBubble();
-                          _animAbility?.Play(EHelperAnim.Idle);
-                      });
+            .SetEase(Ease.Linear)
+            .OnComplete(() =>
+            {
+                Destroy(cell.gameObject);
+                RestoreSelectionBubble();
+                _animAbility?.Play(EHelperAnim.Idle);
+            });
 
         cell.transform.DOScale(_absorbTargetScale, _absorbDuration)
-                      .SetEase(Ease.Linear);
+            .SetEase(Ease.Linear);
 
         DOVirtual.DelayedCall(_digAnimDelay, () => _animAbility?.Play(EHelperAnim.EatGround));
     }
@@ -541,16 +548,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         Vector3 hoverPos = new Vector3(targetWorldPos.x, _mouthPoint.position.y, targetWorldPos.z);
 
         DOTween.Sequence()
-            .Append(cell.transform.DOMove(hoverPos, _placeHorizontalDuration).SetEase(Ease.OutQuad))
-            .Join(cell.transform.DOScale(Vector3.one * _absorbTargetScale, _placeHorizontalDuration).SetEase(Ease.OutQuad))
-            .AppendInterval(_placeHoverDuration)
-            .Append(cell.transform.DOMove(targetWorldPos, _placeDropDuration).SetEase(Ease.InExpo))
-            .Join(cell.transform.DOScale(Vector3.one, _placeDropDuration).SetEase(Ease.OutExpo))
-            .OnComplete(() =>
-            {
-                cell.transform.DOPunchScale(Vector3.one * 0.2f, 0.2f, 5, 0.5f);
-                _animAbility?.Play(EHelperAnim.Idle);
-            });
+               .Append(cell.transform.DOMove(hoverPos, _placeHorizontalDuration).SetEase(Ease.OutQuad))
+               .Join(cell.transform.DOScale(Vector3.one * _absorbTargetScale, _placeHorizontalDuration).SetEase(Ease.OutQuad))
+               .AppendInterval(_placeHoverDuration)
+               .Append(cell.transform.DOMove(targetWorldPos, _placeDropDuration).SetEase(Ease.InExpo))
+               .Join(cell.transform.DOScale(Vector3.one, _placeDropDuration).SetEase(Ease.OutExpo))
+               .OnComplete(() =>
+               {
+                   cell.transform.DOPunchScale(Vector3.one * 0.2f, 0.2f, 5, 0.5f);
+                   _animAbility?.Play(EHelperAnim.Idle);
+               });
     }
 
     private float GetRemotePlaceAnimationDuration()

@@ -96,10 +96,9 @@ public class WorldEffectManager : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(effectId)) return false;
 
-        for (int i = 0; i < _activeEffects.Count; i++)
+        foreach (WorldEffectEntry effectEntry in _activeEffects)
         {
-            if (_activeEffects[i].EffectId == effectId)
-                return true;
+            if (effectEntry.EffectId == effectId) return true;
         }
 
         return false;
