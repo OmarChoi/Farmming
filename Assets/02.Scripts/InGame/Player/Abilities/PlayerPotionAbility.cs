@@ -7,6 +7,7 @@ public class PlayerPotionAbility : PlayerAbility
     private PlayerInventoryAbility _inventoryAbility;
     private PlayerStaminaAbility _playerStaminaAbility;
     private int _usePotionCount = 1;
+    [SerializeField] private float _playerStaminaHealRate = 0.3f;
 
     protected override void Awake()
     {
@@ -65,7 +66,7 @@ public class PlayerPotionAbility : PlayerAbility
                 if (_playerStaminaAbility.Stamina.Current >= _playerStaminaAbility.Stamina.Max)
                     return false;
 
-                float recoverAmount = _playerStaminaAbility.Stamina.Max * 0.3f;
+                float recoverAmount = _playerStaminaAbility.Stamina.Max * _playerStaminaHealRate;
                 return _playerStaminaAbility.TryRecover(recoverAmount);
         }
 

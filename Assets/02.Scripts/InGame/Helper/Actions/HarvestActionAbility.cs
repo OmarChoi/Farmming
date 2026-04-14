@@ -333,26 +333,46 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (!farmTile.CanApplyFastFertilizer())
             return;
 
-        bool consumed = false;
-        if (_owner.IsMine)
+        bool consumed = TryConsumeFastFertilizerItem(fertilizerItem);
+        if (_owner.IsMine && !consumed)
+            return;
+
+        if (!TryApplyFastFertilizerToTile(farmTile))
         {
-            if (fertilizerItem == null)
-                return;
-
-            PlayerInventoryAbility inventory = GetInventory();
-            if (inventory == null || !inventory.RemoveItem(fertilizerItem, 1))
-                return;
-
-            consumed = true;
-        }
-
-        if (!farmTile.ApplyFastFertilizer())
-        {
-            if (consumed)
-                GetInventory()?.AddItem(fertilizerItem, 1);
+            RollbackConsumedFastFertilizer(fertilizerItem, consumed);
             return;
         }
 
+        SyncFastFertilizerState(farmTile);
+    }
+
+    private bool TryConsumeFastFertilizerItem(ItemDataSO fertilizerItem)
+    {
+        if (!_owner.IsMine)
+            return false;
+
+        if (fertilizerItem == null)
+            return false;
+
+        PlayerInventoryAbility inventory = GetInventory();
+        return inventory != null && inventory.RemoveItem(fertilizerItem, 1);
+    }
+
+    private static bool TryApplyFastFertilizerToTile(FarmTile farmTile)
+    {
+        return farmTile != null && farmTile.ApplyFastFertilizer();
+    }
+
+    private void RollbackConsumedFastFertilizer(ItemDataSO fertilizerItem, bool consumed)
+    {
+        if (!consumed || fertilizerItem == null)
+            return;
+
+        GetInventory()?.AddItem(fertilizerItem, 1);
+    }
+
+    private static void SyncFastFertilizerState(FarmTile farmTile)
+    {
         BroadcastFarmTileStateFromMaster(farmTile);
     }
 

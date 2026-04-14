@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class FarmTile : MonoBehaviour
 {
+    private const string FastFertilizerChildName = "FastFertilizer";
+
     [SerializeField] private GameObject _farmDryObject;
     [SerializeField] private GameObject _farmWetObject;
     [SerializeField] private Transform _cropSpawnPoint;
@@ -31,7 +33,7 @@ public class FarmTile : MonoBehaviour
         _cropGrowth = GetComponent<CropGrowth>();
         if (_fastFertilizerObject == null)
         {
-            Transform fastFertilizer = transform.Find("FastFertilizer");
+            Transform fastFertilizer = transform.Find(FastFertilizerChildName);
             if (fastFertilizer != null)
                 _fastFertilizerObject = fastFertilizer.gameObject;
         }
