@@ -57,11 +57,11 @@ public class NetworkStorageTransferProxy : StorageTransferService
         return true;
     }
 
-    public override void SwapAcross(int inventorySlotIndex, int storageSlotIndex)
+    public override void SwapAcross(int inventorySlotIndex, int storageSlotIndex, bool preferInventory = false)
     {
         if (_syncHandler.IsMaster)
         {
-            base.SwapAcross(inventorySlotIndex, storageSlotIndex);
+            base.SwapAcross(inventorySlotIndex, storageSlotIndex, preferInventory);
             _syncHandler.BroadcastFullSync();
             return;
         }
@@ -78,7 +78,7 @@ public class NetworkStorageTransferProxy : StorageTransferService
             _inventory.RemoveAt(inventorySlotIndex, inItemCount);
         }
 
-        _syncHandler.RequestSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount);
+        _syncHandler.RequestSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, preferInventory);
     }
 
     // === 창고 내부 조작 ===

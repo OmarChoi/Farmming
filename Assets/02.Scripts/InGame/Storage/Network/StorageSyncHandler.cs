@@ -58,17 +58,17 @@ public class StorageSyncHandler : MonoBehaviourPun
     }
 
     /// 인벤토리 ↔ 창고 스왑 요청
-    public void RequestSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount)
+    public void RequestSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount, bool preferInventory)
     {
         if (IsMaster)
         {
-            ExecuteSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount,
+            ExecuteSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, preferInventory,
                 PhotonNetwork.LocalPlayer?.ActorNumber ?? -1);
         }
         else
         {
             photonView.RPC(nameof(RPC_RequestSwap), RpcTarget.MasterClient,
-                storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, PhotonNetwork.LocalPlayer.ActorNumber);
+                storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, preferInventory, PhotonNetwork.LocalPlayer.ActorNumber);
         }
     }
 
@@ -162,14 +162,40 @@ public class StorageSyncHandler : MonoBehaviourPun
         BroadcastFullSync();
     }
 
-    private void ExecuteSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount, int actorNumber)
+    private void ExecuteSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount, bool preferInventory, int actorNumber)
     {
         var stoSlot = _storage.GetSlot(storageSlotIndex);
+        if (stoSlot == null) return;
+
+        // 같은 아이템 + 인벤토리로 합치기 희망 → 창고의 잔량을 인벤토리 슬롯에 합치기
+        if (preferInventory && !stoSlot.IsEmpty && inItemId > 0 && inItemId == stoSlot.Item.Id && inItemCount > 0)
+        {
+            int total = stoSlot.Count + inItemCount;
+            int maxStack = stoSlot.Item.MaxStack;
+            int toInventory = Mathf.Min(total, maxStack);
+            int remainder = total - toInventory;
+
+            int mergedItemId = stoSlot.Item.Id;
+            stoSlot.Clear();
+            if (remainder > 0)
+            {
+                var mergedItem = _itemDatabase.GetById(mergedItemId);
+                if (mergedItem != null) stoSlot.TryAdd(mergedItem, remainder);
+            }
+
+            _storage.NotifySlotChanged(storageSlotIndex);
+
+            if (toInventory > 0)
+                GiveItemToPlayer(actorNumber, mergedItemId, toInventory, inventorySlotIndex);
+
+            BroadcastFullSync();
+            return;
+        }
 
         // 창고 슬롯의 기존 아이템 기록
         int outItemId = 0;
         int outItemCount = 0;
-        if (stoSlot != null && !stoSlot.IsEmpty)
+        if (!stoSlot.IsEmpty)
         {
             outItemId = stoSlot.Item.Id;
             outItemCount = stoSlot.Count;
@@ -180,7 +206,7 @@ public class StorageSyncHandler : MonoBehaviourPun
         if (inItemId > 0 && inItemCount > 0)
         {
             var inItem = _itemDatabase.GetById(inItemId);
-            if (inItem != null && stoSlot != null)
+            if (inItem != null)
                 stoSlot.TryAdd(inItem, inItemCount);
         }
 
@@ -355,10 +381,10 @@ public class StorageSyncHandler : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RPC_RequestSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount, int actorNumber)
+    private void RPC_RequestSwap(int storageSlotIndex, int inventorySlotIndex, int inItemId, int inItemCount, bool preferInventory, int actorNumber)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        ExecuteSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, actorNumber);
+        ExecuteSwap(storageSlotIndex, inventorySlotIndex, inItemId, inItemCount, preferInventory, actorNumber);
     }
 
     [PunRPC]

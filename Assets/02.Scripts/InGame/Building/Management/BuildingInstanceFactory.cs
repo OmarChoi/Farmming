@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using UnityEngine;
 
 /// <summary>
@@ -24,13 +25,12 @@ public class BuildingInstanceFactory
         Vector3 spawnPos,
         Quaternion rotation)
     {
-        string prefabKey = AssetKey.Building.GetKey(data.BuildingId);
-        if (string.IsNullOrEmpty(prefabKey)) return null;
+        string prefab = AssetKey.NetworkPrefab.GetKey(data.BuildingId);
+        if (string.IsNullOrEmpty(prefab)) return null;
 
-        GameObject prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);
-        if (prefab == null) return null;
-
-        GameObject instance = Object.Instantiate(prefab, spawnPos, rotation, _parent);
+        
+        // TODO : 마스터클라이언트에서만 Instantiate하게 변경
+        GameObject instance = PhotonNetwork.Instantiate(prefab, spawnPos, rotation);
         BaseBuilding building = instance.GetComponent<BaseBuilding>();
         if (building == null)
         {

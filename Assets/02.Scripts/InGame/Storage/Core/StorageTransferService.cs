@@ -56,22 +56,30 @@ public class StorageTransferService
         return true;
     }
 
-    /// 인벤토리 슬롯과 창고 슬롯 간 스왑.
-    public virtual void SwapAcross(int inventorySlotIndex, int storageSlotIndex)
+    /// 인벤토리 슬롯과 창고 슬롯 간 스왑. preferInventory=true면 드롭 대상이 인벤토리이므로 인벤토리 쪽으로 스택 합치기.
+    public virtual void SwapAcross(int inventorySlotIndex, int storageSlotIndex, bool preferInventory = false)
     {
         var invSlot = _inventory.GetSlot(inventorySlotIndex);
         var stoSlot = _storage.GetSlot(storageSlotIndex);
         if (invSlot == null || stoSlot == null) return;
 
-        // 같은 아이템이면 스택 합치기
-        if (!invSlot.IsEmpty && !stoSlot.IsEmpty
-            && invSlot.Item == stoSlot.Item
-            && stoSlot.Count < stoSlot.Item.MaxStack)
+        // 같은 아이템이면 드롭 대상 쪽으로 스택 합치기
+        if (!invSlot.IsEmpty && !stoSlot.IsEmpty && invSlot.Item == stoSlot.Item)
         {
-            int canAdd = stoSlot.Item.MaxStack - stoSlot.Count;
-            int toMove = Math.Min(invSlot.Count, canAdd);
-            stoSlot.TryAdd(stoSlot.Item, toMove);
-            invSlot.Remove(toMove);
+            var target = preferInventory ? invSlot : stoSlot;
+            var source = preferInventory ? stoSlot : invSlot;
+
+            if (target.Count < target.Item.MaxStack)
+            {
+                int canAdd = target.Item.MaxStack - target.Count;
+                int toMove = Math.Min(source.Count, canAdd);
+                target.TryAdd(target.Item, toMove);
+                source.Remove(toMove);
+            }
+            else
+            {
+                invSlot.SwapWith(stoSlot);
+            }
         }
         else
         {

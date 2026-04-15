@@ -220,7 +220,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
                 else if (!_transferService.RequiresRestoreBeforeCrossSwap)
                 {
                     _transferService.SwapAcross(
-                        crossTarget.SlotIndex, _dragSourceSlot.SlotIndex);
+                        crossTarget.SlotIndex, _dragSourceSlot.SlotIndex, preferInventory: true);
                 }
                 else
                 {
@@ -229,7 +229,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
                     {
                         _transferService.PutDownInStorage(_dragSourceSlot.SlotIndex, _dragItem, _dragCount);
                         _transferService.SwapAcross(
-                            crossTarget.SlotIndex, _dragSourceSlot.SlotIndex);
+                            crossTarget.SlotIndex, _dragSourceSlot.SlotIndex, preferInventory: true);
                     }
                     finally
                     {
