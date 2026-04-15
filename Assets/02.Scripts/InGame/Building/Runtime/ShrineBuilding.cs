@@ -3,25 +3,9 @@ using UnityEngine;
 
 public class ShrineBuilding : DefaultBuilding, IInteraction
 {
-    [Header("Test Quest")]
-    [SerializeField] private string _questTitle = "제단 의뢰";
-    [TextArea(3, 6)]
-    [SerializeField] private string _questDescription = "임시 제단 의뢰입니다. 완료 요청 후 성공/실패를 선택하면 월드 버프/디버프가 적용됩니다.";
-    [TextArea(2, 4)]
-    [SerializeField] private string _completionRequestText = "의뢰 완료 결과를 선택해 주세요.";
-
-    [Header("Test World Effects")]
-    [SerializeField] private string _successEffectId = "IncreaseSellingPrice";
-    [SerializeField] private string _failureEffectId = "DecreaseSellingPrice";
-    [SerializeField] private int _testEffectDurationDays = 7;
-
+    private UI_Shrine _ui;
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
-    private UI_ShrineTest _ui;
-
-    public string QuestTitle => _questTitle;
-    public string QuestDescription => _questDescription;
-    public string CompletionRequestText => _completionRequestText;
 
     public void RequestInteract(PlayerController player)
     {
@@ -34,6 +18,17 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
         OpenShrineUiAsync().Forget();
     }
 
+    // 완료 버튼에서 호출. 실제 권한 검사는 WorldEffectQuestService가 마스터에서 처리합니다.
+    public void RequestCompletion()
+    {
+        if (!IsConstructionComplete) return;
+
+        var service = WorldEffectQuestService.Instance;
+        if (service == null || !service.HasActiveQuest) return;
+
+        service.RequestCompleteAtShrine(service.ActiveQuestId);
+    }
+
     private async UniTaskVoid OpenShrineUiAsync()
     {
         if (UIController.Instance == null)
@@ -43,7 +38,7 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
             return;
         }
 
-        _ui = await UIController.Instance.OpenAsync<UI_ShrineTest>(ui =>
+        _ui = await UIController.Instance.OpenAsync<UI_Shrine>(ui =>
         {
             ui.Configure(this, EndInteractionFromUI);
         });
@@ -52,24 +47,6 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
         {
             EndInteraction(false);
         }
-    }
-
-    public string ApplyTestQuestResult(bool isSuccess)
-    {
-        if (!IsConstructionComplete) return "제단 건설이 완료되지 않았습니다.";
-
-        if (WorldEffectManager.Instance == null) return "WorldEffectManager를 찾을 수 없어 효과를 적용하지 못했습니다.";
-
-        int durationDays = Mathf.Max(1, _testEffectDurationDays);
-
-        if (isSuccess)
-        {
-            WorldEffectManager.Instance.AddEffect(_successEffectId, EWorldEffectKind.Buff, durationDays);
-            return $"성공: {_successEffectId} 버프가 {durationDays}일 동안 적용되었습니다.";
-        }
-
-        WorldEffectManager.Instance.AddEffect(_failureEffectId, EWorldEffectKind.Debuff, durationDays);
-        return $"실패: {_failureEffectId} 디버프가 {durationDays}일 동안 적용되었습니다.";
     }
 
     private void EndInteractionFromUI()

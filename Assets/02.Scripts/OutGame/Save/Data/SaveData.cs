@@ -10,4 +10,5 @@ public class SaveData
     public TimeSaveData Time = new();
     public VillageSaveData Village = new();
     public WorldEffectSaveData WorldEffects = new();
+    public ForcedTimedQuestSaveData ForcedTimedQuest = new();
 }

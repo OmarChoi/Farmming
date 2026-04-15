@@ -10,6 +10,9 @@ public class QuestRuntimeData
 
     public int CurrentAmount;
 
+    public int AcceptedDay;
+    public int ExpireDay;
+
     [SerializeField] private List<QuestItemProgressEntry> _itemProgressList = new();
     private Dictionary<int, int> _itemProgressMap;
 
