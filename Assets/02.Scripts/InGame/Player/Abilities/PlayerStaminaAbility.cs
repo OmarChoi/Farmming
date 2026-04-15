@@ -25,6 +25,11 @@ public class PlayerStaminaAbility : PlayerAbility
         TimeEvents.OnNetDayStarted -= HandleMorning;
     }
 
+    public void RecoverFull()
+    {
+        Stamina?.RecoverFull();
+    }
+
     public bool TryConsume(float amount) => Stamina.TryConsume(amount);
     public bool HasEnough(float amount) => Stamina.HasEnough(amount);
     public void Consume(float amount) => Stamina.Consume(amount);

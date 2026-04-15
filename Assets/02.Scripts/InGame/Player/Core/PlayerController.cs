@@ -168,6 +168,18 @@ public class PlayerController : MonoBehaviour
             duration);
     }
 
+    public void ReceiveCure()
+    {
+        GetAbility<PlayerStaminaAbility>()?.RecoverFull();
+        GetAbility<PlayerHelperInventoryAbility>()?.RecoverAllHelpersFull();
+        GetAbility<PlayerCuringAbility>()?.MarkCuredToday();
+    }
+
+    public bool CanReceiveCuringToday()
+    {
+        return GetAbility<PlayerCuringAbility>()?.CanReceiveCuringToday() ?? false;
+    }
+
     // === PunRPC ===
 
     [PunRPC]

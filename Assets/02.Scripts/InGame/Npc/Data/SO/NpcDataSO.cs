@@ -29,6 +29,10 @@ public class NpcDataSO : ScriptableObject
     [Header("로컬 대화")]
     public NpcDialogueSO[] GreetDialogues;
     public NpcDialogueSO[] TalkDialogues;
+    public NpcDialogueSO CuringAskDialogue;
+    public NpcDialogueSO CuringAcceptDialogue;
+    public NpcDialogueSO CuringDeclineDialogue;
+    public NpcDialogueSO CuringAlreadyDoneDialogue;
 
     [Header("스케줄 시간 오프셋")]
     public bool UseRandomTimeOffset = true;
