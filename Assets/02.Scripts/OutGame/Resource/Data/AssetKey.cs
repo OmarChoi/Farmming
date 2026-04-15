@@ -23,6 +23,7 @@ public static class AssetKey
         public const string Blacksmith = "Blacksmith";
         public const string Hairdresser = "Hairdresser";
         public const string Merchant = "Merchant";
+        public const string Doctor = "Doctor";
         public const string GroundHelper = "GroundHelper";
         public const string LightHelper = "LightHelper";
         public const string HarvestHelper = "HarvestHelper";
@@ -113,12 +114,14 @@ public static class AssetKey
         private const string MarketStall = "MarketStall";
         private const string Smithy = "Smithy";
         private const string HairShop = "HairShop";
+        private const string TestHospital = "TestHospital";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
         {
             MarketStall,
             Smithy,
-            HairShop
+            HairShop,
+            TestHospital
         };
 
         public static string GetKey(string buildingId)
