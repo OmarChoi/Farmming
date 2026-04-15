@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static Unity.Cinemachine.CinemachineSplineRoll;
 
 public class HelperUpgradeService : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class HelperUpgradeService : MonoBehaviour
     [SerializeField] private NpcDialogueController _dialogueController;
     [SerializeField] private EvolutionManager _evolutionManager;
 
+    private PlayerInventoryAbility _inventoryAbility;
     private PlayerHelperInventoryAbility _helperInventoryAbility;
     private NpcInteractionContext _currentContext;
 
@@ -36,8 +38,6 @@ public class HelperUpgradeService : MonoBehaviour
 
     private void OnEnable()
     {
-        PlayerHelperInventoryAbility.OnLocalPlayerReady += HandleLocalPlayerReady;
-
         if (_uiHelperUpgrade != null)
         {
             _uiHelperUpgrade.OnCloseRequested += CloseUpgradeUi;
@@ -47,8 +47,6 @@ public class HelperUpgradeService : MonoBehaviour
 
     private void OnDisable()
     {
-        PlayerHelperInventoryAbility.OnLocalPlayerReady -= HandleLocalPlayerReady;
-
         if (_uiHelperUpgrade != null)
         {
             _uiHelperUpgrade.OnCloseRequested -= CloseUpgradeUi;
@@ -56,24 +54,32 @@ public class HelperUpgradeService : MonoBehaviour
         }
     }
 
-    private void HandleLocalPlayerReady(PlayerHelperInventoryAbility inventoryAbility)
-    {
-        _helperInventoryAbility = inventoryAbility;
-    }
-
-    public bool HasInventory()
-    {
-        return _helperInventoryAbility != null;
-    }
-
     public void BeginUpgradeInteraction(NpcInteractionContext context)
     {
         _currentContext = context;
+        PlayerController interactor = context?.Interactor;
 
+        if (interactor == null)
+        {
+#if UNITY_EDITOR
+            Debug.LogWarning("상호작용 플레이어가 없습니다.");
+#endif
+            return;
+        }
+
+        _helperInventoryAbility = interactor.GetAbility<PlayerHelperInventoryAbility>();
+        _inventoryAbility = interactor.GetAbility<PlayerInventoryAbility>();
         if (_helperInventoryAbility == null)
         {
 #if UNITY_EDITOR
-            Debug.LogWarning("Local PlayerHelperInventoryAbility is not ready yet.");
+            Debug.LogWarning("PlayerHelperInventoryAbility가 없습니다.");
+#endif
+            return;
+        }
+        if (_inventoryAbility == null)
+        {
+#if UNITY_EDITOR
+            Debug.LogWarning("PlayerInventoryAbility가 없습니다.");
 #endif
             return;
         }
@@ -82,7 +88,7 @@ public class HelperUpgradeService : MonoBehaviour
         if (helpers.Count == 0)
         {
 #if UNITY_EDITOR
-            Debug.Log("No helpers available for upgrade UI.");
+            Debug.Log("헬퍼가 없습니다.");
 #endif
             return;
         }
@@ -100,7 +106,7 @@ public class HelperUpgradeService : MonoBehaviour
         if (_helperInventoryAbility == null)
         {
 #if UNITY_EDITOR
-            Debug.LogWarning("PlayerHelperInventoryAbility is not connected.");
+            Debug.LogWarning("PlayerHelperInventoryAbility가 연결되지 않았습니다.");
 #endif
             return result;
         }
@@ -109,18 +115,42 @@ public class HelperUpgradeService : MonoBehaviour
         return result;
     }
 
+    public IReadOnlyList<HelperUpgradeCostEntry> GetUpgradeCosts(HelperDataSO data)
+    {
+        if (data == null) return Array.Empty<HelperUpgradeCostEntry>();
+
+        EHelperGrade grade = GetGrade(data);
+        return data.GetUpgradeCosts(grade);
+    }
+
+    public bool HasRequiredUpgradeCost(HelperDataSO data)
+    {
+        if (data == null || _inventoryAbility == null) return false;
+
+        IReadOnlyList<HelperUpgradeCostEntry> costs = GetUpgradeCosts(data);
+        for (int i = 0; i < costs.Count; i++)
+        {
+            HelperUpgradeCostEntry cost = costs[i];
+            if (cost.Item == null || cost.Amount <= 0) continue;
+
+            if (_inventoryAbility.GetItemCount(cost.Item) < cost.Amount) return false;
+        }
+
+        return true;
+    }
+
     public bool CanUpgrade(HelperDataSO data)
     {
-        if (_helperInventoryAbility == null || data == null) return false;
+        if (_helperInventoryAbility == null || _inventoryAbility == null || data == null) return false;
 
         EHelperGrade grade = _helperInventoryAbility.GetHelperGrade(data);
         if (grade == EHelperGrade.Legendary) return false;
 
         int exp = _helperInventoryAbility.GetHelperExperience(data);
         int maxExp = _helperInventoryAbility.GetMaxExpByGrade(data, grade);
-        if (maxExp <= 0) return false;
+        if (maxExp <= 0 || exp < maxExp) return false;
 
-        return exp >= maxExp;
+        return HasRequiredUpgradeCost(data);
     }
 
     public EHelperUpgradeBlockReason GetBlockReasonType(HelperDataSO data)
@@ -130,7 +160,12 @@ public class HelperUpgradeService : MonoBehaviour
 
         EHelperGrade grade = _helperInventoryAbility.GetHelperGrade(data);
         if (grade == EHelperGrade.Legendary) return EHelperUpgradeBlockReason.MaxGrade;
-        if (!CanUpgrade(data)) return EHelperUpgradeBlockReason.NotEnoughExperience;
+
+        int exp = _helperInventoryAbility.GetHelperExperience(data);
+        int maxExp = _helperInventoryAbility.GetMaxExpByGrade(data, grade);
+        if (maxExp <= 0 || exp < maxExp) return EHelperUpgradeBlockReason.NotEnoughExperience;
+
+        if (!HasRequiredUpgradeCost(data)) return EHelperUpgradeBlockReason.NotEnoughCost;
 
         return EHelperUpgradeBlockReason.None;
     }
@@ -140,24 +175,22 @@ public class HelperUpgradeService : MonoBehaviour
         if (data == null)
         {
 #if UNITY_EDITOR
-            Debug.LogWarning("Upgrade target helper is null.");
+            Debug.LogWarning("업그레이드 대상 헬퍼가 없습니다.");
 #endif
             return;
         }
 
-        if (_helperInventoryAbility == null)
+        if (_helperInventoryAbility == null || _inventoryAbility == null)
         {
 #if UNITY_EDITOR
-            Debug.LogWarning("PlayerHelperInventoryAbility is missing.");
+            Debug.LogWarning("PlayerHelperInventoryAbility 또는 PlayerInventoryAbility가 없습니다.");
 #endif
             return;
         }
 
-        if (!CanUpgrade(data))
+        EHelperUpgradeBlockReason blockReason = GetBlockReasonType(data);
+        if (blockReason != EHelperUpgradeBlockReason.None)
         {
-#if UNITY_EDITOR
-            Debug.LogWarning("Upgrade blocked.");
-#endif
             OnUpgradeFailed?.Invoke(data);
             return;
         }
@@ -165,7 +198,7 @@ public class HelperUpgradeService : MonoBehaviour
         EHelperGrade currentGrade = _helperInventoryAbility.GetHelperGrade(data);
         if (TryPlayEvolutionCutscene(data, currentGrade)) return;
 
-        CompleteUpgrade(data);
+        TryFinalizeUpgrade(data);
     }
 
     private bool TryPlayEvolutionCutscene(HelperDataSO data, EHelperGrade currentGrade)
@@ -173,11 +206,8 @@ public class HelperUpgradeService : MonoBehaviour
         if (_evolutionManager == null || data == null || currentGrade >= EHelperGrade.Legendary) return false;
 
         HelperController liveHelper = FindLiveHelperForEvolution(data);
-        bool started = _evolutionManager.BeginEvolution(
-            data,
-            currentGrade,
-            liveHelper,
-            completed =>
+        bool started = _evolutionManager.BeginEvolution(data, currentGrade, liveHelper, completed
+            =>
             {
                 if (!completed)
                 {
@@ -185,7 +215,7 @@ public class HelperUpgradeService : MonoBehaviour
                     return;
                 }
 
-                CompleteUpgrade(data);
+                TryFinalizeUpgrade(data);
             });
 
         if (!started) return false;
@@ -203,6 +233,16 @@ public class HelperUpgradeService : MonoBehaviour
 
         return null;
     }
+    private void TryFinalizeUpgrade(HelperDataSO data)
+    {
+        if (!TryConsumeUpgradeCost(data))
+        {
+            OnUpgradeFailed?.Invoke(data);
+            return;
+        }
+
+        CompleteUpgrade(data);
+    }
 
     private void CompleteUpgrade(HelperDataSO data)
     {
@@ -210,7 +250,7 @@ public class HelperUpgradeService : MonoBehaviour
         if (!success)
         {
 #if UNITY_EDITOR
-            Debug.LogWarning($"Upgrade failed - {data.HelperId}");
+            Debug.LogWarning($"업그레이드 실패 - {data.HelperId}");
 #endif
             OnUpgradeFailed?.Invoke(data);
             return;
@@ -219,7 +259,7 @@ public class HelperUpgradeService : MonoBehaviour
         _helperInventoryAbility.RespawnHelper(data);
 
 #if UNITY_EDITOR
-        Debug.Log($"Upgrade complete - {data.HelperId}, current grade: {_helperInventoryAbility.GetHelperGrade(data)}");
+        Debug.Log($"업그레이드 완료 - {data.HelperId}, 현재 등급: {_helperInventoryAbility.GetHelperGrade(data)}");
 #endif
 
         OnHelperUpgraded?.Invoke(data);
@@ -293,6 +333,31 @@ public class HelperUpgradeService : MonoBehaviour
 
         int currentExp = _helperInventoryAbility.GetHelperExperience(data);
         return (float)currentExp / maxExp;
+    }
+
+    private bool TryConsumeUpgradeCost(HelperDataSO data)
+    {
+        if (data == null || _inventoryAbility == null) return false;
+
+        IReadOnlyList<HelperUpgradeCostEntry> costs = GetUpgradeCosts(data);
+
+        for (int i = 0; i < costs.Count; i++)
+        {
+            HelperUpgradeCostEntry cost = costs[i];
+            if (cost.Item == null || cost.Amount <= 0) continue;
+
+            if (_inventoryAbility.GetItemCount(cost.Item) < cost.Amount) return false;
+        }
+
+        for (int i = 0; i < costs.Count; i++)
+        {
+            HelperUpgradeCostEntry cost = costs[i];
+            if (cost.Item == null || cost.Amount <= 0) continue;
+
+            _inventoryAbility.RemoveItem(cost.Item, cost.Amount);
+        }
+
+        return true;
     }
 
     private void CloseUpgradeUi()

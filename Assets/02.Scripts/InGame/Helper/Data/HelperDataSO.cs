@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "HelperDataSO", menuName = "Scriptable Objects/HelperDataSO")]
@@ -57,4 +59,19 @@ public class HelperDataSO : ScriptableObject
     public Sprite RightClickIcon => _rightClickIcon;
     public string LeftClickExplanation => _leftClickExplanation;
     public string RightClickExplanation => _rightClickExplanation;
+
+    [SerializeField] private HelperUpgradeCostGroup[] _upgradeCosts;
+
+    public IReadOnlyList<HelperUpgradeCostGroup> UpgradeCosts => _upgradeCosts;
+    public IReadOnlyList<HelperUpgradeCostEntry> GetUpgradeCosts(EHelperGrade fromGrade)
+    {
+        if (_upgradeCosts == null) return Array.Empty<HelperUpgradeCostEntry>();
+
+        for (int i = 0; i < _upgradeCosts.Length; i++)
+        {
+            if (_upgradeCosts[i].FromGrade == fromGrade) return _upgradeCosts[i].Costs;
+        }
+
+        return Array.Empty<HelperUpgradeCostEntry>();
+    }
 }
