@@ -12,6 +12,7 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
     private bool _isOpen;
 
     public bool IsOpen => _isOpen;
+    public InventoryDomain Domain => _inventory;
     public int SlotCount => _inventory.SlotCount;
 
     public event Action<bool> OnToggle;
@@ -81,6 +82,8 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 
     public InventorySlot GetSlot(int index) => _inventory.GetSlot(index);
     public void AddItem(ItemDataSO item, int amount = 1) => _inventory.AddItem(item, amount);
+    public bool AddItemToSlot(ItemDataSO item, int slotIndex, int amount = 1, bool fallbackToAuto = true)
+        => _inventory.AddItemToSlot(item, slotIndex, amount, fallbackToAuto);
     public void SwapSlots(int from, int to) => _inventory.SwapSlots(from, to);
     public int SplitHalf(int index) => _inventory.SplitHalf(index);
     public void PlaceSplit(int sourceIndex, int targetIndex, ItemDataSO item, int amount)

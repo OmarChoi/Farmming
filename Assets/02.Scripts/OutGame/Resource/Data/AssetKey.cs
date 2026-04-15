@@ -40,6 +40,7 @@ public static class AssetKey
         public const string WoodCuttingLegendaryHelper = "WoodCuttingLegendaryHelper";
         public const string JungleTroublemaker = "JungleTroublemaker";
         public const string CaveTroublemaker1 = "CaveTroublemaker1";
+        public const string Storage = "Storage";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
@@ -114,6 +115,7 @@ public static class AssetKey
         private const string MarketStall = "MarketStall";
         private const string Smithy = "Smithy";
         private const string HairShop = "HairShop";
+        private const string Storage = "Storage";
         private const string TestHospital = "TestHospital";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
@@ -121,6 +123,7 @@ public static class AssetKey
             MarketStall,
             Smithy,
             HairShop,
+            Storage,
             TestHospital
         };
 
