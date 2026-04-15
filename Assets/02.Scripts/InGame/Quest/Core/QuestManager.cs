@@ -76,6 +76,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         foreach (QuestRuntimeData quest in _activeQuests.Values)
         {
             if (quest == null || quest.QuestData == null) continue;
+            if (quest.QuestData.QuestCategory == EQuestCategory.ForcedTimed) continue;
 
             QuestRuntimeSaveData runtimeSave = new QuestRuntimeSaveData
             {
@@ -138,6 +139,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
                 QuestDataSO questData = _questDatabase.GetQuestById(runtimeSave.QuestId);
                 if (questData == null) continue;
+                if (questData.QuestCategory == EQuestCategory.ForcedTimed) continue;
 
                 QuestRuntimeData runtimeData = new QuestRuntimeData(questData);
                 runtimeData.Status = (EQuestStatus)runtimeSave.Status;
@@ -149,6 +151,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         }
 
         MarkLoaded();
+        WorldEffectQuestService.Instance?.ApplyStateToJournal();
     }
 
     public void MarkLoaded()

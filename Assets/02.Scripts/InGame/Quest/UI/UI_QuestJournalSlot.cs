@@ -51,8 +51,7 @@ public class UI_QuestJournalSlot : MonoBehaviour
         {
             if (quest.QuestCategory == EQuestCategory.ForcedTimed && runtimeData.ExpireDay > 0)
             {
-                int remaining = Mathf.Max(0, runtimeData.ExpireDay - TimeEvents.CurrentDay);
-                _questRemainingDaysText.text = $"남은 기간: {remaining}일";
+                _questRemainingDaysText.text = $"남은 기간: {runtimeData.RemainingDays}일";
             }
             else
             {
