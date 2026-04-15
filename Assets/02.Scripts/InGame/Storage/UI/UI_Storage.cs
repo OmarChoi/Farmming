@@ -124,7 +124,10 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     {
         _slideTween?.Kill();
         CancelDrag();
-        if (_tooltip != null) _tooltip.Hide();
+        if (_tooltip != null)
+        {
+            _tooltip.Hide();
+        }
 
         Vector2 target = _panelOriginPos + Vector2.left * _slideDistance;
         _slideTween = _panelRect.DOAnchorPos(target, _slideDuration)
@@ -249,9 +252,13 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
                 : _dragSourceSlot.SlotIndex;
 
             if (_isSplitDrag)
+            {
                 _transferService.PlaceSplitInStorage(_dragSourceSlot.SlotIndex, targetIndex, _dragItem, _dragCount);
+            }
             else
+            {
                 _transferService.PutDownInStorage(targetIndex, _dragItem, _dragCount);
+            }
         }
 
         ClearDragState();
