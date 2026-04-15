@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections.Generic;
 
 public class NpcController : MonoBehaviour
 {
@@ -31,6 +32,8 @@ public class NpcController : MonoBehaviour
     private bool _isInteracting;
 
     private Vector3 _wanderBasePosition;
+    private readonly List<NpcInteractionOption> _runtimeInteractionOptions = new();
+    private NpcInteractionOption[] _interactionOptionCache;
 
     public Animator Animator => _animator;
     public NpcAnimatorController Anim => _anim;
@@ -39,7 +42,7 @@ public class NpcController : MonoBehaviour
     public NpcScheduleSO Schedule => _npcSchedule;
     public Shop Shop => _shop;
     public Transform CurrentInteractor => _currentInteractor;
-    public NpcInteractionOption[] InteractionOptions => _interactionOptions;
+    public NpcInteractionOption[] InteractionOptions => GetInteractionOptions();
     public bool IsInteracting => _isInteracting;
     public bool AutoStartQuestOnInteract => _npcData != null && _npcData.AutoStartQuestOnInteract;
 
@@ -50,6 +53,24 @@ public class NpcController : MonoBehaviour
         if (_movement == null) _movement = GetComponent<NpcMovement>();
         if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
         if (_npcQuest == null) _npcQuest = GetComponent<NpcQuest>();
+    }
+
+    public void AddRuntimeInteractionOption(ENpcInteractionType type, string buttonName)
+    {
+        if (string.IsNullOrWhiteSpace(buttonName))
+            return;
+
+        NpcInteractionOption[] options = GetInteractionOptions();
+        for (int i = 0; i < options.Length; i++)
+        {
+            NpcInteractionOption option = options[i];
+            if (option == null) continue;
+            if (option.Type == type && option.ButtonName == buttonName)
+                return;
+        }
+
+        _runtimeInteractionOptions.Add(new NpcInteractionOption(type, buttonName));
+        _interactionOptionCache = null;
     }
 
     public void Initialize(NpcDataSO data, bool isLocalOnly = false)
@@ -331,5 +352,27 @@ public class NpcController : MonoBehaviour
             _currentScheduleIndex = latestIndex;
             ExecuteSchedule(latestValidEntry);
         }
+    }
+
+    private NpcInteractionOption[] GetInteractionOptions()
+    {
+        if (_interactionOptionCache != null)
+            return _interactionOptionCache;
+
+        int serializedCount = _interactionOptions != null ? _interactionOptions.Length : 0;
+        int runtimeCount = _runtimeInteractionOptions.Count;
+        if (runtimeCount == 0)
+        {
+            _interactionOptionCache = _interactionOptions ?? System.Array.Empty<NpcInteractionOption>();
+            return _interactionOptionCache;
+        }
+
+        _interactionOptionCache = new NpcInteractionOption[serializedCount + runtimeCount];
+        for (int i = 0; i < serializedCount; i++)
+            _interactionOptionCache[i] = _interactionOptions[i];
+        for (int i = 0; i < runtimeCount; i++)
+            _interactionOptionCache[serializedCount + i] = _runtimeInteractionOptions[i];
+
+        return _interactionOptionCache;
     }
 }
