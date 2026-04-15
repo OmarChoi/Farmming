@@ -16,8 +16,8 @@ MonoBehaviour:
   - ScheduleTime:
       _hour: 0
       _minute: 0
-    NpcLocationType: 6
-    LocationKey: Doctor_Hospital
+    NpcLocationType: 0
+    LocationKey: Doctor_Home
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -51,7 +51,7 @@ MonoBehaviour:
     WanderSearchStep: 5
   - ScheduleTime:
       _hour: 20
-      _minute: 44
+      _minute: 4
     NpcLocationType: 2
     LocationKey: Doctor_Wandering3
     WanderingDirection: {x: 1, y: 0, z: 0}
@@ -59,10 +59,10 @@ MonoBehaviour:
     WanderingRadius: 8
     WanderSearchStep: 5
   - ScheduleTime:
-      _hour: 20
-      _minute: 0
-    NpcLocationType: 2
-    LocationKey: Doctor_Wandering4
+      _hour: 22
+      _minute: 24
+    NpcLocationType: 0
+    LocationKey: Doctor_Home
     WanderingDirection: {x: 0, y: 0, z: -1}
     WanderingDistance: 24
     WanderingRadius: 4

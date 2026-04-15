@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
   Id: DoctorGreetingDialogue1
   Lines:
-  - Text: "\uC774\uB798\uBCF4\uC5EC\uB3C4 \uCC98\uBC29\uC740 \uC81C\uB300\uB85C \uD574\uC8FC\uB2C8
-      \uAC71\uC815 \uB9C8\uC138\uC694, \uD658\uC790\uBD84. \uB3C8\uB9CC \uC81C\uB300\uB85C
-      \uC900\uB2E4\uBA74 \uB9D0\uC774\uC9C0..."
+  - Text: "\uC774\uB798\uBCF4\uC5EC\uB3C4 \uC804\uBB38\uC801\uC778 \uCE58\uB8CC\uC640
+      \uCC98\uBC29\uC744 \uD574\uC8FC\uB2C8 \uAC71\uC815 \uB9C8\uC138\uC694, \uD658\uC790
+      \uBD84."
+    NextDialogue: {fileID: 0}
+  - Text: "\uB3C8\uB9CC \uC81C\uB300\uB85C \uC900\uB2E4\uBA74 \uB9D0\uC774\uC9C0..."
     NextDialogue: {fileID: 0}
