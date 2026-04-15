@@ -116,15 +116,13 @@ public static class AssetKey
         private const string Smithy = "Smithy";
         private const string HairShop = "HairShop";
         private const string Storage = "Storage";
-        private const string TestHospital = "TestHospital";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
         {
             MarketStall,
             Smithy,
             HairShop,
-            Storage,
-            TestHospital
+            Storage
         };
 
         public static string GetKey(string buildingId)
@@ -155,6 +153,7 @@ public static class AssetKey
         public const string BuildInfo = "UI_BuildInfo";
         public const string VillageState = "UI_VillageState";
         public const string VillageLevelUp = "UI_VillageLevelUp";
+        public const string UI_TradeAmountPopup = "UI_TradeAmountPopup";
 
         private static readonly Dictionary<Type, string> _registered = new Dictionary<Type, string>
         {
