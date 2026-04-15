@@ -102,6 +102,17 @@ MonoBehaviour:
   - RPC_PlayFastFertilizer
   - RPC_ActivateRangeBoost
   - RPC_DeactivateRangeBoost
+  - RPC_ReceiveItem
+  - RPC_RequestAddItem
+  - RPC_RequestAddItemToSlot
+  - RPC_RequestFullSync
+  - RPC_RequestGiveHeldItem
+  - RPC_RequestPlaceSplit
+  - RPC_RequestRemoveItem
+  - RPC_RequestSplitHalf
+  - RPC_RequestSwap
+  - RPC_RequestSwapInStorage
+  - RPC_SyncStorage
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
