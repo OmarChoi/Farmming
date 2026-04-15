@@ -75,6 +75,35 @@ public class UI_Shop : MonoBehaviour
         PlayCloseAnimation();
     }
 
+    public void OnShopSlotClicked(UI_ShopItemSlot slot)
+    {
+        if (_currentShopData == null || slot.ItemData == null || _tradeService == null) return;
+
+        _tradeService.Buy(_currentShopData, slot.ItemData, 1);
+    }
+
+    public void OnClickCloseButton()
+    {
+        OnCloseRequested?.Invoke();
+    }
+
+    public void CloseImmediate()
+    {
+        _slideTween?.Kill();
+
+        if (_shopRect != null)
+        {
+            _shopRect.anchoredPosition = _shopOriginPosition;
+        }
+
+        if (_uiShopRoot != null)
+        {
+            _uiShopRoot.SetActive(false);
+        }
+
+        _currentShopData = null;
+    }
+
     private void PlayOpenAnimation()
     {
         if (_shopRect == null) return;
@@ -129,17 +158,5 @@ public class UI_Shop : MonoBehaviour
                 _slots[i].Refresh(_currentShopData.SellItems[i]);
             }
         }
-    }
-
-    public void OnShopSlotClicked(UI_ShopItemSlot slot)
-    {
-        if (_currentShopData == null || slot.ItemData == null || _tradeService == null) return;
-
-        _tradeService.Buy(_currentShopData, slot.ItemData, 1);
-    }
-
-    public void OnClickCloseButton()
-    {
-        OnCloseRequested?.Invoke();
     }
 }
