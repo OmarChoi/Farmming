@@ -237,10 +237,6 @@ public class UI_TradeAmountPopup : MonoBehaviour
         {
             _amountInputField.text = _currentAmount.ToString();
         }
-
-        int unitCost = _tradeType == ETradeType.Buy ? _currentItem.BuyCost : _currentItem.SellCost;
-        int totalGold = unitCost * _currentAmount;
-
         if(_totalGoldText != null)
         {
             _totalGoldText.text = ItemDisplayFormatter.GetTotalCostText(_currentItem, _tradeType, _currentAmount);

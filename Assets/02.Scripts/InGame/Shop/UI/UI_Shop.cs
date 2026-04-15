@@ -24,6 +24,8 @@ public class UI_Shop : MonoBehaviour
     [SerializeField] private float _slideDuration = 0.3f;
     [SerializeField] private float _slideDistance = 300f;
 
+    private const int MaxPurchaseAmount = 999;
+
     private RectTransform _shopRect;
     private Vector2 _shopOriginPosition;
     private Tween _slideTween;
@@ -133,7 +135,7 @@ public class UI_Shop : MonoBehaviour
         ItemDataSO item = slot.ItemData;
 
         int maxAffordableAmount = item.BuyCost <= 0
-            ? 999
+            ? MaxPurchaseAmount
             : CurrencyManager.Instance.CurrentGold / item.BuyCost;
 
         if (maxAffordableAmount <= 0) return;
@@ -145,7 +147,7 @@ public class UI_Shop : MonoBehaviour
             maxAffordableAmount,
             amount =>
             {
-                bool success = _tradeService.Buy(_currentShopData, item, amount);
+                _tradeService.Buy(_currentShopData, item, amount);
             }).Forget();
     }
 
