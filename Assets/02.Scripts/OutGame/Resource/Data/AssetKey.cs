@@ -153,7 +153,6 @@ public static class AssetKey
         public const string BuildInfo = "UI_BuildInfo";
         public const string VillageState = "UI_VillageState";
         public const string VillageLevelUp = "UI_VillageLevelUp";
-        public const string UI_TradeAmountPopup = "UI_TradeAmountPopup";
 
         private static readonly Dictionary<Type, string> _registered = new Dictionary<Type, string>
         {
