@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: Tutorial5CompleteDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: Tutorial5CompleteDialogue
+  Lines:
+  - Text: "\uC5ED\uC2DC \uD574\uB0BC \uC904 \uC54C\uC558\uC5B4\uC5B4! \uC6B0\uB9AC\uB294
+      \uB124\uAC00 \uB300\uB2E8\uD574\uC560~"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC774\uC81C \uC6B0\uB9AC \uACE1\uB8E1 \uCE5C\uAD6C\uB4E4\uACFC \uD568\uAED8\uC5D0
+      \uB098\uBB34\uB97C \uCE90\uACE0, \uB3CC\uB3C4 \uCE90\uACE0, \uB18D\uC0AC\uB3C4
+      \uD558\uBA74 \uB3FC\uC560~ \uC5B8\uC820\uAC00\uB294 \uBA4B\uC9C4 \uACF3\uC73C\uB85C
+      \uBAA8\uD5D8\uB3C4 \uB5A0\uB0A0 \uC218 \uC788\uC744 \uAC70\uC57C\uC544."
+    NextDialogue: {fileID: 0}

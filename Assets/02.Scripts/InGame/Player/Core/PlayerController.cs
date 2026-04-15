@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
     private Renderer[] _cachedRenderers;
 
+
     private void Awake()
     {
         PhotonView = GetComponent<PhotonView>();
@@ -154,6 +155,19 @@ public class PlayerController : MonoBehaviour
             saveable.ImportFrom(saveData);
     }
 
+    public void RequestTrouble(ETroubleEffectType effectType, Vector3 direction, float power, float duration)
+    {
+        if (PhotonView == null) return;
+
+        PhotonView.RPC(
+            nameof(RPC_ApplyTrouble),
+            PhotonView.Owner,
+            (int)effectType,
+            direction,
+            power,
+            duration);
+    }
+
     // === PunRPC ===
 
     [PunRPC]
@@ -189,5 +203,20 @@ public class PlayerController : MonoBehaviour
         var saveData = JsonUtility.FromJson<PlayerSaveData>(json);
         if (SaveManager.Instance != null)
             SaveManager.Instance.ReceiveSaveData(saveData);
+    }
+
+    [PunRPC]
+    public void RPC_ApplyTrouble(int effectType, Vector3 direction, float power, float duration)
+    {
+        TroubleContext context = new TroubleContext
+        {
+            Source = null,
+            EffectType = (ETroubleEffectType)effectType,
+            Direction = direction,
+            Power = power,
+            Duration = duration
+        };
+
+        GetAbility<PlayerTroubleAbility>()?.ApplyTrouble(context);
     }
 }

@@ -21,7 +21,7 @@ public class NpcDialogueController : MonoBehaviour
 
     private EDialogueUiState _dialogueState = EDialogueUiState.None;
 
-    private Action _onDialogueEnded;
+    private Func<bool> _onDialogueEnded;
 
     private void Awake()
     {
@@ -65,10 +65,10 @@ public class NpcDialogueController : MonoBehaviour
         _uiDialogue.BindDialoguePanel(OnClickDialoguePanel);
     }
 
-    public void Open(NpcController npc, Transform interactor)
+    public void Open(NpcController npc, PlayerController player)
     {
         _currentNpc = npc;
-        _currentInteractor = interactor;
+        _currentInteractor = player.transform;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
         _anim = npc.Anim;
 
@@ -80,10 +80,22 @@ public class NpcDialogueController : MonoBehaviour
         if (_uiFriendshipBar != null)
         {
             _uiFriendshipBar.BindNpc(npc.Data.NpcId, true);
+            if (npc.AutoStartQuestOnInteract == true)
+            {
+                _uiFriendshipBar.gameObject.SetActive(false);
+            }
+        }
+
+        QuestManager.Instance?.ReportNpcTalked(npc.Data.NpcId);
+
+        if (npc.Data != null && npc.AutoStartQuestOnInteract)
+        {
+            _dialogueState = EDialogueUiState.Quest;
+            _interactionService.Execute(ENpcInteractionType.Quest, CreateContext());
+            return;
         }
 
         StartGreeting();
-        QuestManager.Instance?.ReportNpcTalked(npc.Data.NpcId);
     }
 
     public void Close()
@@ -97,6 +109,7 @@ public class NpcDialogueController : MonoBehaviour
 
         if (_uiFriendshipBar != null)
         {
+            _uiFriendshipBar.gameObject.SetActive(true);
             _uiFriendshipBar.Clear();
         }
 
@@ -137,7 +150,7 @@ public class NpcDialogueController : MonoBehaviour
         StartDialogue(dialogueSO);
     }
 
-    public void StartDialogue(NpcDialogueSO dialogueSO, EDialogueUiState dialogueState, Action onEnded)
+    public void StartDialogue(NpcDialogueSO dialogueSO, EDialogueUiState dialogueState, Func<bool> onEnded)
     {
         _dialogueState = dialogueState;
         _onDialogueEnded = onEnded;
@@ -201,11 +214,16 @@ public class NpcDialogueController : MonoBehaviour
         _currentDialogue = null;
         _currentLineIndex = 0;
 
-        Action endedCallback = _onDialogueEnded;
+        // 대화 종료 콜백이 있으면 먼저 실행합니다. 콜백에서 true를 반환하면 기본 종료 로직을 건너뜁니다.
+        Func<bool> endedCallback = _onDialogueEnded;
         _onDialogueEnded = null;
+        bool handledByCallback = false;
         if (endedCallback != null)
         {
-            endedCallback.Invoke();
+            handledByCallback = endedCallback.Invoke();
+        }
+        if (handledByCallback)
+        {
             return;
         }
 
@@ -309,5 +327,23 @@ public class NpcDialogueController : MonoBehaviour
             _currentNpc,
             _currentInteractor,
             _currentInteractionComponent);
+    }
+
+    public void HideDialogueUiOnly()
+    {
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.None;
+        _onDialogueEnded = null;
+
+        if (_uiFriendshipBar != null)
+        {
+            _uiFriendshipBar.gameObject.SetActive(false);
+        }
+
+        if (_uiDialogue != null)
+        {
+            _uiDialogue.Close();
+        }
     }
 }

@@ -108,6 +108,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         if (!_owner.IsMine) return;
         TimeEvents.OnNetDayStarted += HandleMorning;
         UI_Inventory.SeedSelectionRequested += HandleSeedSelectionRequested;
+        UI_Inventory.GroundSelectionRequested += HandleGroundSelectionRequested;
+        UI_Inventory.FertilizerSelectionRequested += HandleFertilizerSelectionRequested;
         OnLocalPlayerReady?.Invoke(this);
     }
 
@@ -115,7 +117,11 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         TimeEvents.OnNetDayStarted -= HandleMorning;
         if (_owner != null && _owner.IsMine)
+        {
             UI_Inventory.SeedSelectionRequested -= HandleSeedSelectionRequested;
+            UI_Inventory.GroundSelectionRequested -= HandleGroundSelectionRequested;
+            UI_Inventory.FertilizerSelectionRequested -= HandleFertilizerSelectionRequested;
+        }
     }
 
     private void Update()
@@ -196,7 +202,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                     _activeLightHelper = null;
                 }
 
+                // 헬퍼 생성 실패 시 소환 상태를 갱신하지 않고 현재 흐름을 중단한다.
                 HelperController helper = InstantiateHelper(data);
+                if (helper == null) return;
+
                 _activeLightHelper = helper;
                 _activeLightHelper.OnGradeChanged += OnLightHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
@@ -225,7 +234,10 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
                     _activeMainHelper = null;
                 }
 
+                // 헬퍼 생성 실패 시 소환 상태를 갱신하지 않고 현재 흐름을 중단한다.
                 HelperController helper = InstantiateHelper(data);
+                if (helper == null) return;
+
                 _activeMainHelper = helper;
                 _activeMainHelper.OnGradeChanged += OnMainHelperGradeChanged;
                 _helperInteractionAbility.Summon(helper);
@@ -241,14 +253,20 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     {
         EHelperGrade grade = GetHelperGrade(data);
         HelperController prefab = data.GetPrefabForGrade(grade);
+        if (prefab == null) return null;
 
         Vector3 spawnPos = _owner.transform.position + _owner.transform.right * 1.5f;
         if (PhotonNetwork.IsConnected)
         {
-            var go = PhotonNetwork.Instantiate(prefab.name, spawnPos, Quaternion.identity);
-            return go.GetComponent<HelperController>();
+            // 온라인에서는 등록된 AssetKey만 Photon prefabId로 사용해 주소 누락을 즉시 드러낸다.
+            string prefabKey = AssetKey.NetworkPrefab.GetKey(prefab);
+            if (string.IsNullOrEmpty(prefabKey)) throw new InvalidOperationException($"[PlayerHelperInventoryAbility] Could not find {prefabKey} prefab in AssetKey");
+            var go = PhotonNetwork.Instantiate(prefabKey, spawnPos, Quaternion.identity);
+            if (go == null) return null;
 
+            return go.GetComponent<HelperController>();
         }
+
         return Instantiate(prefab, spawnPos, Quaternion.identity);
     }
 
@@ -291,8 +309,13 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void RestoreHelperState(HelperController helper)
     {
+        if (helper == null)
+            return;
+
         if (_savedStates.TryGetValue(helper.HelperId, out var state))
             helper.LoadState(state);
+
+        helper.SyncRuntimeState();
     }
 
     private void HandleMorning()
@@ -334,9 +357,26 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             || (_activeLightHelper != null && _activeLightHelper.HelperId == helperId);
     }
 
-    public void AddHelper(HelperDataSO data)
+    public bool AddHelper(HelperDataSO data)
     {
+        if (data == null || _helperDataList.Exists(h => h != null && h.HelperId == data.HelperId)) return false;
+
         _helperDataList.Add(data);
+
+        if (!_savedStates.ContainsKey(data.HelperId))
+        {
+            _savedStates[data.HelperId] = new HelperSaveData
+            {
+                HelperId = data.HelperId,
+                Level = 1,
+                Grade = 0,
+                Experience = 0,
+                Energy = data.MaxEnergy,
+                EnergySavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
+        }
+        OnSelectionChanged?.Invoke(0);
+        return true;
     }
 
     public void ExportTo(PlayerSaveData saveData)
@@ -440,6 +480,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             _activeLightHelper = null;
 
             HelperController newHelper = InstantiateHelper(data);
+            if (newHelper == null) return;
+
             _activeLightHelper = newHelper;
 
             HelperAnimationAbility animationAbility = newHelper.GetAbility<HelperAnimationAbility>();
@@ -459,6 +501,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             _activeMainHelper = null;
 
             HelperController newHelper = InstantiateHelper(data);
+            if (newHelper == null) return;
+
             _activeMainHelper = newHelper;
 
 
@@ -508,6 +552,48 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 #if UNITY_EDITOR
         if (selected)
             Debug.Log($"Sow seed selected: {seedItem.DisplayName}");
+#endif
+
+        return selected;
+    }
+
+    private bool HandleGroundSelectionRequested(ItemDataSO groundItem)
+    {
+        if (groundItem == null || _activeMainHelper == null)
+            return false;
+        if (_activeMainHelper.GetAbility<GroundActionAbility>() == null)
+            return false;
+
+        GroundSelectAbility groundSelectAbility = _activeMainHelper.GetAbility<GroundSelectAbility>();
+        if (groundSelectAbility == null)
+            return false;
+
+        bool selected = groundSelectAbility.TrySelectGround(groundItem);
+
+#if UNITY_EDITOR
+        if (selected)
+            Debug.Log($"Ground selected: {groundItem.DisplayName}");
+#endif
+
+        return selected;
+    }
+
+    private bool HandleFertilizerSelectionRequested(ItemDataSO fertilizerItem)
+    {
+        if (fertilizerItem == null || _activeMainHelper == null)
+            return false;
+        if (_activeMainHelper.GetAbility<HarvestActionAbility>() == null)
+            return false;
+
+        HarvestFertilizerSelectAbility fertilizerSelectAbility = _activeMainHelper.GetAbility<HarvestFertilizerSelectAbility>();
+        if (fertilizerSelectAbility == null)
+            return false;
+
+        bool selected = fertilizerSelectAbility.TrySelectFertilizer(fertilizerItem);
+
+#if UNITY_EDITOR
+        if (selected)
+            Debug.Log($"Harvest fertilizer selected: {fertilizerItem.DisplayName}");
 #endif
 
         return selected;

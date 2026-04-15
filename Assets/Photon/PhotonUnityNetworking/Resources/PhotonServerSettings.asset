@@ -87,18 +87,21 @@ MonoBehaviour:
   - RPC_StartTimer
   - RPC_SetVillageLevel
   - RPC_ApplyTerrainCellDeltaBatch
-  - RPC_PrepareVillageCacheForDungeon
-  - RPC_ReceiveItem
-  - RPC_ReportVillageCacheReady
-  - RPC_RequestAddItem
-  - RPC_RequestFullSync
-  - RPC_RequestGiveHeldItem
-  - RPC_RequestPlaceSplit
-  - RPC_RequestRemoveItem
-  - RPC_RequestSplitHalf
-  - RPC_RequestSwap
-  - RPC_RequestSwapInStorage
-  - RPC_SyncStorage
+  - RPC_RequestWorldSave
+  - RPC_RequestPlayerOnlySave
+  - RPC_SyncRuntimeState
+  - RPC_CaptureVillageCacheForDungeonEntry
+  - RPC_GrantDigReward
+  - RPC_RequestDigPrimary
+  - RPC_ConsumePlacedGroundItem
+  - RPC_RequestPlaceSecondary
+  - RPC_PlayDetect
+  - RPC_PlayTrouble
+  - RPC_PlayJump
+  - RPC_ApplyTrouble
+  - RPC_PlayFastFertilizer
+  - RPC_ActivateRangeBoost
+  - RPC_DeactivateRangeBoost
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

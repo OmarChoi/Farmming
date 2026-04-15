@@ -23,7 +23,7 @@ MonoBehaviour:
   Age: 42
   Job: "\uB300\uC7A5\uC7A5\uC774"
   WayOfTone: "\uBB34\uB69D\uB69D\uD55C \uB2E8\uB2F5\uD615 \uB9D0\uD22C"
-  Prefab: {fileID: 7840605641264675590, guid: a4dc42b56cd357340ad76292b018ae41, type: 3}
+  Prefab: {fileID: 7840605641264675590, guid: f2fc2ee24a63c344d8bc3779805247af, type: 3}
   WalkSpeed: 1
   RunSpeed: 3
   JumpDuration: 1.4
@@ -39,3 +39,4 @@ MonoBehaviour:
   UseRandomTimeOffset: 1
   MinTimeOffset: 0
   MaxTimeOffset: 10
+  AutoStartQuestOnInteract: 0

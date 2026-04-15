@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
@@ -20,6 +20,18 @@ public class TitleFlowManager : MonoBehaviour
     {
         Instantiate(_pun2Manager);
         SlotService = new SaveSlotService(new LocalJsonSaveRepository(), _maxSlots);
+    }
+
+    private void Start()
+    {
+        PlayStartSceneBgm().Forget();
+    }
+
+    private async UniTaskVoid PlayStartSceneBgm()
+    {
+        await UniTask.WaitUntil(() => SoundManager.Instance != null && ResourceManager.Instance != null);
+        await UniTask.Yield();
+        SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.StartScene);
     }
 
     public async UniTask RefreshSlotsAsync()
@@ -51,10 +63,18 @@ public class TitleFlowManager : MonoBehaviour
                         OnRoomIdReady?.Invoke(RoomManager.Instance.RoomId);
                         OnPanelChanged?.Invoke(ETitlePanel.Room);
                     },
-                    onFailed: () => OnPanelChanged?.Invoke(ETitlePanel.Lobby)
+                    onFailed: () =>
+                    {
+                        OnJoinError?.Invoke("방 생성에 실패했습니다.");
+                        OnPanelChanged?.Invoke(ETitlePanel.Lobby);
+                    }
                 );
             },
-            onFailed: () => OnPanelChanged?.Invoke(ETitlePanel.Lobby)
+            onFailed: () =>
+            {
+                OnJoinError?.Invoke("네트워크 프리팹 로드 또는 서버 연결에 실패했습니다.");
+                OnPanelChanged?.Invoke(ETitlePanel.Lobby);
+            }
         );
     }
 
@@ -75,12 +95,20 @@ public class TitleFlowManager : MonoBehaviour
                         OnRoomIdReady?.Invoke(RoomManager.Instance.RoomId);
                         OnPanelChanged?.Invoke(ETitlePanel.Room);
                     },
-                    onFailed: () => OnPanelChanged?.Invoke(ETitlePanel.Lobby),
+                    onFailed: () =>
+                    {
+                        OnJoinError?.Invoke("방 생성에 실패했습니다.");
+                        OnPanelChanged?.Invoke(ETitlePanel.Lobby);
+                    },
                     isFirstVisit: false,
                     visitedPlayerIds: visitedPlayerIds
                 );
             },
-            onFailed: () => OnPanelChanged?.Invoke(ETitlePanel.Lobby)
+            onFailed: () =>
+            {
+                OnJoinError?.Invoke("네트워크 프리팹 로드 또는 서버 연결에 실패했습니다.");
+                OnPanelChanged?.Invoke(ETitlePanel.Lobby);
+            }
         );
     }
 
@@ -161,7 +189,7 @@ public class TitleFlowManager : MonoBehaviour
             onFailed: () =>
             {
                 OnPanelChanged?.Invoke(ETitlePanel.Join);
-                OnJoinError?.Invoke("서버 연결에 실패했습니다.");
+                OnJoinError?.Invoke("네트워크 프리팹 로드 또는 서버 연결에 실패했습니다.");
             }
         );
     }

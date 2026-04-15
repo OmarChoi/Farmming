@@ -67,6 +67,8 @@ public class LoadingSceneInit : MonoBehaviourPunCallbacks
     {
         LoadingProgress.Begin();
         VillageCache.CapturePlayerPositions();
+        if (TerrainGridManager.Instance != null)
+            VillageCache.Capture(TerrainGridManager.Instance);
 
         if (PhotonNetwork.IsMasterClient)
         {

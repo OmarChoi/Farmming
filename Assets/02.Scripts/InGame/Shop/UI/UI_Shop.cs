@@ -135,18 +135,7 @@ public class UI_Shop : MonoBehaviour
     {
         if (_currentShopData == null || slot.ItemData == null || _tradeService == null) return;
 
-        bool success = _tradeService.Buy(_currentShopData, slot.ItemData, 1);
-
-#if UNITY_EDITOR
-        if (success)
-        {
-            Debug.Log($"구매 성공 - Item: {slot.ItemData.name}, Amount: 1");
-        }
-        else
-        {
-            Debug.LogWarning($"구매 실패 - Item: {(slot.ItemData != null ? slot.ItemData.name : "null")}");
-        }
-#endif
+        _tradeService.Buy(_currentShopData, slot.ItemData, 1);
     }
 
     public void OnClickCloseButton()

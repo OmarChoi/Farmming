@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a1bb3e5983ccf741bc4e4f70beaf874, type: 3}
+  m_Name: Dungeon1StoneItemData
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  _id: 71
+  _displayName: "\uB2E8\uB2E8\uD55C \uB3CC"
+  _icon: {fileID: 21300000, guid: d7143a9e4db65e645a0612678aa6873b, type: 3}
+  _type: 2
+  _maxStack: 99
+  _buyCost: 260
+  _sellCost: 130
+  _displayExplanation: "\uB2E8\uB2E8\uD55C \uB3CC\uC774\uB2E4."

@@ -36,6 +36,7 @@ public static class TimeEvents
         IsDayTime = isDayTime;
         ElapsedDays = elapsedDays;
     }
+
     internal static void InvokeMinuteChanged(GameTime time) => OnMinuteChanged?.Invoke(time);
     internal static void InvokeNetDayChanged() => OnNetDayChanged?.Invoke();
     internal static void InvokeNetDayStarted() => OnNetDayStarted?.Invoke();

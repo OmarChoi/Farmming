@@ -7,4 +7,6 @@ public class MapSyncData
     public TerrainSaveData Terrain;
     public List<BuildingSaveData> Buildings;
     public List<StorageSaveData> Storages;
+    public VillageSaveData Village;
+    public int MaxHeight;
 }
