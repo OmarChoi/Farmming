@@ -413,15 +413,15 @@ public class BuildingManager : MonoBehaviourPunCallbacks
 
         BuildingDataSO buildingData = _buildingDatabase.GetById(buildingId);
         if (buildingData == null) return;
-
+        
         var saveData = new BuildingSaveData
         {
             BuildingId = buildingId,
-            AnchorX = (int)data[1],
-            AnchorY = (int)data[2],
-            AnchorZ = (int)data[3],
-            Direction = (int)data[4],
-            RemainingDays = (int)data[5],
+            AnchorX = Convert.ToInt32(data[1]),
+            AnchorY = Convert.ToInt32(data[2]),
+            AnchorZ = Convert.ToInt32(data[3]),
+            Direction = Convert.ToInt32(data[4]),
+            RemainingDays = Convert.ToInt32(data[5]),
         };
 
         var anchor = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ);

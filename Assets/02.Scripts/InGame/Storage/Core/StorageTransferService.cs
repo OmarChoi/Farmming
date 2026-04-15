@@ -131,7 +131,10 @@ public class StorageTransferService
         {
             int canAdd = item.MaxStack - slot.Count;
             int toAdd = Math.Min(count, canAdd);
-            if (toAdd > 0) slot.TryAdd(item, toAdd);
+            if (toAdd > 0)
+            {
+                slot.TryAdd(item, toAdd);
+            }
         }
 
         _storage.NotifySlotChanged(slotIndex);
