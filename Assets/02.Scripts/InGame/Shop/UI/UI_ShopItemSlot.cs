@@ -30,17 +30,17 @@ public class UI_ShopItemSlot : MonoBehaviour, IPointerClickHandler
         if (item == null)
         {
             _iconImage.enabled = false;
-            _itemNameText.text = "";
-            _itemCostText.text = "";
-            _itemExplanationText.text = "";
+            _itemNameText.text = ItemDisplayFormatter.GetName(null);
+            _itemCostText.text = ItemDisplayFormatter.GetBuyCostText(null);
+            _itemExplanationText.text = ItemDisplayFormatter.GetExplanation(null);
             return;
         }
 
         _iconImage.enabled = true;
-        _iconImage.sprite = item.Icon;
-        _itemNameText.text = $"{item.DisplayName}";
-        _itemCostText.text = $"{item.BuyCost}";
-        _itemExplanationText.text = $"{item.DisplayExplanation}";
+        _iconImage.sprite = ItemDisplayFormatter.GetIcon(item);
+        _itemNameText.text = ItemDisplayFormatter.GetName(item);
+        _itemCostText.text = ItemDisplayFormatter.GetBuyCostText(item);
+        _itemExplanationText.text = ItemDisplayFormatter.GetExplanation(item);
     }
 
     public void OnPointerClick(PointerEventData eventData)
