@@ -1,6 +1,7 @@
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
-using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +19,7 @@ public class UI_Inventory : MonoBehaviour
     [SerializeField] private ScrollRect _scrollRect;
     [SerializeField] private UI_ItemTooltip _tooltip;
     [SerializeField] private Image _dragIcon;
+    [SerializeField] private UI_TradeAmountPopup _tradeAmountPopup;
 
     [Header("슬라이드 애니메이션")]
     [SerializeField] private float _slideDuration = 0.3f;
@@ -292,7 +294,10 @@ public class UI_Inventory : MonoBehaviour
         }
 
         if (_clickMode == EInventoryClickMode.Trading)
+        {
+            if (_tradeAmountPopup != null && _tradeAmountPopup.IsOpen) return;
             HandleSellClick(clicked);
+        }
     }
 
     public void OnSlotRightClicked(UI_Slot clicked)
@@ -375,15 +380,29 @@ public class UI_Inventory : MonoBehaviour
 
     private void HandleSellClick(UI_Slot clicked)
     {
-        if (_tradeService == null) return;
+        if (_tradeService == null || _inventoryAbility == null || _tradeAmountPopup == null) return;
+        if (clicked == null || clicked.CurrentItem == null) return;
 
-        bool success = _tradeService.Sell(clicked.SlotIndex, 1);
+        InventorySlot slot = _inventoryAbility.GetSlot(clicked.SlotIndex);
+        if (slot == null || slot.IsEmpty || slot.Item == null) return;
+
+        int maxSellAmount = slot.Count;
+
+        if (_tradeAmountPopup.IsOpen) return;
+        _tradeAmountPopup.OpenAsync(
+            slot.Item,
+            ETradeType.Sell,
+            maxSellAmount,
+            amount =>
+            {
+                bool success = _tradeService.Sell(clicked.SlotIndex, amount);
 
 #if UNITY_EDITOR
-        if (success)
-            Debug.Log($"판매 성공 - Slot: {clicked.SlotIndex}, Amount: 1");
-        else
-            Debug.LogWarning($"판매 실패 - Slot: {clicked.SlotIndex}");
+                if (success)
+                    Debug.Log($"판매 성공 - Slot: {clicked.SlotIndex}, Amount: {amount}");
+                else
+                    Debug.LogWarning($"판매 실패 - Slot: {clicked.SlotIndex}, Amount: {amount}");
 #endif
+            }).Forget();
     }
 }
