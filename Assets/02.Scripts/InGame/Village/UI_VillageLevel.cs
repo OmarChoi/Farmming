@@ -59,10 +59,10 @@ public class UI_VillageLevel : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        UIController.Instance.OpenAsync<UI_VillageState>
-        (
-            ui => ui.transform.position = eventData.position
-        ).Forget();
+        UIController.Instance.OpenAsync(new UILifecycleActions<UI_VillageState>
+        {
+            OnOpen = ui => ui.transform.position = eventData.position,
+        }).Forget();
     }
 
     public void OnPointerExit(PointerEventData eventData)
