@@ -14,7 +14,7 @@ public class TutorialProgressController : MonoBehaviour
     [SerializeField] private NpcQuestService _npcQuestService;
 
     private NpcController _tutorialNpcController;
-    private Transform _playerTransform;
+    private PlayerController _player;
 
     private QuestDataSO _pendingNextTutorialQuest;
     private bool _isWaitingForFinalTutorialComplete;
@@ -63,7 +63,7 @@ public class TutorialProgressController : MonoBehaviour
         PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
         if (questAbility == null) return false;
 
-        _playerTransform = player.transform;
+        _player = player;
         _tutorialNpcController = tutorialNpc;
 
         if (questAbility.TutorialState == ETutorialState.None)
@@ -176,7 +176,7 @@ public class TutorialProgressController : MonoBehaviour
     private void TryAcceptTutorialQuest(QuestDataSO questData)
     {
         if (questData == null || QuestManager.Instance == null) return;
-        if (_tutorialNpcController == null || _playerTransform == null || _npcQuestService == null) return;
+        if (_tutorialNpcController == null || _player == null || _npcQuestService == null) return;
 
         if (QuestManager.Instance.IsQuestCompleted(questData.QuestId)) return;
         if (QuestManager.Instance.HasQuest(questData.QuestId)) return;
@@ -188,7 +188,7 @@ public class TutorialProgressController : MonoBehaviour
 
         NpcInteractionContext context = new NpcInteractionContext(
             _tutorialNpcController,
-            _playerTransform,
+            _player,
             interaction);
 
         _npcQuestService.ExecuteTutorialQuestInteraction(context, questData);
@@ -219,7 +219,7 @@ public class TutorialProgressController : MonoBehaviour
     public void ResetRuntimeState()
     {
         _tutorialNpcController = null;
-        _playerTransform = null;
+        _player = null;
         _pendingNextTutorialQuest = null;
         _isWaitingForFinalTutorialComplete = false;
     }

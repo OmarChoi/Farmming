@@ -12,7 +12,7 @@ public class NpcDialogueController : MonoBehaviour
     private IFriendshipService _friendshipService;
 
     private NpcController _currentNpc;
-    private Transform _currentInteractor;
+    private PlayerController _currentInteractor;
     private NpcInteractionComponent _currentInteractionComponent;
     private NpcAnimatorController _anim;
 
@@ -68,7 +68,7 @@ public class NpcDialogueController : MonoBehaviour
     public void Open(NpcController npc, PlayerController player)
     {
         _currentNpc = npc;
-        _currentInteractor = player.transform;
+        _currentInteractor = player;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
         _anim = npc.Anim;
 
@@ -239,6 +239,7 @@ public class NpcDialogueController : MonoBehaviour
             case EDialogueUiState.Quest:
             case EDialogueUiState.CuringAccept:
             case EDialogueUiState.CuringDecline:
+            case EDialogueUiState.CuringAlreadyDone:
                 _dialogueState = EDialogueUiState.None;
                 EndCurrentInteraction();
                 break;

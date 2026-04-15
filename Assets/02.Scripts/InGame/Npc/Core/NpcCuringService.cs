@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class NpcCuringService : MonoBehaviour
 {
@@ -51,15 +51,15 @@ public class NpcCuringService : MonoBehaviour
         }
 
         // 나중에 실제 플레이어 정보를 받아와서 오늘 이미 치료 받았는지 판정하도록 수정해야 합니다.
-        bool alreadyCuredToday = false;
+        bool alreadyCuredToday = !CanReceiveCuringToday(context.Interactor);
 
         if (alreadyCuredToday)
         {
-            if (data.CuringAlreadyDoneDialogue != null)
+            if(data.CuringAlreadyDoneDialogue != null)
             {
-                _dialogueController.StartDialogue(data.CuringAlreadyDoneDialogue, EDialogueUiState.CuringDecline);
+                _dialogueController.StartDialogue(data.CuringAlreadyDoneDialogue, EDialogueUiState.CuringAlreadyDone);
             }
-            else if (data.CuringDeclineDialogue != null)
+            else if(data.CuringDeclineDialogue != null)
             {
                 _dialogueController.StartDialogue(data.CuringDeclineDialogue, EDialogueUiState.CuringDecline);
             }
@@ -71,9 +71,20 @@ public class NpcCuringService : MonoBehaviour
             return;
         }
 
-        // todo.여기서 치료 처리를 호출합니다.
+        ApplyCuring(context.Interactor);
 
         _dialogueController.StartDialogue(data.CuringAcceptDialogue, EDialogueUiState.CuringAccept);
+    }
+
+    private void ApplyCuring(PlayerController player)
+    {
+        if (player == null) return;
+
+        PlayerStaminaAbility staminaAbility = player.GetAbility<PlayerStaminaAbility>();
+        staminaAbility?.RecoverFull();
+
+        PlayerHelperInventoryAbility helperInventoryAbility = player.GetAbility<PlayerHelperInventoryAbility>();
+        helperInventoryAbility?.RecoverAllHelpersFull();
     }
 
     private void OnSelectDecline(NpcInteractionContext context)
@@ -85,7 +96,7 @@ public class NpcCuringService : MonoBehaviour
             return;
         }
 
-        _dialogueController.StartDialogue( data.CuringDeclineDialogue, EDialogueUiState.CuringDecline);
+        _dialogueController.StartDialogue(data.CuringDeclineDialogue, EDialogueUiState.CuringDecline);
     }
 
     private bool CanReceiveCuringToday(PlayerController player)
