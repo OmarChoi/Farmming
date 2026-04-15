@@ -111,7 +111,7 @@ public class WorldEffectQuestService : MonoBehaviour
         }
 
         BroadcastSnapshotIfConnected();
-        SaveWorld();
+        // SaveWorld();
     }
 
     private bool ShouldTrigger(int currentDay)
@@ -203,7 +203,7 @@ public class WorldEffectQuestService : MonoBehaviour
         ClearActive();
 
         BroadcastSnapshotIfConnected();
-        SaveWorld();
+        // SaveWorld();
     }
 
     private void BroadcastSnapshotIfConnected()
@@ -212,7 +212,7 @@ public class WorldEffectQuestService : MonoBehaviour
         if (CanUseNetworkSync) _sync.BroadcastSnapshot(ExportSaveData());
     }
 
-    private void ApplyStateToJournal()
+    public void ApplyStateToJournal()
     {
         if (QuestManager.Instance == null) return;
 
@@ -239,9 +239,9 @@ public class WorldEffectQuestService : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(_state.ActiveQuestId))
         {
+            _state.ActiveQuestId = null;
             QuestManager.Instance?.RemoveForcedTimedQuest(_state.ActiveQuestId);
         }
-        _state.ActiveQuestId = null;
         _state.AcceptedDay = 0;
         _state.ExpireDay = 0;
     }

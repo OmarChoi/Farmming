@@ -56,15 +56,14 @@ public class UI_Shrine : UIBase
             _closeButton.onClick.AddListener(RequestClose);
         }
 
-        WorldEffectEvents.OnEffectsChanged -= Refresh;
-        WorldEffectEvents.OnEffectsChanged += Refresh;
+        SubscribeQuestEvents(true);
 
         Refresh();
     }
 
     protected override void OnClose()
     {
-        WorldEffectEvents.OnEffectsChanged -= Refresh;
+        SubscribeQuestEvents(false);
 
         Action onClose = _onClose;
         bool notify = !_suppressCloseNotify;
@@ -75,10 +74,47 @@ public class UI_Shrine : UIBase
         if (notify) onClose?.Invoke();
     }
 
+    private void SubscribeQuestEvents(bool subscribe)
+    {
+        var manager = QuestManager.Instance;
+        if (manager == null) return;
+
+        manager.OnQuestAccepted -= OnQuestChanged;
+        manager.OnQuestUpdated -= OnQuestChanged;
+        manager.OnQuestCompleted -= OnQuestChanged;
+        manager.OnQuestRemoved -= OnQuestRemoved;
+
+        if (!subscribe) return;
+
+        manager.OnQuestAccepted += OnQuestChanged;
+        manager.OnQuestUpdated += OnQuestChanged;
+        manager.OnQuestCompleted += OnQuestChanged;
+        manager.OnQuestRemoved += OnQuestRemoved;
+    }
+
+    private void OnQuestChanged(QuestRuntimeData quest)
+    {
+        if (quest?.QuestData == null) return;
+        if (!IsForcedQuest(quest.QuestData.QuestId)) return;
+        Refresh();
+    }
+
+    private void OnQuestRemoved(string questId)
+    {
+        if (!IsForcedQuest(questId)) return;
+        Refresh();
+    }
+
+    private bool IsForcedQuest(string questId)
+    {
+        if (string.IsNullOrEmpty(questId)) return false;
+        var service = WorldEffectQuestService.Instance;
+        return service != null && service.FindRuleByQuestId(questId) != null;
+    }
+
     private void OnCompleteClicked()
     {
         _shrine?.RequestCompletion();
-        Refresh();
     }
 
     private void RequestClose()
@@ -118,14 +154,12 @@ public class UI_Shrine : UIBase
         QuestDataSO data = quest?.QuestData;
         if (data == null) return;
 
-        var requireItemInfo = data.ItemRequirements;
-        if (requireItemInfo == null || requireItemInfo.Count == 0) return;
+        ItemDataSO representative = data.RepresentativeItem;
+        if (representative == null) return;
 
-        _itemIconImage.sprite = requireItemInfo[0].Item.Icon;
+        _itemIconImage.sprite = representative.Icon;
         _descriptionText.text = data.Description;
-
-        int remaining = Mathf.Max(0, quest.ExpireDay - TimeEvents.CurrentDay);
-        _remainingDaysText.text = $"남은 기간: {remaining}일";
+        _remainingDaysText.text = $"남은 기간: {quest.RemainingDays}일";
     }
 
     private void RefreshEffectText()

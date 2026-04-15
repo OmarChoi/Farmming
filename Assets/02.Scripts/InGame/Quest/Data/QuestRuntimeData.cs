@@ -13,6 +13,8 @@ public class QuestRuntimeData
     public int AcceptedDay;
     public int ExpireDay;
 
+    public int RemainingDays => Mathf.Max(0, ExpireDay - TimeEvents.CurrentDay - 1);
+
     [SerializeField] private List<QuestItemProgressEntry> _itemProgressList = new();
     private Dictionary<int, int> _itemProgressMap;
 
