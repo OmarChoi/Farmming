@@ -436,6 +436,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 386169379799505435, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1297318230509913425, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
       propertyPath: m_Name
       value: TimeSystem
@@ -489,17 +493,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
---- !u!114 &69070361 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2930089380795897997, guid: df599ca3452986b418a1f9a62d7a22e6, type: 3}
-  m_PrefabInstance: {fileID: 69070360}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 544fd01939d0492e94ac8164086b6854, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TimeSystem
 --- !u!1001 &95179862
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1645,6 +1638,67 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4514429824528165491, guid: 14b2d9b09a6ea9542a759e094b34d4e2, type: 3}
   m_PrefabInstance: {fileID: 221505136}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &527965552
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1128516414551324245, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_Name
+      value: TestStorage
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 71.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 8.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 67.59
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157395430500208556, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
+      propertyPath: sceneViewId
+      value: 583
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
 --- !u!1 &539819330
 GameObject:
   m_ObjectHideFlags: 0
@@ -3949,6 +4003,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HelperUpgradeService
   _uiHelperUpgrade: {fileID: 987751509}
   _dialogueController: {fileID: 2028739916}
+  _evolutionManager: {fileID: 0}
 --- !u!1 &1189676224
 GameObject:
   m_ObjectHideFlags: 0
@@ -3978,8 +4033,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dfdea6bc6e86094f8214768e54169a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StorageController
-  _uiInventory: {fileID: 1533994361}
-  _uiStorage: {fileID: 6568353847370959592}
 --- !u!4 &1189676226
 Transform:
   m_ObjectHideFlags: 0
@@ -4364,7 +4417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 117b339248e72884ca2883de77f6718f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestDaySkip
-  _timeSystem: {fileID: 69070361}
+  TimeSystem: {fileID: 0}
 --- !u!1001 &1322951125
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7082,3 +7135,4 @@ SceneRoots:
   - {fileID: 1600211005}
   - {fileID: 1857056278}
   - {fileID: 645038565}
+  - {fileID: 527965552}

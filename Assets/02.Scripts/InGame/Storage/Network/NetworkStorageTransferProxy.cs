@@ -140,14 +140,27 @@ public class NetworkStorageTransferProxy : StorageTransferService
             _syncHandler.RequestPlaceSplit(sourceIndex, targetIndex, item.Id, amount);
     }
 
-    public override bool AddHeldItemToInventory(ItemDataSO item, int amount)
+    public override bool AddHeldItemToStorageSlot(ItemDataSO item, int storageSlotIndex, int amount)
+    {
+        bool result = base.AddHeldItemToStorageSlot(item, storageSlotIndex, amount);
+        if (result)
+        {
+            if (_syncHandler.IsMaster)
+                _syncHandler.BroadcastFullSync();
+            else
+                _syncHandler.RequestAddItemToSlot(storageSlotIndex, item.Id, amount);
+        }
+        return result;
+    }
+
+    public override bool AddHeldItemToInventory(ItemDataSO item, int amount, int inventorySlotIndex = -1)
     {
         if (_syncHandler.IsMaster)
-            return base.AddHeldItemToInventory(item, amount);
+            return base.AddHeldItemToInventory(item, amount, inventorySlotIndex);
 
         if (item == null || amount <= 0) return false;
 
-        _syncHandler.RequestGiveHeldItem(item.Id, amount);
+        _syncHandler.RequestGiveHeldItem(item.Id, amount, inventorySlotIndex);
         return true;
     }
 }

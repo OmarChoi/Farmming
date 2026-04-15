@@ -111,16 +111,29 @@ public class StorageSyncHandler : MonoBehaviourPun
         }
     }
 
-    public void RequestGiveHeldItem(int itemId, int amount)
+    public void RequestAddItemToSlot(int storageSlotIndex, int itemId, int amount)
     {
         if (IsMaster)
         {
-            GiveItemToPlayer(PhotonNetwork.LocalPlayer?.ActorNumber ?? -1, itemId, amount);
+            ExecuteAddItemToSlot(storageSlotIndex, itemId, amount);
+        }
+        else
+        {
+            photonView.RPC(nameof(RPC_RequestAddItemToSlot), RpcTarget.MasterClient,
+                storageSlotIndex, itemId, amount);
+        }
+    }
+
+    public void RequestGiveHeldItem(int itemId, int amount, int inventorySlotIndex = -1)
+    {
+        if (IsMaster)
+        {
+            GiveItemToPlayer(PhotonNetwork.LocalPlayer?.ActorNumber ?? -1, itemId, amount, inventorySlotIndex);
         }
         else
         {
             photonView.RPC(nameof(RPC_RequestGiveHeldItem), RpcTarget.MasterClient,
-                itemId, amount, PhotonNetwork.LocalPlayer.ActorNumber);
+                itemId, amount, PhotonNetwork.LocalPlayer.ActorNumber, inventorySlotIndex);
         }
     }
 
@@ -178,6 +191,15 @@ public class StorageSyncHandler : MonoBehaviourPun
         if (outItemId > 0 && outItemCount > 0)
             GiveItemToPlayer(actorNumber, outItemId, outItemCount, inventorySlotIndex);
 
+        BroadcastFullSync();
+    }
+
+    private void ExecuteAddItemToSlot(int storageSlotIndex, int itemId, int amount)
+    {
+        var item = _itemDatabase.GetById(itemId);
+        if (item == null) return;
+
+        _storage.AddItemToSlot(item, storageSlotIndex, amount, fallbackToAuto: false);
         BroadcastFullSync();
     }
 
@@ -362,10 +384,17 @@ public class StorageSyncHandler : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RPC_RequestGiveHeldItem(int itemId, int amount, int actorNumber)
+    private void RPC_RequestAddItemToSlot(int storageSlotIndex, int itemId, int amount)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        GiveItemToPlayer(actorNumber, itemId, amount);
+        ExecuteAddItemToSlot(storageSlotIndex, itemId, amount);
+    }
+
+    [PunRPC]
+    private void RPC_RequestGiveHeldItem(int itemId, int amount, int actorNumber, int inventorySlotIndex)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        GiveItemToPlayer(actorNumber, itemId, amount, inventorySlotIndex);
     }
 
     [PunRPC]

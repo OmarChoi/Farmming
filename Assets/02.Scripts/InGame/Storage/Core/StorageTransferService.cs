@@ -45,11 +45,14 @@ public class StorageTransferService
         return true;
     }
 
-    public virtual bool AddHeldItemToInventory(ItemDataSO item, int amount)
+    public virtual bool AddHeldItemToInventory(ItemDataSO item, int amount, int inventorySlotIndex = -1)
     {
         if (item == null || amount <= 0) return false;
 
-        _inventory.AddItem(item, amount);
+        if (inventorySlotIndex >= 0)
+            _inventory.AddItemToSlot(item, inventorySlotIndex, amount);
+        else
+            _inventory.AddItem(item, amount);
         return true;
     }
 
@@ -124,6 +127,13 @@ public class StorageTransferService
         }
 
         _storage.NotifySlotChanged(slotIndex);
+    }
+
+    /// 들고 있는 아이템을 특정 창고 슬롯에 직접 배치
+    public virtual bool AddHeldItemToStorageSlot(ItemDataSO item, int storageSlotIndex, int amount)
+    {
+        if (item == null || amount <= 0) return false;
+        return _storage.AddItemToSlot(item, storageSlotIndex, amount, fallbackToAuto: false);
     }
 
     /// 분할 드래그 시작

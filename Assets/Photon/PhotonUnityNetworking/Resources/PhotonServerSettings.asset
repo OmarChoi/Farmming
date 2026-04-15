@@ -87,6 +87,18 @@ MonoBehaviour:
   - RPC_StartTimer
   - RPC_SetVillageLevel
   - RPC_ApplyTerrainCellDeltaBatch
+  - RPC_PrepareVillageCacheForDungeon
+  - RPC_ReceiveItem
+  - RPC_ReportVillageCacheReady
+  - RPC_RequestAddItem
+  - RPC_RequestFullSync
+  - RPC_RequestGiveHeldItem
+  - RPC_RequestPlaceSplit
+  - RPC_RequestRemoveItem
+  - RPC_RequestSplitHalf
+  - RPC_RequestSwap
+  - RPC_RequestSwapInStorage
+  - RPC_SyncStorage
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
