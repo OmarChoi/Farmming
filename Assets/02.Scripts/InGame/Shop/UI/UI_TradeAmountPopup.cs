@@ -15,6 +15,11 @@ public class UI_TradeAmountPopup : MonoBehaviour
     [Header("텍스트")]
     [SerializeField] private TextMeshProUGUI _itemNameText;
     [SerializeField] private TextMeshProUGUI _totalGoldText;
+    [SerializeField] private TextMeshProUGUI _confirmButtonText;
+    [SerializeField] private TextMeshProUGUI _cancelButtonText;
+
+    [Header("아이콘")]
+    [SerializeField] private Image _itemIconImage;
 
     [Header("수량 입력")]
     [SerializeField] private TMP_InputField _amountInputField;
@@ -95,13 +100,30 @@ public class UI_TradeAmountPopup : MonoBehaviour
 
     public async UniTask OpenAsync(ItemDataSO item, ETradeType tradeType, int maxAmount, Action<int> onConfirm)
     {
-        if (_isClosing) return;
+        if (IsOpen || _isClosing) return;
         if (item == null || maxAmount <= 0) return;
 
+        switch (tradeType)
+        {
+            case ETradeType.Buy:
+                _confirmButtonText.text = "살래요!";
+                _cancelButtonText.text = "안 살래요";
+                break;
+            case ETradeType.Sell:
+                if (item.SellCost <= 0) return;
+                _confirmButtonText.text = "팔래요!";
+                _cancelButtonText.text = "안 팔래요";
+                break;
+            default:
+                return;
+        }
+
         _currentItem = item;
+        _itemIconImage.sprite = item.Icon;
         _tradeType = tradeType;
         _maxAmount = Mathf.Max(1, maxAmount);
         _currentAmount = 1;
+        _amountInputField.text = _currentAmount.ToString();
         _onConfirm = onConfirm;
         _isClosing = false;
 
@@ -119,7 +141,7 @@ public class UI_TradeAmountPopup : MonoBehaviour
 
     public async UniTask CloseAsync()
     {
-        if (_isClosing) return;
+        if (IsOpen || _isClosing) return;
         _isClosing = true;
 
         if (_popupDoTween != null)
@@ -145,7 +167,10 @@ public class UI_TradeAmountPopup : MonoBehaviour
     private void ClearState()
     {
         _currentItem = null;
+        _itemIconImage.sprite = null;
         _onConfirm = null;
+        _confirmButtonText.text = string.Empty;
+        _cancelButtonText.text = string.Empty;
         _currentAmount = 1;
         _maxAmount = 1;
         _isClosing = false;
@@ -211,13 +236,17 @@ public class UI_TradeAmountPopup : MonoBehaviour
 
     private void RefreshUI()
     {
-        if (_currentItem == null) return;
+        if(_currentItem == null) return;
 
-        if (_itemNameText != null)
+        if(_itemNameText != null)
         {
             _itemNameText.text = _currentItem.DisplayName;
         }
-        if (_amountInputField != null)
+        if(_itemIconImage != null)
+        {
+            _itemIconImage.sprite = _currentItem.Icon;
+        }
+        if(_amountInputField != null)
         {
             _amountInputField.text = _currentAmount.ToString();
         }
@@ -225,11 +254,23 @@ public class UI_TradeAmountPopup : MonoBehaviour
         int unitCost = _tradeType == ETradeType.Buy ? _currentItem.BuyCost : _currentItem.SellCost;
         int totalGold = unitCost * _currentAmount;
 
-        if (_totalGoldText != null)
+        if(_totalGoldText != null)
         {
             _totalGoldText.text = _tradeType == ETradeType.Buy
                 ? $"필요 골드: {totalGold:N0}"
                 : $"획득 골드: {totalGold:N0}";
+        }
+        if(_confirmButtonText != null)
+        {
+            _confirmButtonText.text = _tradeType == ETradeType.Buy
+                ? $"살래요! ({totalGold:N0} 골드)"
+                : $"팔래요! ({totalGold:N0} 골드)";
+        }
+        if(_cancelButtonText != null)
+        {
+            _cancelButtonText.text = _tradeType == ETradeType.Buy
+                ? "안 살래요"
+                : "안 팔래요";
         }
     }
 }
