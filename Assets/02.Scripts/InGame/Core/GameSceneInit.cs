@@ -9,7 +9,7 @@ public class GameSceneInit : MonoBehaviour
     public static bool ReturningFromDungeon{ get; set; }
     public static event Action OnCompleteInitialize;
 
-    [SerializeField] private string _playerPrefabName = "Player";
+    private const string PlayerPrefabKey = AssetKey.NetworkPrefab.Player;
     [SerializeField] private MapManager _mapManager;
     [SerializeField] private MapNavMeshController _mapNavMeshController;
     private const float MapSyncTimeoutSeconds = 10f;
@@ -36,8 +36,11 @@ public class GameSceneInit : MonoBehaviour
             {
                 Vector3 spawnPos = _mapManager.GenerateVillage();
                 _mapNavMeshController.BuildInitialNavMesh();
-                SpawnPlayer(spawnPos);
+                PlayerController localPlayer = SpawnPlayer(spawnPos);
                 CacheVillageData();
+
+                QuestDataMarkLoaded();
+                TryStartTutorial(localPlayer);
 
                 var props = new Hashtable { { PropTerrainReady, true } };
                 PhotonNetwork.LocalPlayer.SetCustomProperties(props);
@@ -67,36 +70,48 @@ public class GameSceneInit : MonoBehaviour
             PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         }
 
-        // 던전 복귀 시 캐시에서 마을 복원
-        if (ReturningFromDungeon && VillageCache.HasCache)
-        {
-            _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+        PlayerController localPlayer = null;
 
-            if (VillageCache.Buildings != null && BuildingManager.Instance != null)
-                await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+        // 던전 복귀 시 캐시에서 마을 복원
+        if (ReturningFromDungeon)
+        {
+            if (VillageCache.HasCache)
+            {
+                _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+                ImportCachedVillageState();
+
+                if (VillageCache.Buildings != null && BuildingManager.Instance != null)
+                    await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+            }
+            else if (!await SyncMapFromMaster())
+            {
+                Debug.LogError("[GameSceneInit] Returning map sync failed and no local village cache exists");
+                LoadingProgress.Value = 1f;
+                LoadingProgress.Complete();
+                UnfreezeExistingPlayers();
+                return;
+            }
 
             StorageManager.Instance.ImportStorages(VillageCache.Storages);
 
             VillageCache.RestorePlayerPositions();
             LoadingProgress.Value = 0.6f;
+
+            QuestDataMarkLoaded();
+
             ReturningFromDungeon = false;
+            CacheVillageData();
 
             await WaitForAllTerrainReady();
+
+            localPlayer = FindLocalPlayer();
+            TryStartTutorial(localPlayer);
+            OnCompleteInitialize?.Invoke();
             return;
         }
 
         // 일반 입장: 마스터로부터 맵 동기화
-        if (!PhotonNetwork.InRoom) return;
-        if (MapSyncManager.Instance == null) return;
-
-        bool synced = false;
-        MapSyncManager.Instance.OnMapSynced += () => synced = true;
-        MapSyncManager.Instance.RequestMapFromMaster();
-
-        float timeout = Time.realtimeSinceStartup + MapSyncTimeoutSeconds;
-        await UniTask.WaitUntil(() => synced || Time.realtimeSinceStartup > timeout);
-
-        if (!synced)
+        if (!await SyncMapFromMaster())
         {
             Debug.LogError("[GameSceneInit] Map sync failed");
             LoadingProgress.Value = 1f;
@@ -107,20 +122,38 @@ public class GameSceneInit : MonoBehaviour
 
         LoadingProgress.Value = 0.6f;
 
-        var existing = FindAnyObjectByType<PlayerController>();
-        if (existing != null && existing.IsMine)
-        {
-            // 기존 플레이어 사용 — 스폰 건너뜀
-        }
-        else
+        localPlayer = FindLocalPlayer();
+        if (localPlayer == null)
         {
             var pos = FindSpawnPosition();
-            SpawnPlayer(pos);
+            localPlayer = SpawnPlayer(pos);
         }
 
         CacheVillageData();
         await WaitForAllTerrainReady();
+        TryStartTutorial(localPlayer);
         OnCompleteInitialize?.Invoke();
+    }
+
+    private async UniTask<bool> SyncMapFromMaster()
+    {
+        if (!PhotonNetwork.InRoom) return false;
+        MapSyncManager mapSyncManager = MapSyncManager.Instance;
+        if (mapSyncManager == null) return false;
+
+        bool synced = false;
+        void HandleMapSynced() => synced = true;
+
+        mapSyncManager.OnMapSynced += HandleMapSynced;
+        mapSyncManager.RequestMapFromMaster();
+
+        float timeout = Time.realtimeSinceStartup + MapSyncTimeoutSeconds;
+        await UniTask.WaitUntil(() => synced || Time.realtimeSinceStartup > timeout);
+
+        if (mapSyncManager != null)
+            mapSyncManager.OnMapSynced -= HandleMapSynced;
+
+        return synced;
     }
 
     private Vector3 FindSpawnPosition()
@@ -151,13 +184,24 @@ public class GameSceneInit : MonoBehaviour
         return Vector3.zero;
     }
 
-    private void SpawnPlayer(Vector3 spawnPos)
+    private PlayerController SpawnPlayer(Vector3 spawnPos)
     {
-        var playerObj = PhotonNetwork.Instantiate(_playerPrefabName, spawnPos, Quaternion.identity);
+        // 문자열 리터럴 대신 상수 키를 사용해 Addressables 주소와 Photon prefabId를 맞춘다.
+        var playerObj = PhotonNetwork.Instantiate(PlayerPrefabKey, spawnPos, Quaternion.identity);
+        if (playerObj == null) return null;
+
+        // 잘못된 프리팹 등록은 즉시 로그로 드러내고 이후 초기화를 중단한다.
         var pc = playerObj.GetComponent<PlayerController>();
+        if (pc == null)
+        {
+            Debug.LogError($"[GameSceneInit] Player prefab has no PlayerController: {PlayerPrefabKey}");
+            return null;
+        }
 
         if (CustomizeData.Instance != null)
             pc.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
+
+        return pc;
     }
 
     private void InitLocalGame()
@@ -185,6 +229,7 @@ public class GameSceneInit : MonoBehaviour
         if (VillageCache.HasCache)
         {
             _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            ImportCachedVillageState();
             _mapNavMeshController.BuildInitialNavMesh();
 
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
@@ -193,6 +238,8 @@ public class GameSceneInit : MonoBehaviour
             StorageManager.Instance.ImportStorages(VillageCache.Storages);
 
             VillageCache.RestorePlayerPositions();
+
+            QuestDataMarkLoaded();
         }
         else
         {
@@ -207,7 +254,12 @@ public class GameSceneInit : MonoBehaviour
 
         var existing = FindAnyObjectByType<PlayerController>();
         if (existing != null && SaveManager.Instance != null)
-            SaveManager.Instance.RegisterPlayer(existing.PlayerId, existing);
+        {
+            if (VillageCache.HasCache)
+                SaveManager.Instance.RegisterPlayerOnly(existing.PlayerId, existing);
+            else
+                SaveManager.Instance.RegisterPlayer(existing.PlayerId, existing);
+        }
 
         ReturningFromDungeon = false;
         UnfreezeExistingPlayers();
@@ -219,11 +271,16 @@ public class GameSceneInit : MonoBehaviour
     {
         int slot = RoomManager.Instance.SelectedSlot;
         bool returning = ReturningFromDungeon;
+        PlayerController localPlayer = null;
 
         if (returning && VillageCache.HasCache)
         {
+            if (MapSyncManager.Instance != null)
+                MapSyncManager.Instance.HoldRequests();
+
             // 캐시에서 마을 복원 (파일 I/O 없이)
             _mapManager.ImportVillageSaveData(VillageCache.Terrain);
+            ImportCachedVillageState();
             
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
@@ -235,9 +292,22 @@ public class GameSceneInit : MonoBehaviour
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 BuildingManager.Instance.SpawnBuildingNpcs();
             
+            if (VillageCache.Time != null && TimeSystem.Instance != null)
+                TimeSystem.Instance.ImportTimeSaveData(VillageCache.Time);
+            
             VillageCache.RestorePlayerPositions();
-            RestoreExistingPlayers();
+
+            SaveManager.Instance?.EnsureBaseLoadedData();
+            SaveManager.Instance?.MarkLoadCompleted();
+            RegisterExistingPlayersOnly();
+            QuestManager.Instance?.MarkLoaded();
+
             ReturningFromDungeon = false;
+            localPlayer = FindLocalPlayer();
+            CacheVillageData();
+
+            if (MapSyncManager.Instance != null)
+                MapSyncManager.Instance.BroadcastMap(false);
         }
         else
         {
@@ -250,15 +320,16 @@ public class GameSceneInit : MonoBehaviour
 
             if (BuildingManager.Instance != null)
                 BuildingManager.Instance.SpawnBuildingNpcs();
-            
+
             if (ReturningFromDungeon)
             {
                 RestoreExistingPlayers();
                 ReturningFromDungeon = false;
+                localPlayer = FindLocalPlayer();
             }
             else
             {
-                SpawnPlayer(Vector3.zero);
+                localPlayer = SpawnPlayer(Vector3.zero);
             }
 
             await UniTask.Yield();
@@ -272,6 +343,7 @@ public class GameSceneInit : MonoBehaviour
         LoadingProgress.Value = 0.6f;
         RoomManager.Instance.OpenRoom();
         await WaitForAllTerrainReady();
+        TryStartTutorial(localPlayer);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -381,6 +453,16 @@ public class GameSceneInit : MonoBehaviour
         }
     }
 
+    private void RegisterExistingPlayersOnly()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.RegisterPlayerOnly(player.PlayerId, player);
+        }
+    }
+
     private void RestoreExistingPlayers()
     {
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
@@ -396,6 +478,12 @@ public class GameSceneInit : MonoBehaviour
         VillageCache.Capture(_mapManager.GridManager);
     }
 
+    private static void ImportCachedVillageState()
+    {
+        if (VillageCache.Village == null || VillageLevelManager.Instance == null) return;
+        VillageLevelManager.Instance.ImportSaveData(VillageCache.Village);
+    }
+
     private void ClearSceneTransitionRoomProps()
     {
         if (!PhotonNetwork.IsConnected || !PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == null)
@@ -408,5 +496,41 @@ public class GameSceneInit : MonoBehaviour
             { SceneTransitionRoomProps.DungeonFloor, null }
         };
         PhotonNetwork.CurrentRoom.SetCustomProperties(clearRoomProps);
+    }
+
+    private PlayerController FindLocalPlayer()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+
+        foreach (var player in players)
+        {
+            if (player != null && player.IsMine) return player;
+        }
+
+        return null;
+    }
+
+    private bool ShouldStartTutorial(PlayerController player)
+    {
+        if (player == null || ReturningFromDungeon || TutorialManager.Instance == null) return false;
+
+        PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
+        if (questAbility == null) return false;
+
+        return questAbility.TutorialState == ETutorialState.None ||
+               questAbility.TutorialState == ETutorialState.InProgress;
+    }
+
+    private void TryStartTutorial(PlayerController player)
+    {
+        if (!ShouldStartTutorial(player)) return;
+        TutorialManager.Instance.TryStartTutorial(player);
+    }
+
+    private void QuestDataMarkLoaded()
+    {
+        SaveManager.Instance?.EnsureBaseLoadedData();
+        SaveManager.Instance?.MarkLoadCompleted();
+        QuestManager.Instance?.MarkLoaded();
     }
 }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NpcAnimatorController : MonoBehaviour
+public class NpcAnimatorController : MonoBehaviour, IMovementAnimator
 {
     [Header("애니메이터")]
     [SerializeField] private Animator _animator;

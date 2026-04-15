@@ -28,15 +28,20 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _absorbDuration = 0.5f; // 흡수 시간
     [SerializeField] private float _absorbTargetScale = 0.05f;
     [SerializeField] private float _digAnimDelay = 0.2f;
+    [SerializeField] private float _remoteDigStateSyncDelay = 0.05f;
 
     [Header("땅 생성 액션")]
     [SerializeField] private float _placeAnimLeadTime = 0.3f; // cell움직임 보다 먼저 애니메이션 실행
     [SerializeField] private float _placeHorizontalDuration = 0.1f;
     [SerializeField] private float _placeHoverDuration = 0.2f; //땅이 잠깐 뜨는 시간
     [SerializeField] private float _placeDropDuration = 0.15f;
+    [SerializeField] private float _remotePlaceStateSyncDelay = 0.05f;
 
     private HelperAnimationAbility _animAbility;
     private GroundSelectAbility _groundSelector;
+    private bool _suppressSelectionBubble;
+
+    public bool ShouldShowSelectionBubble => !_suppressSelectionBubble;
 
     protected override void Awake()
     {
@@ -54,52 +59,55 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         return _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
     }
 
+    public bool CanUseGroundItem(ItemDataSO item)
+    {
+        if (item == null || _groundItemMappings == null)
+            return false;
+
+        foreach (GroundItemMapping mapping in _groundItemMappings)
+        {
+            if (mapping.Item == item)
+                return true;
+        }
+
+        return false;
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return;
+        if (PhotonNetwork.IsConnected && !_owner.IsMine) return;
 
         if (!CanRemoveCell(cell)) return;
+        _groundSelector?.ClearSelection();
+        SuppressSelectionBubble();
 
-        bool isFarmLand = cell.Data.ObjectType == EGridObjectType.FarmLand;
-        if (isFarmLand)
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
         {
-            cell.Data.RemoveObject();
-            cell.Refresh();
-        }
+            Vector3Int pos = cell.GridPosition;
 
-        TerrainCell detachedCell = TerrainGridManager.Instance.TryDetachForAnimation(cell.GridPosition, _canDigLevel);
-        if (detachedCell == null)
-        {
-            if (isFarmLand)
+            bool isFarmLand = IsFarmLandCell(cell);
+            TerrainCell detachedCell = DetachCellForPrimaryDig(cell, isFarmLand);
+            if (detachedCell == null)
             {
-                cell.Data.SetObject(EGridObjectType.FarmLand);
-                cell.Refresh();
+                RestoreSelectionBubble();
+                return;
             }
+
+            StartPrimaryDigAction();
+            PlayPrimaryDigAnimation(detachedCell);
+            FinishPrimaryDigAction();
+
+            _owner.PhotonView.RpcSafe(
+                nameof(RPC_RequestDigPrimary),
+                RpcTarget.MasterClient,
+                pos.x, pos.y, pos.z);
+            _owner.EndAction();
             return;
         }
 
-        _owner.BeginAction();
-
-        AnimateCellToMouth(detachedCell);
-        BroadcastGroundStateFromMaster(detachedCell.GridPosition);
-
-        var pos = cell.GridPosition;
-        if (isFarmLand)
-        {
-            _owner.PhotonView.RpcSafe(nameof(RPC_DigFarmLandWithAnimation), RpcTarget.Others, pos.x, pos.y, pos.z, _canDigLevel);
-        }
-        else
-        {
-            _owner.PhotonView.RpcSafe(nameof(RPC_DigWithAnimation), RpcTarget.Others, pos.x, pos.y, pos.z, _canDigLevel);
-        }
-
-            PlayerInventoryAbility inventory = GetInventory();
-            if (inventory != null && _dirtItem != null)
-            {
-                QuestReportItemHelper.AddItemAndReportQuest(inventory, _dirtItem, _getDirtAmount);
-            }
-        _owner.EndAction();
+        ExecutePrimaryDig(cell, grantLocalReward: true, rewardTarget: null, broadcastAnimationToOthers: PhotonNetwork.IsConnected);
     }
 
     public void InteractSecondary(TerrainCell cell)
@@ -120,14 +128,44 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
         }
 
+        if (!HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount))
+            return;
+
         if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
             return;
 
         ETileType tileType = GetTileTypeForItem(selectedGround, cell.Data.TileType);
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+        {
+            Vector3Int pos = cell.GridPosition;
+            _owner.PhotonView.RpcSafe(
+                nameof(RPC_RequestPlaceSecondary),
+                RpcTarget.MasterClient,
+                pos.x, pos.y, pos.z, (int)tileType, _generateDirtAmount);
+            return;
+        }
+
+        ExecuteSecondaryPlace(
+            cell,
+            tileType,
+            _generateDirtAmount,
+            consumeLocalInventory: true,
+            consumeTarget: null);
+    }
+
+    private void ExecuteSecondaryPlace(
+        TerrainCell cell,
+        ETileType tileType,
+        int dirtAmount,
+        bool consumeLocalInventory,
+        Photon.Realtime.Player consumeTarget)
+    {
         Vector3Int targetGridPos = GetPlacePosition(cell);
 
-        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, _generateDirtAmount);
+        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, dirtAmount);
         if (!placed) return;
+
+        bool destroyedByLava = ShouldDestroyPlacedGroundImmediately(tileType, targetGridPos);
 
         ClearFarmLandIfCovered(cell, targetGridPos);
 
@@ -135,19 +173,40 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _animAbility?.Play(EHelperAnim.EatGround);
 
         TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
-        if (newCell != null && _mouthPoint != null)
+        if (!destroyedByLava && newCell != null && _mouthPoint != null)
         {
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
             StartPlaceCellAnimation(newCell, targetWorldPos);
         }
 
-        BroadcastGroundStateFromMaster(targetGridPos);
+        if (destroyedByLava)
+        {
+            TerrainGridManager.Instance.RemoveCell(targetGridPos);
+            RestoreBelowCellTopAfterImmediateDestroy(targetGridPos);
+            _animAbility?.Play(EHelperAnim.Idle);
+        }
 
         _owner.PhotonView.RpcSafe(
             nameof(RPC_PlaceBlockWithAnimation), RpcTarget.Others,
-            targetGridPos.x, targetGridPos.y, targetGridPos.z, (int)tileType, _generateDirtAmount);
+            targetGridPos.x, targetGridPos.y, targetGridPos.z, (int)tileType, dirtAmount);
 
-        inventory.RemoveAt(groundSlotIndex, _generateDirtAmount);
+        if (PhotonNetwork.IsConnected)
+        {
+            float stateSyncDelay = destroyedByLava
+                ? Mathf.Max(0f, _remotePlaceStateSyncDelay)
+                : Mathf.Max(GetRemotePlaceAnimationDuration(), _remotePlaceStateSyncDelay);
+
+            DOVirtual.DelayedCall(
+                stateSyncDelay,
+                () => BroadcastGroundStateFromMaster(targetGridPos))
+                .SetTarget(gameObject);
+        }
+        else
+        {
+            BroadcastGroundStateFromMaster(targetGridPos);
+        }
+
+        HandleSecondaryPlaceConsumption(tileType, dirtAmount, consumeLocalInventory, consumeTarget);
 
         _owner.EndAction();
     }
@@ -179,7 +238,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (inventory == null) return false;
 
         ItemDataSO selectedGround = _groundSelector?.SelectedGround;
-        return selectedGround != null;
+        int groundSlotIndex = _groundSelector?.SelectedGroundSlotIndex ?? -1;
+        return HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount);
     }
 
     private bool CanPlaceGroundOnCell(TerrainCell cell)
@@ -198,6 +258,33 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         return !farmTile.HasSeed && !farmTile.HasCrop;
     }
 
+    private bool HasSelectedGroundAmount(PlayerInventoryAbility inventory, ItemDataSO selectedGround, int slotIndex, int requiredAmount)
+    {
+        if (inventory == null || selectedGround == null || slotIndex < 0)
+            return false;
+
+        InventorySlot slot = inventory.GetSlot(slotIndex);
+        if (slot == null || slot.IsEmpty)
+            return false;
+        if (slot.Item != selectedGround)
+            return false;
+
+        return slot.Count >= requiredAmount;
+    }
+
+    private bool ShouldDestroyPlacedGroundImmediately(ETileType placedTileType, Vector3Int targetGridPos)
+    {
+        if (placedTileType != ETileType.VillageDirt)
+            return false;
+
+        TerrainCell belowCell = TerrainGridManager.Instance?.GetCell(targetGridPos + Vector3Int.down);
+        if (belowCell == null || belowCell.Data == null)
+            return false;
+
+        return belowCell.Data.TileType == ETileType.Dungeon3Lava
+               || belowCell.Data.TileType == ETileType.Dungeon3LavaStone;
+    }
+
     private bool CanRemoveCell(TerrainCell cell)
     {
         if (cell.Data.TileType == ETileType.Dungeon3Lava) return false;
@@ -212,11 +299,204 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         return cell.Data.CanDig(_canDigLevel);
     }
 
+    private void ExecutePrimaryDig(
+        TerrainCell cell,
+        bool grantLocalReward,
+        Photon.Realtime.Player rewardTarget,
+        bool broadcastAnimationToOthers)
+    {
+        if (!CanExecutePrimaryDig(cell))
+            return;
+
+        ETileType removedTileType = GetRemovedTileType(cell);
+        bool isFarmLand = IsFarmLandCell(cell);
+        TerrainCell detachedCell = DetachCellForPrimaryDig(cell, isFarmLand);
+        if (detachedCell == null)
+            return;
+
+        StartPrimaryDigAction();
+        PlayPrimaryDigAnimation(detachedCell);
+        SyncPrimaryDigState(detachedCell.GridPosition, cell.GridPosition, isFarmLand, broadcastAnimationToOthers);
+        HandlePrimaryDigRewards(removedTileType, grantLocalReward, rewardTarget);
+        FinishPrimaryDigAction();
+    }
+
+    private bool CanExecutePrimaryDig(TerrainCell cell)
+    {
+        return cell != null && CanRemoveCell(cell);
+    }
+
+    private static ETileType GetRemovedTileType(TerrainCell cell)
+    {
+        return cell.Data.TileType;
+    }
+
+    private static bool IsFarmLandCell(TerrainCell cell)
+    {
+        return cell.Data.ObjectType == EGridObjectType.FarmLand;
+    }
+
+    private TerrainCell DetachCellForPrimaryDig(TerrainCell cell, bool isFarmLand)
+    {
+        PrepareFarmLandForPrimaryDig(cell, isFarmLand);
+
+        TerrainCell detachedCell = TerrainGridManager.Instance.TryDetachForAnimation(cell.GridPosition, _canDigLevel);
+        if (detachedCell == null)
+            RestoreFarmLandAfterFailedDetach(cell, isFarmLand);
+
+        return detachedCell;
+    }
+
+    private static void PrepareFarmLandForPrimaryDig(TerrainCell cell, bool isFarmLand)
+    {
+        if (!isFarmLand)
+            return;
+
+        cell.FarmTile?.ClearFastFertilizer();
+        cell.Data.RemoveObject();
+        cell.Refresh();
+    }
+
+    private static void RestoreFarmLandAfterFailedDetach(TerrainCell cell, bool isFarmLand)
+    {
+        if (!isFarmLand)
+            return;
+
+        cell.Data.SetObject(EGridObjectType.FarmLand);
+        cell.Refresh();
+    }
+
+    private void StartPrimaryDigAction()
+    {
+        _owner.BeginAction();
+    }
+
+    private void PlayPrimaryDigAnimation(TerrainCell detachedCell)
+    {
+        AnimateCellToMouth(detachedCell);
+    }
+
+    private void SyncPrimaryDigState(
+        Vector3Int detachedGridPosition,
+        Vector3Int originalGridPosition,
+        bool isFarmLand,
+        bool broadcastAnimationToOthers)
+    {
+        if (broadcastAnimationToOthers)
+        {
+            BroadcastDigAnimation(originalGridPosition, isFarmLand);
+            DOVirtual.DelayedCall(
+                Mathf.Max(0f, _remoteDigStateSyncDelay),
+                () => BroadcastGroundStateFromMaster(detachedGridPosition))
+                .SetTarget(gameObject);
+            return;
+        }
+
+        BroadcastGroundStateFromMaster(detachedGridPosition);
+    }
+
+    private void HandlePrimaryDigRewards(
+        ETileType removedTileType,
+        bool grantLocalReward,
+        Photon.Realtime.Player rewardTarget)
+    {
+        if (grantLocalReward)
+            GrantDigReward(removedTileType, _getDirtAmount);
+
+        if (rewardTarget != null)
+            GrantDigRewardToRemotePlayer(removedTileType, rewardTarget);
+    }
+
+    private void HandleSecondaryPlaceConsumption(
+        ETileType placedTileType,
+        int amount,
+        bool consumeLocalInventory,
+        Photon.Realtime.Player consumeTarget)
+    {
+        if (consumeLocalInventory)
+            ConsumePlacedGroundItem(placedTileType, amount);
+
+        if (consumeTarget != null)
+        {
+            _owner.PhotonView.RPC(
+                nameof(RPC_ConsumePlacedGroundItem),
+                consumeTarget,
+                (int)placedTileType,
+                amount);
+        }
+    }
+
+    private void GrantDigRewardToRemotePlayer(ETileType removedTileType, Photon.Realtime.Player rewardTarget)
+    {
+        _owner.PhotonView.RPC(
+            nameof(RPC_GrantDigReward),
+            rewardTarget,
+            (int)removedTileType,
+            _getDirtAmount);
+    }
+
+    private void FinishPrimaryDigAction()
+    {
+        _owner.EndAction();
+    }
+
+    private void SuppressSelectionBubble()
+    {
+        _suppressSelectionBubble = true;
+    }
+
+    private void RestoreSelectionBubble()
+    {
+        _suppressSelectionBubble = false;
+    }
+
+    private void BroadcastDigAnimation(Vector3Int gridPosition, bool isFarmLand)
+    {
+        if (isFarmLand)
+        {
+            _owner.PhotonView.RpcSafe(
+                nameof(RPC_DigFarmLandWithAnimation),
+                RpcTarget.Others,
+                gridPosition.x, gridPosition.y, gridPosition.z, _canDigLevel);
+        }
+        else
+        {
+            _owner.PhotonView.RpcSafe(
+                nameof(RPC_DigWithAnimation),
+                RpcTarget.Others,
+                gridPosition.x, gridPosition.y, gridPosition.z, _canDigLevel);
+        }
+    }
+
+    private void GrantDigReward(ETileType removedTileType, int amount)
+    {
+        PlayerInventoryAbility inventory = GetInventory();
+        ItemDataSO rewardItem = GetRewardItemForTile(removedTileType);
+        if (inventory == null || rewardItem == null || amount <= 0)
+            return;
+
+        QuestReportItemHelper.AddItemAndReportQuest(inventory, rewardItem, amount);
+    }
+
+    private void ConsumePlacedGroundItem(ETileType placedTileType, int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        PlayerInventoryAbility inventory = GetInventory();
+        ItemDataSO placedItem = GetRewardItemForTile(placedTileType);
+        if (inventory == null || placedItem == null)
+            return;
+
+        inventory.RemoveItem(placedItem, amount);
+    }
+
     private void AnimateCellToMouth(TerrainCell cell)
     {
         if (_mouthPoint == null)
         {
             Destroy(cell.gameObject);
+            RestoreSelectionBubble();
             _animAbility?.Play(EHelperAnim.Idle);
             return;
         }
@@ -229,6 +509,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
                       .OnComplete(() =>
                       {
                           Destroy(cell.gameObject);
+                          RestoreSelectionBubble();
                           _animAbility?.Play(EHelperAnim.Idle);
                       });
 
@@ -265,6 +546,13 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             });
     }
 
+    private float GetRemotePlaceAnimationDuration()
+    {
+        return Mathf.Max(
+            0f,
+            _placeAnimLeadTime + _placeHorizontalDuration + _placeHoverDuration + _placeDropDuration);
+    }
+
     private ETileType GetTileTypeForItem(ItemDataSO item, ETileType fallback)
     {
         if (_groundItemMappings == null) return fallback;
@@ -276,6 +564,20 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         }
 
         return fallback;
+    }
+
+    private ItemDataSO GetRewardItemForTile(ETileType tileType)
+    {
+        if (_groundItemMappings != null)
+        {
+            foreach (GroundItemMapping mapping in _groundItemMappings)
+            {
+                if (mapping.TileType == tileType && mapping.Item != null)
+                    return mapping.Item;
+            }
+        }
+
+        return _dirtItem;
     }
 
     private Vector3Int GetPlacePosition(TerrainCell cell)
@@ -295,14 +597,78 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             changedCellPos + Vector3Int.down);
     }
 
+    private static void RestoreBelowCellTopAfterImmediateDestroy(Vector3Int removedGridPos)
+    {
+        TerrainCell belowCell = TerrainGridManager.Instance?.GetCell(removedGridPos + Vector3Int.down);
+        if (belowCell == null || belowCell.Data == null)
+            return;
+
+        if (belowCell.Data.CellType != ECellType.Dirt)
+            return;
+
+        belowCell.Data.SetTop(true);
+        belowCell.Refresh();
+    }
+
     private void OnDisable()
     {
+        RestoreSelectionBubble();
         _owner?.EndAction();
+    }
+
+    [PunRPC]
+    internal void RPC_RequestDigPrimary(int gridX, int gridY, int gridZ, PhotonMessageInfo info)
+    {
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        TerrainCell cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        cell = GetInteractableCell(cell);
+        if (cell == null)
+            return;
+
+        ExecutePrimaryDig(
+            cell,
+            grantLocalReward: false,
+            rewardTarget: info.Sender,
+            broadcastAnimationToOthers: true);
+    }
+
+    [PunRPC]
+    internal void RPC_RequestPlaceSecondary(int gridX, int gridY, int gridZ, int tileType, int dirtAmount, PhotonMessageInfo info)
+    {
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        TerrainCell cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        cell = GetInteractableCell(cell);
+        if (cell == null || !CanPlaceGroundOnCell(cell))
+            return;
+
+        ExecuteSecondaryPlace(
+            cell,
+            (ETileType)tileType,
+            dirtAmount,
+            consumeLocalInventory: false,
+            consumeTarget: info.Sender);
+    }
+
+    [PunRPC]
+    internal void RPC_GrantDigReward(int removedTileType, int amount)
+    {
+        GrantDigReward((ETileType)removedTileType, amount);
+    }
+
+    [PunRPC]
+    internal void RPC_ConsumePlacedGroundItem(int placedTileType, int amount)
+    {
+        ConsumePlacedGroundItem((ETileType)placedTileType, amount);
     }
 
     [PunRPC]
     internal void RPC_DigWithAnimation(int gridX, int gridY, int gridZ, int toolLevel)
     {
+        if (_owner.IsMine) return;
         TerrainCell detachedCell = TerrainGridManager.Instance?.TryDetachForAnimation(
             new Vector3Int(gridX, gridY, gridZ), toolLevel);
         if (detachedCell == null) return;
@@ -313,6 +679,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     [PunRPC]
     internal void RPC_DigFarmLandWithAnimation(int gridX, int gridY, int gridZ, int toolLevel)
     {
+        if (_owner.IsMine) return;
         var pos = new Vector3Int(gridX, gridY, gridZ);
         TerrainCell cell = TerrainGridManager.Instance?.GetCell(pos);
         if (cell == null) return;
@@ -333,10 +700,19 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     internal void RPC_PlaceBlockWithAnimation(int gridX, int gridY, int gridZ, int tileType, int dirtLevel)
     {
         var targetGridPos = new Vector3Int(gridX, gridY, gridZ);
-        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, (ETileType)tileType, dirtLevel);
+        ETileType placedTileType = (ETileType)tileType;
+        bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, placedTileType, dirtLevel);
         if (!placed) return;
 
         _animAbility?.Play(EHelperAnim.EatGround);
+
+        if (ShouldDestroyPlacedGroundImmediately(placedTileType, targetGridPos))
+        {
+            TerrainGridManager.Instance.RemoveCell(targetGridPos);
+            RestoreBelowCellTopAfterImmediateDestroy(targetGridPos);
+            _animAbility?.Play(EHelperAnim.Idle);
+            return;
+        }
 
         TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
         if (newCell != null && _mouthPoint != null)

@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
@@ -31,6 +32,22 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public void Connect(Action onConnected, Action onFailed = null)
     {
+        ConnectAsync(onConnected, onFailed).Forget();
+    }
+
+    /// <summary>
+    /// Ensures Addressables-backed PUN prefabs are ready before the Photon connection flow starts.
+    /// </summary>
+    private async UniTaskVoid ConnectAsync(Action onConnected, Action onFailed)
+    {
+        // Preload before connecting so JoinRoom cannot replay instantiate events against an empty pool.
+        if (!await PunPrefabPoolBootstrap.TryEnsurePreloadedAsync(e =>
+            Debug.LogError($"[NetworkManager] Network prefab preload failed before Photon connect.\n{e}")))
+        {
+            onFailed?.Invoke();
+            return;
+        }
+
         if (PhotonNetwork.IsConnectedAndReady)
         {
             onConnected?.Invoke();

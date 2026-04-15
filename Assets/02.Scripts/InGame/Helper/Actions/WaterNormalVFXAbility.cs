@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class WaterNormalVFXAbility : HelperAbility, IWaterGradeVFX
@@ -37,6 +37,7 @@ public class WaterNormalVFXAbility : HelperAbility, IWaterGradeVFX
         WaterVFX waterVfx = vfxObj.GetComponent<WaterVFX>();
         waterVfx?.Launch(targetPos, direction, () =>
         {
+            PlayWaterImpactSfx(targetPos);
             onCellLand?.Invoke(capturedCell, capturedIsCenter);
             _onComplete?.Invoke();
             _onComplete = null;
@@ -44,4 +45,15 @@ public class WaterNormalVFXAbility : HelperAbility, IWaterGradeVFX
     }
 
     public void Cancel() { _onComplete = null; }
+
+    private static void PlayWaterImpactSfx(Vector3 targetPos)
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.WaterNormalSplash,
+            spatialMode: ESpatialMode.Positional3D,
+            position: targetPos));
+    }
 }

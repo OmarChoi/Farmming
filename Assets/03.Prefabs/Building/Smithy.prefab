@@ -641,7 +641,6 @@ GameObject:
   - component: {fileID: 7084319067389688574}
   - component: {fileID: 6115155244493802900}
   - component: {fileID: 8694327996098997982}
-  - component: {fileID: 6034825811601407064}
   m_Layer: 0
   m_Name: smelter_lv3
   m_TagString: Untagged
@@ -740,27 +739,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &6034825811601407064
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3604341251753266906}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.4268497, y: 1.911808, z: 1.6302943}
-  m_Center: {x: -0.00000002224889, y: 0.5000001, z: -0.2573129}
 --- !u!1 &3748149896190786289
 GameObject:
   m_ObjectHideFlags: 0
@@ -862,7 +840,6 @@ GameObject:
   - component: {fileID: 7303380285864454521}
   - component: {fileID: 9114402465098227861}
   - component: {fileID: 5439092206417817852}
-  - component: {fileID: 5504708984405825631}
   m_Layer: 0
   m_Name: smelter_base
   m_TagString: Untagged
@@ -885,6 +862,7 @@ Transform:
   m_Children:
   - {fileID: 6350033214293193919}
   - {fileID: 2544350481302866098}
+  - {fileID: 5173034482583474279}
   m_Father: {fileID: 4504046020250750189}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &9114402465098227861
@@ -945,27 +923,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5504708984405825631
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3823761427095037532}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.9999998, y: 4.274678, z: 1.9999998}
-  m_Center: {x: -0.00000019171021, y: 0.9505648, z: 0.00000019171021}
 --- !u!1 &3963305508339521241
 GameObject:
   m_ObjectHideFlags: 0
@@ -3751,6 +3708,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8122335442309064204
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5173034482583474279}
+  m_Layer: 0
+  m_Name: Collider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5173034482583474279
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8122335442309064204}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.42261827, z: 0, w: 0.9063079}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7303380285864454521}
+  m_LocalEulerAnglesHint: {x: 0, y: 50, z: 0}
 --- !u!1 &8498322383088632746
 GameObject:
   m_ObjectHideFlags: 0

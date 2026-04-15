@@ -36,6 +36,7 @@ public class UI_VillageLevel : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void SubScribeEvents()
     {
+        if (VillageLevelManager.Instance == null) return;
         VillageLevelManager.Instance.OnVillageStateChanged -= UpdateGauge;
         VillageLevelManager.Instance.OnVillageStateChanged += UpdateGauge;
     }
@@ -43,6 +44,7 @@ public class UI_VillageLevel : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private void UpdateGauge()
     {
         VillageLevelManager manager = VillageLevelManager.Instance;
+        if (manager == null) return;
 
         if (manager.IsMaxLevel)
         {

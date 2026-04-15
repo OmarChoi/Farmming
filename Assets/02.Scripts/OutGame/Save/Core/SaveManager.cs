@@ -3,19 +3,30 @@ using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 
-public class SaveManager : MonoBehaviour
+public class SaveManager : MonoBehaviourPun
 {
     public static SaveManager Instance { get; private set; }
 
     [SerializeField] private TerrainGridManager _terrainGridManager;
     [SerializeField] private MapManager _mapManager;
-    [SerializeField] private TimeSystem _timeSystem;
 
     private readonly Dictionary<string, PlayerController> _players = new();
     private ISaveRepository _repository;
     private SaveData _loadedData;
     private const float RemoteSaveTimeout = 5f;
     private bool _isSaving;
+
+    private bool _isLoadCompleted;
+    public bool IsLoadCompleted => _isLoadCompleted;
+
+    private bool _pendingWorldSave;
+    private bool _pendingPlayerOnlySave;
+
+    private string _pendingPlayerId;
+    private PlayerSaveData _pendingPlayerSave;
+    private int _pendingSlot;
+
+    public IReadOnlyCollection<PlayerController> RegisteredPlayers => _players.Values;
 
     private void Awake()
     {
@@ -27,26 +38,60 @@ public class SaveManager : MonoBehaviour
         Instance = this;
 
         _repository = new LocalJsonSaveRepository();
+        _isLoadCompleted = false;
     }
 
+    public void EnsureBaseLoadedData()
+    {
+        if (_loadedData != null) return;
+        _loadedData = new SaveData();
+    }
+
+    public void MarkLoadCompleted()
+    {
+        _isLoadCompleted = true;
+    }
+
+    // 등록만 합니다. 복원은 하지 않습니다.
+    public void RegisterPlayerOnly(string playerId, PlayerController player)
+    {
+        if (string.IsNullOrEmpty(playerId) || player == null) return;
+        _players[playerId] = player;
+    }
+
+    // 등록과 동시에 복원을 시도합니다.
     public void RegisterPlayer(string playerId, PlayerController player)
     {
+        if (string.IsNullOrEmpty(playerId) || player == null) return;
+
         _players[playerId] = player;
-
-        bool isNewPlayer = _loadedData == null
-            || !_loadedData.Players.Exists(p => p.PlayerId == playerId);
-
         TryRestorePlayer(playerId, player);
 
+        bool isNewPlayer =
+            _isLoadCompleted &&
+            (_loadedData == null || !_loadedData.Players.Exists(p => p.PlayerId == playerId));
+
         if (isNewPlayer && PhotonNetwork.IsMasterClient)
-            SaveAsync(RoomManager.Instance.SelectedSlot).Forget();
+        {
+            int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+            SaveAsync(slot).Forget();
+        }
     }
 
     private void TryRestorePlayer(string playerId, PlayerController player)
     {
-        if (_loadedData == null) return;
+        PlayerQuestAbility questAbility = player != null ? player.GetAbility<PlayerQuestAbility>() : null;
+        if (!_isLoadCompleted || _loadedData == null) return;
+
         var save = _loadedData.Players.Find(p => p.PlayerId == playerId);
-        if (save == null) return;
+        if (save == null)
+        {
+            if (player.IsMine && questAbility != null)
+            {
+                questAbility.InitializeEmptyState();
+            }
+            return;
+        }
 
         if (player.PhotonView == null || player.PhotonView.IsMine)
         {
@@ -76,15 +121,17 @@ public class SaveManager : MonoBehaviour
 
     public async UniTask SaveAsync(int slot = 0)
     {
-        if (_isSaving)
-        {
-            Debug.LogWarning("이미 저장 중입니다.");
-            return;
-        }
-
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
         {
             Debug.LogWarning("저장은 마스터 클라이언트만 실행할 수 있습니다.");
+            return;
+        }
+
+        if (_isSaving)
+        {
+            _pendingWorldSave = true;
+            _pendingSlot = slot;
+            Debug.LogWarning("이미 저장 중입니다.");
             return;
         }
 
@@ -100,20 +147,19 @@ public class SaveManager : MonoBehaviour
             if (BuildingManager.Instance != null)
                 data.Buildings = BuildingManager.Instance.ExportBuildings();
 
-            data.Storages = StorageManager.Instance.ExportStorages();
-
-            if (_timeSystem != null)
-                data.Time = _timeSystem.ExportSaveData();
+            if (TimeSystem.Instance != null)
+                data.Time = TimeSystem.Instance.ExportSaveData();
             
             if (VillageLevelManager.Instance != null)
                 data.Village = VillageLevelManager.Instance.ExportSaveData();
-            
+
             _receivedSaveData.Clear();
             _expectedResponses = 0;
 
             foreach (var kvp in _players)
             {
                 var player = kvp.Value;
+                if (player == null) continue;
                 if (player.IsMine)
                 {
                     data.Players.Add(player.ExportSaveData(kvp.Key));
@@ -147,13 +193,13 @@ public class SaveManager : MonoBehaviour
 
                 foreach (var saved in _loadedData.Players)
                 {
+                    if (saved == null) continue;
                     if (!onlineIds.Contains(saved.PlayerId))
                         data.Players.Add(saved);
                 }
             }
 
             _loadedData = data;
-
             await _repository.SaveAsync(data, slot);
 
             // 방 커스텀 프로퍼티에 방문 플레이어 목록 갱신
@@ -170,15 +216,47 @@ public class SaveManager : MonoBehaviour
         finally
         {
             _isSaving = false;
+            await FlushPendingSaves();
+        }
+    }
+
+    private async UniTask FlushPendingSaves()
+    {
+        if (_isSaving) return;
+
+        if (_pendingWorldSave)
+        {
+            _pendingWorldSave = false;
+            int slot = _pendingSlot;
+            await SaveAsync(slot);
+            return;
+        }
+
+        if (_pendingPlayerOnlySave)
+        {
+            _pendingPlayerOnlySave = false;
+
+            string playerId = _pendingPlayerId;
+            PlayerSaveData playerSave = _pendingPlayerSave;
+            int slot = _pendingSlot;
+
+            _pendingPlayerId = null;
+            _pendingPlayerSave = null;
+
+            await SavePlayerOnlyAsync(playerId, playerSave, slot);
         }
     }
 
     public async UniTask LoadAsync(int slot = 0)
     {
+        _isLoadCompleted = false;
+
         _loadedData = await _repository.LoadAsync(slot);
         if (_loadedData == null)
         {
             Debug.Log($"저장 데이터 없음 (슬롯 {slot})");
+            _isLoadCompleted = true;
+            RestoreRegisteredPlayers();
             return;
         }
 
@@ -189,20 +267,135 @@ public class SaveManager : MonoBehaviour
         
         if (BuildingManager.Instance != null && _loadedData.Buildings != null)
             await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
-
-        StorageManager.Instance.ImportStorages(_loadedData.Storages);
         
-        if (_timeSystem != null)
-            _timeSystem.ImportTimeSaveData(_loadedData.Time);
+        if (TimeSystem.Instance != null)
+            TimeSystem.Instance.ImportTimeSaveData(_loadedData.Time);
+
+        _isLoadCompleted = true;
+        RestoreRegisteredPlayers();
 
         Debug.Log($"로드 완료 (슬롯 {slot}, 플레이어 데이터 {_loadedData.Players.Count}명)");
     }
-    
+
+    private void RestoreRegisteredPlayers()
+    {
+        bool hasNewPlayer = false;
+
+        foreach (var kvp in _players)
+        {
+            string playerId = kvp.Key;
+            PlayerController player = kvp.Value;
+
+            if (player == null) continue;
+
+            bool existsInLoadedData =
+                _loadedData != null &&
+                _loadedData.Players != null &&
+                _loadedData.Players.Exists(p => p != null && p.PlayerId == playerId);
+
+            TryRestorePlayer(playerId, player);
+
+            if (!existsInLoadedData)
+            {
+                hasNewPlayer = true;
+            }
+        }
+
+        if (hasNewPlayer && PhotonNetwork.IsMasterClient)
+        {
+            int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+            SaveAsync(slot).Forget();
+        }
+    }
+
+    public void RequestPlayerOnlySave(int slot = 0)
+    {
+        PlayerController local = GetLocalPlayer();
+        if (local == null) return;
+
+        string playerId = local.PlayerId;
+        PlayerSaveData saveData = local.ExportSaveData(playerId);
+        string json = JsonUtility.ToJson(saveData);
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            SavePlayerOnlyAsync(playerId, saveData, slot).Forget();
+        }
+        else
+        {
+            photonView.RPC(
+                nameof(RPC_RequestPlayerOnlySave),
+                RpcTarget.MasterClient,
+                playerId,
+                json,
+                slot);
+        }
+    }
+
+    public async UniTask SavePlayerOnlyAsync(string playerId, PlayerSaveData playerSave, int slot = 0)
+    {
+        if (string.IsNullOrEmpty(playerId) || playerSave == null) return;
+
+        if (_isSaving)
+        {
+            _pendingPlayerOnlySave = true;
+            _pendingPlayerId = playerId;
+            _pendingPlayerSave = playerSave;
+            _pendingSlot = slot;
+            return;
+        }
+        if (_loadedData == null)
+        {
+            Debug.Log("기반 저장 데이터가 없어 전체 저장으로 전환합니다.");
+            await SaveAsync(slot);
+            return;
+        }
+
+        _isSaving = true;
+
+        try
+        {
+            if (_loadedData.Players == null)
+                _loadedData.Players = new List<PlayerSaveData>();
+
+            _loadedData.Players.RemoveAll(p => p != null && p.PlayerId == playerId);
+            _loadedData.Players.Add(playerSave);
+
+            await _repository.SaveAsync(_loadedData, slot);
+        }
+        finally
+        {
+            _isSaving = false;
+            await FlushPendingSaves();
+        }
+    }
+
+    [PunRPC]
+    private void RPC_RequestPlayerOnlySave(string playerId, string json, int slot, PhotonMessageInfo info)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        PlayerSaveData saveData = JsonUtility.FromJson<PlayerSaveData>(json);
+        if (saveData == null) return;
+
+        SavePlayerOnlyAsync(playerId, saveData, slot).Forget();
+    }
+
     public UniTask<bool> HasSaveAsync(int slot = 0) => _repository.HasSaveAsync(slot);
 
     public bool HasPlayerData(string playerId)
     {
         if (_loadedData == null) return false;
         return _loadedData.Players.Exists(p => p.PlayerId == playerId);
+    }
+
+    private PlayerController GetLocalPlayer()
+    {
+        foreach (var player in _players.Values)
+        {
+            if (player != null && player.IsMine) return player;
+        }
+
+        return null;
     }
 }

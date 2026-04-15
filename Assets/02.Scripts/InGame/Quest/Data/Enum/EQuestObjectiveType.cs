@@ -4,5 +4,8 @@ public enum EQuestObjectiveType
     BreakObject,
     CollectItem,
     DeliverItem,
-    TalkToNpc
+    TalkToNpc,
+    DryFarmTile,
+    PlantSeed,
+    WaterFarmTile
 }

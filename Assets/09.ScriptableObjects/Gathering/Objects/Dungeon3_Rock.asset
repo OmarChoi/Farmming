@@ -20,7 +20,21 @@ MonoBehaviour:
   - {fileID: 1100284108602594479, guid: 4cfda1b73ec381c488f35dc4f63b82d5, type: 3}
   - {fileID: 8720214501187535940, guid: 0ecfb0e6c4dd3e442b162e60cf70ea25, type: 3}
   - {fileID: 3642226890507477491, guid: 607df5bbdf40d1d4eb9f57facc37c1ff, type: 3}
-  _drops:
-  - _item: {fileID: 11400000, guid: 9433c087fdd661042a64d1ffb5bedbd1, type: 2}
-    _minQuantity: 20
-    _maxQuantity: 50
+  _drops: []
+  _modelDropOverrides:
+  - _drops:
+    - _item: {fileID: 11400000, guid: 78d7924df0e35d34397129f8fba7695b, type: 2}
+      _minQuantity: 1
+      _maxQuantity: 10
+  - _drops:
+    - _item: {fileID: 11400000, guid: 78d7924df0e35d34397129f8fba7695b, type: 2}
+      _minQuantity: 1
+      _maxQuantity: 10
+  - _drops:
+    - _item: {fileID: 11400000, guid: 0656c5a7fb99a7045a4bba1595690f67, type: 2}
+      _minQuantity: 1
+      _maxQuantity: 10
+  - _drops:
+    - _item: {fileID: 11400000, guid: 0656c5a7fb99a7045a4bba1595690f67, type: 2}
+      _minQuantity: 1
+      _maxQuantity: 10

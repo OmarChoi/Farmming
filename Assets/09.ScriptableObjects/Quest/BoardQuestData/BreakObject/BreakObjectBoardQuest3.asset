@@ -19,10 +19,12 @@ MonoBehaviour:
     \uD574\uACB0\uD558\uACE0 \uC2F6\uC9C0\uB9CC, \uB098\uB294 \uB3CC\uC744 \uBD80\uC218\uAE30\uC5D4
     \uB108\uBB34 \uC57D\uD574... \uB204\uAC00 \uB3C4\uC640\uC918!"
   QuestCategory: 2
+  IsTutorial: 0
   StartNpcId: 
   CompleteNpcId: 
+  IsForcedAccept: 0
   ObjectiveType: 0
-  TargetObjectId: "\uBC14\uC704"
+  TargetId: "\uBC14\uC704"
   ItemRequirements: []
   TargetNpcId: 
   RequiredAmount: 1
@@ -33,8 +35,13 @@ MonoBehaviour:
     - RewardType: 2
       RewardItem: {fileID: 0}
       Amount: 50
-      TargetNpcId: Shopper
+      RewardHelper: {fileID: 0}
+      TargetNpcId: Merchant
   AcceptDialogue: {fileID: 0}
+  AcceptResultDialogue: {fileID: 0}
+  DeclineDialogue: {fileID: 0}
   InProgressDialogue: {fileID: 0}
   CompleteDialogue: {fileID: 0}
   NoQuestDialogue: {fileID: 0}
+  AcceptInfoPageSet: {fileID: 0}
+  CompleteInfoPageSet: {fileID: 0}

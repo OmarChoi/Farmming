@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using UnityEngine;
 
 public class Wood : GatheringObject
@@ -21,6 +21,14 @@ public class Wood : GatheringObject
         _shakeTween?.Kill();
         Vector3 axis = transform.TransformDirection(Random.onUnitSphere);
         Vector3 shakeStrength = axis * _shakeAngle;
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+                clipKey: AssetKey.SFX.WoodLeaf,
+                spatialMode: ESpatialMode.Positional3D,
+                position: transform.position));
+        }
 
         transform.rotation = _originalRotation;
         _shakeTween = transform.DOShakeRotation(_shakeDuration, shakeStrength, _shakeCount, 90f, true, ShakeRandomnessMode.Harmonic)

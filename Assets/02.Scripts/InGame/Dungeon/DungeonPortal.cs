@@ -5,7 +5,7 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class DungeonPortal : MonoBehaviour, INpcInteraction
+public class DungeonPortal : MonoBehaviour, IInteraction
 {
     [SerializeField] private UI_DungeonPortal _ui;
     [SerializeField] private DungeonMapConfig[] _dungeonConfigs;
@@ -31,7 +31,7 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
             MapSyncManager.Instance.OnDungeonEntryRequested -= OnMasterReceiveEntry;
     }
 
-    public void RequestInteract(Transform interactor)
+    public void RequestInteract(PlayerController player)
     {
         if (!ResolveUI())
         {
@@ -39,8 +39,8 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
             return;
         }
 
-        _playerController = interactor.GetComponentInParent<PlayerController>();
-        _playerInteraction = interactor.GetComponentInChildren<PlayerNPCInteractionAbility>();
+        _playerController = player;
+        _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
 
         _playerController?.EnterUIMode();
         _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction);
@@ -51,7 +51,7 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
         var config = _dungeonConfigs[floor - 1];
         var inventory = _playerController.GetAbility<PlayerInventoryAbility>();
         int currentGold = CurrencyManager.Instance != null
-            ? (int)(double)CurrencyManager.Instance.GetGold()
+            ? (int)CurrencyManager.Instance.GetGold()
             : 0;
 
         _ui.ShowRequirements(
@@ -64,6 +64,11 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
     }
 
     private void OnConfirmEnter(int floor)
+    {
+        OnConfirmEnterAsync(floor).Forget();
+    }
+
+    private async UniTaskVoid OnConfirmEnterAsync(int floor)
     {
         if (!AreAllPlayersNearby())
         {
@@ -97,8 +102,11 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
         }
 
         // 골드 차감
-        if (config.EntryCost > 0)
-            CurrencyManager.Instance.TrySpendGold(config.EntryCost);
+        if (config.EntryCost > 0 && !CurrencyManager.Instance.TrySpendGold(config.EntryCost))
+        {
+            _ui.SetDescription("골드가 부족합니다.", backToSelection);
+            return;
+        }
 
         // 재료 차감
         if (config.EntryRequirements != null && config.EntryRequirements.Length > 0)
@@ -108,24 +116,41 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
         }
 
         EndInteraction();
-        EnterDungeon(floor);
+        await EnterDungeon(floor);
     }
 
-    private void EnterDungeon(int floor)
+    private async UniTask EnterDungeon(int floor)
     {
         if (PhotonNetwork.IsConnected)
         {
-            if (MapSyncManager.Instance != null)
-                MapSyncManager.Instance.RequestDungeonEntry(floor);
-        }
-        else
-        {
+            VillageCache.CapturePlayerPositions();
             if (TerrainGridManager.Instance != null)
                 VillageCache.Capture(TerrainGridManager.Instance);
-            VillageCache.CapturePlayerPositions();
-            DungeonSceneInit.FloorOverride = floor;
-            SceneManager.LoadScene(SceneName.Dungeon1);
+
+            if (MapSyncManager.Instance != null)
+                MapSyncManager.Instance.RequestDungeonEntry(floor);
+            return;
         }
+
+        VillageCache.CapturePlayerPositions();
+        if (TerrainGridManager.Instance != null)
+            VillageCache.Capture(TerrainGridManager.Instance);
+
+        if (SaveManager.Instance != null)
+        {
+            int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+            try
+            {
+                await SaveManager.Instance.SaveAsync(slot);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[DungeonPortal] Failed to save before offline dungeon entry. {e}");
+            }
+        }
+
+        DungeonSceneInit.FloorOverride = floor;
+        SceneManager.LoadScene(SceneName.Dungeon1);
     }
 
     private void OnMasterReceiveEntry(int floor)
@@ -137,14 +162,17 @@ public class DungeonPortal : MonoBehaviour, INpcInteraction
     {
         DungeonSceneInit.FloorOverride = floor;
 
+        if (TerrainGridManager.Instance != null)
+            VillageCache.Capture(TerrainGridManager.Instance);
+
+        if (MapSyncManager.Instance != null)
+            await MapSyncManager.Instance.PrepareVillageCacheForDungeonEntry();
+
         if (SaveManager.Instance != null)
         {
             int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
             await SaveManager.Instance.SaveAsync(slot);
         }
-
-        if (MapSyncManager.Instance != null)
-            await MapSyncManager.Instance.PrepareVillageCacheForDungeonAsync();
 
         SceneTransitionData.Type = ETransitionType.VillageToDungeon;
         SceneTransitionData.DungeonFloor = floor;

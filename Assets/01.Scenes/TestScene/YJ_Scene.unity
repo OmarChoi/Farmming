@@ -987,7 +987,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestBoard
   _boardQuest: {fileID: 11400000, guid: cd14a1d2fc1c27d45926a5dbebd5e59e, type: 2}
   _uiQuestBoard: {fileID: 7126223}
-  _playerController: {fileID: 0}
 --- !u!114 &169921428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1317,7 +1316,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b6b489a449cd8140871c969b01ff826, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSceneInit
-  _playerPrefabName: Player
   _mapManager: {fileID: 1173538006}
   _mapNavMeshController: {fileID: 1726496944}
 --- !u!4 &395103922
@@ -1638,67 +1636,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4514429824528165491, guid: 14b2d9b09a6ea9542a759e094b34d4e2, type: 3}
   m_PrefabInstance: {fileID: 221505136}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &527965552
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1128516414551324245, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_Name
-      value: TestStorage
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 71.55
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 8.65
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 67.59
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1275501731814671469, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6157395430500208556, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
-      propertyPath: sceneViewId
-      value: 583
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 867ed38f7606b2b47b03845b97e12417, type: 3}
 --- !u!1 &539819330
 GameObject:
   m_ObjectHideFlags: 0
@@ -4033,6 +3970,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dfdea6bc6e86094f8214768e54169a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StorageController
+  _playerInventory: {fileID: 0}
+  _currentStorageObject: {fileID: 0}
 --- !u!4 &1189676226
 Transform:
   m_ObjectHideFlags: 0
@@ -5872,6 +5811,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdfffef51e6eca04f85cc64016ea7918, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestManager
+  _questDatabase: {fileID: 0}
 --- !u!114 &1925945245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6169,6 +6109,7 @@ MonoBehaviour:
   _dialogueController: {fileID: 2028739916}
   _questManager: {fileID: 1925945244}
   _npcFriendshipManager: {fileID: 158083902}
+  _tutorialProgressController: {fileID: 0}
 --- !u!4 &2058502417
 Transform:
   m_ObjectHideFlags: 0
@@ -6985,6 +6926,20 @@ MonoBehaviour:
   _exitButton: {fileID: 1639705435}
   _slideDuration: 0.3
   _slideDistance: 300
+  _panelRect: {fileID: 0}
+  _panelOriginPos: {x: 0, y: 0}
+  _boundController: {fileID: 0}
+  _isDragging: 0
+  _dragSourceSlot: {fileID: 0}
+  _hoveredSlot: {fileID: 0}
+  _dragIconOriginalParent: {fileID: 0}
+  _suppressRefresh: 0
+  _dragItem: {fileID: 0}
+  _dragCount: 0
+  _isSplitDrag: 0
+  _splitItem: {fileID: 0}
+  _splitAmount: 0
+  _linkedInventory: {fileID: 0}
 --- !u!1 &6951206488264684434
 GameObject:
   m_ObjectHideFlags: 0
@@ -7135,4 +7090,3 @@ SceneRoots:
   - {fileID: 1600211005}
   - {fileID: 1857056278}
   - {fileID: 645038565}
-  - {fileID: 527965552}

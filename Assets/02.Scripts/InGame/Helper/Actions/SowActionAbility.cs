@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using Photon.Pun;
@@ -8,8 +8,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
 {
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _seedVfxPrefab;
+    [SerializeField] private GameObject _cultivateGroundEffectPrefab;
+    [SerializeField] private Transform _cultivateLegendarySpinEffect;
     [SerializeField] private float _sowDelay = 0.5f;
     [SerializeField] private float _epicThreeTileLookDuration = 1.6f;
+    [SerializeField] private float _cultivateGroundEffectLifetime = 2f;
+    [SerializeField] private float _cultivateGroundEffectSurfaceOffset = 2.1f;
+    [SerializeField] private float _cultivateLegendarySpinFadeOutDuration = 0.05f;
+    [SerializeField] private float _secondaryOpenFallbackDelay = 0.35f;
+    [SerializeField] private float _secondaryCompleteFallbackDelay = 5f;
 
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
@@ -19,11 +26,16 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private HelperAnimationAbility _animAbility;
     private SowSecondaryVFXAbility _secondaryPresentation;
     private SowSeedVfxSpawner _seedVfxSpawner;
+    private Tween _cultivateLegendarySpinHideTween;
+    private ParticleSystem[] _cultivateLegendarySpinParticles;
 
     private bool _isSecondaryActing;
     private bool _anySeedPlanted;
     private List<FarmTile> _currentFarmTiles;
     private SeedItemDataSO _currentSeed;
+    private Coroutine _secondaryOpenFallbackCoroutine;
+    private Coroutine _secondaryCompleteFallbackCoroutine;
+    private bool _secondaryOpened;
 
     protected override void Awake()
     {
@@ -33,6 +45,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
         _secondaryPresentation = _owner.GetAbility<SowSecondaryVFXAbility>();
         _seedVfxSpawner = new SowSeedVfxSpawner(() => _mouthPoint, () => _seedVfxPrefab);
+        _cultivateLegendarySpinParticles = _cultivateLegendarySpinEffect != null
+            ? _cultivateLegendarySpinEffect.GetComponentsInChildren<ParticleSystem>(true)
+            : System.Array.Empty<ParticleSystem>();
+        SetCultivateLegendarySpinEffectActive(false, true);
     }
 
     public bool CanInteractPrimary(TerrainCell cell)
@@ -94,13 +110,19 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public void SowOpen()
     {
+        if (!_isSecondaryActing || _secondaryOpened)
+            return;
+
+        _secondaryOpened = true;
+        StopSecondaryOpenFallback();
+
         if (_currentFarmTiles == null || _currentFarmTiles.Count == 0 || _currentSeed == null || !_seedVfxSpawner.HasMouthPoint)
             return;
 
         foreach (FarmTile tile in _currentFarmTiles)
         {
             FarmTile capturedTile = tile;
-            _seedVfxSpawner.SpawnTo(capturedTile);
+            _seedVfxSpawner.SpawnTo(capturedTile, () => PlaySowNormalImpactSfx(capturedTile));
             StartCoroutine(PlantAfterDelay(capturedTile, _currentSeed));
         }
     }
@@ -147,8 +169,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _anySeedPlanted = false;
         _currentFarmTiles = farmTiles;
         _currentSeed = seed;
+        _secondaryOpened = false;
 
         _owner.BeginAction();
+        StartSecondaryFallbacks(requireOpenFallback: true);
         _animAbility?.Play(EHelperAnim.Sow);
     }
 
@@ -158,8 +182,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _anySeedPlanted = false;
         _currentFarmTiles = null;
         _currentSeed = null;
+        _secondaryOpened = false;
 
         _owner.BeginAction();
+        StartSecondaryFallbacks(requireOpenFallback: false);
 
         if (_secondaryPresentation == null)
         {
@@ -178,11 +204,15 @@ public class SowActionAbility : HelperAbility, IHelperAction
                     {
                         FarmTile tile = GetFarmTile(cell);
                         if (tile != null && tile.IsReadyToSow)
+                        {
+                            PlaySowNormalImpactSfx(tile);
                             PlantSeed(tile, seed);
+                        }
                     },
                     CompleteSecondaryAction);
                 break;
             case EHelperGrade.Legendary:
+                bool playedLegendaryImpactSfx = false;
                 _secondaryPresentation.PlayLegendary(
                     _seedVfxSpawner.MouthPoint,
                     GetOrderedTargetCells(centerCell),
@@ -190,7 +220,14 @@ public class SowActionAbility : HelperAbility, IHelperAction
                     {
                         FarmTile tile = GetFarmTile(cell);
                         if (tile != null && tile.IsReadyToSow)
+                        {
+                            if (!playedLegendaryImpactSfx)
+                            {
+                                PlaySowLegendaryImpactSfx(tile);
+                                playedLegendaryImpactSfx = true;
+                            }
                             PlantSeed(tile, seed);
+                        }
                     },
                     CompleteSecondaryAction);
                 break;
@@ -304,12 +341,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
             {
                 OnCultivate = () =>
                 {
-                    if (leftCell.TryConvertToFarm())
+                    if (TryConvertToFarmWithCultivateEffect(leftCell, true))
                     {
                         _owner.Experience.Add(_cultivateExperience);
                         BroadcastTerrainCellStateFromMaster(leftCell);
-                        ReplayEpicSow();
                     }
+                    ReplayEpicSow();
                 },
                 EpicLook = true,
                 EpicLookLeft = false,
@@ -333,12 +370,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
             {
                 OnCultivate = () =>
                 {
-                    if (cell.TryConvertToFarm())
-                    {
+                    if (TryConvertToFarmWithCultivateEffect(cell, true))
                         _owner.Experience.Add(_cultivateExperience);
-                        BroadcastTerrainCellStateFromMaster(cell);
-                        ReplayEpicSow();
-                    }
+                    BroadcastTerrainCellStateFromMaster(cell);
+                    ReplayEpicSow();
                 },
                 EpicLook = true,
                 OnEpicLookLeft = onEpicLeft,
@@ -369,19 +404,22 @@ public class SowActionAbility : HelperAbility, IHelperAction
         if (NeedsFarmConversion(cell))
         {
             _owner.BeginAction();
-            _cultivateAbility.JumpAndCultivate(cell, new CultivateAbility.CultivationParams
+        _cultivateAbility.JumpAndCultivate(cell, new CultivateAbility.CultivationParams
+        {
+            OnCultivate = () =>
             {
-                OnCultivate = () =>
+                bool convertedCenter = TryConvertToFarmWithCultivateEffect(cell, true);
+                bool convertedLateral = ConvertLateralFarmTiles(cell, true);
+                if (convertedCenter || convertedLateral)
                 {
-                    if (cell.TryConvertToFarm())
-                    {
-                        _owner.Experience.Add(_cultivateExperience);
-                        BroadcastTerrainCellStateFromMaster(cell);
-                    }
-                    ConvertLateralFarmTiles(cell);
-                },
-                Spin = true
-            });
+                    _owner.Experience.Add(_cultivateExperience);
+                    BroadcastTerrainCellStateFromMaster(cell);
+                }
+            },
+            OnSpinStart = PlayCultivateLegendarySpinEffect,
+            OnSpinComplete = StopCultivateLegendarySpinEffect,
+            Spin = true
+        });
             return;
         }
 
@@ -397,10 +435,12 @@ public class SowActionAbility : HelperAbility, IHelperAction
         {
             OnCultivate = anyLateralToConvert ? () =>
             {
-                bool anyConverted = ConvertFarmTiles(lateralCells);
+                bool anyConverted = ConvertFarmTiles(lateralCells, true);
                 if (anyConverted)
                     _owner.Experience.Add(_cultivateExperience);
             } : null,
+            OnSpinStart = PlayCultivateLegendarySpinEffect,
+            OnSpinComplete = StopCultivateLegendarySpinEffect,
             Spin = true
         });
     }
@@ -412,12 +452,10 @@ public class SowActionAbility : HelperAbility, IHelperAction
         {
             OnCultivate = () =>
             {
-                if (cell.TryConvertToFarm())
-                {
+                if (TryConvertToFarmWithCultivateEffect(cell, true))
                     _owner.Experience.Add(_cultivateExperience);
-                    BroadcastTerrainCellStateFromMaster(cell);
-                    ReplayEpicSow();
-                }
+                BroadcastTerrainCellStateFromMaster(cell);
+                ReplayEpicSow();
             }
         });
     }
@@ -427,23 +465,20 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _secondaryPresentation?.ReplayEpicSow();
     }
 
-    private void ConvertLateralFarmTiles(TerrainCell centerCell)
+    private bool ConvertLateralFarmTiles(TerrainCell centerCell, bool spawnCultivateEffect = false)
     {
-        ConvertFarmTiles(GetLateralCells(centerCell));
+        return ConvertFarmTiles(GetLateralCells(centerCell), spawnCultivateEffect);
     }
 
-    private bool ConvertFarmTiles(List<TerrainCell> cells)
+    private bool ConvertFarmTiles(List<TerrainCell> cells, bool spawnCultivateEffect = false)
     {
         bool anyConverted = false;
         foreach (TerrainCell lateralCell in cells)
         {
             if (NeedsFarmConversion(lateralCell))
             {
-                if (lateralCell.TryConvertToFarm())
-                {
-                    anyConverted = true;
-                    BroadcastTerrainCellStateFromMaster(lateralCell);
-                }
+                anyConverted |= TryConvertToFarmWithCultivateEffect(lateralCell, spawnCultivateEffect);
+                BroadcastTerrainCellStateFromMaster(lateralCell);
             }
         }
 
@@ -559,8 +594,139 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private void TryConvertLateralCell(TerrainCell centerCell, int directionSign)
     {
         TerrainCell lateralCell = GetLateralCell(centerCell, directionSign);
-        if (lateralCell != null && NeedsFarmConversion(lateralCell) && lateralCell.TryConvertToFarm())
+        if (lateralCell != null && NeedsFarmConversion(lateralCell))
+        {
+            TryConvertToFarmWithCultivateEffect(lateralCell, true);
             BroadcastTerrainCellStateFromMaster(lateralCell);
+        }
+    }
+
+    private bool TryConvertToFarmWithCultivateEffect(TerrainCell cell, bool spawnCultivateEffect)
+    {
+        cell = GetInteractableCell(cell);
+        if (cell == null)
+            return false;
+
+        bool converted = cell.TryConvertToFarm();
+        if (converted && spawnCultivateEffect)
+        {
+            SpawnCultivateGroundEffect(cell);
+        }
+
+        return converted;
+    }
+
+    private void SpawnCultivateGroundEffect(TerrainCell cell)
+    {
+        if (_cultivateGroundEffectPrefab == null || cell == null)
+            return;
+
+        Vector3 spawnPosition = cell.transform.position;
+        if (TryGetCultivateGroundEffectSurfaceY(cell, out float surfaceY))
+        {
+            spawnPosition.y = surfaceY + _cultivateGroundEffectSurfaceOffset;
+        }
+
+        GameObject effect = Instantiate(_cultivateGroundEffectPrefab, spawnPosition, Quaternion.identity);
+        Destroy(effect, Mathf.Max(0.1f, _cultivateGroundEffectLifetime));
+    }
+
+    private void PlayCultivateLegendarySpinEffect()
+    {
+        if (_cultivateLegendarySpinEffect == null)
+            return;
+
+        _cultivateLegendarySpinHideTween?.Kill();
+        _cultivateLegendarySpinHideTween = null;
+
+        SetCultivateLegendarySpinEffectActive(true, true);
+    }
+
+    private void StopCultivateLegendarySpinEffect()
+    {
+        if (_cultivateLegendarySpinEffect == null)
+            return;
+
+        _cultivateLegendarySpinHideTween?.Kill();
+        SetCultivateLegendarySpinEffectActive(false, false);
+
+        _cultivateLegendarySpinHideTween = DOVirtual.DelayedCall(
+            Mathf.Max(0.05f, _cultivateLegendarySpinFadeOutDuration),
+            () =>
+            {
+                SetCultivateLegendarySpinEffectActive(false, true);
+                _cultivateLegendarySpinHideTween = null;
+            });
+    }
+
+    private void SetCultivateLegendarySpinEffectActive(bool active, bool clearParticles)
+    {
+        if (_cultivateLegendarySpinEffect == null)
+            return;
+
+        foreach (ParticleSystem particleSystem in _cultivateLegendarySpinParticles)
+        {
+            if (active)
+            {
+                particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                particleSystem.Clear(true);
+                particleSystem.Play(true);
+            }
+            else
+            {
+                ParticleSystemStopBehavior stopBehavior = clearParticles
+                    ? ParticleSystemStopBehavior.StopEmittingAndClear
+                    : ParticleSystemStopBehavior.StopEmitting;
+                particleSystem.Stop(true, stopBehavior);
+                if (clearParticles)
+                    particleSystem.Clear(true);
+            }
+        }
+
+        if (active)
+        {
+            _cultivateLegendarySpinEffect.gameObject.SetActive(true);
+        }
+        else if (clearParticles)
+        {
+            _cultivateLegendarySpinEffect.gameObject.SetActive(false);
+        }
+    }
+
+    private bool TryGetCultivateGroundEffectSurfaceY(TerrainCell cell, out float surfaceY)
+    {
+        surfaceY = cell.transform.position.y;
+
+        if (cell.FarmTile != null && cell.FarmTile.gameObject.activeInHierarchy &&
+            TryGetTopSurfaceY(cell.FarmTile.gameObject, out surfaceY))
+        {
+            return true;
+        }
+
+        return TryGetTopSurfaceY(cell.gameObject, out surfaceY);
+    }
+
+    private bool TryGetTopSurfaceY(GameObject target, out float topY)
+    {
+        topY = 0f;
+        if (target == null)
+            return false;
+
+        Collider collider = target.GetComponentInChildren<Collider>(true);
+        if (collider != null)
+        {
+            topY = collider.bounds.max.y;
+            return true;
+        }
+
+        Renderer renderer = target.GetComponentInChildren<Renderer>(true);
+        if (renderer != null)
+        {
+            topY = renderer.bounds.max.y;
+            return true;
+        }
+
+        return false;
     }
 
     private Vector3Int GetGridRightOffset()
@@ -603,6 +769,60 @@ public class SowActionAbility : HelperAbility, IHelperAction
         BroadcastFarmTileStateFromMaster(farmTile);
     }
 
+    private void StartSecondaryFallbacks(bool requireOpenFallback)
+    {
+        CancelSecondaryFallbacks();
+
+        if (requireOpenFallback)
+        {
+            float openDelay = Mathf.Max(0.05f, _secondaryOpenFallbackDelay);
+            _secondaryOpenFallbackCoroutine = StartCoroutine(SecondaryOpenFallbackCoroutine(openDelay));
+        }
+
+        float completeDelay = Mathf.Max(0.5f, _secondaryCompleteFallbackDelay);
+        _secondaryCompleteFallbackCoroutine = StartCoroutine(SecondaryCompleteFallbackCoroutine(completeDelay));
+    }
+
+    private IEnumerator SecondaryOpenFallbackCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (_isSecondaryActing && !_secondaryOpened)
+            SowOpen();
+    }
+
+    private IEnumerator SecondaryCompleteFallbackCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (_isSecondaryActing)
+            CompleteSecondaryAction();
+    }
+
+    private void StopSecondaryOpenFallback()
+    {
+        if (_secondaryOpenFallbackCoroutine == null)
+            return;
+
+        StopCoroutine(_secondaryOpenFallbackCoroutine);
+        _secondaryOpenFallbackCoroutine = null;
+    }
+
+    private void CancelSecondaryFallbacks()
+    {
+        if (_secondaryOpenFallbackCoroutine != null)
+        {
+            StopCoroutine(_secondaryOpenFallbackCoroutine);
+            _secondaryOpenFallbackCoroutine = null;
+        }
+
+        if (_secondaryCompleteFallbackCoroutine != null)
+        {
+            StopCoroutine(_secondaryCompleteFallbackCoroutine);
+            _secondaryCompleteFallbackCoroutine = null;
+        }
+    }
+
     private bool HasAvailableSelectedSeed()
     {
         return _seedSelector != null && _seedSelector.HasSelectedSeedAvailable;
@@ -617,8 +837,42 @@ public class SowActionAbility : HelperAbility, IHelperAction
         return inventory.RemoveItem(seed, 1);
     }
 
+    private static void PlaySowNormalImpactSfx(FarmTile farmTile)
+    {
+        if (farmTile == null || SoundManager.Instance == null)
+            return;
+
+        Vector3 targetPos = farmTile.CropSpawnPoint != null
+            ? farmTile.CropSpawnPoint.position
+            : farmTile.transform.position;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.SowNormal,
+            spatialMode: ESpatialMode.Positional3D,
+            position: targetPos));
+    }
+
+    private static void PlaySowLegendaryImpactSfx(FarmTile farmTile)
+    {
+        if (farmTile == null || SoundManager.Instance == null)
+            return;
+
+        Vector3 targetPos = farmTile.CropSpawnPoint != null
+            ? farmTile.CropSpawnPoint.position
+            : farmTile.transform.position;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.SowLegendary,
+            spatialMode: ESpatialMode.Positional3D,
+            position: targetPos));
+    }
+
     private void CompleteSecondaryAction()
     {
+        if (!_isSecondaryActing)
+            return;
+
+        CancelSecondaryFallbacks();
         _secondaryPresentation?.CancelPresentation();
 
         if (_anySeedPlanted)
@@ -629,21 +883,27 @@ public class SowActionAbility : HelperAbility, IHelperAction
         _currentSeed = null;
         _isSecondaryActing = false;
         _anySeedPlanted = false;
+        _secondaryOpened = false;
         _owner.EndAction();
     }
 
     private void CancelCurrentAction()
     {
+        CancelSecondaryFallbacks();
         _secondaryPresentation?.CancelPresentation();
 
         _currentFarmTiles = null;
         _currentSeed = null;
         _isSecondaryActing = false;
         _anySeedPlanted = false;
+        _secondaryOpened = false;
     }
 
     private void OnDisable()
     {
+        _cultivateLegendarySpinHideTween?.Kill();
+        _cultivateLegendarySpinHideTween = null;
+        SetCultivateLegendarySpinEffectActive(false, true);
         StopAllCoroutines();
         CancelCurrentAction();
         _owner?.transform.DOKill();

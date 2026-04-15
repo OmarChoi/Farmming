@@ -83,11 +83,11 @@ public class SkyboxController : MonoBehaviour
     private void UpdateSkybox(GameTime time)
     {
         if (!EnsureRuntimeMaterial() || _timeSettings == null || _skyDatabase == null) return;
-        if (!TryGetActiveSegment(time, out SkyKeyframeSO from, out SkyKeyframeSO to, out float segmentProgress)) return;
+        if (!SkySegmentResolver.TryResolve(time, _timeSettings, _skyDatabase, out SkyKeyframeSO from, out SkyKeyframeSO to, out float segmentProgress)) return;
         if (from == null || to == null) return;
 
         // 커브를 적용하여 비선형 전환 속도를 계산
-        float skyboxProgress = EvaluateCurve(from.BlendCurve, segmentProgress);
+        float skyboxProgress = SkySegmentResolver.EvaluateCurve(from.BlendCurve, segmentProgress);
 
         // Cubemap이 미할당이면 템플릿 머터리얼의 Cubemap을 대체 사용
         Cubemap fromCubemap = from.Cubemap ?? _templateMainCubemap ?? _templateBlendCubemap;
@@ -142,80 +142,6 @@ public class SkyboxController : MonoBehaviour
         RenderSettings.skybox = _runtimeSkyboxMaterial;
         return true;
     }
-
-    #endregion
-
-    #region Time Segment
-
-    // 현재 시간이 속한 시간대 세그먼트와 해당 구간 내 선형 진행도를 반환한다
-    // [0~dayStart] Night→Dawn / [dayStart~sunrise] Dawn→Day / [sunrise~sunset] Day→Dusk / [sunset~dayEnd] Dusk→Night
-    private bool TryGetActiveSegment(GameTime time, out SkyKeyframeSO from, out SkyKeyframeSO to, out float progress)
-    {
-        from = null;
-        to = null;
-        progress = 0f;
-
-        // TimeSettings의 시간 경계를 분 단위로 변환
-        int dayStart = _timeSettings.DayStartTime.TotalMinutes;
-        int sunrise = _timeSettings.SunriseTime.TotalMinutes;
-        int sunset = _timeSettings.SunsetTime.TotalMinutes;
-        int dayEnd = _timeSettings.DayEndTime.TotalMinutes;
-        int current = time.TotalMinutes;
-
-        // 시간 경계 순서가 올바르지 않으면 갱신하지 않음
-        if (dayStart > sunrise || sunrise > sunset || sunset > dayEnd || dayEnd > GameTime.MinutesPerDay) return false;
-
-        // 현재 시간이 속한 세그먼트를 순차 탐색
-        if (TryGetLinearProgress(current, 0, dayStart, out progress))
-        {
-            from = _skyDatabase.Get(ESkyType.Night);
-            to = _skyDatabase.Get(ESkyType.Dawn);
-            return true;
-        }
-
-        if (TryGetLinearProgress(current, dayStart, sunrise, out progress))
-        {
-            from = _skyDatabase.Get(ESkyType.Dawn);
-            to = _skyDatabase.Get(ESkyType.Day);
-            return true;
-        }
-
-        if (TryGetLinearProgress(current, sunrise, sunset, out progress))
-        {
-            from = _skyDatabase.Get(ESkyType.Day);
-            to = _skyDatabase.Get(ESkyType.Dusk);
-            return true;
-        }
-
-        if (TryGetLinearProgress(current, sunset, dayEnd, out progress))
-        {
-            from = _skyDatabase.Get(ESkyType.Dusk);
-            to = _skyDatabase.Get(ESkyType.Night);
-            return true;
-        }
-
-        // dayEnd 이후는 밤
-        from = _skyDatabase.Get(ESkyType.Night);
-        to = _skyDatabase.Get(ESkyType.Night);
-        return true;
-    }
-
-    // current가 [start, end) 범위에 있으면 구간 내 선형 진행도(0~1)를 계산한다
-    private static bool TryGetLinearProgress(int current, int start, int end, out float progress)
-    {
-        progress = 0f;
-        if (end <= start || current < start || current >= end) return false;
-        progress = (current - start) / (float)(end - start);
-        return true;
-    }
-
-    #endregion
-
-    #region Utility
-
-    // AnimationCurve를 적용하되, 키가 없으면 선형 값을 그대로 사용한다
-    private static float EvaluateCurve(AnimationCurve curve, float value) 
-        => Mathf.Clamp01(curve is { length: > 0 } ? curve.Evaluate(value) : value);
 
     #endregion
 }

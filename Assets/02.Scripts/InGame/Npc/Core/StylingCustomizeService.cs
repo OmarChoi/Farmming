@@ -93,7 +93,7 @@ public class StylingCustomizeService : MonoBehaviour
 
     private void HandleConfirmRequested(CustomizeSaveData finalData)
     {
-        ConfirmAsync(finalData).Forget();
+        Confirm(finalData);
     }
 
     private void HandleCancelRequested()
@@ -101,7 +101,7 @@ public class StylingCustomizeService : MonoBehaviour
         Cancel();
     }
 
-    public async UniTask ConfirmAsync(CustomizeSaveData finalData)
+    public void Confirm(CustomizeSaveData finalData)
     {
         if (!_isStyling || _customizeAbility == null) return;
 
@@ -114,7 +114,7 @@ public class StylingCustomizeService : MonoBehaviour
             CustomizeData.Instance.SetData(finalData);
         }
 
-        await TrySaveAsync();
+        TrySaveAsync();
 
         EndStyling();
     }
@@ -222,17 +222,9 @@ public class StylingCustomizeService : MonoBehaviour
         _hiddenColliders.Clear();
     }
 
-    private async UniTask TrySaveAsync()
+    private void TrySaveAsync()
     {
         if (SaveManager.Instance == null) return;
-
-        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
-        {
-#if UNITY_EDITOR
-            Debug.Log("비마스터 클라이언트이므로 즉시 저장은 건너뜁니다.");
-#endif
-            return;
-        }
 
         int slotIndex = 0;
         if (RoomManager.Instance != null)
@@ -240,7 +232,7 @@ public class StylingCustomizeService : MonoBehaviour
             slotIndex = RoomManager.Instance.SelectedSlot;
         }
 
-        await SaveManager.Instance.SaveAsync(slotIndex);
+        SaveManager.Instance.RequestPlayerOnlySave(slotIndex);
     }
 
     private PlayerController FindLocalPlayer()

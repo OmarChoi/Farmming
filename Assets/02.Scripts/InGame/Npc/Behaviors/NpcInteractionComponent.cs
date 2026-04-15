@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
+public class NpcInteractionComponent : MonoBehaviour, IInteraction
 {
     [Header("NpcDialogueController")]
     [SerializeField] private NpcDialogueController _dialogueController;
@@ -18,20 +18,19 @@ public class NpcInteractionComponent : MonoBehaviour, INpcInteraction
         }
     }
 
-    public void RequestInteract(Transform interactor)
+    public void RequestInteract(PlayerController player)
     {
-        if (!_npcController.CanStartInteraction(interactor))
+        if (!_npcController.CanStartInteraction(player))
         {
             return;
         }
 
-        _playerController = interactor.GetComponentInParent<PlayerController>();
-        _playerInteraction = interactor.GetComponentInChildren<PlayerNPCInteractionAbility>();
+        _playerController = player;
+        _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
 
         _playerController?.SetCursorLock(false);
-        _npcController.StartInteraction(interactor);
-
-        _dialogueController.Open(_npcController, interactor);
+        _npcController.StartInteraction(player);
+        _dialogueController.Open(_npcController, player);
     }
 
     public void EndInteraction()

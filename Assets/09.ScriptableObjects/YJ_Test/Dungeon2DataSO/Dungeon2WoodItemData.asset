@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a1bb3e5983ccf741bc4e4f70beaf874, type: 3}
+  m_Name: Dungeon2WoodItemData
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  _id: 52
+  _displayName: "\uB534\uB534\uD55C \uD1B5\uB098\uBB34"
+  _icon: {fileID: 21300000, guid: 06848e8bff0fc1140a87885f762a4e69, type: 3}
+  _type: 0
+  _maxStack: 99
+  _buyCost: 500
+  _sellCost: 250
+  _displayExplanation: "\uB2E8\uB2E8\uD55C \uD1B5\uB098\uBB34\uC774\uB2E4. \uAC74\uBB3C
+    \uC7AC\uB8CC\uB85C \uC0AC\uC6A9\uD558\uBA74 \uC88B\uC744 \uAC83 \uAC19\uB2E4."
