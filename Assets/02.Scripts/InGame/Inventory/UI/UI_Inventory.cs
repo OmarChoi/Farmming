@@ -276,10 +276,15 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
             {
                 if (_isSplitDrag)
                 {
-                    // 분할된 아이템을 인벤토리에 복구 후 TransferService로 이동
-                    _inventoryAbility.PlaceSplit(
-                        _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
-                    _storageTransferService.MoveToStorage(_dragSourceSlot.SlotIndex);
+                    // 마우스 포인터 위치의 창고 슬롯에 반만 배치. 슬롯이 다른 아이템이거나 꽉 찼으면 복구 후 자동 배치로 폴백
+                    bool placed = _storageTransferService.AddHeldItemToStorageSlot(
+                        _splitItem, crossTarget.SlotIndex, _splitAmount);
+                    if (!placed)
+                    {
+                        _inventoryAbility.PlaceSplit(
+                            _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
+                        _storageTransferService.MoveToStorage(_dragSourceSlot.SlotIndex, _splitAmount);
+                    }
                 }
                 else
                 {
