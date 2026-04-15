@@ -259,7 +259,7 @@ public class NpcQuestService : MonoBehaviour
             }
         }
         choices.Add(new NpcDialogueChoiceData("돌아가기", () => _dialogueController.ShowDefaultChoices()));
-        _dialogueController.ShowQuestChoices(choices);
+        _dialogueController.ShowCustomChoices(choices);
     }
 
     private string BuildQuestEntryButtonText(NpcQuestEntry entry)
@@ -351,7 +351,7 @@ public class NpcQuestService : MonoBehaviour
             new NpcDialogueChoiceData("아니요", () => DeclineQuestWithDialogue(context, questData))
         };
 
-        _dialogueController.ShowQuestChoices(choices, false);
+        _dialogueController.ShowCustomChoices(choices, false);
     }
 
     private void AcceptQuestWithResultDialogue(NpcInteractionContext context, QuestDataSO questData)

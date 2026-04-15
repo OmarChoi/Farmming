@@ -23,6 +23,7 @@ public static class AssetKey
         public const string Blacksmith = "Blacksmith";
         public const string Hairdresser = "Hairdresser";
         public const string Merchant = "Merchant";
+        public const string Doctor = "Doctor";
         public const string GroundHelper = "GroundHelper";
         public const string LightHelper = "LightHelper";
         public const string HarvestHelper = "HarvestHelper";
