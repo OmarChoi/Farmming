@@ -360,6 +360,12 @@ public class HelperUpgradeService : MonoBehaviour
         return true;
     }
 
+    public int GetOwnedCostCount(ItemDataSO item)
+    {
+        if (_inventoryAbility == null || item == null) return 0;
+        return _inventoryAbility.GetItemCount(item);
+    }
+
     private void CloseUpgradeUi()
     {
         OnUpgradeUiCloseRequested?.Invoke();

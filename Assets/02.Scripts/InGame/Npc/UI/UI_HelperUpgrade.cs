@@ -27,11 +27,16 @@ public class UI_HelperUpgrade : MonoBehaviour
     [SerializeField] private Button _upgradeButton;
     [SerializeField] private Button _closeButton;
 
+    [Header("업그레이드 비용")]
+    [SerializeField] private Transform _costSlotParent;
+    [SerializeField] private UI_HelperUpgradeCostSlot _costSlotPrefab;
+
     [Header("팝업 트윈")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
 
     private readonly List<UI_HelperUpgradeSlot> _slots = new();
     private readonly List<HelperDataSO> _currentHelpers = new();
+    private readonly List<UI_HelperUpgradeCostSlot> _costSlots = new();
 
     private int _selectedIndex = -1;
 
@@ -297,6 +302,8 @@ public class UI_HelperUpgrade : MonoBehaviour
         _helperExpText.text = HelperUpgradeTextFormatter.GetExpText(grade, exp, maxExp);
         _helperRangeText.text = HelperUpgradeTextFormatter.GetRangeText(data, grade);
 
+        RefreshCostSlots(data);
+
         if (_upgradeButton != null)
         {
             _upgradeButton.interactable = canUpgrade;
@@ -317,9 +324,55 @@ public class UI_HelperUpgrade : MonoBehaviour
         _helperRangeText.text = "";
         _helperMessageText.text = "표시할 helper가 없습니다.";
 
+        ClearCostSlots();
+
         if (_upgradeButton != null)
         {
             _upgradeButton.interactable = false;
+        }
+    }
+
+    private void RefreshCostSlots(HelperDataSO data)
+    {
+        if (_helperUpgradeService == null || data == null)
+        {
+            ClearCostSlots();
+            return;
+        }
+
+        IReadOnlyList<HelperUpgradeCostEntry> costs = _helperUpgradeService.GetUpgradeCosts(data);
+        int costCount = costs.Count;
+
+        while (_costSlots.Count < costCount)
+        {
+            UI_HelperUpgradeCostSlot newSlot = Instantiate(_costSlotPrefab, _costSlotParent);
+            _costSlots.Add(newSlot);
+        }
+
+        for (int i = 0; i < _costSlots.Count; i++)
+        {
+            bool active = i < costCount;
+            _costSlots[i].gameObject.SetActive(active);
+
+            if (!active) continue;
+
+            HelperUpgradeCostEntry cost = costs[i];
+            int ownedCount = _helperUpgradeService.GetOwnedCostCount(cost.Item);
+            bool enough = ownedCount >= cost.Amount;
+
+            Sprite icon = cost.Item != null ? cost.Item.Icon : null;
+            _costSlots[i].BindCostSlot(icon, ownedCount, cost.Amount, enough);
+        }
+    }
+
+    private void ClearCostSlots()
+    {
+        for (int i = 0; i < _costSlots.Count; i++)
+        {
+            if (_costSlots[i] != null)
+            {
+                _costSlots[i].gameObject.SetActive(false);
+            }
         }
     }
 
