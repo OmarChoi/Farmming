@@ -53,7 +53,7 @@ public class BuildingManager : MonoBehaviourPunCallbacks
 
         Instance = this;
         _placement = new BuildingPlacementService(_gridManager, _registry);
-        _factory = new BuildingInstanceFactory(transform);
+        _factory = new BuildingInstanceFactory();
         ResolveConstructionVisualReferences();
         ValidateConstructionVisualReferences();
     }
@@ -156,8 +156,15 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             photonView.RPC(nameof(RPC_ConfirmBuild), info.Sender, buildingId);
         }
 
-        photonView.RpcSafe(nameof(RPC_ExecuteBuild), RpcTarget.All,
-                           buildingId, ax, ay, az, direction);
+        // 마스터에서 직접 TryBuild → PhotonNetwork.Instantiate 자동 복제로 클라이언트에 전파.
+        // 클라이언트는 BaseBuilding.Start에서 RegisterClientSpawnedBuilding으로 자가 등록.
+        var request = new BuildingRequest
+        {
+            Data = data,
+            AnchorPos = anchorPos,
+            Direction = direction
+        };
+        TryBuild(request).Forget();
     }
 
     [PunRPC]
@@ -170,43 +177,21 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void RPC_ExecuteBuild(string buildingId, int ax, int ay, int az, int direction)
-    {
-        BuildingDataSO data = _buildingDatabase.GetById(buildingId);
-        if (data == null) return;
-
-        var request = new BuildingRequest
-        {
-            Data = data,
-            AnchorPos = new Vector3Int(ax, ay, az),
-            Direction = direction
-        };
-        TryBuild(request).Forget();
-    }
-
-    [PunRPC]
     private void RPC_RequestRemove(int x, int y, int z, PhotonMessageInfo info)
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
         var pos = new Vector3Int(x, y, z);
         if (!TryGetBuildingInfo(pos, out Vector3Int anchor, out BuildingSaveData saveData, out BuildingDataSO buildingData)) return;
-        if (!TryRemoveResolved(anchor, saveData, buildingData)) return;
 
-        photonView.RpcSafe(nameof(RPC_ExecuteRemove), RpcTarget.Others,
-                           anchor.x, anchor.y, anchor.z);
+        // 마스터에서 직접 파괴 → PhotonNetwork.Destroy 자동 복제로 클라이언트에 전파.
+        // 클라이언트는 BaseBuilding.OnDestroy에서 UnregisterClientSpawnedBuilding으로 _registry 정리.
+        if (!TryRemoveResolved(anchor, saveData, buildingData)) return;
 
         if (info.Sender != null)
         {
             photonView.RPC(nameof(RPC_RefundRemove), info.Sender, buildingData.BuildingId);
         }
-    }
-
-    [PunRPC]
-    private void RPC_ExecuteRemove(int ax, int ay, int az)
-    {
-        var anchor = new Vector3Int(ax, ay, az);
-        TryRemove(anchor, out _);
     }
 
     [PunRPC]
@@ -246,7 +231,8 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         (
             request.Data,
             spawnPos,
-            Quaternion.Euler(0f, yRot, 0f)
+            Quaternion.Euler(0f, yRot, 0f),
+            saveData
         );
 
         if (instance != null)
@@ -377,6 +363,10 @@ public class BuildingManager : MonoBehaviourPunCallbacks
     {
         if (list == null) return;
 
+        // 클라이언트는 skip — 마스터의 PhotonNetwork.Instantiate 자동 복제로 인스턴스를 받는다.
+        // (BaseBuilding.Start에서 InstantiationData를 읽어 RegisterClientSpawnedBuilding 호출)
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+
         foreach (BuildingSaveData saveData in list)
         {
             BuildingDataSO data = _buildingDatabase.GetById(saveData.BuildingId);
@@ -401,6 +391,78 @@ public class BuildingManager : MonoBehaviourPunCallbacks
         }
     }
     #endregion
+
+    /// <summary>
+    /// 마스터의 PhotonNetwork.Instantiate로 클라이언트에 자동 생성된 건물을 _registry에 등록한다.
+    /// PhotonView.InstantiationData에서 BuildingSaveData를 복원해 Initialize까지 수행.
+    /// 마스터는 TryBuild 경로에서 처리하므로 이 메서드는 클라이언트 전용.
+    /// </summary>
+    public void RegisterClientSpawnedBuilding(BaseBuilding instance)
+    {
+        if (instance == null) return;
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient) return;
+
+        PhotonView pv = instance.GetComponent<PhotonView>();
+        if (pv == null) return;
+
+        object[] data = pv.InstantiationData;
+        if (data == null || data.Length < 6) return;
+
+        string buildingId = data[0] as string;
+        if (string.IsNullOrEmpty(buildingId)) return;
+
+        BuildingDataSO buildingData = _buildingDatabase.GetById(buildingId);
+        if (buildingData == null) return;
+
+        var saveData = new BuildingSaveData
+        {
+            BuildingId = buildingId,
+            AnchorX = (int)data[1],
+            AnchorY = (int)data[2],
+            AnchorZ = (int)data[3],
+            Direction = (int)data[4],
+            RemainingDays = (int)data[5],
+        };
+
+        var anchor = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(buildingData, saveData.Direction);
+
+        _registry.RegisterBuilding(anchor, saveData);
+        _placement.MarkOccupied(anchor, footprint);
+        _registry.RegisterInstance(anchor, instance);
+
+        instance.ConstructionCompleted -= HandleBuildingConstructionCompleted;
+        instance.ConstructionCompleted += HandleBuildingConstructionCompleted;
+        instance.Initialize(buildingData, saveData, CreateConstructionContext(), true);
+
+        RegisterStorageIfPresent(saveData, instance);
+    }
+
+    /// <summary>
+    /// 클라이언트에서 PhotonNetwork.Destroy 자동 복제로 파괴된 건물의 _registry/_placement 정리.
+    /// 마스터는 TryRemoveResolved 경로에서 처리하므로 이 메서드는 클라이언트 전용.
+    /// BaseBuilding.OnDestroy에서 호출.
+    /// </summary>
+    public void UnregisterClientSpawnedBuilding(BaseBuilding instance)
+    {
+        if (instance == null || instance.SaveData == null) return;
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient) return;
+
+        BuildingSaveData saveData = instance.SaveData;
+        BuildingDataSO buildingData = _buildingDatabase.GetById(saveData.BuildingId);
+        if (buildingData == null) return;
+
+        var anchor = new Vector3Int(saveData.AnchorX, saveData.AnchorY, saveData.AnchorZ);
+        BuildingFootprint footprint = BuildingPlacer.GetFootprint(buildingData, saveData.Direction);
+
+        if (_registry.RemoveInstance(anchor, out _))
+        {
+            BuildingCount--;
+            OnBuildingDestroyed?.Invoke();
+        }
+        _placement.ClearOccupied(anchor, footprint);
+        _registry.RemoveBuilding(anchor);
+    }
 
     private static void RegisterStorageIfPresent(BuildingSaveData saveData, BaseBuilding buildingInstance)
     {

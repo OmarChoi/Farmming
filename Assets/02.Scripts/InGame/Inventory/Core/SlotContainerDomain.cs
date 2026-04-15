@@ -32,6 +32,13 @@ public class SlotContainerDomain
         return FillExistingSlots(item, amount) == 0;
     }
 
+    /// 아이템을 추가하고 공간 부족으로 못 넣은 수량을 반환한다.
+    public virtual int AddItemAndGetRemaining(ItemDataSO item, int amount)
+    {
+        if (item == null || amount <= 0) return 0;
+        return FillExistingSlots(item, amount);
+    }
+
     public virtual bool AddItemToSlot(ItemDataSO item, int slotIndex, int amount = 1, bool fallbackToAuto = true)
     {
         if (item == null || amount <= 0)
