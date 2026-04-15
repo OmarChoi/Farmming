@@ -103,27 +103,14 @@ public class UI_TradeAmountPopup : MonoBehaviour
         if (IsOpen || _isClosing) return;
         if (item == null || maxAmount <= 0) return;
 
-        switch (tradeType)
-        {
-            case ETradeType.Buy:
-                _confirmButtonText.text = "살래요!";
-                _cancelButtonText.text = "안 살래요";
-                break;
-            case ETradeType.Sell:
-                if (item.SellCost <= 0) return;
-                _confirmButtonText.text = "팔래요!";
-                _cancelButtonText.text = "안 팔래요";
-                break;
-            default:
-                return;
-        }
-
         _currentItem = item;
-        _itemIconImage.sprite = item.Icon;
+        _itemIconImage.sprite = ItemDisplayFormatter.GetIcon(item);
         _tradeType = tradeType;
         _maxAmount = Mathf.Max(1, maxAmount);
         _currentAmount = 1;
         _amountInputField.text = _currentAmount.ToString();
+        _confirmButtonText.text = GetConfirmText();
+        _cancelButtonText.text = GetCancelText();
         _onConfirm = onConfirm;
         _isClosing = false;
 
@@ -141,7 +128,7 @@ public class UI_TradeAmountPopup : MonoBehaviour
 
     public async UniTask CloseAsync()
     {
-        if (IsOpen || _isClosing) return;
+        if (!IsOpen || _isClosing) return;
         _isClosing = true;
 
         if (_popupDoTween != null)
@@ -240,11 +227,11 @@ public class UI_TradeAmountPopup : MonoBehaviour
 
         if(_itemNameText != null)
         {
-            _itemNameText.text = _currentItem.DisplayName;
+            _itemNameText.text = ItemDisplayFormatter.GetName(_currentItem);
         }
         if(_itemIconImage != null)
         {
-            _itemIconImage.sprite = _currentItem.Icon;
+            _itemIconImage.sprite = ItemDisplayFormatter.GetIcon(_currentItem);
         }
         if(_amountInputField != null)
         {
@@ -256,21 +243,25 @@ public class UI_TradeAmountPopup : MonoBehaviour
 
         if(_totalGoldText != null)
         {
-            _totalGoldText.text = _tradeType == ETradeType.Buy
-                ? $"필요 골드: {totalGold:N0}"
-                : $"획득 골드: {totalGold:N0}";
+            _totalGoldText.text = ItemDisplayFormatter.GetTotalCostText(_currentItem, _tradeType, _currentAmount);
         }
         if(_confirmButtonText != null)
         {
-            _confirmButtonText.text = _tradeType == ETradeType.Buy
-                ? $"살래요! ({totalGold:N0} 골드)"
-                : $"팔래요! ({totalGold:N0} 골드)";
+            _confirmButtonText.text = GetConfirmText();
         }
         if(_cancelButtonText != null)
         {
-            _cancelButtonText.text = _tradeType == ETradeType.Buy
-                ? "안 살래요"
-                : "안 팔래요";
+            _cancelButtonText.text = GetCancelText();
         }
+    }
+
+    private string GetConfirmText()
+    {
+        return _tradeType == ETradeType.Buy ? "살래요!" : "팔래요!";
+    }
+
+    private string GetCancelText()
+    {
+        return _tradeType == ETradeType.Buy ? "안 살래요" : "안 팔래요";
     }
 }

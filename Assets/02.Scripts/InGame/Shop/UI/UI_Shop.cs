@@ -136,13 +136,7 @@ public class UI_Shop : MonoBehaviour
             ? 999
             : CurrencyManager.Instance.CurrentGold / item.BuyCost;
 
-        if (maxAffordableAmount <= 0)
-        {
-#if UNITY_EDITOR
-            Debug.Log("골드가 부족합니다.");
-#endif
-            return;
-        }
+        if (maxAffordableAmount <= 0) return;
 
         if (_tradeAmountPopup != null && _tradeAmountPopup.IsOpen) return;
         _tradeAmountPopup.OpenAsync(
@@ -152,13 +146,6 @@ public class UI_Shop : MonoBehaviour
             amount =>
             {
                 bool success = _tradeService.Buy(_currentShopData, item, amount);
-
-#if UNITY_EDITOR
-                if (success)
-                    Debug.Log($"구매 성공 - Item: {item.DisplayName}, Amount: {amount}");
-                else
-                    Debug.LogWarning($"구매 실패 - Item: {item.DisplayName}, Amount: {amount}");
-#endif
             }).Forget();
     }
 

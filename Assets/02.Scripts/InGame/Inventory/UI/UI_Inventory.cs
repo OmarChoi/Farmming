@@ -396,13 +396,6 @@ public class UI_Inventory : MonoBehaviour
             amount =>
             {
                 bool success = _tradeService.Sell(clicked.SlotIndex, amount);
-
-#if UNITY_EDITOR
-                if (success)
-                    Debug.Log($"판매 성공 - Slot: {clicked.SlotIndex}, Amount: {amount}");
-                else
-                    Debug.LogWarning($"판매 실패 - Slot: {clicked.SlotIndex}, Amount: {amount}");
-#endif
             }).Forget();
     }
 }
