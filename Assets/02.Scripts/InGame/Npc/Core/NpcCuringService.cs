@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class NpcCuringService : MonoBehaviour
 {
+    [Header("참조 컴포넌트")]
     [SerializeField] private NpcDialogueController _dialogueController;
 
     public void ExecuteCuringInteraction(NpcInteractionContext context)
@@ -50,16 +51,15 @@ public class NpcCuringService : MonoBehaviour
             return;
         }
 
-        // 나중에 실제 플레이어 정보를 받아와서 오늘 이미 치료 받았는지 판정하도록 수정해야 합니다.
         bool alreadyCuredToday = !CanReceiveCuringToday(context.Interactor);
 
         if (alreadyCuredToday)
         {
-            if(data.CuringAlreadyDoneDialogue != null)
+            if (data.CuringAlreadyDoneDialogue != null)
             {
                 _dialogueController.StartDialogue(data.CuringAlreadyDoneDialogue, EDialogueUiState.CuringAlreadyDone);
             }
-            else if(data.CuringDeclineDialogue != null)
+            else if (data.CuringDeclineDialogue != null)
             {
                 _dialogueController.StartDialogue(data.CuringDeclineDialogue, EDialogueUiState.CuringDecline);
             }
@@ -73,7 +73,14 @@ public class NpcCuringService : MonoBehaviour
 
         ApplyCuring(context.Interactor);
 
-        _dialogueController.StartDialogue(data.CuringAcceptDialogue, EDialogueUiState.CuringAccept);
+        if (data.CuringAcceptDialogue != null)
+        {
+            _dialogueController.StartDialogue(data.CuringAcceptDialogue, EDialogueUiState.CuringAccept);
+        }
+        else
+        {
+            _dialogueController.ShowDefaultChoices();
+        }
     }
 
     private void ApplyCuring(PlayerController player)
@@ -85,6 +92,9 @@ public class NpcCuringService : MonoBehaviour
 
         PlayerHelperInventoryAbility helperInventoryAbility = player.GetAbility<PlayerHelperInventoryAbility>();
         helperInventoryAbility?.RecoverAllHelpersFull();
+
+        PlayerCuringAbility curingAbility = player.GetAbility<PlayerCuringAbility>();
+        curingAbility?.MarkCuredToday();
     }
 
     private void OnSelectDecline(NpcInteractionContext context)
@@ -101,7 +111,11 @@ public class NpcCuringService : MonoBehaviour
 
     private bool CanReceiveCuringToday(PlayerController player)
     {
-        // todo. 오늘 이미 치료 받았는지 판정합니다.
-        return true;
+        if (player == null) return false;
+
+        PlayerCuringAbility curingAbility = player.GetAbility<PlayerCuringAbility>();
+        if (curingAbility == null) return true;
+
+        return curingAbility.CanReceiveCuringToday();
     }
 }
