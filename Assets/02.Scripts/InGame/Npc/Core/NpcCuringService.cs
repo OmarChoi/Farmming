@@ -6,6 +6,9 @@ public class NpcCuringService : MonoBehaviour
     [Header("참조 컴포넌트")]
     [SerializeField] private NpcDialogueController _dialogueController;
 
+    const string ChoiceYes = "네";
+    const string ChoiceNo = "아니오";
+
     public void ExecuteCuringInteraction(NpcInteractionContext context)
     {
         if (context == null || context.Npc == null) return;
@@ -30,11 +33,11 @@ public class NpcCuringService : MonoBehaviour
         var choices = new List<NpcDialogueChoiceData>
         {
             new NpcDialogueChoiceData(
-                "네",
+                ChoiceYes,
                 () => OnSelectAccept(context)
             ),
             new NpcDialogueChoiceData(
-                "아니오",
+                ChoiceNo,
                 () => OnSelectDecline(context)
             )
         };
@@ -87,14 +90,7 @@ public class NpcCuringService : MonoBehaviour
     {
         if (player == null) return;
 
-        PlayerStaminaAbility staminaAbility = player.GetAbility<PlayerStaminaAbility>();
-        staminaAbility?.RecoverFull();
-
-        PlayerHelperInventoryAbility helperInventoryAbility = player.GetAbility<PlayerHelperInventoryAbility>();
-        helperInventoryAbility?.RecoverAllHelpersFull();
-
-        PlayerCuringAbility curingAbility = player.GetAbility<PlayerCuringAbility>();
-        curingAbility?.MarkCuredToday();
+        player?.ReceiveCure();
     }
 
     private void OnSelectDecline(NpcInteractionContext context)
@@ -113,9 +109,6 @@ public class NpcCuringService : MonoBehaviour
     {
         if (player == null) return false;
 
-        PlayerCuringAbility curingAbility = player.GetAbility<PlayerCuringAbility>();
-        if (curingAbility == null) return true;
-
-        return curingAbility.CanReceiveCuringToday();
+        return player.CanReceiveCuringToday();
     }
 }
