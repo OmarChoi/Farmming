@@ -133,10 +133,10 @@ public class HelperController : MonoBehaviourPunCallbacks
     public void Unequip()
     {
         State = EHelperState.Summoned;
+        SetCharacterControllerEnabled(true);
         transform.SetParent(null);
         transform.localScale = _originalScale;
         transform.position = FollowTarget.position;
-        SetCharacterControllerEnabled(true);
         SetTransformSync(true);
 
         Vector3 backDir = -FollowTarget.forward;
