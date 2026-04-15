@@ -7,6 +7,8 @@ public class CurrencyManager : MonoBehaviour
 
     private Currency _gold;
 
+    public int CurrentGold => (int)_gold;
+
     public event Action<Currency> OnGoldChanged;
 
     private void Awake()

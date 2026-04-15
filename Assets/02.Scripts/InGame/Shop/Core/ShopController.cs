@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class ShopController : MonoBehaviour
 {
-    [Header("상점 건물")]
-    [SerializeField] private Shop _shopPrefab;
-
     [Header("요구 컴포넌트")]
     [SerializeField] private UI_Inventory _uiInventory;
     [SerializeField] private UI_Shop _uiShop;
@@ -122,7 +119,7 @@ public class ShopController : MonoBehaviour
 
         _currentPlayer = player;
         _currentInventory = inventory;
-        _tradeService = new TradeService(_currentInventory);
+        _tradeService = new TradeService(player);
 
         _uiShop.Init(_tradeService);
         _uiInventory.Init(_tradeService);

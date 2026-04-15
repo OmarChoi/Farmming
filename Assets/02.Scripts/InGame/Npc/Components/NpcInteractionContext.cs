@@ -3,14 +3,14 @@ using UnityEngine;
 public class NpcInteractionContext
 {
     public NpcController Npc { get; }
-    public Transform Interactor { get; }
+    public PlayerController Interactor { get; }
     public NpcInteractionComponent InteractionComponent { get; }
     public string NpcName => Npc.Data.NpcName;
     public string NpcId => Npc.Data.NpcId;
 
     public NpcInteractionContext(
         NpcController npc,
-        Transform interactor,
+        PlayerController interactor,
         NpcInteractionComponent interactionComponent)
     {
         Npc = npc;
