@@ -8,7 +8,7 @@ public class UI_Slot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _countText;
 
-    private UI_Inventory _uiInventory;
+    private ISlotContainer _container;
     private int _slotIndex;
     private ItemDataSO _currentItem;
 
@@ -16,9 +16,9 @@ public class UI_Slot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     public ItemDataSO CurrentItem => _currentItem;
     public RectTransform RectTransform => (RectTransform)transform;
 
-    public void Init(UI_Inventory uiInventory, int index)
+    public void Init(ISlotContainer container, int index)
     {
-        _uiInventory = uiInventory;
+        _container = container;
         _slotIndex = index;
     }
 
@@ -52,28 +52,28 @@ public class UI_Slot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         if (_currentItem is PotionDataSO) return;
 
         bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-        _uiInventory.BeginDrag(this, shift);
+        _container.BeginDrag(this, shift);
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            _uiInventory.OnSlotRightClicked(this);
+            _container.OnSlotRightClicked(this);
         }
         else
         { 
-            _uiInventory.OnSlotClicked(this);
+            _container.OnSlotClicked(this);
         }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        _uiInventory.OnSlotHoverEnter(this);
+        _container.OnSlotHoverEnter(this);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        _uiInventory.OnSlotHoverExit();
+        _container.OnSlotHoverExit();
     }
 }

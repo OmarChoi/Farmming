@@ -1,17 +1,21 @@
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
-using System.Collections.Generic;
-using DG.Tweening;
 
 public class UI_Shop : MonoBehaviour
 {
-    [Header("컴포넌트 옵션")]
+    [Header("컴포넌트 참조")]
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_ShopItemSlot _slotPrefab;
     [SerializeField] private GameObject _uiShopRoot;
     [SerializeField] private TextMeshProUGUI _shopNameText;
+
+    [Header("수량 팝업")]
+    [SerializeField] private UI_TradeAmountPopup _tradeAmountPopup;
 
     [Header("닫기 버튼")]
     [SerializeField] private Button _exitButton;
@@ -19,6 +23,8 @@ public class UI_Shop : MonoBehaviour
     [Header("슬라이드 애니메이션")]
     [SerializeField] private float _slideDuration = 0.3f;
     [SerializeField] private float _slideDistance = 300f;
+
+    private const int MaxPurchaseAmount = 999;
 
     private RectTransform _shopRect;
     private Vector2 _shopOriginPosition;
@@ -75,6 +81,23 @@ public class UI_Shop : MonoBehaviour
         PlayCloseAnimation();
     }
 
+    public void CloseImmediate()
+    {
+        _slideTween?.Kill();
+
+        if (_shopRect != null)
+        {
+            _shopRect.anchoredPosition = _shopOriginPosition;
+        }
+
+        if (_uiShopRoot != null)
+        {
+            _uiShopRoot.SetActive(false);
+        }
+
+        _currentShopData = null;
+    }
+
     private void PlayOpenAnimation()
     {
         if (_shopRect == null) return;
@@ -105,6 +128,33 @@ public class UI_Shop : MonoBehaviour
                 _currentShopData = null;
             });
     }
+    public void OnShopSlotClicked(UI_ShopItemSlot slot)
+    {
+        if (_currentShopData == null || slot.ItemData == null || _tradeService == null) return;
+        if (_tradeAmountPopup == null || CurrencyManager.Instance == null) return;
+        ItemDataSO item = slot.ItemData;
+
+        int maxAffordableAmount = item.BuyCost <= 0
+            ? MaxPurchaseAmount
+            : CurrencyManager.Instance.CurrentGold / item.BuyCost;
+
+        if (maxAffordableAmount <= 0) return;
+
+        if (_tradeAmountPopup != null && _tradeAmountPopup.IsOpen) return;
+        _tradeAmountPopup.OpenAsync(
+            item,
+            ETradeType.Buy,
+            maxAffordableAmount,
+            amount =>
+            {
+                _tradeService.Buy(_currentShopData, item, amount);
+            }).Forget();
+    }
+
+    public void OnClickCloseButton()
+    {
+        OnCloseRequested?.Invoke();
+    }
 
     private void CreateOrRefreshSlots()
     {
@@ -129,17 +179,5 @@ public class UI_Shop : MonoBehaviour
                 _slots[i].Refresh(_currentShopData.SellItems[i]);
             }
         }
-    }
-
-    public void OnShopSlotClicked(UI_ShopItemSlot slot)
-    {
-        if (_currentShopData == null || slot.ItemData == null || _tradeService == null) return;
-
-        _tradeService.Buy(_currentShopData, slot.ItemData, 1);
-    }
-
-    public void OnClickCloseButton()
-    {
-        OnCloseRequested?.Invoke();
     }
 }

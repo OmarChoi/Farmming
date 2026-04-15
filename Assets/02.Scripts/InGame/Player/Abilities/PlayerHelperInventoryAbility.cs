@@ -134,7 +134,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             Rotate(-1);
         if (Input.GetKeyDown(_rotateRightKey))
             Rotate(1);
-        if (Input.GetKeyDown(_summonKey))
+        if (Input.GetKeyDown(_summonKey) && _owner.TryConsumeInteract())
             ToggleSummon();
     }
 
