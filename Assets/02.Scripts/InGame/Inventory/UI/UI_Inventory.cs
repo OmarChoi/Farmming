@@ -537,7 +537,7 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
             maxSellAmount,
             amount =>
             {
-                bool success = _tradeService.Sell(clicked.SlotIndex, amount);
+                _tradeService.Sell(clicked.SlotIndex, amount);
             }).Forget();
     }
 
