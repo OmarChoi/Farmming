@@ -21,7 +21,10 @@ public class FarmTile : MonoBehaviour
     public bool HasSeed => PlantedSeed != null;
     public bool HasCrop => _cropGrowth != null && _cropGrowth.HasCropObject;
     public bool IsWet => StateMachine.CurrentStateType == EFarmTileStateType.FarmWet;
-    public bool IsReadyToSow => StateMachine.CurrentStateType == EFarmTileStateType.FarmDry && !HasSeed;
+    public bool IsReadyToSow =>
+        (StateMachine.CurrentStateType == EFarmTileStateType.FarmDry
+         || StateMachine.CurrentStateType == EFarmTileStateType.FarmWet)
+        && !HasSeed;
     public bool HasFastFertilizer => _fastFertilizerObject != null && _fastFertilizerObject.activeSelf;
     public Transform CropSpawnPoint => _cropSpawnPoint;
 
@@ -106,7 +109,7 @@ public class FarmTile : MonoBehaviour
     {
         EFarmTileStateType current = StateMachine.CurrentStateType;
 
-        if (current == EFarmTileStateType.FarmDry && !HasSeed)
+        if ((current == EFarmTileStateType.FarmDry || current == EFarmTileStateType.FarmWet) && !HasSeed)
         {
             if (seed != null)
             {
