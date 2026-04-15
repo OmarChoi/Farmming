@@ -9,6 +9,7 @@ public abstract class BaseBuilding : MonoBehaviour
     public BuildingDataSO BuildingData { get; private set; }
     public BuildingSaveData SaveData { get; private set; }
     public BuildingConstructionContext ConstructionContext { get; private set; }
+    public NpcController BuildingNpc => _buildingNpc;
 
     public float ConstructionProgress { get; private set; }
     public bool IsConstructionComplete => SaveData == null || SaveData.RemainingDays <= 0;
