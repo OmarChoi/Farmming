@@ -30,16 +30,17 @@ public class StorageSyncHandler : MonoBehaviourPun
             PhotonNetwork.LocalPlayer.ActorNumber);
     }
 
-    /// 인벤토리 → 창고: 아이템 넣기 요청
+    /// 인벤토리 → 창고: 아이템 넣기 요청. 공간 부족으로 남은 수량은 요청자에게 반환된다.
     public void RequestAddItem(int itemId, int amount)
     {
         if (IsMaster)
         {
-            ExecuteAddItem(itemId, amount);
+            ExecuteAddItem(itemId, amount, PhotonNetwork.LocalPlayer?.ActorNumber ?? -1);
         }
         else
         {
-            photonView.RPC(nameof(RPC_RequestAddItem), RpcTarget.MasterClient, itemId, amount);
+            photonView.RPC(nameof(RPC_RequestAddItem), RpcTarget.MasterClient,
+                itemId, amount, PhotonNetwork.LocalPlayer.ActorNumber);
         }
     }
 
@@ -115,12 +116,12 @@ public class StorageSyncHandler : MonoBehaviourPun
     {
         if (IsMaster)
         {
-            ExecuteAddItemToSlot(storageSlotIndex, itemId, amount);
+            ExecuteAddItemToSlot(storageSlotIndex, itemId, amount, PhotonNetwork.LocalPlayer?.ActorNumber ?? -1);
         }
         else
         {
             photonView.RPC(nameof(RPC_RequestAddItemToSlot), RpcTarget.MasterClient,
-                storageSlotIndex, itemId, amount);
+                storageSlotIndex, itemId, amount, PhotonNetwork.LocalPlayer.ActorNumber);
         }
     }
 
@@ -139,12 +140,20 @@ public class StorageSyncHandler : MonoBehaviourPun
 
     // === 마스터 실행 로직 ===
 
-    private void ExecuteAddItem(int itemId, int amount)
+    private void ExecuteAddItem(int itemId, int amount, int actorNumber)
     {
         var item = _itemDatabase.GetById(itemId);
-        if (item == null) return;
+        if (item == null)
+        {
+            // 아이템을 조회하지 못하면 요청자에게 원 수량 그대로 반환 (데이터 소실 방지)
+            GiveItemToPlayer(actorNumber, itemId, amount);
+            return;
+        }
 
-        _storage.AddItem(item, amount);
+        int remaining = _storage.AddItemAndGetRemaining(item, amount);
+        if (remaining > 0)
+            GiveItemToPlayer(actorNumber, itemId, remaining);
+
         BroadcastFullSync();
     }
 
@@ -220,12 +229,21 @@ public class StorageSyncHandler : MonoBehaviourPun
         BroadcastFullSync();
     }
 
-    private void ExecuteAddItemToSlot(int storageSlotIndex, int itemId, int amount)
+    private void ExecuteAddItemToSlot(int storageSlotIndex, int itemId, int amount, int actorNumber)
     {
         var item = _itemDatabase.GetById(itemId);
-        if (item == null) return;
+        if (item == null)
+        {
+            GiveItemToPlayer(actorNumber, itemId, amount);
+            return;
+        }
 
-        _storage.AddItemToSlot(item, storageSlotIndex, amount, fallbackToAuto: false);
+        bool placed = _storage.AddItemToSlot(item, storageSlotIndex, amount, fallbackToAuto: false);
+        if (!placed)
+        {
+            // 지정 슬롯에 못 넣으면 요청자에게 반환 (창고 자동 배치 대신 사용자 의도 유지)
+            GiveItemToPlayer(actorNumber, itemId, amount);
+        }
         BroadcastFullSync();
     }
 
@@ -367,10 +385,10 @@ public class StorageSyncHandler : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RPC_RequestAddItem(int itemId, int amount)
+    private void RPC_RequestAddItem(int itemId, int amount, int actorNumber)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        ExecuteAddItem(itemId, amount);
+        ExecuteAddItem(itemId, amount, actorNumber);
     }
 
     [PunRPC]
@@ -410,10 +428,10 @@ public class StorageSyncHandler : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RPC_RequestAddItemToSlot(int storageSlotIndex, int itemId, int amount)
+    private void RPC_RequestAddItemToSlot(int storageSlotIndex, int itemId, int amount, int actorNumber)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        ExecuteAddItemToSlot(storageSlotIndex, itemId, amount);
+        ExecuteAddItemToSlot(storageSlotIndex, itemId, amount, actorNumber);
     }
 
     [PunRPC]
