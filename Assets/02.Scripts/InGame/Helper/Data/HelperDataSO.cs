@@ -10,6 +10,7 @@ public class HelperDataSO : ScriptableObject
     public HelperController Prefab;         
     public HelperController EpicPrefab;     
     public HelperController LegendaryPrefab;
+    public HelperEvolutionProfileSO EvolutionProfile;
     public HelperController GetPrefabForGrade(EHelperGrade grade)
     {
         return grade switch
