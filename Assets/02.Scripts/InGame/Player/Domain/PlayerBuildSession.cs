@@ -41,11 +41,14 @@ public class PlayerBuildSession
         if (UIController.Instance == null) return;
 
         IReadOnlyList<BuildingDataSO> buildings = _buildingManager.AvailableBuildings;
-        UI_BuildingList ui = await UIController.Instance.OpenAsync<UI_BuildingList>(ui =>
+        UI_BuildingList ui = await UIController.Instance.OpenAsync(new UILifecycleActions<UI_BuildingList>
         {
-            ui.Initialize(buildings, OnBuildingSelectedFromUI);
-            ui.OnClosed -= OnBuildingListClosed;
-            ui.OnClosed += OnBuildingListClosed;
+            OnOpen = instance =>
+            {
+                instance.Initialize(buildings, OnBuildingSelectedFromUI);
+                instance.OnClosed -= OnBuildingListClosed;
+                instance.OnClosed += OnBuildingListClosed;
+            },
         });
 
         if (ui == null) return;
@@ -222,9 +225,9 @@ public class PlayerBuildSession
             return;
         }
 
-        UIController.Instance?.OpenAsync<UI_BuildInfo>(ui =>
+        UIController.Instance?.OpenAsync(new UILifecycleActions<UI_BuildInfo>
         {
-            ui.SetData(_selectedBuilding, ownedCounts);
+            OnOpen = ui => ui.SetData(_selectedBuilding, ownedCounts),
         }).Forget();
     }
 

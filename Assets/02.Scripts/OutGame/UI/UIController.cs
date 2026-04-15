@@ -58,7 +58,8 @@ public class UIController : MonoBehaviour
 
     #region Public API
 
-    public async UniTask<T> OpenAsync<T>(Action<T> onBeforeOpen = null) where T : UIBase
+    // Open 직전/Close 직후 훅을 한 번에 등록. 콜백은 1회성이며 CloseAsync 완료 시 UIBase가 자동 해제한다.
+    public async UniTask<T> OpenAsync<T>(UILifecycleActions<T> actions = default) where T : UIBase
     {
         string key = AssetKey.UI.GetKey<T>();
         T ui = await GetOrCreateAsync<T>(key);
@@ -67,11 +68,16 @@ public class UIController : MonoBehaviour
 
         if (ui.IsOpen)
         {
+            // 이미 열려 있으면 새 사이클이 아니므로 콜백을 덮어쓰지 않는다. 기존 구독자 보호.
             BringToFront(ui);
             return ui;
         }
 
-        onBeforeOpen?.Invoke(ui);
+        // 생성된 인스턴스를 캡처해 Action<T> → Action 으로 바인딩.
+        Action onOpen = actions.OnOpen != null ? () => actions.OnOpen(ui) : null;
+        Action onClose = actions.OnClose != null ? () => actions.OnClose(ui) : null;
+        ui.SetLifecycleActions(onOpen, onClose);
+
         await ui.OpenAsync();
         PushToStack(ui);
         return ui;
