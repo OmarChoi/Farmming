@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 434af6a080451ba479294468ae4c565f, type: 3}
-  m_Name: WorldEffectQuestRuleSO
+  m_Name: WorldEffectQuestRule2
   m_EditorClassIdentifier: Assembly-CSharp::WorldEffectQuestRuleSO
-  _quest: {fileID: 11400000, guid: 0b393cc5b3da71a48a0fcee587b0d5ae, type: 2}
+  _quest: {fileID: 11400000, guid: 3af37786ecd17814eaed91194eea9bcd, type: 2}
   _durationDays: 5
-  _successEffect: {fileID: 11400000, guid: 630e64acbf4d26f448d7088f6b35d208, type: 2}
-  _failureEffect: {fileID: 11400000, guid: ed640180069915647b014905e3ff3e7b, type: 2}
+  _successEffect: {fileID: 11400000, guid: 935ebedb85a833242a4c90afd3d29f72, type: 2}
+  _failureEffect: {fileID: 11400000, guid: 9b36a010a724dea43908f18fa3c3f446, type: 2}

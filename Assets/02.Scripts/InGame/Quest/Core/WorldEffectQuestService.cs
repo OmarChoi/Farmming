@@ -9,14 +9,16 @@ public class WorldEffectQuestService : MonoBehaviour
     [SerializeField] private WorldEffectQuestConfigSO _config;
 
     private readonly ForcedTimedQuestSaveData _state = new();
+    private WorldEffectQuestRuleSO _questInfo;
     private WorldEffectQuestNetworkSync _sync;
 
     private bool IsMaster => !PhotonNetwork.IsConnected || !PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient;
     private bool CanUseNetworkSync => PhotonNetwork.IsConnected && PhotonNetwork.InRoom && _sync != null;
-
+    
     public string ActiveQuestId => _state.ActiveQuestId;
     public bool HasActiveQuest => !string.IsNullOrEmpty(_state.ActiveQuestId);
     public WorldEffectQuestConfigSO Config => _config;
+    private WorldEffectQuestRuleSO QuestInfo => _questInfo;
 
     private void Awake()
     {
@@ -139,7 +141,7 @@ public class WorldEffectQuestService : MonoBehaviour
     {
         WorldEffectQuestRuleSO rule = FindRuleByQuestId(questId);
         if (rule == null || rule.FailureEffect == null) return;
-
+        
         WorldEffectManager.Instance?.AddEffect(
             rule.FailureEffect.EffectId,
             rule.FailureEffect.Kind,
@@ -157,7 +159,7 @@ public class WorldEffectQuestService : MonoBehaviour
             _config.EffectDurationDays);
     }
 
-    private WorldEffectQuestRuleSO FindRuleByQuestId(string questId)
+    public WorldEffectQuestRuleSO FindRuleByQuestId(string questId)
     {
         if (_config == null || string.IsNullOrEmpty(questId)) return null;
 
