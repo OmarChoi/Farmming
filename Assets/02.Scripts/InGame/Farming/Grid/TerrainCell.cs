@@ -25,6 +25,7 @@ public class TerrainCell : MonoBehaviour
     public void Init(Vector3Int gridPos, TerrainCellData data)
     {
         GridPosition = gridPos;
+        NormalizeDataObjectState(data);
         _data = data;
         _farmTile = GetComponentInChildren<FarmTile>(true);
         Refresh();
@@ -33,6 +34,7 @@ public class TerrainCell : MonoBehaviour
     /// 에디터 직렬화 값으로 초기화 (CollectExistingCells용)
     public void InitFromSerializedData(Vector3Int gridPos)
     {
+        NormalizeInitialObjectState();
         Init(gridPos, new TerrainCellData(_initialCellType, _initialTileType, _initialDirtLevel, _initialObjectType, _initialObjectLevel));
     }
 
@@ -44,6 +46,7 @@ public class TerrainCell : MonoBehaviour
         _initialDirtLevel = dirtLevel;
         _initialObjectType = objectType;
         _initialObjectLevel = objectLevel;
+        NormalizeInitialObjectState();
     }
 
     public void Refresh()
@@ -77,7 +80,15 @@ public class TerrainCell : MonoBehaviour
 
     public void SpawnObject(GameObject prefab, EGridObjectType type)
     {
-        if(_objectPoint == null)  return;
+        if (_objectPoint == null)
+        {
+            // ObjectPoint가 없는 셀에는 점유 오브젝트(나무/돌/상자 등) 배치 금지.
+            // 에디터에서 ObjectType이 잘못 지정된 경우 데이터를 None으로 정리해 다른 시스템과의 불일치 방지.
+            NormalizeDataObjectState(_data);
+            NormalizeInitialObjectState();
+            return;
+        }
+
         ClearCurrentObject();
         _data.SetObject(type);
         CurrentObject = Instantiate(prefab, _objectPoint.position, Quaternion.identity, _objectPoint);
@@ -110,5 +121,29 @@ public class TerrainCell : MonoBehaviour
             Destroy(CurrentObject);
 
         CurrentObject = null;
+    }
+
+    private void NormalizeInitialObjectState()
+    {
+        if (_objectPoint != null || !RequiresObjectPoint(_initialObjectType))
+            return;
+
+        _initialObjectType = EGridObjectType.None;
+        _initialObjectLevel = 0;
+    }
+
+    private void NormalizeDataObjectState(TerrainCellData data)
+    {
+        if (data == null || _objectPoint != null || !RequiresObjectPoint(data.ObjectType))
+            return;
+
+        data.RemoveObject();
+    }
+
+    private static bool RequiresObjectPoint(EGridObjectType type)
+    {
+        return type == EGridObjectType.Tree
+            || type == EGridObjectType.Rock
+            || type == EGridObjectType.Chest;
     }
 }
