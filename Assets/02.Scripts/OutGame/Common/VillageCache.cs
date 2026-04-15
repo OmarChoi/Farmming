@@ -7,6 +7,7 @@ public static class VillageCache
     public static List<BuildingSaveData> Buildings { get; private set; }
     public static VillageSaveData Village { get; private set; }
     public static TimeSaveData Time { get; private set; }
+    public static List<StorageSaveData> Storages { get; private set; }
 
     // 플레이어 위치 캐시 (PlayerId → position/rotation)
     private static readonly Dictionary<string, Vector3> _positions = new();
@@ -25,6 +26,9 @@ public static class VillageCache
             : null;
         Time = TimeSystem.Instance != null
             ? TimeSystem.Instance.ExportSaveData()
+            : null;
+        Storages = StorageManager.Instance != null
+            ? StorageManager.Instance.ExportStorages()
             : null;
     }
 
@@ -64,6 +68,7 @@ public static class VillageCache
         Buildings = null;
         Village = null;
         Time = null;
+        Storages = null;
         _positions.Clear();
         _rotations.Clear();
     }

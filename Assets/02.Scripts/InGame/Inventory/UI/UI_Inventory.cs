@@ -4,7 +4,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UI_Inventory : MonoBehaviour
+public class UI_Inventory : MonoBehaviour, ISlotContainer
 {
     private const int Columns = 4;
     public static event Func<SeedItemDataSO, bool> SeedSelectionRequested;
@@ -30,12 +30,18 @@ public class UI_Inventory : MonoBehaviour
     private readonly List<UI_Slot> _slotUIs = new();
 
     private TradeService _tradeService;
+    private StorageTransferService _storageTransferService;
+    private StorageController _boundStorageController;
+    private UI_Storage _linkedStorage;
     private EInventoryClickMode _clickMode = EInventoryClickMode.Normal;
 
     // 드래그 상태
     private bool _isDragging;
     private UI_Slot _dragSourceSlot;
     private UI_Slot _hoveredSlot;
+    private Transform _dragIconOriginalParent;
+
+    public UI_Slot HoveredSlot => _hoveredSlot;
 
     // 분할 드래그 상태
     private bool _isSplitDrag;
@@ -46,16 +52,33 @@ public class UI_Inventory : MonoBehaviour
 
     private void Awake()
     {
+        StorageUiRegistry.RegisterInventory(this);
+        StorageUiRegistry.OnStorageRegistered += HandleStorageRegistered;
+        StorageUiRegistry.OnStorageUnregistered += HandleStorageUnregistered;
+
         _panelRect = _panel.GetComponent<RectTransform>();
         _panelOriginPos = _panelRect.anchoredPosition;
         _panel.SetActive(false);
         _dragIcon.gameObject.SetActive(false);
         PlayerInventoryAbility.OnLocalPlayerReady += Bind;
+        TryBindExistingPlayer();
+        StorageController.OnReady += HandleStorageControllerReady;
+
+        if (StorageController.Instance != null)
+            BindStorageController(StorageController.Instance);
+
+        if (StorageUiRegistry.CurrentStorage != null)
+            HandleStorageRegistered(StorageUiRegistry.CurrentStorage);
     }
 
     private void OnDestroy()
     {
         PlayerInventoryAbility.OnLocalPlayerReady -= Bind;
+        StorageController.OnReady -= HandleStorageControllerReady;
+        StorageUiRegistry.OnStorageRegistered -= HandleStorageRegistered;
+        StorageUiRegistry.OnStorageUnregistered -= HandleStorageUnregistered;
+        StorageUiRegistry.UnregisterInventory(this);
+        UnbindStorageController();
         Unbind();
     }
 
@@ -67,6 +90,21 @@ public class UI_Inventory : MonoBehaviour
 
         if (!Input.GetMouseButton(0))
             EndDrag();
+    }
+
+    private void TryBindExistingPlayer()
+    {
+        if (_inventoryAbility != null) return;
+
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (player == null || !player.IsMine) continue;
+            var ability = player.GetAbility<PlayerInventoryAbility>();
+            if (ability == null) continue;
+            Bind(ability);
+            return;
+        }
     }
 
     private void Bind(PlayerInventoryAbility ability)
@@ -188,7 +226,7 @@ public class UI_Inventory : MonoBehaviour
 
     public void BeginDrag(UI_Slot source, bool shift = false)
     {
-        if (_clickMode != EInventoryClickMode.Normal) return;
+        if (_clickMode == EInventoryClickMode.Trading) return;
         if (source.CurrentItem == null) return;
 
         if (shift)
@@ -214,6 +252,11 @@ public class UI_Inventory : MonoBehaviour
         _dragIcon.gameObject.SetActive(true);
         _dragIcon.transform.position = Input.mousePosition;
 
+        // 드래그 아이콘을 Canvas 루트로 올려서 다른 패널 위에 렌더링
+        _dragIconOriginalParent = _dragIcon.transform.parent;
+        _dragIcon.transform.SetParent(_dragIcon.canvas.transform, true);
+        _dragIcon.transform.SetAsLastSibling();
+
         if (!_isSplitDrag)
             source.SetIconVisible(false);
 
@@ -227,6 +270,35 @@ public class UI_Inventory : MonoBehaviour
     {
         if (!_isDragging) return;
 
+        // 크로스 드래그: 인벤토리 → 창고
+        if (_clickMode == EInventoryClickMode.Storage && _linkedStorage != null)
+        {
+            var crossTarget = _linkedStorage.HoveredSlot;
+            if (crossTarget != null)
+            {
+                if (_isSplitDrag)
+                {
+                    // 마우스 포인터 위치의 창고 슬롯에 반만 배치. 슬롯이 다른 아이템이거나 꽉 찼으면 복구 후 자동 배치로 폴백
+                    bool placed = _storageTransferService.AddHeldItemToStorageSlot(
+                        _splitItem, crossTarget.SlotIndex, _splitAmount);
+                    if (!placed)
+                    {
+                        _inventoryAbility.PlaceSplit(
+                            _dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _splitItem, _splitAmount);
+                        _storageTransferService.MoveToStorage(_dragSourceSlot.SlotIndex, _splitAmount);
+                    }
+                }
+                else
+                {
+                    _storageTransferService.SwapAcross(
+                        _dragSourceSlot.SlotIndex, crossTarget.SlotIndex);
+                }
+                ClearDragState();
+                return;
+            }
+        }
+
+        // 일반 드래그: 인벤토리 내부
         if (_isSplitDrag)
         {
             int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
@@ -261,6 +333,8 @@ public class UI_Inventory : MonoBehaviour
 
     private void ClearDragState()
     {
+        if (_dragIconOriginalParent != null)
+            _dragIcon.transform.SetParent(_dragIconOriginalParent, true);
         _dragIcon.gameObject.SetActive(false);
         _scrollRect.enabled = true;
         _isDragging = false;
@@ -309,6 +383,14 @@ public class UI_Inventory : MonoBehaviour
 
         if (clicked.CurrentItem.Type == EItemType.Fertilizer && RequestFertilizerSelection(clicked.CurrentItem))
             return;
+
+
+        // Storage 모드: 인벤토리 → 창고 빠른 이동
+        if (_clickMode == EInventoryClickMode.Storage)
+        {
+            _storageTransferService?.MoveToStorage(clicked.SlotIndex, 1);
+            return;
+        }
 
         if (!(clicked.CurrentItem is PotionDataSO)) return;
 
@@ -373,6 +455,66 @@ public class UI_Inventory : MonoBehaviour
         _tradeService = tradeService;
     }
 
+    public void SetLinkedStorage(UI_Storage storage, StorageTransferService service)
+    {
+        _linkedStorage = storage;
+        _storageTransferService = service;
+    }
+
+    private void HandleStorageControllerReady(StorageController controller)
+    {
+        BindStorageController(controller);
+    }
+
+    private void BindStorageController(StorageController controller)
+    {
+        if (controller == null) return;
+
+        if (_boundStorageController == controller)
+            return;
+
+        UnbindStorageController();
+
+        _boundStorageController = controller;
+        _boundStorageController.OnStorageOpened += HandleStorageOpened;
+        _boundStorageController.OnStorageClosed += HandleStorageClosed;
+
+        if (controller.IsOpen && controller.CurrentSession != null)
+            HandleStorageOpened(controller.CurrentSession);
+    }
+
+    private void UnbindStorageController()
+    {
+        if (_boundStorageController == null) return;
+
+        _boundStorageController.OnStorageOpened -= HandleStorageOpened;
+        _boundStorageController.OnStorageClosed -= HandleStorageClosed;
+        _boundStorageController = null;
+    }
+
+    private void HandleStorageOpened(StorageSession session)
+    {
+        if (session == null) return;
+
+        // 던전 복귀 등으로 바인딩이 누락된 경우 복구
+        if (_inventoryAbility == null)
+        {
+            TryBindExistingPlayer();
+            // Open() 이벤트를 이미 놓쳤으므로 직접 패널 활성화
+            if (_inventoryAbility != null && _inventoryAbility.IsOpen)
+                OnToggle(true);
+        }
+
+        SetLinkedStorage(StorageUiRegistry.CurrentStorage, session.TransferService);
+        SetClickMode(EInventoryClickMode.Storage);
+    }
+
+    private void HandleStorageClosed()
+    {
+        SetClickMode(EInventoryClickMode.Normal);
+        SetLinkedStorage(null, null);
+    }
+
     private void HandleSellClick(UI_Slot clicked)
     {
         if (_tradeService == null) return;
@@ -385,5 +527,16 @@ public class UI_Inventory : MonoBehaviour
         else
             Debug.LogWarning($"판매 실패 - Slot: {clicked.SlotIndex}");
 #endif
+    }
+
+    private void HandleStorageRegistered(UI_Storage storage)
+    {
+        if (_boundStorageController == null || !_boundStorageController.IsOpen) return;
+        SetLinkedStorage(storage, _storageTransferService);
+    }
+
+    private void HandleStorageUnregistered()
+    {
+        SetLinkedStorage(null, _storageTransferService);
     }
 }
