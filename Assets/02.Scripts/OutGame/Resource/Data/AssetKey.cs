@@ -147,7 +147,7 @@ public static class AssetKey
         public const string Stamina = "UI_Stamina";
         public const string BuildingList = "UI_BuildingList";
         public const string BuildInfo = "UI_BuildInfo";
-        public const string ShrineTest = "UI_ShrineTest";
+        public const string Shrine = "UI_Shrine";
         public const string VillageState = "UI_VillageState";
         public const string VillageLevelUp = "UI_VillageLevelUp";
 
@@ -155,7 +155,7 @@ public static class AssetKey
         {
             {typeof(UI_BuildingList), BuildingList},
             {typeof(UI_BuildInfo), BuildInfo},
-            {typeof(UI_ShrineTest), ShrineTest},
+            {typeof(UI_Shrine), Shrine},
             {typeof(UI_VillageState), VillageState},
             {typeof(UI_VillageLevelUp), VillageLevelUp},
         };

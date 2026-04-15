@@ -588,4 +588,74 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
     {
         return _activeQuests.TryGetValue(questId, out quest);
     }
+
+    // WorldEffectQuestService에서 월드 상태 snapshot을 Journal 미러로 반영합니다.
+    // 보상 지급/플레이어 저장과 분리된 경로입니다.
+    public void AddOrUpdateForcedTimedQuest(QuestDataSO questData, int acceptedDay, int expireDay)
+    {
+        if (questData == null || string.IsNullOrEmpty(questData.QuestId)) return;
+
+        if (!_activeQuests.TryGetValue(questData.QuestId, out QuestRuntimeData quest))
+        {
+            quest = new QuestRuntimeData(questData);
+            quest.AcceptedDay = acceptedDay;
+            quest.ExpireDay = expireDay;
+            _activeQuests[questData.QuestId] = quest;
+
+            // 일반 퀘스트와 동일하게 진행도 초기화 (DeliverItem 인벤 반영 등)
+            InitializeQuestProgressOnAccept(quest);
+
+            OnQuestAccepted?.Invoke(quest);
+            OnQuestUpdated?.Invoke(quest);
+            return;
+        }
+
+        quest.AcceptedDay = acceptedDay;
+        quest.ExpireDay = expireDay;
+        OnQuestUpdated?.Invoke(quest);
+    }
+
+    public bool RemoveForcedTimedQuest(string questId)
+    {
+        if (string.IsNullOrEmpty(questId) || !_activeQuests.ContainsKey(questId)) return false;
+
+        _activeQuests.Remove(questId);
+        OnQuestRemoved?.Invoke(questId);
+        return true;
+    }
+
+    // ForcedTimed 퀘스트의 요청자 측 완료 처리.
+    // 보상 지급/플레이어 저장은 하지 않고, 아이템 소모 + 완료 이벤트만 발생시킵니다.
+    // 실제 성공 효과 적용과 월드 상태 갱신은 WorldEffectQuestService가 처리합니다.
+    public bool CompleteForcedTimedQuest(string questId)
+    {
+        QuestRuntimeData quest = GetQuest(questId);
+        if (quest == null || quest.QuestData == null) return false;
+        if (quest.QuestData.QuestCategory != EQuestCategory.ForcedTimed) return false;
+
+        QuestDataSO data = quest.QuestData;
+
+        // CanComplete가 아니면 Shrine이 NPC delivery 역할을 대신해 전이를 수행합니다.
+        if (quest.Status != EQuestStatus.CanComplete)
+        {
+            if (!quest.IsObjectiveCompleted()) return false;
+
+            // 아이템 요구 퀘스트는 이 시점에 소모 (일반 Deliver 경로와 동일)
+            if ((data.ObjectiveType == EQuestObjectiveType.CollectItem ||
+                 data.ObjectiveType == EQuestObjectiveType.DeliverItem) &&
+                HasValidItemRequirements(data))
+            {
+                if (_requirementService == null) return false;
+                if (!_requirementService.TryConsumeRequirements(data.ItemRequirements)) return false;
+            }
+
+            quest.Status = EQuestStatus.CanComplete;
+            OnQuestUpdated?.Invoke(quest);
+        }
+
+        quest.Status = EQuestStatus.Completed;
+        OnQuestCompleted?.Invoke(quest);
+        RemoveQuest(questId);
+        return true;
+    }
 }

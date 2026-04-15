@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 434af6a080451ba479294468ae4c565f, type: 3}
+  m_Name: WorldEffectQuestRuleSO
+  m_EditorClassIdentifier: Assembly-CSharp::WorldEffectQuestRuleSO
+  _quest: {fileID: 11400000, guid: 0b393cc5b3da71a48a0fcee587b0d5ae, type: 2}
+  _durationDays: 5
+  _successEffect: {fileID: 11400000, guid: 630e64acbf4d26f448d7088f6b35d208, type: 2}
+  _failureEffect: {fileID: 11400000, guid: ed640180069915647b014905e3ff3e7b, type: 2}
