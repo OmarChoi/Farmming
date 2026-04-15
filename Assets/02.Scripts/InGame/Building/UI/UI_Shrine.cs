@@ -1,16 +1,24 @@
 using System;
 using Cysharp.Threading.Tasks;
 using TMPro;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UI_Shrine : UIBase
 {
+
+    [SerializeField] private GameObject _emptyStateText;
+    [SerializeField] private GameObject _questInfo;
+
     [Header("Text")]
-    [SerializeField] private TextMeshProUGUI _titleText;
     [SerializeField] private TextMeshProUGUI _descriptionText;
     [SerializeField] private TextMeshProUGUI _remainingDaysText;
-    [SerializeField] private TextMeshProUGUI _effectText;
+    [SerializeField] private TextMeshProUGUI _successEffectText;
+    [SerializeField] private TextMeshProUGUI _failureEffectText;
+
+    [Header("Image")]
+    [SerializeField] private Image _itemIconImage;
 
     [Header("Buttons")]
     [SerializeField] private Button _completeButton;
@@ -70,6 +78,7 @@ public class UI_Shrine : UIBase
     private void OnCompleteClicked()
     {
         _shrine?.RequestCompletion();
+        Refresh();
     }
 
     private void RequestClose()
@@ -84,58 +93,48 @@ public class UI_Shrine : UIBase
 
     private void Refresh()
     {
+        if (!UpdateActiveState()) return;
+
         RefreshQuestInfo();
         RefreshEffectText();
     }
 
-    private void RefreshQuestInfo()
+    private bool UpdateActiveState()
     {
         var service = WorldEffectQuestService.Instance;
         bool hasActive = service != null && service.HasActiveQuest;
 
         if (_completeButton != null) _completeButton.interactable = hasActive;
+        _emptyStateText.SetActive(!hasActive);
+        _questInfo.SetActive(hasActive);
 
-        if (!hasActive)
-        {
-            if (_titleText != null) _titleText.text = "제단";
-            if (_descriptionText != null) _descriptionText.text = "진행 중인 월드 퀘스트가 없습니다.";
-            if (_remainingDaysText != null) _remainingDaysText.text = string.Empty;
-            return;
-        }
+        return hasActive;
+    }
 
-        var quest = QuestManager.Instance?.GetQuest(service.ActiveQuestId);
+    private void RefreshQuestInfo()
+    {
+        QuestRuntimeData quest =
+            QuestManager.Instance?.GetQuest(WorldEffectQuestService.Instance.ActiveQuestId);
         QuestDataSO data = quest?.QuestData;
+        if (data == null) return;
 
-        if (_titleText != null) _titleText.text = data != null ? data.QuestName : "월드 퀘스트";
-        if (_descriptionText != null) _descriptionText.text = data != null ? data.Description : string.Empty;
+        var requireItemInfo = data.ItemRequirements;
+        if (requireItemInfo == null || requireItemInfo.Count == 0) return;
 
-        if (_remainingDaysText != null && quest != null)
-        {
-            int remaining = Mathf.Max(0, quest.ExpireDay - TimeEvents.CurrentDay);
-            _remainingDaysText.text = $"남은 기간: {remaining}일";
-        }
+        _itemIconImage.sprite = requireItemInfo[0].Item.Icon;
+        _descriptionText.text = data.Description;
+
+        int remaining = Mathf.Max(0, quest.ExpireDay - TimeEvents.CurrentDay);
+        _remainingDaysText.text = $"남은 기간: {remaining}일";
     }
 
     private void RefreshEffectText()
     {
-        if (_effectText == null) return;
+        var service = WorldEffectQuestService.Instance;
+        var rules = service.FindRuleByQuestId(service.ActiveQuestId);
+        if (rules == null) return;
 
-        WorldEffectManager manager = WorldEffectManager.Instance;
-        if (manager == null || manager.ActiveEffects == null || manager.ActiveEffects.Count == 0)
-        {
-            _effectText.text = "활성 월드 효과: 없음";
-            return;
-        }
-
-        var builder = new System.Text.StringBuilder();
-        builder.AppendLine("활성 월드 효과:");
-        for (int i = 0; i < manager.ActiveEffects.Count; i++)
-        {
-            WorldEffectEntry entry = manager.ActiveEffects[i];
-            string kind = ((EWorldEffectKind)entry.Kind).ToString();
-            string remaining = entry.RemainingDays < 0 ? "영구" : $"{entry.RemainingDays}일";
-            builder.AppendLine($"- {entry.EffectId} ({kind}, {remaining})");
-        }
-        _effectText.text = builder.ToString();
+        _successEffectText.SetText($"성공시 : {rules.SuccessEffect.Description}");
+        _failureEffectText.SetText($"실패시 : {rules.FailureEffect.Description}");
     }
 }
