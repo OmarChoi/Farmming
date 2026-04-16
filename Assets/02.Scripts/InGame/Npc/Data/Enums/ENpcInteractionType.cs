@@ -8,5 +8,6 @@ public enum ENpcInteractionType
     Styling = 4,
     Quest = 5,
     EndTalk = 6,
-    Curing = 7
+    DinoRace = 7,
+    Curing = 8
 }
