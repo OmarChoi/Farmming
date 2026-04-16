@@ -300,9 +300,13 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
     private void BuildInitialNavMeshIfAvailable()
     {
-        if (_mapNavMeshController == null)
-            _mapNavMeshController = FindFirstObjectByType<MapNavMeshController>();
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
+        if (config == null || config.TroublemakerSpawnList == null) return;
 
+        if (_mapNavMeshController == null)
+        {
+            _mapNavMeshController = FindFirstObjectByType<MapNavMeshController>();
+        }
         if (_mapNavMeshController == null)
         {
             Debug.LogWarning("[DungeonSceneInit] MapNavMeshController is missing. Skipping initial navmesh build.");
