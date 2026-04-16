@@ -43,6 +43,7 @@ public static class AssetKey
         public const string CaveTroublemaker1 = "CaveTroublemaker1";
         public const string Storage = "Storage";
         public const string GamblingBuilding = "GamblingBuilding";
+        public const string Shrine = "Shrine";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
