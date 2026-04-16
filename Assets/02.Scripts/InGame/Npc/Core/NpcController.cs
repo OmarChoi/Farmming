@@ -368,10 +368,8 @@ public class NpcController : MonoBehaviour
         }
 
         _interactionOptionCache = new NpcInteractionOption[serializedCount + runtimeCount];
-        for (int i = 0; i < serializedCount; i++)
-            _interactionOptionCache[i] = _interactionOptions[i];
-        for (int i = 0; i < runtimeCount; i++)
-            _interactionOptionCache[serializedCount + i] = _runtimeInteractionOptions[i];
+        _interactionOptions?.CopyTo(_interactionOptionCache, 0);
+        _runtimeInteractionOptions.CopyTo(_interactionOptionCache, serializedCount);
 
         return _interactionOptionCache;
     }

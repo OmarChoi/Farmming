@@ -91,7 +91,7 @@ public sealed class DinoRaceBetService
 
         if (betAmount <= 0)
         {
-            error = "Bet amount must be greater than zero.";
+            error = "내기할 금액을 정해주세요!";
             return false;
         }
 
@@ -103,13 +103,13 @@ public sealed class DinoRaceBetService
 
         if (!CurrencyManager.Instance.CanAfford(betAmount))
         {
-            error = "Not enough gold.";
+            error = "골드가 부족해요!";
             return false;
         }
 
         if (!CurrencyManager.Instance.TrySpendGold(betAmount))
         {
-            error = "Failed to place bet.";
+            error = "베팅에 실패했어요!";
             return false;
         }
 
