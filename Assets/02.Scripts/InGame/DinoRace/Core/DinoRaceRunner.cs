@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using DG.Tweening;
 
 public class DinoRaceRunner : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class DinoRaceRunner : MonoBehaviour
     [SerializeField] private int _slowDownAnimationValue = 15;
     [SerializeField] private int _speedUpAnimationValue = 18;
     [SerializeField] private int _runAnimationValue = 21;
+
+    private const float DefaultScale = 0.7f;
+    private const float ShrinkDuration = 0.3f;
+    private const float GrowDuration = 0.3f;
 
     private Vector3 _startLocalPosition;
     private Quaternion _startLocalRotation;
@@ -200,5 +205,20 @@ public class DinoRaceRunner : MonoBehaviour
             EDinoRaceEventType.SpeedUp => _speedUpAnimationValue,
             _ => _runAnimationValue
         };
+    }
+
+    public Sequence ReturnToStart()
+    {
+        var seq = DOTween.Sequence();
+        seq.Append(transform.DOScale(0f, ShrinkDuration).SetEase(Ease.InBack));
+        seq.AppendCallback(() =>
+        {
+            transform.localPosition = _startLocalPosition;
+            transform.localRotation = _startLocalRotation;
+            _isWinner = false;
+            UpdateAnimation();
+        });
+        seq.Append(transform.DOScale(DefaultScale, GrowDuration).SetEase(Ease.OutBack));
+        return seq;
     }
 }

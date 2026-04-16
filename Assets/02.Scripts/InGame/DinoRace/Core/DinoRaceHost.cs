@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using DG.Tweening;
 
 [DisallowMultipleComponent]
 public class DinoRaceHost : MonoBehaviour
@@ -8,6 +9,8 @@ public class DinoRaceHost : MonoBehaviour
     [SerializeField] private DinoRaceSettings _settings = new DinoRaceSettings();
     [SerializeField] private Vector3 _trackForwardLocal = Vector3.forward;
     [SerializeField] private DinoRaceCountdownSignal _countdownSignal;
+    [SerializeField] private GameObject _winParticle;
+    [SerializeField] private float _returnDelay = 5f;
 
     private BaseBuilding _building;
     private DinoRaceEventPolicy _eventPolicy;
@@ -18,6 +21,7 @@ public class DinoRaceHost : MonoBehaviour
     private int _lastCountdownSecond = int.MinValue;
     private int _finishCount;
     private bool _npcBound;
+    private Sequence _returnSequence;
 
     public event Action<int> CountdownTicked;
     public event Action RaceStarted;
@@ -167,6 +171,10 @@ public class DinoRaceHost : MonoBehaviour
         _lastCountdownSecond = int.MinValue;
         _finishCount = 0;
         _countdownSignal?.Hide();
+        _returnSequence?.Kill();
+        _returnSequence = null;
+        if (_winParticle != null)
+            _winParticle.SetActive(false);
 
         float now = Time.time;
         if (_runners != null)
@@ -259,12 +267,40 @@ public class DinoRaceHost : MonoBehaviour
             selectedRank = _runners[_session.SelectedRunnerIndex].FinishRank;
         }
 
+        if (selectedRank == 1 && _winParticle != null)
+            _winParticle.SetActive(true);
+
         int payout = _session != null
             ? _betService.CalculatePayout(_session.BetAmount, selectedRank)
             : 0;
 
         _betService.Pay(payout);
         RaceFinished?.Invoke(new DinoRaceResult(_session, selectedRank, payout, CreateSnapshots()));
+
+        PlayReturnSequence();
+    }
+
+    private void PlayReturnSequence()
+    {
+        _returnSequence?.Kill();
+        _returnSequence = DOTween.Sequence();
+        _returnSequence.AppendInterval(_returnDelay);
+
+        if (_winParticle != null)
+            _returnSequence.AppendCallback(() => _winParticle.SetActive(false));
+
+        for (int i = 0; i < _runners.Length; i++)
+        {
+            DinoRaceRunner runner = _runners[i];
+            if (runner == null) continue;
+
+            if (i == 0)
+                _returnSequence.Append(runner.ReturnToStart());
+            else
+                _returnSequence.Join(runner.ReturnToStart());
+        }
+
+        _returnSequence.Play();
     }
 
     private void EmitCountdownIfChanged()
