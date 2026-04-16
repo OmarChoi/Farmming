@@ -100,7 +100,7 @@ public class UI_DinoRaceSelectionPanel : MonoBehaviour
     {
         if (_selectedRunnerIndex < 0)
         {
-            SetMessage("Select a dinosaur.");
+            SetMessage("어떤 곡룡이 이길지 선택하세요!");
             return;
         }
 
