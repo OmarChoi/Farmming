@@ -24,20 +24,20 @@ public class NpcSpawnManager : MonoBehaviour
     {
         if (!ValidateRequest(request)) return null;
 
-        string npcId = request.NpcId;
+        string runtimeNpcKey = GetSpawnKey(request);
 
-        if (!request.ForceRespawn && NpcRegistry.Instance != null && NpcRegistry.Instance.TryGet(npcId, out var existing))
+        if (!request.ForceRespawn && NpcRegistry.Instance != null && NpcRegistry.Instance.TryGet(runtimeNpcKey, out var existing))
         {
             MoveExisting(existing, request);
             return existing;
         }
 
-        if (request.ForceRespawn && NpcRegistry.Instance != null && NpcRegistry.Instance.TryGet(npcId, out var oldNpc))
+        if (request.ForceRespawn && NpcRegistry.Instance != null && NpcRegistry.Instance.TryGet(runtimeNpcKey, out var oldNpc))
         {
             Despawn(oldNpc);
         }
 
-        return SpawnNew(request);
+        return SpawnNew(request, runtimeNpcKey);
     }
 
     public void Despawn(NpcController controller)
@@ -53,6 +53,12 @@ public class NpcSpawnManager : MonoBehaviour
         {
             Destroy(controller.gameObject);
         }
+    }
+
+    private string GetSpawnKey(NpcSpawnRequest request)
+    {
+        if (!string.IsNullOrEmpty(request.RuntimeNpcKey)) return request.RuntimeNpcKey;
+        return request.NpcId;
     }
 
     private bool ValidateRequest(NpcSpawnRequest request)
@@ -82,7 +88,7 @@ public class NpcSpawnManager : MonoBehaviour
         return true;
     }
 
-    private NpcController SpawnNew(NpcSpawnRequest request)
+    private NpcController SpawnNew(NpcSpawnRequest request, string runtimeNpcKey)
     {
         GameObject prefab = request.Prefab != null ? request.Prefab : _defaultNpcPrefab;
         Vector3 finalPosition = ResolveSpawnPosition(request.RequestedPosition);
@@ -113,7 +119,7 @@ public class NpcSpawnManager : MonoBehaviour
             return null;
         }
 
-        controller.Initialize(request.Data, request.IsLocalOnly);
+        controller.Initialize(request.Data, request.IsLocalOnly, runtimeNpcKey);
 
         if (npcObject.TryGetComponent(out NpcMovement movement))
         {
@@ -124,7 +130,7 @@ public class NpcSpawnManager : MonoBehaviour
             identity = npcObject.AddComponent<NpcRuntimeIdentity>();
         }
 
-        identity.Initialize(request.NpcId, controller);
+        identity.Initialize(runtimeNpcKey, controller);
 
         return controller;
     }

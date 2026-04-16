@@ -122,7 +122,9 @@ public abstract class BaseBuilding : MonoBehaviour
             BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
             if (spawner != null && spawner.HasValidData)
             {
-                NpcController npc = spawner.SpawnNpc();
+                InitializeBuildingNpcAnchors(spawner);
+
+                NpcController npc = spawner.SpawnNpc(SaveData);
                 if (npc != null)
                 {
                     _buildingNpc = npc;
@@ -153,5 +155,38 @@ public abstract class BaseBuilding : MonoBehaviour
         if (BuildingData == null || BuildingData.ConstructionDays <= 0) return 1f;
         if (SaveData == null) return 1f;
         return Mathf.Clamp01(1f - (float)SaveData.RemainingDays / BuildingData.ConstructionDays);
+    }
+
+    private void InitializeBuildingNpcAnchors(BuildingNpcSpawner spawner)
+    {
+        if (spawner == null || !spawner.HasValidData || SaveData == null) return;
+
+        string runtimeNpcKey = NpcRuntimeKeyUtility.CreateBuildingNpcKey(spawner.NpcData, SaveData);
+        if (string.IsNullOrEmpty(runtimeNpcKey)) return;
+
+        NpcLocationAnchor[] anchors = GetComponentsInChildren<NpcLocationAnchor>(true);
+        if (anchors == null || anchors.Length == 0) return;
+
+        for (int i = 0; i < anchors.Length; i++)
+        {
+            NpcLocationAnchor anchor = anchors[i];
+            if (anchor == null) continue;
+
+            anchor.Initialize(
+                spawner.NpcData,
+                runtimeNpcKey,
+                anchor.LocationType,
+                anchor.LocationKey,
+                anchor.Point,
+                anchor.StylingHideRoot);
+        }
+    }
+
+    public void InitializeNpcAnchorsIfNeeded()
+    {
+        BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
+        if (spawner == null || !spawner.HasValidData) return;
+
+        InitializeBuildingNpcAnchors(spawner);
     }
 }

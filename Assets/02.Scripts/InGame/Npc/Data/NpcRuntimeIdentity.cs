@@ -2,31 +2,31 @@ using UnityEngine;
 
 public class NpcRuntimeIdentity : MonoBehaviour
 {
-    [SerializeField] private string _npcId;
+    [SerializeField] private string _runtimeNpcKey;
 
     private NpcController _controller;
 
-    public string NpcId => _npcId;
+    public string RuntimeNpcKey => _runtimeNpcKey;
 
-    public void Initialize(string npcId, NpcController controller)
+    public void Initialize(string runtimeNpcKey, NpcController controller)
     {
-        _npcId = npcId;
+        _runtimeNpcKey = runtimeNpcKey;
         _controller = controller;
     }
 
     private void OnEnable()
     {
-        if (!string.IsNullOrEmpty(_npcId) && _controller != null && NpcRegistry.Instance != null)
+        if (!string.IsNullOrEmpty(_runtimeNpcKey) && _controller != null && NpcRegistry.Instance != null)
         {
-            NpcRegistry.Instance.Register(_npcId, _controller);
+            NpcRegistry.Instance.Register(_runtimeNpcKey, _controller);
         }
     }
 
     private void OnDisable()
     {
-        if (!string.IsNullOrEmpty(_npcId) && _controller != null && NpcRegistry.Instance != null)
+        if (!string.IsNullOrEmpty(_runtimeNpcKey) && _controller != null && NpcRegistry.Instance != null)
         {
-            NpcRegistry.Instance.Unregister(_npcId, _controller);
+            NpcRegistry.Instance.Unregister(_runtimeNpcKey, _controller);
         }
     }
 }
