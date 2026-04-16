@@ -19,6 +19,7 @@ public class EvolutionManager : MonoBehaviour
     [SerializeField] private string _focusLayerName = "Evolution_Focus";
     [SerializeField] private Vector3 _beforeLocalEuler;
     [SerializeField] private Vector3 _afterLocalEuler;
+    [SerializeField] private UnityEngine.Video.VideoPlayer _backgroundVideoPlayer;
 
     [Header("Timeline")]
     [SerializeField] private PlayableDirector _director;
@@ -35,6 +36,9 @@ public class EvolutionManager : MonoBehaviour
     [SerializeField] private float _whiteFlashFadeIn = 0.06f;
     [SerializeField] private float _whiteFlashHold = 0.03f;
     [SerializeField] private float _whiteFlashFadeOut = 0.18f;
+
+    [Header("Galaxy Overlay")]
+    [SerializeField] private GalaxyOverlay _galaxyOverlay;
 
     public event Action<HelperDataSO> OnEvolutionFinished;
     public bool IsPlaying => _currentData != null;
@@ -56,11 +60,10 @@ public class EvolutionManager : MonoBehaviour
     private bool _wasOverlayEnabled;
     private bool _wasStacked;
     private int _previousPriority;
+    private float _currentSpinSpeed;
     private Coroutine _spinRoutine;
     private Coroutine _whiteFlashRoutine;
     private Coroutine _fallbackRoutine;
-
-    private float _currentSpinSpeed = 0f;
 
     private int FocusLayer => LayerMask.NameToLayer(_focusLayerName);
 
@@ -88,17 +91,11 @@ public class EvolutionManager : MonoBehaviour
         if (IsPlaying || data == null ||
             _studioAnchor == null || _beforeModelRoot == null ||
             _afterModelRoot == null || _orbitPivot == null)
-        {
             return false;
-        }
 
         HelperController beforePrefab = data.GetPrefabForGrade(currentGrade);
         HelperController afterPrefab = data.GetPrefabForGrade(GetNextGrade(currentGrade));
-
-        if (beforePrefab == null || afterPrefab == null)
-        {
-            return false;
-        }
+        if (beforePrefab == null || afterPrefab == null) return false;
 
         _currentData = data;
         _currentProfile = data.EvolutionProfile;
@@ -115,25 +112,8 @@ public class EvolutionManager : MonoBehaviour
         SetLayerRecursively(_beforeInstance, FocusLayer);
         SetLayerRecursively(_afterInstance, FocusLayer);
 
-        EnableEvolutionCamera();
-
-        float spin = _currentProfile != null ? _currentProfile.IntroSpinSpeed : 90f;
-        float introDur = _currentProfile != null ? _currentProfile.IntroDuration : 2f;
-        _spinRoutine = StartCoroutine(SpinLoopEaseIn(spin, introDur));
-
-        if (_director != null && _director.playableAsset != null)
-        {
-            _director.stopped -= OnDirectorStopped;
-            _director.stopped += OnDirectorStopped;
-            _director.time = 0d;
-            _director.Evaluate();
-            _director.Play();
-        }
-        else
-        {
-            _fallbackRoutine = StartCoroutine(FallbackEvolution());
-        }
-
+        // ✅ StartEvolutionCutscene 하나만 실행 (내부에서 카메라/스핀/연출 처리)
+        StartCoroutine(StartEvolutionCutscene());
         return true;
     }
 
@@ -166,21 +146,50 @@ public class EvolutionManager : MonoBehaviour
         if (_spinRoutine != null) { StopCoroutine(_spinRoutine); _spinRoutine = null; }
 
         float revealDur = _currentProfile != null ? _currentProfile.RevealDuration : 1.2f;
-
         _spinRoutine = StartCoroutine(
             SpinLoopEaseOut(
                 _currentProfile != null ? _currentProfile.IntroSpinSpeed : 90f,
                 revealDur,
                 _afterModelRoot,
-                _afterLocalEuler.y));
+                _afterLocalEuler.y + 180f));
     }
 
     public void Timeline_PlayEvolvedIdle() => PlayIdle(_afterInstance);
 
-    private void OnDirectorStopped(PlayableDirector _)
+    private IEnumerator StartEvolutionCutscene()
     {
-        FinishEvolution(true);
+        // 1. 은하수 페이드 인 (게임 화면 가림)
+        if (_galaxyOverlay != null)
+            yield return _galaxyOverlay.FadeIn();
+
+        // 2. 카메라 전환 (가려진 순간 조용히 전환)
+        EnableEvolutionCamera();
+
+        // 3. 스핀 시작
+        float spin = _currentProfile != null ? _currentProfile.IntroSpinSpeed : 90f;
+        float introDur = _currentProfile != null ? _currentProfile.IntroDuration : 2f;
+        _spinRoutine = StartCoroutine(SpinLoopEaseIn(spin, introDur));
+
+        // 4. 은하수 페이드 아웃 (진화 배경 드러남)
+        if (_galaxyOverlay != null)
+            yield return _galaxyOverlay.FadeOut();
+
+        // 5. Timeline or Fallback 연출 시작
+        if (_director != null && _director.playableAsset != null)
+        {
+            _director.stopped -= OnDirectorStopped;
+            _director.stopped += OnDirectorStopped;
+            _director.time = 0d;
+            _director.Evaluate();
+            _director.Play();
+        }
+        else
+        {
+            _fallbackRoutine = StartCoroutine(FallbackEvolution());
+        }
     }
+
+    private void OnDirectorStopped(PlayableDirector _) => FinishEvolution(true);
 
     private void FinishEvolution(bool completed)
     {
@@ -192,9 +201,24 @@ public class EvolutionManager : MonoBehaviour
             _whiteFlashCanvasGroup.transform.parent.gameObject.SetActive(false);
         }
 
+        StartCoroutine(EndEvolutionCutscene(completed));
+    }
+
+    private IEnumerator EndEvolutionCutscene(bool completed)
+    {
+        // 1. 은하수 페이드 인 (컷씬 가림)
+        if (_galaxyOverlay != null)
+            yield return _galaxyOverlay.FadeIn();
+
+        // 2. 카메라 복귀 + 정리 (가려진 순간 조용히 복귀)
         DisableEvolutionCamera();
         CleanupInstances();
 
+        // 3. 은하수 페이드 아웃 (게임 화면 드러남)
+        if (_galaxyOverlay != null)
+            yield return _galaxyOverlay.FadeOut();
+
+        // 4. 상태 초기화 후 콜백
         HelperDataSO finished = _currentData;
         Action<bool> callback = _onFinished;
         _currentData = null;
@@ -209,12 +233,6 @@ public class EvolutionManager : MonoBehaviour
     private void EnableEvolutionCamera()
     {
         if (_baseCamera == null) _baseCamera = Camera.main;
-
-        if (_evolutionOverlayCamera == null)
-        {
-            return;
-        }
-
         if (_evolutionOverlayCamera == null) return;
 
         _wasOverlayEnabled = _evolutionOverlayCamera.enabled;
@@ -280,9 +298,8 @@ public class EvolutionManager : MonoBehaviour
         float zoomDur = p != null ? p.ZoomDuration : 0.8f;
         float revealDur = p != null ? p.RevealDuration : 1.2f;
         float outroDur = p != null ? p.OutroDuration : 1f;
-        float spin = p != null ? p.IntroSpinSpeed : 90f;
 
-        // Intro: 카메라 고정, 스핀 EaseIn
+        // Intro: 카메라 고정 (스핀은 StartEvolutionCutscene에서 이미 시작됨)
         cam.localPosition = intro;
         float t = 0f;
         while (t < introDur) { t += Time.deltaTime; LookAtPivot(cam); yield return null; }
@@ -306,20 +323,22 @@ public class EvolutionManager : MonoBehaviour
         _fallbackRoutine = null;
         FinishEvolution(true);
     }
-
     private IEnumerator SpinLoopEaseIn(float spinSpeed, float duration)
     {
         float t = 0f;
+        // duration 동안 점점 빨라짐
         while (t < duration)
         {
             t += Time.deltaTime;
             float eased = Mathf.SmoothStep(0f, 1f, t / duration);
             _currentSpinSpeed = spinSpeed * eased;
-            RotateVisibleModel(spinSpeed * eased * Time.deltaTime);
+            RotateVisibleModel(_currentSpinSpeed * Time.deltaTime);
             yield return null;
         }
+        // 이후 최대 속도로 계속 회전
         while (true)
         {
+            _currentSpinSpeed = spinSpeed;
             RotateVisibleModel(spinSpeed * Time.deltaTime);
             yield return null;
         }
@@ -331,13 +350,13 @@ public class EvolutionManager : MonoBehaviour
 
         float startY = target.localEulerAngles.y;
 
+        // Before에서 이어받은 속도에서 시작, 최소 2바퀴 보장
         float totalRotation = spinSpeed * duration * 0.5f;
         float totalAngle = totalRotation;
 
         float remainder = (startY + totalAngle - targetY) % 360f;
         totalAngle -= remainder;
-
-        while (Mathf.Abs(totalAngle) < 720f) // 최소 2바퀴 보장
+        while (Mathf.Abs(totalAngle) < 720f)
             totalAngle += totalAngle >= 0 ? 360f : -360f;
 
         float startSpeed = _currentSpinSpeed > 0 ? _currentSpinSpeed : spinSpeed;
@@ -353,7 +372,6 @@ public class EvolutionManager : MonoBehaviour
             float angle = Mathf.Lerp(0f, totalAngle, Mathf.SmoothStep(0f, 1f, progress));
             Vector3 e = target.localEulerAngles;
             target.localEulerAngles = new Vector3(e.x, startY + angle, e.z);
-
             yield return null;
         }
 
@@ -393,6 +411,7 @@ public class EvolutionManager : MonoBehaviour
         if (dir.sqrMagnitude > 0.0001f)
             cam.rotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
     }
+
     private IEnumerator WhiteFlash()
     {
         if (_whiteFlashCanvasGroup == null) yield break;
@@ -428,11 +447,26 @@ public class EvolutionManager : MonoBehaviour
         if (_director != null) _director.playableAsset = profile.TimelineAsset;
         if (_orbitPivot != null)
             _orbitPivot.localPosition = new Vector3(0f, profile.PivotHeight, 0f);
-        if (_backgroundRenderer != null)
+        /*        if (_backgroundRenderer != null)
+                {
+                    _backgroundRenderer.sprite = profile.BackgroundSprite;
+                    _backgroundRenderer.enabled = profile.BackgroundSprite != null;
+                }*/
+        if (_backgroundVideoPlayer != null)
         {
-            _backgroundRenderer.sprite = profile.BackgroundSprite;
-            _backgroundRenderer.enabled = profile.BackgroundSprite != null;
+            if (profile.BackgroundVideo != null)
+            {
+                _backgroundVideoPlayer.clip = profile.BackgroundVideo;
+                _backgroundVideoPlayer.enabled = true;
+                _backgroundVideoPlayer.Play();
+            }
+            else
+            {
+                _backgroundVideoPlayer.Stop();
+                _backgroundVideoPlayer.enabled = false;
+            }
         }
+
     }
 
     private void PrepareBeforeInstance()
@@ -518,6 +552,11 @@ public class EvolutionManager : MonoBehaviour
         if (_afterInstance != null) Destroy(_afterInstance);
         SetRoot(_beforeModelRoot, false);
         SetRoot(_afterModelRoot, false);
+        if (_backgroundVideoPlayer != null)
+        {
+            _backgroundVideoPlayer.Stop();
+            _backgroundVideoPlayer.enabled = false;
+        }
     }
 
     private void EnsureWhiteFlashOverlay()
