@@ -60,6 +60,8 @@ public class EvolutionManager : MonoBehaviour
     private Coroutine _whiteFlashRoutine;
     private Coroutine _fallbackRoutine;
 
+    private float _currentSpinSpeed = 0f;
+
     private int FocusLayer => LayerMask.NameToLayer(_focusLayerName);
 
     private void Awake()
@@ -164,6 +166,7 @@ public class EvolutionManager : MonoBehaviour
         if (_spinRoutine != null) { StopCoroutine(_spinRoutine); _spinRoutine = null; }
 
         float revealDur = _currentProfile != null ? _currentProfile.RevealDuration : 1.2f;
+
         _spinRoutine = StartCoroutine(
             SpinLoopEaseOut(
                 _currentProfile != null ? _currentProfile.IntroSpinSpeed : 90f,
@@ -255,7 +258,6 @@ public class EvolutionManager : MonoBehaviour
         if (_evolutionCinemachine != null)
         {
             _evolutionCinemachine.Priority = _previousPriority;
-            Debug.Log($"{_previousPriority}");
             _evolutionCinemachine.Follow = null;
             _evolutionCinemachine.LookAt = null;
         }
@@ -312,6 +314,7 @@ public class EvolutionManager : MonoBehaviour
         {
             t += Time.deltaTime;
             float eased = Mathf.SmoothStep(0f, 1f, t / duration);
+            _currentSpinSpeed = spinSpeed * eased;
             RotateVisibleModel(spinSpeed * eased * Time.deltaTime);
             yield return null;
         }
@@ -327,22 +330,34 @@ public class EvolutionManager : MonoBehaviour
         if (target == null) yield break;
 
         float startY = target.localEulerAngles.y;
-        float totalAngle = targetY - startY;
 
-        if (totalAngle > -180f && totalAngle < 180f)
+        float totalRotation = spinSpeed * duration * 0.5f;
+        float totalAngle = totalRotation;
+
+        float remainder = (startY + totalAngle - targetY) % 360f;
+        totalAngle -= remainder;
+
+        while (Mathf.Abs(totalAngle) < 720f) // 최소 2바퀴 보장
             totalAngle += totalAngle >= 0 ? 360f : -360f;
+
+        float startSpeed = _currentSpinSpeed > 0 ? _currentSpinSpeed : spinSpeed;
 
         float t = 0f;
         while (t < duration)
         {
             t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / duration));
-            float angle = Mathf.Lerp(0f, totalAngle, progress);
+            float progress = Mathf.Clamp01(t / duration);
+            float currentSpeed = Mathf.Lerp(startSpeed, 0f, Mathf.SmoothStep(0f, 1f, progress));
+            _currentSpinSpeed = currentSpeed;
+
+            float angle = Mathf.Lerp(0f, totalAngle, Mathf.SmoothStep(0f, 1f, progress));
             Vector3 e = target.localEulerAngles;
             target.localEulerAngles = new Vector3(e.x, startY + angle, e.z);
+
             yield return null;
         }
 
+        _currentSpinSpeed = 0f;
         Vector3 fin = target.localEulerAngles;
         target.localEulerAngles = new Vector3(fin.x, targetY, fin.z);
     }
