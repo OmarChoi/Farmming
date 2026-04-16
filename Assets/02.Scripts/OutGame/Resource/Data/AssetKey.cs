@@ -41,6 +41,9 @@ public static class AssetKey
         public const string WoodCuttingLegendaryHelper = "WoodCuttingLegendaryHelper";
         public const string JungleTroublemaker = "JungleTroublemaker";
         public const string CaveTroublemaker1 = "CaveTroublemaker1";
+        public const string MarketStall = "MarketStall";
+        public const string Smithy = "Smithy";
+        public const string HairShop = "HairShop";
         public const string Storage = "Storage";
         public const string GamblingBuilding = "GamblingBuilding";
         public const string Shrine = "Shrine";

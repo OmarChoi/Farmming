@@ -1,21 +1,46 @@
+using UnityEngine;
+using System.Collections.Generic;
 
 public class HelperUpgradeTextFormatter
 {
-    private static EHelperGrade GetNextGrade(EHelperGrade grade)
-    {
-        switch (grade)
+    private static readonly Dictionary<EHelperType, IHelperUpgradeDescriptionProvider> _descriptionProviders
+        = new()
         {
-            case EHelperGrade.Normal:
-                return EHelperGrade.Epic;
-            case EHelperGrade.Epic:
-                return EHelperGrade.Legendary;
-            default:
-                return grade; // Legendary는 그대로 둔다.
+            { EHelperType.WoodCuttingMine, new WoodCuttingMineUpgradeDescriptionProvider() },
+            { EHelperType.Water, new WaterUpgradeDescriptionProvider() },
+            { EHelperType.Ground, new GroundUpgradeDescriptionProvider() },
+            { EHelperType.Light, new LightUpgradeDescriptionProvider() }
+        };
+
+    private static readonly IHelperUpgradeDescriptionProvider _defaultProvider
+        = new DefaultHelperUpgradeDescriptionProvider();
+
+    public static string GetRangeText(HelperDataSO data, EHelperGrade currentGrade)
+    {
+        if (data == null) return string.Empty;
+
+        if (_descriptionProviders.TryGetValue(data.HelperType, out var provider))
+        {
+            return provider.GetUpgradeDescription(data, currentGrade);
         }
+
+        return _defaultProvider.GetUpgradeDescription(data, currentGrade);
     }
 
-    private static int GetRange(HelperDataSO data, EHelperGrade grade)
+    public static EHelperGrade GetNextGradeValue(EHelperGrade grade)
     {
+        return grade switch
+        {
+            EHelperGrade.Normal => EHelperGrade.Epic,
+            EHelperGrade.Epic => EHelperGrade.Legendary,
+            _ => grade
+        };
+    }
+
+    public static int GetInternalRangeValue(HelperDataSO data, EHelperGrade grade)
+    {
+        if (data == null) return 0;
+
         return grade switch
         {
             EHelperGrade.Normal => data.NormalRange,
@@ -23,6 +48,17 @@ public class HelperUpgradeTextFormatter
             EHelperGrade.Legendary => data.LegendaryRange,
             _ => data.NormalRange
         };
+    }
+
+    public static int GetDisplayRangeValue(HelperDataSO data, EHelperGrade grade)
+    {
+        int internalRange = GetInternalRangeValue(data, grade);
+        return internalRange <= 0 ? 0 : internalRange * 2 - 1;
+    }
+
+    public static Sprite GetHelperIcon(HelperDataSO data)
+    {
+        return data == null ? null : data.HelperIcon;
     }
 
     public static string GetHelperName(HelperDataSO data)
@@ -46,27 +82,10 @@ public class HelperUpgradeTextFormatter
         return $"현재 경험치: {exp} / {maxExp}";
     }
 
-    public static string GetRangeText(HelperDataSO data, EHelperGrade currentGrade)
-    {
-        if (data == null) return string.Empty;
-
-        int currentRange = GetRange(data, currentGrade);
-
-        if (currentGrade == EHelperGrade.Legendary)
-        {
-            return $"작업 범위가 {currentRange}칸입니다.";
-        }
-
-        EHelperGrade nextGrade = GetNextGrade(currentGrade);
-        int nextRange = GetRange(data, nextGrade);
-
-        return $"작업 범위가 {currentRange}칸에서 {nextRange}칸으로 증가합니다.";
-    }
-
     public static string GetUpgradeMessage(bool canUpgrade, string blockReason)
     {
         return canUpgrade
-            ? "업그레이드가 가능합니다!"
+            ? "업그레이드가 가능해요!!!"
             : blockReason;
     }
 
@@ -75,16 +94,25 @@ public class HelperUpgradeTextFormatter
         switch (reason)
         {
             case EHelperUpgradeBlockReason.InvalidData:
-                return "곡룡 정보가 없습니다.";
+                return "곡룡 친구가 안 보여요.";
 
             case EHelperUpgradeBlockReason.InventoryNotReady:
-                return "곡룡 인벤토리 정보를 확인할 수 없습니다.";
+                return "곡룡 인벤토리 정보를 확인할 수 없어요.";
 
             case EHelperUpgradeBlockReason.MaxGrade:
-                return "곡룡이 이미 최고 등급입니다.";
+                return "곡룡이 이미 최고 등급이에요.";
+
+            case EHelperUpgradeBlockReason.IsCantUpgrade:
+                return "이 곡룡은 업그레이드할 수 없어요.";
 
             case EHelperUpgradeBlockReason.NotEnoughExperience:
-                return "곡룡 경험치가 부족합니다.";
+                return "곡룡 경험치가 부족해요.";
+
+            case EHelperUpgradeBlockReason.NotEnoughItemCost:
+                return "업그레이드에 필요한 아이템이 부족해요.";
+
+            case EHelperUpgradeBlockReason.NotEnoughGoldCost:
+                return "업그레이드에 필요한 골드가 부족해요.";
 
             case EHelperUpgradeBlockReason.None:
             default:

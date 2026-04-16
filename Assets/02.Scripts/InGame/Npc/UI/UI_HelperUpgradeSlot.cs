@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public class UI_HelperUpgradeSlot : MonoBehaviour
 {
+    [Header("이미지")]
+    [SerializeField] private Image _helperIcon;
+
     [Header("텍스트")]
     [SerializeField] private TextMeshProUGUI _helperNameText;
     [SerializeField] private TextMeshProUGUI _helperGradeText;
@@ -43,6 +46,7 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
 
         if (helper == null)
         {
+            _helperIcon.sprite = null;
             _helperNameText.text = "";
             _helperGradeText.text = "";
             _upgradeReadyText.text = "";
@@ -55,7 +59,8 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
             : EHelperGrade.Normal;
 
         bool canUpgrade = _uiHelperUpgrade != null && _uiHelperUpgrade.CanUpgrade(helper);
-
+        
+        _helperIcon.sprite = HelperUpgradeTextFormatter.GetHelperIcon(helper);
         _helperNameText.text = HelperUpgradeTextFormatter.GetHelperName(helper);
         _helperGradeText.text = HelperUpgradeTextFormatter.GetGradeText(grade);
         _upgradeReadyText.text = canUpgrade ? "업그레이드 가능!" : "업그레이드 불가능";
