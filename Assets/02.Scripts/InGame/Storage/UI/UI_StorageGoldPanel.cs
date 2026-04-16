@@ -181,7 +181,7 @@ public class UI_StorageGoldPanel : MonoBehaviour
     {
         int amount = GetAmount();
         if (amount <= 0 || _transferService == null) return;
-        if (_transferService.WithdrawGold(amount))
+        if (_transferService.WithdrawGold(amount)) 
             ResetAmount();
     }
 }

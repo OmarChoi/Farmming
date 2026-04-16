@@ -204,17 +204,43 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
         }
 
         {
+            int sourceIndex = _dragSourceSlot.SlotIndex;
             int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
                 ? _hoveredSlot.SlotIndex
-                : _dragSourceSlot.SlotIndex;
+                : sourceIndex;
 
             if (_isSplitDrag)
-                _transferService.PlaceSplitInStorage(_dragSourceSlot.SlotIndex, targetIndex, _dragItem, _dragCount);
+            {
+                _transferService.PlaceSplitInStorage(sourceIndex, targetIndex, _dragItem, _dragCount);
+            }
+            else if (targetIndex != sourceIndex && IsTargetOccupiedWithDifferentItem(targetIndex, _dragItem))
+            {
+                _suppressRefresh = true;
+                try
+                {
+                    _transferService.PutDownInStorage(sourceIndex, _dragItem, _dragCount);
+                    _transferService.SwapInStorage(sourceIndex, targetIndex);
+                }
+                finally
+                {
+                    _suppressRefresh = false;
+                    RefreshAll();
+                }
+            }
             else
+            {
                 _transferService.PutDownInStorage(targetIndex, _dragItem, _dragCount);
+            }
         }
 
         ClearDragState();
+    }
+
+    private bool IsTargetOccupiedWithDifferentItem(int targetIndex, ItemDataSO held)
+    {
+        if (_storage == null) return false;
+        var slot = _storage.GetSlot(targetIndex);
+        return slot != null && !slot.IsEmpty && slot.Item != held;
     }
 
     public void CancelDrag()
