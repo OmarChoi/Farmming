@@ -9,5 +9,6 @@ public class StorageSaveData
     public int AnchorY;
     public int AnchorZ;
     public int SlotCount;
+    public int Gold;
     public List<InventorySlotSaveData> Slots = new();
 }
