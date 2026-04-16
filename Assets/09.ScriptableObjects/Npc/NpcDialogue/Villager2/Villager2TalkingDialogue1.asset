@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
-  m_Name: Villager1GreetingDialogue2
+  m_Name: Villager2TalkingDialogue1
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
-  Id: Villager1GreetingDialogue2
+  Id: Villager2TalkingDialogue1
   Lines:
-  - Text: "\uB098\uB294 \uACE1\uB8E1\uC774 \uB108~\uBB34 \uC88B\uC544. \uD1B5\uD1B5\uD558\uACE0
-      \uBD80\uB4DC\uB7FD\uAC70\uB4E0."
+  - Text: "\uB2F9\uC2E0\uC740 \uBB34\uC5C7\uC744 \uAC00\uC7A5 \uC88B\uC544\uD558\uB098\uC694?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC800\uB294 \uB2F9\uC5F0\uD788 \uC800\uB97C \uAC00\uC7A5 \uC88B\uC544\uD55C\uB2F5\uB2C8\uB2E4!"
     NextDialogue: {fileID: 0}
