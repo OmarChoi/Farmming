@@ -52,6 +52,7 @@ public sealed class DinoRaceSettings
     public Vector2 SlowDownDurationRange = new Vector2(1.2f, 2f);
 
     [Min(1f)] public float SpeedUpMultiplier = 1.5f;
+    [Min(0f)] public float SpeedUpPositionBiasWeight = 0.75f;
     [Range(0f, 1f)] public float SlowDownMultiplier = 0.6f;
 
     public DinoRacePayoutSettings Payout = new DinoRacePayoutSettings();

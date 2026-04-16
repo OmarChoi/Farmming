@@ -7,7 +7,7 @@ public class DinoRaceHost : MonoBehaviour
     [SerializeField] private DinoRaceRunner[] _runners;
     [SerializeField] private DinoRaceSettings _settings = new DinoRaceSettings();
     [SerializeField] private Vector3 _trackForwardLocal = Vector3.forward;
-    [SerializeField] private string _interactionButtonLabel = "Start Race";
+    [SerializeField] private DinoRaceCountdownSignal _countdownSignal;
 
     private BaseBuilding _building;
     private DinoRaceEventPolicy _eventPolicy;
@@ -125,17 +125,33 @@ public class DinoRaceHost : MonoBehaviour
 
         _session = new DinoRaceSession(selectedRunnerIndex, betAmount);
         _finishCount = 0;
-        _countdownRemaining = Mathf.Max(0.1f, _settings.CountdownDuration);
         _lastCountdownSecond = int.MinValue;
         _state = EDinoRaceState.Countdown;
+
+        if (_countdownSignal != null)
+        {
+            _countdownRemaining = _countdownSignal.TotalDuration;
+            _countdownSignal.Play(StartRaceInternal);
+        }
+        else
+        {
+            _countdownRemaining = Mathf.Max(0.1f, _settings.CountdownDuration);
+        }
 
         float now = Time.time;
         for (int i = 0; i < _runners.Length; i++)
         {
             DinoRaceRunner runner = _runners[i];
             if (runner == null) continue;
+            int capturedIndex = i;
 
-            runner.Configure(i, _settings.BaseSpeed, _settings.TrackLength, _trackForwardLocal, _eventPolicy);
+            runner.Configure(
+                i,
+                _settings.BaseSpeed,
+                _settings.TrackLength,
+                _trackForwardLocal,
+                _eventPolicy,
+                () => GetSpeedUpBias(capturedIndex));
             runner.ResetForRace(now);
         }
 
@@ -150,6 +166,7 @@ public class DinoRaceHost : MonoBehaviour
         _countdownRemaining = 0f;
         _lastCountdownSecond = int.MinValue;
         _finishCount = 0;
+        _countdownSignal?.Hide();
 
         float now = Time.time;
         if (_runners != null)
@@ -158,8 +175,15 @@ public class DinoRaceHost : MonoBehaviour
             {
                 DinoRaceRunner runner = _runners[i];
                 if (runner == null) continue;
+                int capturedIndex = i;
 
-                runner.Configure(i, _settings.BaseSpeed, _settings.TrackLength, _trackForwardLocal, _eventPolicy);
+                runner.Configure(
+                    i,
+                    _settings.BaseSpeed,
+                    _settings.TrackLength,
+                    _trackForwardLocal,
+                    _eventPolicy,
+                    () => GetSpeedUpBias(capturedIndex));
                 runner.ResetForRace(now);
             }
         }
@@ -173,7 +197,7 @@ public class DinoRaceHost : MonoBehaviour
         _countdownRemaining -= Time.deltaTime;
         EmitCountdownIfChanged();
 
-        if (_countdownRemaining <= 0f)
+        if (_countdownSignal == null && _countdownRemaining <= 0f)
             StartRaceInternal();
     }
 
@@ -217,6 +241,14 @@ public class DinoRaceHost : MonoBehaviour
     private void CompleteRaceInternal()
     {
         _state = EDinoRaceState.Finished;
+        _countdownSignal?.Hide();
+
+        for (int i = 0; i < _runners.Length; i++)
+        {
+            DinoRaceRunner runner = _runners[i];
+            if (runner == null) continue;
+            runner.SetWinner(runner.FinishRank == 1);
+        }
 
         int selectedRank = 0;
         if (_session != null &&
@@ -258,7 +290,6 @@ public class DinoRaceHost : MonoBehaviour
             feature = npc.gameObject.AddComponent<DinoRaceNpcFeature>();
 
         feature.Initialize(this);
-        npc.AddRuntimeInteractionOption(ENpcInteractionType.DinoRace, _interactionButtonLabel);
         _npcBound = true;
     }
 
@@ -274,5 +305,40 @@ public class DinoRaceHost : MonoBehaviour
         }
 
         return count;
+    }
+
+    private float GetSpeedUpBias(int runnerIndex)
+    {
+        if (_runners == null ||
+            runnerIndex < 0 ||
+            runnerIndex >= _runners.Length ||
+            _runners[runnerIndex] == null)
+        {
+            return 0f;
+        }
+
+        float minProgress = float.MaxValue;
+        float maxProgress = float.MinValue;
+        float currentProgress = 0f;
+        bool hasProgressSample = false;
+
+        for (int i = 0; i < _runners.Length; i++)
+        {
+            DinoRaceRunner runner = _runners[i];
+            if (runner == null || runner.IsFinished) continue;
+
+            float progress = Mathf.Clamp01(runner.CurrentDistance / Mathf.Max(0.1f, _settings.TrackLength));
+            minProgress = Mathf.Min(minProgress, progress);
+            maxProgress = Mathf.Max(maxProgress, progress);
+            if (i == runnerIndex)
+                currentProgress = progress;
+            hasProgressSample = true;
+        }
+
+        if (!hasProgressSample || maxProgress - minProgress < 0.001f)
+            return 0f;
+
+        float normalizedPosition = Mathf.InverseLerp(minProgress, maxProgress, currentProgress);
+        return 1f - (normalizedPosition * 2f);
     }
 }

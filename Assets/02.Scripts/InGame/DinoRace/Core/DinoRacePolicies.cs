@@ -14,9 +14,22 @@ public sealed class DinoRaceEventPolicy
         return Random.Range(GetRangeMin(_settings.EventIntervalRange), GetRangeMax(_settings.EventIntervalRange));
     }
 
-    public EDinoRaceEventType RollEventType()
+    public EDinoRaceEventType RollEventType(float speedUpBias = 0f)
     {
-        return (EDinoRaceEventType)Random.Range(1, 4);
+        float speedUpWeight = Mathf.Max(0.1f, 1f + Mathf.Clamp(speedUpBias, -1f, 1f) * _settings.SpeedUpPositionBiasWeight);
+        float stunWeight = 1f;
+        float slowDownWeight = 1f;
+        float totalWeight = stunWeight + speedUpWeight + slowDownWeight;
+        float roll = Random.Range(0f, totalWeight);
+
+        if (roll < stunWeight)
+            return EDinoRaceEventType.Stun;
+
+        roll -= stunWeight;
+        if (roll < speedUpWeight)
+            return EDinoRaceEventType.SpeedUp;
+
+        return EDinoRaceEventType.SlowDown;
     }
 
     public float GetEventDuration(EDinoRaceEventType eventType)
