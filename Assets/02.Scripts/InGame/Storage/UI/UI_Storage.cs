@@ -35,8 +35,8 @@ public class UI_Storage : MonoBehaviour
     private Tween _storagePanelTween;
     private Tween _goldPanelTween;
 
-    private enum TabType { Storage, Gold }
-    private TabType _currentTab = TabType.Storage;
+    private enum ETabType { Storage, Gold }
+    private ETabType _currentETab = ETabType.Storage;
 
     private StorageDomain _storage;
     private StorageTransferService _transferService;
@@ -73,12 +73,11 @@ public class UI_Storage : MonoBehaviour
         }
 
         if (_storageTabButton != null)
-            _storageTabButton.onClick.AddListener(() => SelectTab(TabType.Storage));
+            _storageTabButton.onClick.AddListener(() => SelectTab(ETabType.Storage));
         if (_goldTabButton != null)
-            _goldTabButton.onClick.AddListener(() => SelectTab(TabType.Gold));
+            _goldTabButton.onClick.AddListener(() => SelectTab(ETabType.Gold));
 
-        CacheTabLayouts();
-        ApplyTabImmediate(TabType.Storage);
+        ApplyTabImmediate(ETabType.Storage);
     }
 
     private void OnDestroy()
@@ -132,12 +131,10 @@ public class UI_Storage : MonoBehaviour
 
     // === 탭 전환 ===
 
-    private void CacheTabLayouts() { }
-
-    private void ApplyTabImmediate(TabType tab)
+    private void ApplyTabImmediate(ETabType eTab)
     {
-        _currentTab = tab;
-        bool isStorage = tab == TabType.Storage;
+        _currentETab = eTab;
+        bool isStorage = eTab == ETabType.Storage;
 
         // 두 패널 모두 항상 활성. 같은 위치에 겹쳐 있고, 활성 탭이 최상단으로 옴.
         if (_storageTabRect != null)
@@ -154,11 +151,11 @@ public class UI_Storage : MonoBehaviour
         BringToFront(isStorage ? _storageTabRect : _goldTabRect);
     }
 
-    private void SelectTab(TabType tab)
+    private void SelectTab(ETabType eTab)
     {
-        if (_currentTab == tab) return;
-        _currentTab = tab;
-        bool isStorage = tab == TabType.Storage;
+        if (_currentETab == eTab) return;
+        _currentETab = eTab;
+        bool isStorage = eTab == ETabType.Storage;
 
         RectTransform showing = isStorage ? _storageTabRect : _goldTabRect;
 
@@ -239,7 +236,7 @@ public class UI_Storage : MonoBehaviour
         _itemPanel?.SetLinkedInventory(null);
         _itemPanel?.Unbind();
         _goldPanel?.Unbind();
-        ApplyTabImmediate(TabType.Storage);
+        ApplyTabImmediate(ETabType.Storage);
         _storage = null;
         _transferService = null;
         Close();

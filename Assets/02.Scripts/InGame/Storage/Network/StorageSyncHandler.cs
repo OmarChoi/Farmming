@@ -138,7 +138,7 @@ public class StorageSyncHandler : MonoBehaviourPun
         }
     }
 
-    /// 지갑 → 창고 입금 요청. 지갑 차감은 호출자가 수행한 상태로 들어온다.
+    /// 지갑 → 창고 입금 요청. 마스터가 창고에 가산한 뒤 RPC_SpendGold로 요청자 지갑을 차감한다.
     public void RequestDepositGold(int amount)
     {
         if (IsMaster)
@@ -297,6 +297,7 @@ public class StorageSyncHandler : MonoBehaviourPun
         if (amount <= 0) return;
         _storage.AddGold(amount);
         BroadcastFullSync();
+        DeductGoldFromPlayer(actorNumber, amount);
     }
 
     private void ExecuteWithdrawGold(int amount, int actorNumber)
@@ -324,6 +325,25 @@ public class StorageSyncHandler : MonoBehaviourPun
         else
         {
             CurrencyManager.Instance?.AddGold(amount);
+        }
+    }
+
+    private void DeductGoldFromPlayer(int actorNumber, int amount)
+    {
+        if (PhotonNetwork.IsConnected && actorNumber >= 0)
+        {
+            var target = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
+            if (target != null)
+            {
+                if (target.IsLocal)
+                    CurrencyManager.Instance?.TrySpendGold(amount);
+                else
+                    photonView.RPC(nameof(RPC_SpendGold), target, amount);
+            }
+        }
+        else
+        {
+            CurrencyManager.Instance?.TrySpendGold(amount);
         }
     }
 
@@ -533,6 +553,12 @@ public class StorageSyncHandler : MonoBehaviourPun
     private void RPC_ReceiveGold(int amount)
     {
         CurrencyManager.Instance?.AddGold(amount);
+    }
+
+    [PunRPC]
+    private void RPC_SpendGold(int amount)
+    {
+        CurrencyManager.Instance?.TrySpendGold(amount);
     }
 
     // === 네트워크 동기화 DTO ===

@@ -173,10 +173,11 @@ public class NetworkStorageTransferProxy : StorageTransferService
             return result;
         }
 
-        // 클라이언트: 지갑에서 먼저 차감하고, 마스터에게 창고 가산 요청 (실패 시 마스터가 환불)
+        // 클라이언트: 지갑은 마스터의 ack(RPC_SpendGold)에서 차감한다.
+        // 여기선 잔액만 검증해서 명백히 부족한 요청을 막고 RPC를 보낸다.
         if (amount <= 0) return false;
         var currency = CurrencyManager.Instance;
-        if (currency == null || !currency.TrySpendGold(amount)) return false;
+        if (currency == null || !currency.CanAfford(amount)) return false;
 
         _syncHandler.RequestDepositGold(amount);
         return true;
