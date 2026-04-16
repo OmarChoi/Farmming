@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: CollectItemWorldQuest3
   m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
   QuestId: CollectItemWorldQuest3
-  QuestName: "\uC6A9\uC554 \uB3CC\uC744 \uBAA8\uC73C\uC790"
-  Description: "\uC6A9\uC554 \uB3CC\uC744 1\uAC1C \uD68D\uB4DD\uD574\uB77C"
+  QuestName: "\uC6A9\uC554 \uB3CC\uC744 \uBC14\uCCD0\uB77C"
+  Description: "\uC6A9\uC554 \uB3CC\uC744 1\uAC1C \uBC14\uCCD0\uB77C"
   QuestCategory: 3
   IsTutorial: 0
   StartNpcId: 
   CompleteNpcId: 
   IsForcedAccept: 1
-  ObjectiveType: 1
+  ObjectiveType: 2
   TargetId: 
   ItemRequirements:
   - _item: {fileID: 11400000, guid: 9433c087fdd661042a64d1ffb5bedbd1, type: 2}

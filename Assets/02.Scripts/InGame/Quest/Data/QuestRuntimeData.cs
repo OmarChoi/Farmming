@@ -96,6 +96,9 @@ public class QuestRuntimeData
         {
             case EQuestObjectiveType.BreakObject:
             case EQuestObjectiveType.TalkToNpc:
+            case EQuestObjectiveType.DryFarmTile:
+            case EQuestObjectiveType.PlantSeed:
+            case EQuestObjectiveType.WaterFarmTile:
                 return CurrentAmount >= QuestData.RequiredAmount;
 
             case EQuestObjectiveType.CollectItem:

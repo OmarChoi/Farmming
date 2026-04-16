@@ -7,7 +7,6 @@ using UnityEngine.UI;
 
 public class UI_Shrine : UIBase
 {
-
     [SerializeField] private GameObject _emptyStateText;
     [SerializeField] private GameObject _questInfo;
 
