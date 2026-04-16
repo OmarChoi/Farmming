@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class DinoRaceRunner : MonoBehaviour
@@ -6,6 +7,7 @@ public class DinoRaceRunner : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private string _animationParam = "animation";
     [SerializeField] private int _idleAnimationValue = 1;
+    [SerializeField] private int _victoryAnimationValue = 2;
     [SerializeField] private int _stunAnimationValue = 9;
     [SerializeField] private int _slowDownAnimationValue = 15;
     [SerializeField] private int _speedUpAnimationValue = 18;
@@ -16,6 +18,7 @@ public class DinoRaceRunner : MonoBehaviour
     private Vector3 _trackForwardLocal = Vector3.forward;
 
     private DinoRaceEventPolicy _eventPolicy;
+    private Func<float> _speedUpBiasProvider;
     private float _baseSpeed;
     private float _trackLength;
     private float _currentSpeed;
@@ -26,6 +29,7 @@ public class DinoRaceRunner : MonoBehaviour
     private bool _isEventActive;
     private bool _isFinished;
     private bool _hasStartedRunning;
+    private bool _isWinner;
     private int _finishRank;
     private int _laneIndex;
 
@@ -51,7 +55,8 @@ public class DinoRaceRunner : MonoBehaviour
         float baseSpeed,
         float trackLength,
         Vector3 trackForwardLocal,
-        DinoRaceEventPolicy eventPolicy)
+        DinoRaceEventPolicy eventPolicy,
+        Func<float> speedUpBiasProvider = null)
     {
         _laneIndex = laneIndex;
         _baseSpeed = Mathf.Max(0f, baseSpeed);
@@ -60,6 +65,7 @@ public class DinoRaceRunner : MonoBehaviour
             ? Vector3.forward
             : trackForwardLocal.normalized;
         _eventPolicy = eventPolicy;
+        _speedUpBiasProvider = speedUpBiasProvider;
     }
 
     public void ResetForRace(float now)
@@ -72,6 +78,7 @@ public class DinoRaceRunner : MonoBehaviour
         _isEventActive = false;
         _isFinished = false;
         _hasStartedRunning = false;
+        _isWinner = false;
         _finishRank = 0;
 
         transform.localPosition = _startLocalPosition;
@@ -115,6 +122,12 @@ public class DinoRaceRunner : MonoBehaviour
         UpdateAnimation();
     }
 
+    public void SetWinner(bool isWinner)
+    {
+        _isWinner = isWinner;
+        UpdateAnimation();
+    }
+
     public DinoRaceRunnerSnapshot CreateSnapshot()
     {
         return new DinoRaceRunnerSnapshot(
@@ -135,7 +148,8 @@ public class DinoRaceRunner : MonoBehaviour
             return;
         }
 
-        _currentEventType = _eventPolicy.RollEventType();
+        float speedUpBias = _speedUpBiasProvider?.Invoke() ?? 0f;
+        _currentEventType = _eventPolicy.RollEventType(speedUpBias);
         if (_currentEventType == EDinoRaceEventType.None)
         {
             _nextEventTime = now + _eventPolicy.GetNextEventDelay();
@@ -173,6 +187,9 @@ public class DinoRaceRunner : MonoBehaviour
 
     private int GetAnimationValue()
     {
+        if (_isWinner)
+            return _victoryAnimationValue;
+
         if (_isFinished || !_hasStartedRunning)
             return _idleAnimationValue;
 
