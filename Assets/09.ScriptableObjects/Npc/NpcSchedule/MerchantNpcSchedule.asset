@@ -16,19 +16,19 @@ MonoBehaviour:
   - ScheduleTime:
       _hour: 0
       _minute: 0
-    NpcLocationType: 1
-    LocationKey: Merchant_Shop
+    NpcLocationType: 0
+    LocationKey: Merchant_Home
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
     WanderSearchStep: 0
   - ScheduleTime:
-      _hour: 1
+      _hour: 6
       _minute: 30
     NpcLocationType: 2
     LocationKey: Merchant_Wandering1
     WanderingDirection: {x: 1, y: 0, z: -1}
-    WanderingDistance: 11
+    WanderingDistance: 13
     WanderingRadius: 8
     WanderSearchStep: 5
   - ScheduleTime:
@@ -50,11 +50,20 @@ MonoBehaviour:
     WanderingRadius: 6
     WanderSearchStep: 5
   - ScheduleTime:
-      _hour: 20
-      _minute: 0
+      _hour: 19
+      _minute: 10
     NpcLocationType: 2
     LocationKey: Merchant_Wandering3
     WanderingDirection: {x: 1, y: 0, z: 0}
     WanderingDistance: 52
     WanderingRadius: 16
     WanderSearchStep: 5
+  - ScheduleTime:
+      _hour: 20
+      _minute: 20
+    NpcLocationType: 0
+    LocationKey: Merchant_Home
+    WanderingDirection: {x: 0, y: 0, z: 0}
+    WanderingDistance: 0
+    WanderingRadius: 0
+    WanderSearchStep: 0
