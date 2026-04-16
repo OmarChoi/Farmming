@@ -42,6 +42,7 @@ public static class AssetKey
         public const string CaveTroublemaker1 = "CaveTroublemaker1";
         public const string Storage = "Storage";
         public const string QuestBoard = "QuestBoard";
+        public const string Portal = "Portal";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
@@ -118,6 +119,7 @@ public static class AssetKey
         private const string HairShop = "HairShop";
         private const string Storage = "Storage";
         private const string QuestBoard = "QuestBoard";
+        private const string Portal = "Portal";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
         {
@@ -125,7 +127,8 @@ public static class AssetKey
             Smithy,
             HairShop,
             Storage,
-            QuestBoard
+            QuestBoard,
+            Portal
         };
 
         public static string GetKey(string buildingId)
