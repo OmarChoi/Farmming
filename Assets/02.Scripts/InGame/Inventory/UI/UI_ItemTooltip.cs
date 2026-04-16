@@ -5,8 +5,11 @@ using UnityEngine.UI;
 
 public class UI_ItemTooltip : MonoBehaviour
 {
+    private const string CostFormat = "판매가격 : {0} <size=15%><sprite index=0></size>";
+    
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _descriptionText;
+    [SerializeField] private TextMeshProUGUI _costText;
     [SerializeField] private RectTransform _rectTransform;
     [SerializeField] private RectTransform _leftArrow;
     [SerializeField] private RectTransform _rightArrow;
@@ -40,6 +43,15 @@ public class UI_ItemTooltip : MonoBehaviour
 
         _nameText.text = item.DisplayName;
         _descriptionText.text = item.DisplayExplanation;
+        int cost = item.SellCost;
+        if (WorldEffectManager.Instance != null)
+        {
+            cost =  WorldEffectManager.ApplyMultiplier
+            (
+                cost, WorldEffectManager.Instance.GetSellPriceMultiplier()
+            );
+        }
+        _costText.SetText(CostFormat, cost);
 
         _leftArrow.gameObject.SetActive(!showRight);
         _rightArrow.gameObject.SetActive(showRight);

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 211e7cc62ca0e744ca983b9a4c8bd38d, type: 3}
+  m_Name: IncreaseSellingPrice
+  m_EditorClassIdentifier: Assembly-CSharp::WorldEffectDataSO
+  _effectId: IncreaseSellingPrice
+  _kind: 0
+  _category: 1
+  _displayName: "\uD310\uB9E4 \uAE08\uC561 \uC99D\uAC00"
+  _description: "\uD310\uB9E4 \uAE08\uC561 <color=#26E5EF>20% \uC0C1\uC2B9</color>"
+  _percentModifier: 0.2
