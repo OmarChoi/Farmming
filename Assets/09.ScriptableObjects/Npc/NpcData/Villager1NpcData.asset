@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29943a3ad3f2dbf4f9cf2a769a5b2ee0, type: 3}
+  m_Name: Villager1NpcData
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDataSO
+  NpcId: Villager1
+  NpcName: "\uACE0\uBA67"
+  CanUseAiDialogue: 1
+  NpcMbti: 
+  NpcPersonality: 
+  Age: 
+  Job: 
+  WayOfTone: 
+  Prefab: {fileID: 7840605641264675590, guid: 8f806efcc7795fa46a7533c9574196ed, type: 3}
+  WalkSpeed: 0.6
+  RunSpeed: 3.4
+  JumpDuration: 0.6
+  JumpHeight: 1.4
+  GreetDialogues:
+  - {fileID: 11400000, guid: 8987197b4ddfb8746aa585e39f9ed6c2, type: 2}
+  - {fileID: 11400000, guid: 483a8b7fab734ca4f98d77d6693e0277, type: 2}
+  - {fileID: 11400000, guid: f04f4839df9b088419597ab1f0d30c85, type: 2}
+  TalkDialogues:
+  - {fileID: 11400000, guid: 8babe7b62c82f434399a2ac54713c79b, type: 2}
+  - {fileID: 11400000, guid: eb606cd917501904eb29959183ad8311, type: 2}
+  - {fileID: 11400000, guid: de6baf5f7bca2744faed69f2007bde92, type: 2}
+  CuringAskDialogue: {fileID: 0}
+  CuringAcceptDialogue: {fileID: 0}
+  CuringDeclineDialogue: {fileID: 0}
+  CuringAlreadyDoneDialogue: {fileID: 0}
+  UseRandomTimeOffset: 1
+  MinTimeOffset: 0
+  MaxTimeOffset: 10
+  AutoStartQuestOnInteract: 0
