@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29943a3ad3f2dbf4f9cf2a769a5b2ee0, type: 3}
+  m_Name: DoctorNpcData
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDataSO
+  NpcId: Doctor
+  NpcName: "\uB2E5\uD130 \uADF8\uB7A8"
+  CanUseAiDialogue: 1
+  NpcMbti: ENTJ
+  NpcPersonality: "\uB300\uB2F4\uD558\uACE0 \uD589\uB3D9\uC774 \uAC70\uCE68\uC5C6\uB294
+    \uB0A8\uC790\uC774\uB2E4. \uC18D\uBB3C\uC801\uC778 \uC131\uACA9\uC73C\uB85C \uC190\uB2D8\uC5D0\uAC8C\uB294
+    \uC798 \uB300\uD574\uC8FC\uC9C0\uB9CC, \uB3C8\uC774 \uC5C6\uAC00\uB2C8 \uC190\uB2D8\uC774
+    \uC544\uB2CC \uC0AC\uB78C\uC5D0\uAC8C\uB294 \uD0DC\uB3C4\uAC00 \uB3CC\uBCC0\uD55C\uB2E4.
+    \uC740\uADFC\uD788 \uC0AC\uB78C\uC774\uB098 \uB3D9\uBB3C\uB4E4\uC744 \uC798 \uCC59\uACA8\uC900\uB2E4."
+  Age: 24
+  Job: "\uC758\uC0AC"
+  WayOfTone: "\uD3C9\uC18C\uC5D0\uB294 \uAEC4\uB801\uD558\uACE0 \uAC70\uCE68 \uC5C6\uB294
+    \uBC18\uB9D0. \uC190\uB2D8\uC744 \uB300\uD560 \uB54C\uB294 \uC190\uB2D8\uC744
+    \uD658\uC790 \uBD84\uC774\uB77C \uBD80\uB974\uBA70 \uAD7D\uC2E0\uAC70\uB9BC."
+  Prefab: {fileID: 7840605641264675590, guid: 3cdc2847ffab7ee40bfd3c613b7c2310, type: 3}
+  WalkSpeed: 2
+  RunSpeed: 4
+  JumpDuration: 0.8
+  JumpHeight: 1.6
+  GreetDialogues:
+  - {fileID: 11400000, guid: 9ddb8a6c184b3094bb7670d2cdeb35af, type: 2}
+  - {fileID: 11400000, guid: a37bcec8c02f4ee42b2c4743f1c60ec7, type: 2}
+  - {fileID: 11400000, guid: f767af53ed9512346afe0b6772009ad2, type: 2}
+  TalkDialogues:
+  - {fileID: 11400000, guid: 8ec859c4586ff5d4ba0678a12930de7a, type: 2}
+  - {fileID: 11400000, guid: e3bb0263ac3b5734fb853185dd474baf, type: 2}
+  - {fileID: 11400000, guid: 7041f70f9c216ec488a5d3eef05071fd, type: 2}
+  CuringAskDialogue: {fileID: 11400000, guid: a4edd5f627fd88244b09c416920d5dda, type: 2}
+  CuringAcceptDialogue: {fileID: 11400000, guid: b94a2754f4486e4499877fed3562518c, type: 2}
+  CuringDeclineDialogue: {fileID: 11400000, guid: 330b42f485b68234ea836b0149df9d9a, type: 2}
+  CuringAlreadyDoneDialogue: {fileID: 11400000, guid: 5493c665d3b8edf42887659b89644cbd, type: 2}
+  UseRandomTimeOffset: 1
+  MinTimeOffset: -15
+  MaxTimeOffset: 15
+  AutoStartQuestOnInteract: 0

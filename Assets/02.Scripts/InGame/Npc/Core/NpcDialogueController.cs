@@ -12,7 +12,7 @@ public class NpcDialogueController : MonoBehaviour
     private IFriendshipService _friendshipService;
 
     private NpcController _currentNpc;
-    private Transform _currentInteractor;
+    private PlayerController _currentInteractor;
     private NpcInteractionComponent _currentInteractionComponent;
     private NpcAnimatorController _anim;
 
@@ -68,7 +68,7 @@ public class NpcDialogueController : MonoBehaviour
     public void Open(NpcController npc, PlayerController player)
     {
         _currentNpc = npc;
-        _currentInteractor = player.transform;
+        _currentInteractor = player;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
         _anim = npc.Anim;
 
@@ -230,12 +230,16 @@ public class NpcDialogueController : MonoBehaviour
         switch (_dialogueState)
         {
             case EDialogueUiState.Greeting:
+            case EDialogueUiState.AskCuring:
                 _dialogueState = EDialogueUiState.Choice;
                 ShowChoiceButtons(_currentNpc.InteractionOptions);
                 break;
 
             case EDialogueUiState.Talking:
             case EDialogueUiState.Quest:
+            case EDialogueUiState.CuringAccept:
+            case EDialogueUiState.CuringDecline:
+            case EDialogueUiState.CuringAlreadyDone:
                 _dialogueState = EDialogueUiState.None;
                 EndCurrentInteraction();
                 break;
@@ -263,7 +267,7 @@ public class NpcDialogueController : MonoBehaviour
         ShowChoiceButtons(_currentNpc.InteractionOptions);
     }
 
-    public void ShowQuestChoices(IReadOnlyList<NpcDialogueChoiceData> choices, bool clearText = true)
+    public void ShowCustomChoices(IReadOnlyList<NpcDialogueChoiceData> choices, bool clearText = true)
     {
         if (_uiDialogue == null) return;
 
@@ -271,6 +275,10 @@ public class NpcDialogueController : MonoBehaviour
         {
             _uiDialogue.ClearDialogueText();
         }
+
+        _currentDialogue = null;
+        _currentLineIndex = 0;
+        _dialogueState = EDialogueUiState.Choice;
 
         _uiDialogue.ShowChoiceButtons(choices);
     }
@@ -293,6 +301,7 @@ public class NpcDialogueController : MonoBehaviour
             case ENpcInteractionType.Styling:
             case ENpcInteractionType.Quest:
             case ENpcInteractionType.DinoRace:
+            case ENpcInteractionType.Curing:
             case ENpcInteractionType.EndTalk:
                 _interactionService.Execute(type, CreateContext());
                 break;
