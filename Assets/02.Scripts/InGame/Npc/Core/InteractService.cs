@@ -10,6 +10,7 @@ public class InteractService : MonoBehaviour
     [SerializeField] private StylingCustomizeService _stylingCustomizeService;
     [SerializeField] private NpcQuestService _npcQuestService;
     [SerializeField] private DinoRaceInteractionService _dinoRaceInteractionService;
+    [SerializeField] private NpcCuringService _npcCuringService;
 
     private IDialogueHandler _scriptedHandler;
     private IDialogueHandler _aiHandler;
@@ -44,6 +45,10 @@ public class InteractService : MonoBehaviour
         {
             _dinoRaceInteractionService = FindFirstObjectByType<DinoRaceInteractionService>();
         }
+        if (_npcCuringService == null)
+        {
+            _npcCuringService = FindFirstObjectByType<NpcCuringService>();
+        }
 
         _scriptedHandler = new ScriptedDialogueHandler(_dialogueController);
         _aiHandler = new AIDialogueHandler(_aiDialogueController);
@@ -77,6 +82,10 @@ public class InteractService : MonoBehaviour
 
             case ENpcInteractionType.Quest:
                 ExecuteQuest(context);
+                break;
+
+            case ENpcInteractionType.Curing:
+                ExecuteCuring(context);
                 break;
 
             case ENpcInteractionType.EndTalk:
@@ -158,5 +167,11 @@ public class InteractService : MonoBehaviour
     private void ExecuteDinoRace(NpcInteractionContext context)
     {
         _dinoRaceInteractionService?.BeginInteraction(context);
+    }
+
+    private void ExecuteCuring(NpcInteractionContext context)
+    {
+        if (context == null || context.Npc == null) return;
+        _npcCuringService?.ExecuteCuringInteraction(context);
     }
 }
