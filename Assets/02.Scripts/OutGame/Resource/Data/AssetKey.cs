@@ -23,6 +23,7 @@ public static class AssetKey
         public const string Blacksmith = "Blacksmith";
         public const string Hairdresser = "Hairdresser";
         public const string Merchant = "Merchant";
+        public const string Gambler = "Gambler";
         public const string Doctor = "Doctor";
         public const string GroundHelper = "GroundHelper";
         public const string LightHelper = "LightHelper";
@@ -41,6 +42,7 @@ public static class AssetKey
         public const string JungleTroublemaker = "JungleTroublemaker";
         public const string CaveTroublemaker1 = "CaveTroublemaker1";
         public const string Storage = "Storage";
+        public const string GamblingBuilding = "GamblingBuilding";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
@@ -116,13 +118,15 @@ public static class AssetKey
         private const string Smithy = "Smithy";
         private const string HairShop = "HairShop";
         private const string Storage = "Storage";
+        private const string GamblingBuilding = "GamblingBuilding";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
         {
             MarketStall,
             Smithy,
             HairShop,
-            Storage
+            Storage,
+            GamblingBuilding
         };
 
         public static string GetKey(string buildingId)
