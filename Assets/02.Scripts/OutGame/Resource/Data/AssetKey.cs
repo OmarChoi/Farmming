@@ -47,6 +47,7 @@ public static class AssetKey
         public const string Storage = "Storage";
         public const string GamblingBuilding = "GamblingBuilding";
         public const string Shrine = "Shrine";
+        public const string Hospital = "Hospital";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
@@ -124,6 +125,7 @@ public static class AssetKey
         private const string Shrine = "Shrine";
         private const string Storage = "Storage";
         private const string GamblingBuilding = "GamblingBuilding";
+        private const string Hospital = "Hospital";
 
         private static readonly HashSet<string> _registered = new HashSet<string>
         {
@@ -132,7 +134,8 @@ public static class AssetKey
             HairShop,
             Shrine,
             Storage,
-            GamblingBuilding
+            GamblingBuilding,
+            Hospital
         };
 
         public static string GetKey(string buildingId)
