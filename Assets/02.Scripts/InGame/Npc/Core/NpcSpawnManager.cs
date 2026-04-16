@@ -91,7 +91,7 @@ public class NpcSpawnManager : MonoBehaviour
     private NpcController SpawnNew(NpcSpawnRequest request, string runtimeNpcKey)
     {
         GameObject prefab = request.Prefab != null ? request.Prefab : _defaultNpcPrefab;
-        Vector3 finalPosition = ResolveSpawnPosition(request.RequestedPosition);
+        Vector3 finalPosition = ResolveInitialSpawnPosition(request, runtimeNpcKey);
 
         GameObject npcObject;
         if (PhotonNetwork.IsConnected && !request.IsLocalOnly)
@@ -120,6 +120,7 @@ public class NpcSpawnManager : MonoBehaviour
         }
 
         controller.Initialize(request.Data, request.IsLocalOnly, runtimeNpcKey);
+        controller.SetInitialScheduleBase(finalPosition);
 
         if (npcObject.TryGetComponent(out NpcMovement movement))
         {
@@ -131,15 +132,33 @@ public class NpcSpawnManager : MonoBehaviour
         }
 
         identity.Initialize(runtimeNpcKey, controller);
+        controller.SyncScheduleToCurrentTime();
 
         return controller;
+    }
+
+    // 우선 스폰 위치는 Home을 기준으로 합니다.
+    private Vector3 ResolveInitialSpawnPosition(NpcSpawnRequest request, string runtimeNpcKey)
+    {
+        if (NpcLocationManager.Instance != null &&
+            NpcLocationManager.Instance.TryGetLocation(
+                runtimeNpcKey,
+                ENpcLocationType.Home,
+                string.Empty,
+                out Vector3 homePosition))
+        {
+            return ResolveSpawnPosition(homePosition);
+        }
+
+        return ResolveSpawnPosition(request.RequestedPosition);
     }
 
     private void MoveExisting(NpcController controller, NpcSpawnRequest request)
     {
         if (controller == null) return;
 
-        Vector3 finalPosition = ResolveSpawnPosition(request.RequestedPosition);
+        string runtimeNpcKey = GetSpawnKey(request);
+        Vector3 finalPosition = ResolveInitialSpawnPosition(request, runtimeNpcKey);
 
         if (controller.TryGetComponent(out NpcMovement movement))
         {
@@ -149,6 +168,9 @@ public class NpcSpawnManager : MonoBehaviour
         {
             controller.transform.SetPositionAndRotation(finalPosition, request.Rotation);
         }
+
+        controller.SetInitialScheduleBase(finalPosition);
+        controller.SyncScheduleToCurrentTime();
     }
 
     private Vector3 ResolveSpawnPosition(Vector3 requestedPosition)
