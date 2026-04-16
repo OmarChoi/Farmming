@@ -170,6 +170,7 @@ public class HelperUpgradeService : MonoBehaviour
     public bool CanUpgrade(HelperDataSO data)
     {
         if (_helperInventoryAbility == null || _inventoryAbility == null || data == null) return false;
+        if (IsCantUpgradeHelper(data)) return false;
 
         EHelperGrade grade = _helperInventoryAbility.GetHelperGrade(data);
         if (grade == EHelperGrade.Legendary) return false;
@@ -188,6 +189,8 @@ public class HelperUpgradeService : MonoBehaviour
     {
         if (data == null) return EHelperUpgradeBlockReason.InvalidData;
         if (_helperInventoryAbility == null) return EHelperUpgradeBlockReason.InventoryNotReady;
+
+        if (IsCantUpgradeHelper(data)) return EHelperUpgradeBlockReason.IsCantUpgrade;
 
         EHelperGrade grade = _helperInventoryAbility.GetHelperGrade(data);
         if (grade == EHelperGrade.Legendary) return EHelperUpgradeBlockReason.MaxGrade;
@@ -238,8 +241,7 @@ public class HelperUpgradeService : MonoBehaviour
         if (_evolutionManager == null || data == null || currentGrade >= EHelperGrade.Legendary) return false;
 
         HelperController liveHelper = FindLiveHelperForEvolution(data);
-        bool started = _evolutionManager.BeginEvolution(data, currentGrade, liveHelper, completed
-            =>
+        bool started = _evolutionManager.BeginEvolution(data, currentGrade, liveHelper, completed =>
             {
                 if (!completed)
                 {
@@ -319,19 +321,6 @@ public class HelperUpgradeService : MonoBehaviour
         return _helperInventoryAbility.GetMaxExpByGrade(data, grade);
     }
 
-    public int GetRange(HelperDataSO data, EHelperGrade grade)
-    {
-        if (data == null) return 0;
-
-        return grade switch
-        {
-            EHelperGrade.Normal => data.NormalRange,
-            EHelperGrade.Epic => data.EpicRange,
-            EHelperGrade.Legendary => data.LegendaryRange,
-            _ => data.NormalRange
-        };
-    }
-
     private void SortHelpers(List<HelperDataSO> helpers)
     {
         helpers.Sort((a, b) =>
@@ -365,6 +354,13 @@ public class HelperUpgradeService : MonoBehaviour
 
         int currentExp = _helperInventoryAbility.GetHelperExperience(data);
         return (float)currentExp / maxExp;
+    }
+
+    private bool IsCantUpgradeHelper(HelperDataSO data)
+    {
+        if (data == null) return false;
+
+        return data.HelperType == EHelperType.Ground || data.HelperType == EHelperType.Light;
     }
 
     private bool TryConsumeUpgradeCost(HelperDataSO data)

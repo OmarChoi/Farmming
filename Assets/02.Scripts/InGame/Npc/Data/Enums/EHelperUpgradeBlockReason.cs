@@ -7,5 +7,6 @@ public enum EHelperUpgradeBlockReason
     MaxGrade,
     NotEnoughExperience,
     NotEnoughItemCost,
-    NotEnoughGoldCost
+    NotEnoughGoldCost,
+    IsCantUpgrade
 }
