@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Video;
 
 [CreateAssetMenu(fileName = "HelperEvolutionProfile", menuName = "Scriptable Objects/Helper/HelperEvolutionProfile")]
 public class HelperEvolutionProfileSO : ScriptableObject
@@ -9,6 +10,7 @@ public class HelperEvolutionProfileSO : ScriptableObject
 
     [Header("Background")]
     public Sprite BackgroundSprite;
+    public VideoClip BackgroundVideo;
     public Color FlashColor = Color.white;
 
     [Header("Studio Placement")]
