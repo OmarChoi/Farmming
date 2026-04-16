@@ -378,6 +378,13 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
     {
         if (_isDragging) return;
         if (clicked.CurrentItem == null) return;
+
+        if (_clickMode == EInventoryClickMode.Storage)
+        {
+            _storageTransferService?.MoveToStorage(clicked.SlotIndex, 1);
+            return;
+        }
+
         if (_clickMode != EInventoryClickMode.Normal) return;
 
         if (clicked.CurrentItem is SeedItemDataSO seedItem && RequestSeedSelection(seedItem))
@@ -388,14 +395,6 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
 
         if (clicked.CurrentItem.Type == EItemType.Fertilizer && RequestFertilizerSelection(clicked.CurrentItem))
             return;
-
-
-        // Storage 모드: 인벤토리 → 창고 빠른 이동
-        if (_clickMode == EInventoryClickMode.Storage)
-        {
-            _storageTransferService?.MoveToStorage(clicked.SlotIndex, 1);
-            return;
-        }
 
         if (!(clicked.CurrentItem is PotionDataSO)) return;
 

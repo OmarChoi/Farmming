@@ -87,6 +87,7 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
             AnchorY = _anchor.y,
             AnchorZ = _anchor.z,
             SlotCount = SlotCount,
+            Gold = _storage != null ? _storage.Gold : 0,
             Slots = slots
         };
     }
@@ -103,6 +104,8 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
         {
             ImportSlotsDirectly(saveData.SlotCount, saveData.Slots);
         }
+
+        _storage?.SetGold(saveData.Gold);
     }
 
     private void ImportSlotsDirectly(int slotCount, System.Collections.Generic.List<InventorySlotSaveData> slots)
