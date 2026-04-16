@@ -1,23 +1,28 @@
-using System;
-using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UI_Storage : MonoBehaviour, ISlotContainer
+/// 창고/금고 UI 최상위 코디네이터.
+/// 실제 기능은 UI_StorageItemPanel(창고), UI_StorageGoldPanel(금고)가 담당.
+public class UI_Storage : MonoBehaviour
 {
-    private const int Columns = 4;
-
-    [Header("참조")]
+    [Header("루트")]
     [SerializeField] private GameObject _panel;
-    [SerializeField] private Transform _slotContainer;
-    [SerializeField] private UI_Slot _slotPrefab;
-    [SerializeField] private ScrollRect _scrollRect;
-    [SerializeField] private UI_ItemTooltip _tooltip;
-    [SerializeField] private Image _dragIcon;
 
-    [Header("닫기 버튼")]
-    [SerializeField] private Button _exitButton;
+    [Header("닫기 버튼 (각 패널의 X 버튼 모두 등록)")]
+    [SerializeField] private Button[] _exitButtons;
+
+    [Header("탭 (책갈피)")]
+    [SerializeField] private Button _storageTabButton;
+    [SerializeField] private Button _goldTabButton;
+    [SerializeField] private RectTransform _storageTabRect; // StoragePanel 전체 RectTransform
+    [SerializeField] private RectTransform _goldTabRect;    // VaultPanel 전체 RectTransform
+    [SerializeField] private float _tabSwitchDuration = 0.25f;
+    [SerializeField] private float _tabPopScale = 1.03f; // 전환 시 살짝 커졌다가 복귀
+
+    [Header("하위 패널")]
+    [SerializeField] private UI_StorageItemPanel _itemPanel;
+    [SerializeField] private UI_StorageGoldPanel _goldPanel;
 
     [Header("슬라이드 애니메이션")]
     [SerializeField] private float _slideDuration = 0.3f;
@@ -27,33 +32,19 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     private Vector2 _panelOriginPos;
     private Tween _slideTween;
 
+    private Tween _storagePanelTween;
+    private Tween _goldPanelTween;
+
+    private enum TabType { Storage, Gold }
+    private TabType _currentTab = TabType.Storage;
+
     private StorageDomain _storage;
     private StorageTransferService _transferService;
     private StorageController _boundController;
-    private readonly List<UI_Slot> _slotUIs = new();
 
-    // 드래그 상태
-    private bool _isDragging;
-    private bool _isSplitDrag;
-    private UI_Slot _dragSourceSlot;
-    private UI_Slot _hoveredSlot;
-    private Transform _dragIconOriginalParent;
-    private bool _suppressRefresh;
-
-    // 드래그 중인 아이템 (일반 / 분할 동일)
-    private ItemDataSO _dragItem;
-    private int _dragCount;
-
-    // 크로스 드래그용
-    private UI_Inventory _linkedInventory;
-
-    public bool IsDragging => _isDragging;
-    public UI_Slot HoveredSlot => _hoveredSlot;
-
-    public void SetLinkedInventory(UI_Inventory inventory)
-    {
-        _linkedInventory = inventory;
-    }
+    // UI_Inventory의 크로스드래그가 참조하는 호버 슬롯 pass-through
+    public UI_Slot HoveredSlot => _itemPanel != null ? _itemPanel.HoveredSlot : null;
+    public bool IsDragging => _itemPanel != null && _itemPanel.IsDragging;
 
     private void Awake()
     {
@@ -71,48 +62,54 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
         _panelRect = _panel.GetComponent<RectTransform>();
         _panelOriginPos = _panelRect.anchoredPosition;
         _panel.SetActive(false);
-        if (_dragIcon != null)
-            _dragIcon.gameObject.SetActive(false);
-        if (_exitButton != null)
-            _exitButton.onClick.AddListener(HandleCloseRequested);
-    }
 
-    private void Update()
-    {
-        if (!_isDragging) return;
-
-        if (_dragIcon != null)
-            _dragIcon.transform.position = Input.mousePosition;
-
-        if (!Input.GetMouseButton(0))
-            EndDrag();
-    }
-
-    public void Init(StorageDomain storage, StorageTransferService transferService)
-    {
-        if (_storage != null)
+        if (_exitButtons != null)
         {
-            _storage.OnSlotChanged -= RefreshSlot;
-            _storage.OnSlotCountChanged -= OnSyncReceived;
+            foreach (var btn in _exitButtons)
+            {
+                if (btn != null)
+                    btn.onClick.AddListener(HandleCloseRequested);
+            }
         }
 
-        _storage = storage;
-        _transferService = transferService;
+        if (_storageTabButton != null)
+            _storageTabButton.onClick.AddListener(() => SelectTab(TabType.Storage));
+        if (_goldTabButton != null)
+            _goldTabButton.onClick.AddListener(() => SelectTab(TabType.Gold));
 
-        if (_storage != null)
+        CacheTabLayouts();
+        ApplyTabImmediate(TabType.Storage);
+    }
+
+    private void OnDestroy()
+    {
+        if (_exitButtons != null)
         {
-            _storage.OnSlotChanged += RefreshSlot;
-            _storage.OnSlotCountChanged += OnSyncReceived;
+            foreach (var btn in _exitButtons)
+            {
+                if (btn != null)
+                    btn.onClick.RemoveListener(HandleCloseRequested);
+            }
         }
+        if (_storageTabButton != null)
+            _storageTabButton.onClick.RemoveAllListeners();
+        if (_goldTabButton != null)
+            _goldTabButton.onClick.RemoveAllListeners();
 
-        BuildSlots();
+        _storagePanelTween?.Kill();
+        _goldPanelTween?.Kill();
+
+        StorageUiRegistry.UnregisterStorage(this);
+        StorageController.OnReady -= HandleControllerReady;
+        StorageUiRegistry.OnInventoryRegistered -= HandleInventoryRegistered;
+        StorageUiRegistry.OnInventoryUnregistered -= HandleInventoryUnregistered;
+        UnbindController();
     }
 
     public void Open()
     {
         _slideTween?.Kill();
         _panel.SetActive(true);
-        RefreshAll();
 
         _panelRect.anchoredPosition = _panelOriginPos + Vector2.left * _slideDistance;
         _slideTween = _panelRect.DOAnchorPos(_panelOriginPos, _slideDuration)
@@ -123,11 +120,8 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     public void Close()
     {
         _slideTween?.Kill();
-        CancelDrag();
-        if (_tooltip != null)
-        {
-            _tooltip.Hide();
-        }
+        _itemPanel?.CancelDrag();
+        _itemPanel?.HideTooltip();
 
         Vector2 target = _panelOriginPos + Vector2.left * _slideDistance;
         _slideTween = _panelRect.DOAnchorPos(target, _slideDuration)
@@ -136,227 +130,67 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
             .OnComplete(() => _panel.SetActive(false));
     }
 
-    private void BuildSlots()
+    // === 탭 전환 ===
+
+    private void CacheTabLayouts() { }
+
+    private void ApplyTabImmediate(TabType tab)
     {
-        foreach (var slot in _slotUIs)
-            Destroy(slot.gameObject);
-        _slotUIs.Clear();
+        _currentTab = tab;
+        bool isStorage = tab == TabType.Storage;
 
-        if (_storage == null) return;
-
-        for (int i = 0; i < _storage.SlotCount; i++)
+        // 두 패널 모두 항상 활성. 같은 위치에 겹쳐 있고, 활성 탭이 최상단으로 옴.
+        if (_storageTabRect != null)
         {
-            var slotUI = Instantiate(_slotPrefab, _slotContainer);
-            slotUI.Init(this, i);
-            _slotUIs.Add(slotUI);
+            _storageTabRect.gameObject.SetActive(true);
+            _storageTabRect.localScale = Vector3.one;
         }
-    }
-
-    private void RefreshAll()
-    {
-        for (int i = 0; i < _slotUIs.Count; i++)
-            RefreshSlot(i);
-    }
-
-    private void RefreshSlot(int index)
-    {
-        if (_suppressRefresh) return;
-        if (index < 0 || index >= _slotUIs.Count) return;
-        _slotUIs[index].Refresh(_storage.GetSlot(index));
-    }
-
-    // ISlotContainer 구현
-
-    public void BeginDrag(UI_Slot source, bool shift)
-    {
-        if (source.CurrentItem == null) return;
-
-        if (shift)
+        if (_goldTabRect != null)
         {
-            int half = _transferService.SplitHalfInStorage(source.SlotIndex);
-            if (half <= 0) return;
-
-            _dragItem = source.CurrentItem;
-            _dragCount = half;
-        }
-        else
-        {
-            // 도메인에서 아이템을 꺼내고 동기화
-            _transferService.PickUpFromStorage(source.SlotIndex, out _dragItem, out _dragCount);
-            if (_dragItem == null || _dragCount <= 0) return;
+            _goldTabRect.gameObject.SetActive(true);
+            _goldTabRect.localScale = Vector3.one;
         }
 
-        _isDragging = true;
-        _isSplitDrag = shift;
-        _dragSourceSlot = source;
+        BringToFront(isStorage ? _storageTabRect : _goldTabRect);
+    }
 
-        if (_dragIcon != null)
+    private void SelectTab(TabType tab)
+    {
+        if (_currentTab == tab) return;
+        _currentTab = tab;
+        bool isStorage = tab == TabType.Storage;
+
+        RectTransform showing = isStorage ? _storageTabRect : _goldTabRect;
+
+        if (isStorage)
+            _goldPanel?.Unbind();
+
+        _storagePanelTween?.Kill();
+        _goldPanelTween?.Kill();
+
+        if (showing != null)
         {
-            _dragIcon.sprite = _dragItem.Icon;
-            _dragIcon.gameObject.SetActive(true);
-            _dragIcon.transform.position = Input.mousePosition;
+            BringToFront(showing);
+            showing.localScale = Vector3.one * _tabPopScale;
+            var popTween = showing.DOScale(Vector3.one, _tabSwitchDuration)
+                .SetEase(Ease.OutBack)
+                .SetLink(showing.gameObject);
 
-            _dragIconOriginalParent = _dragIcon.transform.parent;
-            _dragIcon.transform.SetParent(_dragIcon.canvas.transform, true);
-            _dragIcon.transform.SetAsLastSibling();
+            if (isStorage) _storagePanelTween = popTween;
+            else _goldPanelTween = popTween;
         }
 
-        if (_scrollRect != null)
-            _scrollRect.enabled = false;
+        if (!isStorage && _goldPanel != null && _storage != null && _transferService != null)
+            _goldPanel.Bind(_storage, _transferService);
     }
 
-    public void EndDrag()
+    private void BringToFront(RectTransform target)
     {
-        if (!_isDragging) return;
-
-        // 크로스 드래그: 창고 → 인벤토리
-        if (_linkedInventory != null)
-        {
-            var crossTarget = _linkedInventory.HoveredSlot;
-            if (crossTarget != null)
-            {
-                if (_isSplitDrag)
-                {
-                    // 분할 드래그: 반만 놓은 인벤토리 슬롯으로 이동 (소스에 나머지 반 유지)
-                    _transferService.AddHeldItemToInventory(_dragItem, _dragCount, crossTarget.SlotIndex);
-                }
-                else if (!_transferService.RequiresRestoreBeforeCrossSwap)
-                {
-                    _transferService.SwapAcross(
-                        crossTarget.SlotIndex, _dragSourceSlot.SlotIndex, preferInventory: true);
-                }
-                else
-                {
-                    _suppressRefresh = true;
-                    try
-                    {
-                        _transferService.PutDownInStorage(_dragSourceSlot.SlotIndex, _dragItem, _dragCount);
-                        _transferService.SwapAcross(
-                            crossTarget.SlotIndex, _dragSourceSlot.SlotIndex, preferInventory: true);
-                    }
-                    finally
-                    {
-                        _suppressRefresh = false;
-                        RefreshAll();
-                    }
-                }
-                ClearDragState();
-                return;
-            }
-        }
-
-        // 창고 내부 드래그
-        {
-            int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
-                ? _hoveredSlot.SlotIndex
-                : _dragSourceSlot.SlotIndex;
-
-            if (_isSplitDrag)
-            {
-                _transferService.PlaceSplitInStorage(_dragSourceSlot.SlotIndex, targetIndex, _dragItem, _dragCount);
-            }
-            else
-            {
-                _transferService.PutDownInStorage(targetIndex, _dragItem, _dragCount);
-            }
-        }
-
-        ClearDragState();
+        if (target == null) return;
+        target.SetAsLastSibling();
     }
 
-    public void CancelDrag()
-    {
-        if (!_isDragging) return;
-
-        if (_isSplitDrag)
-            _transferService.PlaceSplitInStorage(_dragSourceSlot.SlotIndex, _dragSourceSlot.SlotIndex, _dragItem, _dragCount);
-        else
-            _transferService.PutDownInStorage(_dragSourceSlot.SlotIndex, _dragItem, _dragCount);
-        ClearDragState();
-    }
-
-    private void ClearDragState()
-    {
-        if (_dragIcon != null)
-        {
-            if (_dragIconOriginalParent != null)
-                _dragIcon.transform.SetParent(_dragIconOriginalParent, true);
-            _dragIcon.gameObject.SetActive(false);
-        }
-        if (_scrollRect != null)
-            _scrollRect.enabled = true;
-
-        _isDragging = false;
-        _isSplitDrag = false;
-        _dragItem = null;
-        _dragCount = 0;
-        _dragSourceSlot = null;
-    }
-
-    public void OnSlotHoverEnter(UI_Slot slot)
-    {
-        _hoveredSlot = slot;
-
-        if (_isDragging) return;
-        if (_tooltip == null) return;
-
-        if (slot.CurrentItem == null)
-        {
-            _tooltip.Hide();
-            return;
-        }
-
-        int column = slot.SlotIndex % Columns;
-        bool showRight = column < 2;
-        _tooltip.Show(slot.CurrentItem, slot.RectTransform, showRight);
-    }
-
-    public void OnSlotHoverExit()
-    {
-        _hoveredSlot = null;
-
-        if (!_isDragging && _tooltip != null)
-            _tooltip.Hide();
-    }
-
-    public void OnSlotClicked(UI_Slot clicked)
-    {
-        // 좌클릭 — 현재는 별도 동작 없음
-    }
-
-    /// 우클릭: 창고 → 인벤토리로 빠른 이동
-    public void OnSlotRightClicked(UI_Slot clicked)
-    {
-        if (_isDragging) return;
-        if (clicked.CurrentItem == null) return;
-
-        _transferService?.MoveToInventory(clicked.SlotIndex, 1);
-    }
-
-    /// ReplaceAll(동기화 수신) 시 전체 UI 갱신
-    private void OnSyncReceived()
-    {
-        if (_suppressRefresh) return;
-        RefreshAll();
-    }
-
-    private void OnDestroy()
-    {
-        if (_exitButton != null)
-            _exitButton.onClick.RemoveListener(HandleCloseRequested);
-
-        StorageUiRegistry.UnregisterStorage(this);
-        StorageController.OnReady -= HandleControllerReady;
-        StorageUiRegistry.OnInventoryRegistered -= HandleInventoryRegistered;
-        StorageUiRegistry.OnInventoryUnregistered -= HandleInventoryUnregistered;
-        UnbindController();
-
-        if (_storage != null)
-        {
-            _storage.OnSlotChanged -= RefreshSlot;
-            _storage.OnSlotCountChanged -= OnSyncReceived;
-        }
-    }
+    // === StorageController 바인딩 ===
 
     private void HandleControllerReady(StorageController controller)
     {
@@ -366,9 +200,7 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     private void BindController(StorageController controller)
     {
         if (controller == null) return;
-
-        if (_boundController == controller)
-            return;
+        if (_boundController == controller) return;
 
         UnbindController();
 
@@ -393,14 +225,23 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     {
         if (session == null) return;
 
-        Init(session.Storage, session.TransferService);
-        SetLinkedInventory(StorageUiRegistry.CurrentInventory);
+        _storage = session.Storage;
+        _transferService = session.TransferService;
+
+        _itemPanel?.Init(_storage, _transferService);
+        _itemPanel?.SetLinkedInventory(StorageUiRegistry.CurrentInventory);
+
         Open();
     }
 
     private void HandleStorageClosed()
     {
-        SetLinkedInventory(null);
+        _itemPanel?.SetLinkedInventory(null);
+        _itemPanel?.Unbind();
+        _goldPanel?.Unbind();
+        ApplyTabImmediate(TabType.Storage);
+        _storage = null;
+        _transferService = null;
         Close();
     }
 
@@ -412,11 +253,11 @@ public class UI_Storage : MonoBehaviour, ISlotContainer
     private void HandleInventoryRegistered(UI_Inventory inventory)
     {
         if (_boundController == null || !_boundController.IsOpen) return;
-        SetLinkedInventory(inventory);
+        _itemPanel?.SetLinkedInventory(inventory);
     }
 
     private void HandleInventoryUnregistered()
     {
-        SetLinkedInventory(null);
+        _itemPanel?.SetLinkedInventory(null);
     }
 }

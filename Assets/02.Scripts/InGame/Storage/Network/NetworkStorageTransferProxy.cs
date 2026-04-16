@@ -163,4 +163,37 @@ public class NetworkStorageTransferProxy : StorageTransferService
         _syncHandler.RequestGiveHeldItem(item.Id, amount, inventorySlotIndex);
         return true;
     }
+
+    public override bool DepositGold(int amount)
+    {
+        if (_syncHandler.IsMaster)
+        {
+            bool result = base.DepositGold(amount);
+            if (result) _syncHandler.BroadcastFullSync();
+            return result;
+        }
+
+        // 클라이언트: 지갑에서 먼저 차감하고, 마스터에게 창고 가산 요청 (실패 시 마스터가 환불)
+        if (amount <= 0) return false;
+        var currency = CurrencyManager.Instance;
+        if (currency == null || !currency.TrySpendGold(amount)) return false;
+
+        _syncHandler.RequestDepositGold(amount);
+        return true;
+    }
+
+    public override bool WithdrawGold(int amount)
+    {
+        if (_syncHandler.IsMaster)
+        {
+            bool result = base.WithdrawGold(amount);
+            if (result) _syncHandler.BroadcastFullSync();
+            return result;
+        }
+
+        // 클라이언트: 마스터에게 출금 요청 → 마스터가 잔액 확인 후 지급
+        if (amount <= 0) return false;
+        _syncHandler.RequestWithdrawGold(amount);
+        return true;
+    }
 }
