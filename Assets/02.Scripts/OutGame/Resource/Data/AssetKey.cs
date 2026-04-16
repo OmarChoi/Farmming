@@ -43,6 +43,7 @@ public static class AssetKey
         public const string CaveTroublemaker1 = "CaveTroublemaker1";
         public const string Storage = "Storage";
         public const string GamblingBuilding = "GamblingBuilding";
+        public const string Shrine = "Shrine";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
@@ -117,6 +118,7 @@ public static class AssetKey
         private const string MarketStall = "MarketStall";
         private const string Smithy = "Smithy";
         private const string HairShop = "HairShop";
+        private const string Shrine = "Shrine";
         private const string Storage = "Storage";
         private const string GamblingBuilding = "GamblingBuilding";
 
@@ -125,6 +127,7 @@ public static class AssetKey
             MarketStall,
             Smithy,
             HairShop,
+            Shrine,
             Storage,
             GamblingBuilding
         };
@@ -155,6 +158,7 @@ public static class AssetKey
         public const string Stamina = "UI_Stamina";
         public const string BuildingList = "UI_BuildingList";
         public const string BuildInfo = "UI_BuildInfo";
+        public const string Shrine = "UI_Shrine";
         public const string VillageState = "UI_VillageState";
         public const string VillageLevelUp = "UI_VillageLevelUp";
 
@@ -162,6 +166,7 @@ public static class AssetKey
         {
             {typeof(UI_BuildingList), BuildingList},
             {typeof(UI_BuildInfo), BuildInfo},
+            {typeof(UI_Shrine), Shrine},
             {typeof(UI_VillageState), VillageState},
             {typeof(UI_VillageLevelUp), VillageLevelUp},
         };

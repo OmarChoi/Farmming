@@ -189,6 +189,9 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
             Village = VillageLevelManager.Instance != null
                 ? VillageLevelManager.Instance.ExportSaveData()
                 : null,
+            WorldEffects = WorldEffectManager.Instance != null
+                ? WorldEffectManager.Instance.ExportSaveData()
+                : null,
             MaxHeight = _terrainGridManager.MaxHeight
         };
         string json = JsonUtility.ToJson(syncData);
@@ -263,6 +266,11 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
         if (syncData.Buildings != null && syncData.Buildings.Count > 0 && BuildingManager.Instance != null)
         {
             await BuildingManager.Instance.ImportBuildings(syncData.Buildings);
+        }
+
+        if (WorldEffectManager.Instance != null)
+        {
+            WorldEffectManager.Instance.ImportSaveData(syncData.WorldEffects);
         }
 
         Debug.Log($"맵 동기화 완료 (압축 {compressed.Length} bytes)");

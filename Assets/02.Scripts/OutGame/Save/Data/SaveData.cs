@@ -10,4 +10,6 @@ public class SaveData
     public List<StorageSaveData> Storages = new();
     public TimeSaveData Time = new();
     public VillageSaveData Village = new();
+    public WorldEffectSaveData WorldEffects = new();
+    public ForcedTimedQuestSaveData ForcedTimedQuest = new();
 }
