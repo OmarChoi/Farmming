@@ -541,9 +541,8 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
     // 완료된 퀘스트를 목록에서 비우는 메서드입니다.
     public bool RemoveQuest(string questId)
     {
-        if (string.IsNullOrEmpty(questId) || !_activeQuests.ContainsKey(questId)) return false;
+        if (string.IsNullOrEmpty(questId) || !_activeQuests.Remove(questId)) return false;
 
-        _activeQuests.Remove(questId);
         OnQuestRemoved?.Invoke(questId);
         return true;
     }
@@ -615,16 +614,17 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
         quest.AcceptedDay = acceptedDay;
         quest.ExpireDay = expireDay;
+        RefreshInventoryBasedProgress(quest);
         OnQuestUpdated?.Invoke(quest);
     }
 
-    public bool RemoveForcedTimedQuest(string questId)
+    private void RefreshInventoryBasedProgress(QuestRuntimeData quest)
     {
-        if (string.IsNullOrEmpty(questId) || !_activeQuests.ContainsKey(questId)) return false;
+        if (quest == null || quest.QuestData == null) return;
+        if (quest.QuestData.ObjectiveType != EQuestObjectiveType.DeliverItem) return;
 
-        _activeQuests.Remove(questId);
-        OnQuestRemoved?.Invoke(questId);
-        return true;
+        quest.Status = EQuestStatus.InProgress;
+        InitializeDeliverItemProgress(quest);
     }
 
     // ForcedTimed 퀘스트의 요청자 측 완료 처리.
@@ -637,6 +637,10 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         if (quest.QuestData.QuestCategory != EQuestCategory.ForcedTimed) return false;
 
         QuestDataSO data = quest.QuestData;
+        if (data.ObjectiveType == EQuestObjectiveType.DeliverItem)
+        {
+            RefreshInventoryBasedProgress(quest);
+        }
 
         // CanComplete가 아니면 Shrine이 NPC delivery 역할을 대신해 전이를 수행합니다.
         if (quest.Status != EQuestStatus.CanComplete)
@@ -658,7 +662,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
         quest.Status = EQuestStatus.Completed;
         OnQuestCompleted?.Invoke(quest);
-        RemoveQuest(questId);
         return true;
     }
+
 }

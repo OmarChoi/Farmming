@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class WorldEffectQuestService : MonoBehaviour
 {
+    private const string QuestBuilding = "Shrine";
     public static WorldEffectQuestService Instance { get; private set; }
 
     [SerializeField] private WorldEffectQuestConfigSO _config;
@@ -14,11 +15,9 @@ public class WorldEffectQuestService : MonoBehaviour
 
     private bool IsMaster => !PhotonNetwork.IsConnected || !PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient;
     private bool CanUseNetworkSync => PhotonNetwork.IsConnected && PhotonNetwork.InRoom && _sync != null;
-    
+
     public string ActiveQuestId => _state.ActiveQuestId;
     public bool HasActiveQuest => !string.IsNullOrEmpty(_state.ActiveQuestId);
-    public WorldEffectQuestConfigSO Config => _config;
-    private WorldEffectQuestRuleSO QuestInfo => _questInfo;
 
     private void Awake()
     {
@@ -197,7 +196,7 @@ public class WorldEffectQuestService : MonoBehaviour
         if (_config == null) return;
         if (string.IsNullOrEmpty(_state.ActiveQuestId) || _state.ActiveQuestId != questId) return;
         if (TimeEvents.CurrentDay >= _state.ExpireDay) return;
-        if (_config.CompletionBuildingId != "Shrine") return;
+        if (_config.CompletionBuildingId != QuestBuilding) return;
 
         ApplySuccessEffect(questId);
         ClearActive();
@@ -223,7 +222,7 @@ public class WorldEffectQuestService : MonoBehaviour
                 foreach (var rule in _config.Rules)
                 {
                     if (rule == null || rule.Quest == null) continue;
-                    QuestManager.Instance.RemoveForcedTimedQuest(rule.Quest.QuestId);
+                    QuestManager.Instance.RemoveQuest(rule.Quest.QuestId);
                 }
             }
             return;
@@ -239,8 +238,9 @@ public class WorldEffectQuestService : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(_state.ActiveQuestId))
         {
-            _state.ActiveQuestId = null;
-            QuestManager.Instance?.RemoveForcedTimedQuest(_state.ActiveQuestId);
+            string questID = _state.ActiveQuestId;
+            _state.ActiveQuestId = string.Empty;
+            QuestManager.Instance?.RemoveQuest(questID);
         }
         _state.AcceptedDay = 0;
         _state.ExpireDay = 0;

@@ -18,7 +18,17 @@ public class WorldEffectManager : MonoBehaviour
 
     private bool HasAuthority => !PhotonNetwork.IsConnected || !PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient;
     private bool CanUseNetworkSync => PhotonNetwork.IsConnected && PhotonNetwork.InRoom && _sync != null;
-
+    
+    public static int ApplyMultiplier(int baseValue, float multiplier)
+    {
+        return multiplier switch
+        {
+            > 1 => Mathf.Max(0, Mathf.CeilToInt(baseValue * multiplier)),
+            < 1 => Mathf.Max(0, Mathf.FloorToInt(baseValue * multiplier)),
+            _   => baseValue
+        };
+    }
+    
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -106,16 +116,6 @@ public class WorldEffectManager : MonoBehaviour
 
     public float GetAcquireMultiplier() => ComputeMultiplier(EWorldEffectCategory.Acquire);
     public float GetSellPriceMultiplier() => ComputeMultiplier(EWorldEffectCategory.SellPrice);
-
-    public static int ApplyMultiplier(int baseValue, float multiplier)
-    {
-        return multiplier switch
-        {
-            > 0 => Mathf.Max(0, Mathf.CeilToInt(baseValue * multiplier)),
-            < 0 => Mathf.Max(0, Mathf.FloorToInt(baseValue * multiplier)),
-            _   => 0
-        };
-    }
 
     private float ComputeMultiplier(EWorldEffectCategory category)
     {

@@ -1759,15 +1759,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1e5b80738e64c4e8f0b6ee7ef52f107, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShrineBuilding
-  _questTitle: "\uC81C\uB2E8 \uC758\uB8B0"
-  _questDescription: "\uC784\uC2DC \uC81C\uB2E8 \uC758\uB8B0\uC785\uB2C8\uB2E4. \uC644\uB8CC
-    \uC694\uCCAD \uD6C4 \uC131\uACF5/\uC2E4\uD328\uB97C \uC120\uD0DD\uD558\uBA74
-    \uC6D4\uB4DC \uBC84\uD504/\uB514\uBC84\uD504\uAC00 \uC801\uC6A9\uB429\uB2C8\uB2E4."
-  _completionRequestText: "\uC758\uB8B0 \uC644\uB8CC \uACB0\uACFC\uB97C \uC120\uD0DD\uD574
-    \uC8FC\uC138\uC694."
-  _successEffectId: IncreaseSellingPrice
-  _failureEffectId: DecreaseSellingPrice
-  _testEffectDurationDays: 7
 --- !u!65 &606606606606606607
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1787,8 +1778,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4, y: 3, z: 3}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 2, y: 2, z: 2}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &8794539369769718240
 GameObject:
   m_ObjectHideFlags: 0
