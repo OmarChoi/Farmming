@@ -2,12 +2,13 @@ using UnityEngine;
 
 public class NpcLocationAnchor : MonoBehaviour
 {
+    [Header("NPC 데이터")]
     [SerializeField] private NpcDataSO _npcData;
+    [SerializeField] private string _runtimeNpcKey;
 
+    [Header("위치 정보")]
     [SerializeField] private ENpcLocationType _locationType;
-
     [SerializeField] private string _locationKey;
-
     [SerializeField] private Transform _point;
 
     [Header("스타일링 숨김 대상")]
@@ -15,11 +16,13 @@ public class NpcLocationAnchor : MonoBehaviour
 
     public string NpcId => _npcData != null ? _npcData.NpcId : "";
 
+    public string RuntimeNpcKey => string.IsNullOrEmpty(_runtimeNpcKey) ? NpcId : _runtimeNpcKey;
+
     public ENpcLocationType LocationType => _locationType;
 
     public string LocationKey => _locationKey;
 
-    public Vector3 Position => _point != null ? _point.position : transform.position;
+    public Transform Point => _point != null ? _point : transform;
 
     private void OnEnable()
     {
@@ -39,6 +42,7 @@ public class NpcLocationAnchor : MonoBehaviour
 
     public void Initialize(
         NpcDataSO npcData,
+        string runtimeNpcKey,
         ENpcLocationType locationType,
         string locationKey,
         Transform point = null,
@@ -50,6 +54,7 @@ public class NpcLocationAnchor : MonoBehaviour
         }
 
         _npcData = npcData;
+        _runtimeNpcKey = runtimeNpcKey;
         _locationType = locationType;
         _locationKey = locationKey;
         _point = point != null ? point : transform;
@@ -66,7 +71,6 @@ public class NpcLocationAnchor : MonoBehaviour
         get
         {
             if (_stylingHideRoot != null) return _stylingHideRoot;
-
             return transform.root.gameObject;
         }
     }
