@@ -26,6 +26,8 @@ public class NpcLocationAnchor : MonoBehaviour
 
     private void OnEnable()
     {
+        if (GetComponentInParent<BuildingGhostMarker>(true) != null) return;
+
         if (NpcLocationManager.Instance != null)
         {
             NpcLocationManager.Instance.Register(this);
@@ -34,6 +36,8 @@ public class NpcLocationAnchor : MonoBehaviour
 
     private void OnDisable()
     {
+        if (GetComponentInParent<BuildingGhostMarker>(true) != null) return;
+
         if (NpcLocationManager.Instance != null)
         {
             NpcLocationManager.Instance.Unregister(this);

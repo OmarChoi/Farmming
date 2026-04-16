@@ -176,6 +176,7 @@ GameObject:
   - component: {fileID: 2359277274173549919}
   - component: {fileID: 1551985855749911825}
   - component: {fileID: 5782949145652138658}
+  - component: {fileID: 2321878509715642487}
   m_Layer: 0
   m_Name: HairShop
   m_TagString: Untagged
@@ -249,6 +250,18 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &2321878509715642487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4355009135852530363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b32e306db9a4d7d41b9fa436c74a8532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingGhostMarker
 --- !u!1 &5891186506416487098
 GameObject:
   m_ObjectHideFlags: 0

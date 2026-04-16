@@ -10,8 +10,18 @@ public class NpcRuntimeIdentity : MonoBehaviour
 
     public void Initialize(string runtimeNpcKey, NpcController controller)
     {
+        if (!string.IsNullOrEmpty(_runtimeNpcKey) && _controller != null && NpcRegistry.Instance != null)
+        {
+            NpcRegistry.Instance.Unregister(_runtimeNpcKey, _controller);
+        }
+
         _runtimeNpcKey = runtimeNpcKey;
         _controller = controller;
+
+        if (!string.IsNullOrEmpty(_runtimeNpcKey) && _controller != null && NpcRegistry.Instance != null)
+        {
+            NpcRegistry.Instance.Register(_runtimeNpcKey, _controller);
+        }
     }
 
     private void OnEnable()
