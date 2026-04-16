@@ -156,6 +156,12 @@ public class SaveManager : MonoBehaviourPun
             if (VillageLevelManager.Instance != null)
                 data.Village = VillageLevelManager.Instance.ExportSaveData();
 
+            if (WorldEffectManager.Instance != null)
+                data.WorldEffects = WorldEffectManager.Instance.ExportSaveData();
+
+            if (WorldEffectQuestService.Instance != null)
+                data.ForcedTimedQuest = WorldEffectQuestService.Instance.ExportSaveData();
+
             _receivedSaveData.Clear();
             _expectedResponses = 0;
 
@@ -258,6 +264,7 @@ public class SaveManager : MonoBehaviourPun
         if (_loadedData == null)
         {
             Debug.Log($"저장 데이터 없음 (슬롯 {slot})");
+            WorldEffectManager.Instance?.ClearEffects();
             _isLoadCompleted = true;
             RestoreRegisteredPlayers();
             return;
@@ -276,6 +283,12 @@ public class SaveManager : MonoBehaviourPun
 
         if (TimeSystem.Instance != null)
             TimeSystem.Instance.ImportTimeSaveData(_loadedData.Time);
+
+        if (WorldEffectManager.Instance != null)
+            WorldEffectManager.Instance.ImportSaveData(_loadedData.WorldEffects);
+
+        if (WorldEffectQuestService.Instance != null)
+            WorldEffectQuestService.Instance.ImportSaveData(_loadedData.ForcedTimedQuest);
 
         _isLoadCompleted = true;
         RestoreRegisteredPlayers();
