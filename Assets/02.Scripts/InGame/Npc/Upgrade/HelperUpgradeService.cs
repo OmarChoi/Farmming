@@ -19,6 +19,12 @@ public class HelperUpgradeService : MonoBehaviour
     public event Action OnUpgradeUiCloseRequested;
     public event Action<List<HelperDataSO>> OnUpgradeUiOpened;
 
+    private struct ConsumedItemRecord
+    {
+        public ItemDataSO Item;
+        public int Amount;
+    }
+
     private void Awake()
     {
         if (_uiHelperUpgrade == null)
@@ -368,6 +374,7 @@ public class HelperUpgradeService : MonoBehaviour
         IReadOnlyList<HelperUpgradeCostEntry> costs = GetUpgradeItemCosts(data);
         int goldCost = GetUpgradeGoldCost(data);
 
+        // 1. 아이템을 사전 검증합니다. 부족한 아이템이 있으면 바로 실패 처리합니다.
         for (int i = 0; i < costs.Count; i++)
         {
             HelperUpgradeCostEntry cost = costs[i];
@@ -376,22 +383,69 @@ public class HelperUpgradeService : MonoBehaviour
             if (_inventoryAbility.GetItemCount(cost.Item) < cost.Amount) return false;
         }
 
+        // 2. 골드를 사전 검증합니다. 부족한 골드가 있으면 바로 실패 처리합니다.
         if (CurrencyManager.Instance.CurrentGold < goldCost) return false;
 
-        for (int i = 0; i < costs.Count; i++)
-        {
-            HelperUpgradeCostEntry cost = costs[i];
-            if (cost.Item == null || cost.Amount <= 0) continue;
+        bool goldSpent = false;
+        List<ConsumedItemRecord> consumedItems = new();
 
-            _inventoryAbility.RemoveItem(cost.Item, cost.Amount);
+        try
+        {
+            // 3. 실패 가능성이 있는 골드를 먼저 차감합니다.
+            if (goldCost > 0)
+            {
+                goldSpent = CurrencyManager.Instance.TrySpendGold(goldCost);
+                if (!goldSpent) return false;
+            }
+
+            // 4. 아이템을 차감합니다.
+            for (int i = 0; i < costs.Count; i++)
+            {
+                HelperUpgradeCostEntry cost = costs[i];
+                if (cost.Item == null || cost.Amount <= 0) continue;
+
+                bool removed = _inventoryAbility.RemoveItem(cost.Item, cost.Amount);
+                if (!removed)
+                {
+                    RollbackConsumedCosts(consumedItems, goldSpent, goldCost);
+                    return false;
+                }
+
+                consumedItems.Add(new ConsumedItemRecord
+                {
+                    Item = cost.Item,
+                    Amount = cost.Amount
+                });
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+#if UNITY_EDITOR
+            Debug.LogWarning($"업그레이드 비용 소모 중 예외 발생: {ex}");
+#endif
+            RollbackConsumedCosts(consumedItems, goldSpent, goldCost);
+            return false;
+        }
+    }
+
+    // 비용 소모 중에 실패가 발생했을 때, 이미 소모된 아이템과 골드를 롤백하는 메서드입니다.
+    private void RollbackConsumedCosts(List<ConsumedItemRecord> consumedItems, bool goldSpent, int goldCost)
+    {
+        // 보기 편하게 아이템 롤백을 역순으로 처리합니다.
+        for (int i = consumedItems.Count - 1; i >= 0; i--)
+        {
+            ConsumedItemRecord record = consumedItems[i];
+            if (record.Item == null || record.Amount <= 0) continue;
+
+            _inventoryAbility.AddItem(record.Item, record.Amount);
         }
 
-        if (goldCost > 0)
+        if (goldSpent && goldCost > 0 && CurrencyManager.Instance != null)
         {
-            CurrencyManager.Instance.TrySpendGold(goldCost);
+            CurrencyManager.Instance.AddGold(goldCost);
         }
-
-        return true;
     }
 
     public int GetOwnedItemCostCount(ItemDataSO item)
