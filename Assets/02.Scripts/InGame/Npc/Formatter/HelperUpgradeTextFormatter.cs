@@ -1,22 +1,46 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class HelperUpgradeTextFormatter
 {
-    private static EHelperGrade GetNextGrade(EHelperGrade grade)
-    {
-        switch (grade)
+    private static readonly Dictionary<EHelperType, IHelperUpgradeDescriptionProvider> _descriptionProviders
+        = new()
         {
-            case EHelperGrade.Normal:
-                return EHelperGrade.Epic;
-            case EHelperGrade.Epic:
-                return EHelperGrade.Legendary;
-            default:
-                return grade; // Legendary는 그대로 둔다.
+            { EHelperType.WoodCuttingMine, new WoodCuttingMineUpgradeDescriptionProvider() },
+            { EHelperType.Water, new WaterUpgradeDescriptionProvider() },
+            { EHelperType.Ground, new GroundUpgradeDescriptionProvider() },
+            { EHelperType.Light, new LightUpgradeDescriptionProvider() }
+        };
+
+    private static readonly IHelperUpgradeDescriptionProvider _defaultProvider
+        = new DefaultHelperUpgradeDescriptionProvider();
+
+    public static string GetRangeText(HelperDataSO data, EHelperGrade currentGrade)
+    {
+        if (data == null) return string.Empty;
+
+        if (_descriptionProviders.TryGetValue(data.HelperType, out var provider))
+        {
+            return provider.GetUpgradeDescription(data, currentGrade);
         }
+
+        return _defaultProvider.GetUpgradeDescription(data, currentGrade);
     }
 
-    private static int GetRange(HelperDataSO data, EHelperGrade grade)
+    public static EHelperGrade GetNextGradeValue(EHelperGrade grade)
     {
+        return grade switch
+        {
+            EHelperGrade.Normal => EHelperGrade.Epic,
+            EHelperGrade.Epic => EHelperGrade.Legendary,
+            _ => grade
+        };
+    }
+
+    public static int GetInternalRangeValue(HelperDataSO data, EHelperGrade grade)
+    {
+        if (data == null) return 0;
+
         return grade switch
         {
             EHelperGrade.Normal => data.NormalRange,
@@ -26,9 +50,9 @@ public class HelperUpgradeTextFormatter
         };
     }
 
-    private static int GetDisplayRange(HelperDataSO data, EHelperGrade grade)
+    public static int GetDisplayRangeValue(HelperDataSO data, EHelperGrade grade)
     {
-        int internalRange = GetRange(data, grade);
+        int internalRange = GetInternalRangeValue(data, grade);
         return internalRange <= 0 ? 0 : internalRange * 2 - 1;
     }
 
@@ -58,73 +82,6 @@ public class HelperUpgradeTextFormatter
         return $"현재 경험치: {exp} / {maxExp}";
     }
 
-    public static string GetRangeText(HelperDataSO data, EHelperGrade currentGrade)
-    {
-        if (data == null) return string.Empty;
-
-        switch (data.HelperType)
-        {
-            case EHelperType.WoodCuttingMine:
-                return GetWoodCuttingMineText(data, currentGrade);
-
-            case EHelperType.Water:
-                return GetWaterRangeText(data, currentGrade);
-
-            default:
-                return GetDefaultRangeText(data, currentGrade);
-        }
-    }
-
-    private static string GetDefaultRangeText(HelperDataSO data, EHelperGrade currentGrade)
-    {
-        int currentRange = GetDisplayRange(data, currentGrade);
-
-        if (currentGrade == EHelperGrade.Legendary)
-        {
-            return $"작업 범위가 {currentRange}칸이에요.";
-        }
-
-        EHelperGrade nextGrade = GetNextGrade(currentGrade);
-        int nextRange = GetDisplayRange(data, nextGrade);
-
-        return $"작업 범위가 {currentRange}칸에서 {nextRange}칸으로 늘어나요!";
-    }
-
-    private static string GetWoodCuttingMineText(HelperDataSO data, EHelperGrade currentGrade)
-    {
-        int currentTier = GetRange(data, currentGrade);
-
-        if (currentGrade == EHelperGrade.Legendary)
-        {
-            return $"{currentTier}등급의 나무와 돌을 캘 수 있어요.";
-        }
-
-        EHelperGrade nextGrade = GetNextGrade(currentGrade);
-        int nextTier = GetRange(data, nextGrade);
-
-        return $"{nextTier}등급의 나무와 돌까지 캘 수 있게 돼요!";
-    }
-
-    private static string GetWaterRangeText(HelperDataSO data, EHelperGrade currentGrade)
-    {
-        int currentRange = GetDisplayRange(data, currentGrade);
-
-        if (currentGrade == EHelperGrade.Legendary)
-        {
-            return $"작업 범위가 {currentRange}칸이에요.\n그리고 냉기로 용암을 얼릴 수 있어요!";
-        }
-
-        EHelperGrade nextGrade = GetNextGrade(currentGrade);
-        int nextRange = GetDisplayRange(data, nextGrade);
-
-        if (currentGrade == EHelperGrade.Epic && nextGrade == EHelperGrade.Legendary)
-        {
-            return $"작업 범위가 {currentRange}칸에서 {nextRange}칸으로 늘어나요!\n그리고 냉기로 용암을 얼릴 수 있게 돼요!";
-        }
-
-        return $"작업 범위가 {currentRange}칸에서 {nextRange}칸으로 늘어나요!";
-    }
-
     public static string GetUpgradeMessage(bool canUpgrade, string blockReason)
     {
         return canUpgrade
@@ -144,6 +101,9 @@ public class HelperUpgradeTextFormatter
 
             case EHelperUpgradeBlockReason.MaxGrade:
                 return "곡룡이 이미 최고 등급이에요.";
+
+            case EHelperUpgradeBlockReason.IsCantUpgrade:
+                return "이 곡룡은 업그레이드할 수 없어요.";
 
             case EHelperUpgradeBlockReason.NotEnoughExperience:
                 return "곡룡 경험치가 부족해요.";
