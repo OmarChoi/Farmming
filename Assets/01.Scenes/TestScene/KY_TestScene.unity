@@ -890,53 +890,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 194613cbb07b10a458709158bf15560b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_InfoPage
---- !u!1 &241568949
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 241568950}
-  - component: {fileID: 241568951}
-  m_Layer: 0
-  m_Name: TestSeed
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &241568950
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 241568949}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -81.01298, y: 0, z: 63.756}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1081657305}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &241568951
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 241568949}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84c912b46bb12cd4cbfcffc9ffbc3deb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestSeedAdd
-  _seedItem: {fileID: 11400000, guid: 126f95a0ef92a304dbe5201eb77ff2de, type: 2}
-  _amount: 10
-  _inventory: {fileID: 0}
 --- !u!1 &243638433
 GameObject:
   m_ObjectHideFlags: 0
@@ -2718,7 +2671,6 @@ Transform:
   - {fileID: 1897953275}
   - {fileID: 1272907588}
   - {fileID: 1068659223}
-  - {fileID: 241568950}
   - {fileID: 145116287}
   - {fileID: 1296509897}
   - {fileID: 7742054}
@@ -3875,7 +3827,7 @@ MonoBehaviour:
   _playerHelperInteraction: {fileID: 0}
   _playerHelperInventory: {fileID: 0}
   _fillExpKey: 117
-  _upgradeKey: 105
+  _upgradeKey: 262
   _addExpKey: 106
   _printStatusKey: 107
   _setNormalKey: 55
@@ -6198,8 +6150,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 609b52cd6dc9c9e4f9717a02a2ef044f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestInventory
-  _woodItem: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
-  _dirtItem: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+  _woodItem: {fileID: 11400000, guid: 24de9fedc805cb949b6138f5ef3d08d9, type: 2}
+  _dirtItem: {fileID: 11400000, guid: c814777b6fa687947916f653bc9b010f, type: 2}
   _inventoryAbility: {fileID: 0}
 --- !u!1001 &1942142755
 PrefabInstance:
