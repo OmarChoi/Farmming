@@ -15,8 +15,14 @@ MonoBehaviour:
   m_GroupName: NetworkPrefabs
   m_GUID: 8703f340ff4132648bef16f962914d94
   m_SerializeEntries:
+  - m_GUID: 04068b708f38fd7449347d1df530ff5e
+    m_Address: JungleTroublemaker
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1a3d96359e1e0bc4c8f5140ab477066b
-    m_Address: NpcTest
+    m_Address: Merchant
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab
@@ -29,6 +35,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 266f408554e7f614b923bf0d304d1590
     m_Address: WaterEpicHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2850a85578ce89e4f99eb6dcea6cdeb1
+    m_Address: CaveTroublemaker1
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab
@@ -57,6 +69,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6dec261624b41bc4281191e19a643a67
+    m_Address: Gambler
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 766afbc23d7837143ac7b4a6ec1f8c3b
     m_Address: HarvestEpicHelper
     m_ReadOnly: 0
@@ -77,6 +95,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a9808f16d9fefed4f9e81b1c641f5dfb
     m_Address: WaterHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aee79b76e0e05ea41a2bd72566715e0b
+    m_Address: Doctor
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab

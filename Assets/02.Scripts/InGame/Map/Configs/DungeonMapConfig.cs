@@ -30,6 +30,9 @@ public class DungeonMapConfig : MapConfig
     [Header("Environment")]
     public DungeonEnvironmentProfile EnvironmentProfile;
 
+    [Header("Troublemaker")]
+    public TroublemakerSpawnListSO TroublemakerSpawnList;
+
     public override IMapGenerator CreateGenerator() => new HeightMapGenerator();
 }
 

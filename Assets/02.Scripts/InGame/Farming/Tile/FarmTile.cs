@@ -4,9 +4,12 @@ using UnityEngine;
 
 public class FarmTile : MonoBehaviour
 {
+    private const string FastFertilizerChildName = "FastFertilizer";
+
     [SerializeField] private GameObject _farmDryObject;
     [SerializeField] private GameObject _farmWetObject;
     [SerializeField] private Transform _cropSpawnPoint;
+    [SerializeField] private GameObject _fastFertilizerObject;
 
     private Dictionary<EFarmTileStateType, GameObject> _stateObjects;
     private CropGrowth _cropGrowth;
@@ -19,6 +22,7 @@ public class FarmTile : MonoBehaviour
     public bool HasCrop => _cropGrowth != null && _cropGrowth.HasCropObject;
     public bool IsWet => StateMachine.CurrentStateType == EFarmTileStateType.FarmWet;
     public bool IsReadyToSow => StateMachine.CurrentStateType == EFarmTileStateType.FarmDry && !HasSeed;
+    public bool HasFastFertilizer => _fastFertilizerObject != null && _fastFertilizerObject.activeSelf;
     public Transform CropSpawnPoint => _cropSpawnPoint;
 
     public static event Action<FarmTile, SeedItemDataSO> OnSeedPlanted;
@@ -27,6 +31,12 @@ public class FarmTile : MonoBehaviour
     {
         StateMachine = GetComponent<FarmTileStateMachine>();
         _cropGrowth = GetComponent<CropGrowth>();
+        if (_fastFertilizerObject == null)
+        {
+            Transform fastFertilizer = transform.Find(FastFertilizerChildName);
+            if (fastFertilizer != null)
+                _fastFertilizerObject = fastFertilizer.gameObject;
+        }
 
         Init();
     }
@@ -42,6 +52,7 @@ public class FarmTile : MonoBehaviour
 
         HideAllObject();
         ShowObject(EFarmTileStateType.FarmDry);
+        ClearFastFertilizer();
     }
 
     private void Start()
@@ -80,7 +91,14 @@ public class FarmTile : MonoBehaviour
         }
         if (HasSeed)
         {
-            _cropGrowth.CheckNightGrowth();
+            if (HasFastFertilizer)
+            {
+                _cropGrowth.CheckFastFertilizerNightGrowth();
+            }
+            else
+            {
+                _cropGrowth.CheckNightGrowth();
+            }
         }
     }
 
@@ -161,6 +179,32 @@ public class FarmTile : MonoBehaviour
         }
     }
 
+    public bool CanApplyFastFertilizer()
+    {
+        if (HasSeed || HasCrop || HasFastFertilizer || StateMachine == null)
+            return false;
+
+        EFarmTileStateType current = StateMachine.CurrentStateType;
+        return current == EFarmTileStateType.FarmDry || current == EFarmTileStateType.FarmWet;
+    }
+
+    public bool ApplyFastFertilizer()
+    {
+        if (!CanApplyFastFertilizer())
+            return false;
+
+        if (_fastFertilizerObject != null)
+            _fastFertilizerObject.SetActive(true);
+
+        return true;
+    }
+
+    public void ClearFastFertilizer()
+    {
+        if (_fastFertilizerObject != null && _fastFertilizerObject.activeSelf)
+            _fastFertilizerObject.SetActive(false);
+    }
+
     public void RemoveSeed()
     {
         PlantedSeed = null;
@@ -173,7 +217,8 @@ public class FarmTile : MonoBehaviour
         saveData.Farm = new FarmSaveData
         {
             FarmState = StateMachine.CurrentStateType,
-            SeedId = HasSeed ? PlantedSeed.Id : 0
+            SeedId = HasSeed ? PlantedSeed.Id : 0,
+            HasFastFertilizer = HasFastFertilizer
         };
 
         if (_cropGrowth != null)
@@ -191,6 +236,11 @@ public class FarmTile : MonoBehaviour
         { 
             StateMachine.FarmTransition(EFarmTileStateType.FarmWet, false);
         }
+
+        if (saveData.Farm.HasFastFertilizer)
+            ApplyFastFertilizer();
+        else
+            ClearFastFertilizer();
 
         if (saveData.Farm.SeedId > 0)
         {

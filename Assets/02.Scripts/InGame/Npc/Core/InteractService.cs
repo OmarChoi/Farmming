@@ -9,6 +9,8 @@ public class InteractService : MonoBehaviour
     [SerializeField] private HelperUpgradeService _helperUpgradeService;
     [SerializeField] private StylingCustomizeService _stylingCustomizeService;
     [SerializeField] private NpcQuestService _npcQuestService;
+    [SerializeField] private DinoRaceInteractionService _dinoRaceInteractionService;
+    [SerializeField] private NpcCuringService _npcCuringService;
 
     private IDialogueHandler _scriptedHandler;
     private IDialogueHandler _aiHandler;
@@ -38,6 +40,14 @@ public class InteractService : MonoBehaviour
         if (_npcQuestService == null)
         {
             _npcQuestService = FindFirstObjectByType<NpcQuestService>();
+        }
+        if (_dinoRaceInteractionService == null)
+        {
+            _dinoRaceInteractionService = FindFirstObjectByType<DinoRaceInteractionService>();
+        }
+        if (_npcCuringService == null)
+        {
+            _npcCuringService = FindFirstObjectByType<NpcCuringService>();
         }
 
         _scriptedHandler = new ScriptedDialogueHandler(_dialogueController);
@@ -74,8 +84,16 @@ public class InteractService : MonoBehaviour
                 ExecuteQuest(context);
                 break;
 
+            case ENpcInteractionType.Curing:
+                ExecuteCuring(context);
+                break;
+
             case ENpcInteractionType.EndTalk:
                 EndInteraction(context);
+                break;
+
+            case ENpcInteractionType.DinoRace:
+                ExecuteDinoRace(context);
                 break;
         }
     }
@@ -144,5 +162,16 @@ public class InteractService : MonoBehaviour
         }
 
         _npcQuestService?.ExecuteQuestInteraction(context);
+    }
+
+    private void ExecuteDinoRace(NpcInteractionContext context)
+    {
+        _dinoRaceInteractionService?.BeginInteraction(context);
+    }
+
+    private void ExecuteCuring(NpcInteractionContext context)
+    {
+        if (context == null || context.Npc == null) return;
+        _npcCuringService?.ExecuteCuringInteraction(context);
     }
 }

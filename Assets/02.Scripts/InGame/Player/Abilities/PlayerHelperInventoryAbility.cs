@@ -109,6 +109,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         TimeEvents.OnNetDayStarted += HandleMorning;
         UI_Inventory.SeedSelectionRequested += HandleSeedSelectionRequested;
         UI_Inventory.GroundSelectionRequested += HandleGroundSelectionRequested;
+        UI_Inventory.FertilizerSelectionRequested += HandleFertilizerSelectionRequested;
         OnLocalPlayerReady?.Invoke(this);
     }
 
@@ -119,6 +120,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         {
             UI_Inventory.SeedSelectionRequested -= HandleSeedSelectionRequested;
             UI_Inventory.GroundSelectionRequested -= HandleGroundSelectionRequested;
+            UI_Inventory.FertilizerSelectionRequested -= HandleFertilizerSelectionRequested;
         }
     }
 
@@ -132,7 +134,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             Rotate(-1);
         if (Input.GetKeyDown(_rotateRightKey))
             Rotate(1);
-        if (Input.GetKeyDown(_summonKey))
+        if (Input.GetKeyDown(_summonKey) && _owner.TryConsumeInteract())
             ToggleSummon();
     }
 
@@ -318,18 +320,24 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void HandleMorning()
     {
+        RecoverAllHelpersFull();
+    }
+
+    public void RecoverAllHelpersFull()
+    {
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        RecoverActiveHelper(_activeMainHelper, now);
-        RecoverActiveHelper(_activeLightHelper, now);
+        RecoverActiveHelperAndSync(_activeMainHelper, now);
+        RecoverActiveHelperAndSync(_activeLightHelper, now);
         RecoverSavedHelpers(now);
     }
 
-    private void RecoverActiveHelper(HelperController helper, long savedAt)
+    private void RecoverActiveHelperAndSync(HelperController helper, long savedAt)
     {
         if (helper == null) return;
 
         helper.Energy.RecoverFull();
+        helper.SyncRuntimeState();
         SaveHelperState(helper, savedAt);
     }
 
@@ -571,6 +579,27 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 #if UNITY_EDITOR
         if (selected)
             Debug.Log($"Ground selected: {groundItem.DisplayName}");
+#endif
+
+        return selected;
+    }
+
+    private bool HandleFertilizerSelectionRequested(ItemDataSO fertilizerItem)
+    {
+        if (fertilizerItem == null || _activeMainHelper == null)
+            return false;
+        if (_activeMainHelper.GetAbility<HarvestActionAbility>() == null)
+            return false;
+
+        HarvestFertilizerSelectAbility fertilizerSelectAbility = _activeMainHelper.GetAbility<HarvestFertilizerSelectAbility>();
+        if (fertilizerSelectAbility == null)
+            return false;
+
+        bool selected = fertilizerSelectAbility.TrySelectFertilizer(fertilizerItem);
+
+#if UNITY_EDITOR
+        if (selected)
+            Debug.Log($"Harvest fertilizer selected: {fertilizerItem.DisplayName}");
 #endif
 
         return selected;

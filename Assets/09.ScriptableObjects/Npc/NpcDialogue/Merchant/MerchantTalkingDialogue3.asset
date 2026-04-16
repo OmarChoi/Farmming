@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: MerchantTalkingDialogue3
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: MerchantTalkingDialogue3
+  Lines:
+  - Text: "\uD558\uB098. \uB458. \uC14B..."
+    NextDialogue: {fileID: 0}
+  - Text: "\uC5B4\uC774\uCFE0. \uBB3C\uAC74\uC774 \uC870\uAE08 \uBD80\uC871\uD55C
+      \uAC83 \uAC19\uC740\uB370. \uB0B4\uAC00 \uC798\uBABB \uC13C \uAC74\uAC00?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC790, \uB2E4\uC2DC. \uD558\uB098. \uB458. \uC14B....."
+    NextDialogue: {fileID: 0}

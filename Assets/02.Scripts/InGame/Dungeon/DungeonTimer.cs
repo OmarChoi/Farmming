@@ -85,6 +85,7 @@ public class DungeonTimer : MonoBehaviourPunCallbacks
 
     private void ReturnToVillage()
     {
+        DespawnTroublemakers();
         SceneTransitionData.Type = ETransitionType.DungeonToVillage;
         GameSceneInit.ReturningFromDungeon = true;
 
@@ -107,5 +108,14 @@ public class DungeonTimer : MonoBehaviourPunCallbacks
         {
             SceneManager.LoadScene(SceneName.Loading);
         }
+    }
+
+    private void DespawnTroublemakers()
+    {
+        TroublemakerSpawner spawner = FindFirstObjectByType<TroublemakerSpawner>();
+        if (spawner != null)
+        {
+            spawner.DespawnAll();
+        }   
     }
 }

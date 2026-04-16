@@ -9,6 +9,7 @@ public abstract class BaseBuilding : MonoBehaviour
     public BuildingDataSO BuildingData { get; private set; }
     public BuildingSaveData SaveData { get; private set; }
     public BuildingConstructionContext ConstructionContext { get; private set; }
+    public NpcController BuildingNpc => _buildingNpc;
 
     public float ConstructionProgress { get; private set; }
     public bool IsConstructionComplete => SaveData == null || SaveData.RemainingDays <= 0;
@@ -17,6 +18,17 @@ public abstract class BaseBuilding : MonoBehaviour
     private NpcController _buildingNpc;
     private bool _constructionCompletedHandled;
     private bool _onLoading;
+
+    /// 클라이언트는 마스터의 PhotonNetwork.Instantiate 자동 복제로 생성되므로
+    /// TryBuild의 Initialize 경로를 거치지 않는다. PhotonView.InstantiationData에서
+    /// BuildingSaveData를 복원해 BuildingManager에 자가 등록한다.
+    /// 마스터/로컬 모드는 TryBuild에서 명시적으로 Initialize되므로 여기선 skip.
+    protected virtual void Start()
+    {
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient) return;
+        if (BuildingManager.Instance == null) return;
+        BuildingManager.Instance.RegisterClientSpawnedBuilding(this);
+    }
 
     public void Initialize(
         BuildingDataSO buildingData, 
@@ -69,12 +81,17 @@ public abstract class BaseBuilding : MonoBehaviour
             NpcSpawnManager.Instance.Despawn(_buildingNpc);
         }
         GameSceneInit.OnCompleteInitialize -= OnLoadingFinished;
-        
+
+        // 클라이언트는 PhotonNetwork.Destroy 자동 복제로 파괴되므로 _registry/_placement도 같이 정리.
+        // 마스터는 TryRemoveResolved 경로가 _registry를 먼저 비운 후 Destroy하므로 여기선 skip.
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient && BuildingManager.Instance != null)
+            BuildingManager.Instance.UnregisterClientSpawnedBuilding(this);
+
         if (!_isDayBound) return;
 
         TimeEvents.OnNetDayStarted -= AdvanceDay;
         _isDayBound = false;
-        
+
     }
 
     private void AdvanceDay()

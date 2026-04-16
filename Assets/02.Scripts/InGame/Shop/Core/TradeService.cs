@@ -1,18 +1,22 @@
 
 public class TradeService
 {
-    private PlayerInventoryAbility _playerInventory;
+    private readonly PlayerInventoryAbility _playerInventory;
 
-    public TradeService(PlayerInventoryAbility playerInventory)
+    public TradeService(PlayerController player)
     {
-        _playerInventory = playerInventory;
+        _playerInventory = player.GetAbility<PlayerInventoryAbility>();
     }
 
     public bool Buy(ShopData shopData, ItemDataSO item, int amount = 1)
     {
+        if (_playerInventory == null) return false;
         if (shopData == null || item == null || amount <= 0) return false;
         if (!shopData.SellItems.Contains(item)) return false;
-        if (!CurrencyManager.Instance.TrySpendGold(item.BuyCost * amount)) return false;
+        if (CurrencyManager.Instance == null) return false;
+
+        int totalCost = item.BuyCost * amount;
+        if (!CurrencyManager.Instance.TrySpendGold(totalCost)) return false;
 
         QuestReportItemHelper.AddItemAndReportQuest(_playerInventory, item, amount);
         return true;
@@ -20,7 +24,9 @@ public class TradeService
 
     public bool Sell(int slotIndex, int amount = 1)
     {
+        if (_playerInventory == null) return false;
         if (slotIndex < 0 || slotIndex >= _playerInventory.SlotCount) return false;
+        if (CurrencyManager.Instance == null) return false;
 
         InventorySlot slot = _playerInventory.GetSlot(slotIndex);
         if (slot == null || slot.IsEmpty) return false;

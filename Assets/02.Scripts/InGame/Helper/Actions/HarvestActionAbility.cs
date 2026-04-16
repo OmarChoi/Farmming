@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
@@ -13,11 +13,17 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     [SerializeField] private float _normalVfxSpawnHeight = 2.1f;
     [SerializeField] private float _normalVfxLifetime = 2f;
     [SerializeField] private float _harvestDelay = 1.5f;
+    [SerializeField] private Transform _mouthPoint;
+    [SerializeField] private GameObject _fertilizerSeedVfxPrefab;
+    [SerializeField] private float _fertilizerLaunchDelay = 0.15f;
+    [SerializeField] private float _fertilizerActionDuration = 0.8f;
 
 
     private HelperAnimationAbility _animAbility;
     private HarvestEpicVFXAbility _epicVFX;
     private HarvestLegendaryVFXAbility _legendaryVFX;
+    private SowSeedVfxSpawner _fertilizerVfxSpawner;
+    private HarvestFertilizerSelectAbility _fertilizerSelectAbility;
 
     protected override void Awake()
     {
@@ -25,6 +31,8 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
         _epicVFX = _owner.GetAbility<HarvestEpicVFXAbility>();
         _legendaryVFX = _owner.GetAbility<HarvestLegendaryVFXAbility>();
+        _fertilizerSelectAbility = GetComponent<HarvestFertilizerSelectAbility>() ?? GetComponentInParent<HarvestFertilizerSelectAbility>();
+        _fertilizerVfxSpawner = new SowSeedVfxSpawner(() => _mouthPoint, () => _fertilizerSeedVfxPrefab);
     }
 
     private PlayerInventoryAbility GetInventory()
@@ -42,8 +50,17 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         return IsHarvestableCell(cell);
     }
 
+    public bool CanInteractSecondary(TerrainCell cell)
+    {
+        FarmTile farmTile = GetSingleTargetFarmTile(cell);
+        return CanApplyFastFertilizerToTile(farmTile) && _fertilizerSelectAbility != null && _fertilizerSelectAbility.HasSelectedFertilizerAvailable;
+    }
+
     public void InteractPrimary(TerrainCell cell)
     {
+        if (_owner.IsMine)
+            _fertilizerSelectAbility?.ClearSelection();
+
         cell = GetInteractableCell(cell);
         if (cell == null) return;
 
@@ -59,6 +76,42 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
                 InteractPrimaryLegendary(cell);
                 break;
         }
+    }
+
+    public void InteractSecondary(TerrainCell cell)
+    {
+        ItemDataSO fertilizerItem = _fertilizerSelectAbility != null ? _fertilizerSelectAbility.SelectedFertilizer : null;
+        FarmTile farmTile = GetSingleTargetFarmTile(cell);
+        if (farmTile == null)
+            return;
+
+        if (fertilizerItem == null || !_fertilizerSelectAbility.HasSelectedFertilizerAvailable)
+            return;
+
+        if (!CanApplyFastFertilizerToTile(farmTile))
+            return;
+
+        StartFertilizerSecondaryAction(farmTile, fertilizerItem, _owner.Grade.CurrentGrade, true);
+
+        Vector3Int pos = cell.GridPosition;
+        _owner.PhotonView.RpcSafe(
+            nameof(RPC_PlayFastFertilizer),
+            RpcTarget.Others,
+            pos.x, pos.y, pos.z, (int)_owner.Grade.CurrentGrade);
+    }
+
+    [PunRPC]
+    internal void RPC_PlayFastFertilizer(int gridX, int gridY, int gridZ, int grade)
+    {
+        TerrainCell cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
+        if (cell == null)
+            return;
+
+        FarmTile farmTile = GetFarmTile(cell);
+        if (farmTile == null)
+            return;
+
+        StartFertilizerSecondaryAction(farmTile, null, (EHelperGrade)grade, PhotonNetwork.IsMasterClient);
     }
 
     private void InteractPrimaryNormal(TerrainCell cell)
@@ -239,12 +292,124 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         _owner.EndAction();
     }
 
+    private void FinishSecondaryAction()
+    {
+        _animAbility?.Play(EHelperAnim.Idle);
+        _owner.EndAction();
+    }
+
     private bool IsHarvestableCell(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);
         if (farmTile == null || !farmTile.HasSeed) return false;
         CropGrowth cropGrowth = farmTile.CropGrowth;
         return cropGrowth != null && cropGrowth.IsHarvestable;
+    }
+
+    private FarmTile GetSingleTargetFarmTile(TerrainCell cell)
+    {
+        cell = GetInteractableCell(cell);
+        if (cell == null)
+            return null;
+
+        return GetFarmTile(cell);
+    }
+
+    private static bool CanApplyFastFertilizerToTile(FarmTile farmTile)
+    {
+        return farmTile != null && farmTile.CanApplyFastFertilizer();
+    }
+
+    private void StartFertilizerSecondaryAction(FarmTile farmTile, ItemDataSO fertilizerItem, EHelperGrade grade, bool applyOnImpact)
+    {
+        if (farmTile == null)
+            return;
+
+        _owner.BeginAction();
+        _animAbility?.Play(GetFertilizerAnimation(grade));
+        StartCoroutine(LaunchFastFertilizerRoutine(farmTile, fertilizerItem, applyOnImpact));
+    }
+
+    private EHelperAnim GetFertilizerAnimation(EHelperGrade grade)
+    {
+        return grade switch
+        {
+            EHelperGrade.Epic => EHelperAnim.EpicFertilizer,
+            EHelperGrade.Legendary => EHelperAnim.EpicFertilizer,
+            _ => EHelperAnim.Sow
+        };
+    }
+
+    private IEnumerator LaunchFastFertilizerRoutine(FarmTile farmTile, ItemDataSO fertilizerItem, bool applyOnImpact)
+    {
+        yield return new WaitForSeconds(_fertilizerLaunchDelay);
+
+        bool launched = false;
+        if (farmTile != null && _fertilizerVfxSpawner != null && _fertilizerVfxSpawner.HasMouthPoint && _fertilizerSeedVfxPrefab != null)
+        {
+            launched = true;
+            System.Action onImpact = applyOnImpact
+                ? () => TryApplyFastFertilizer(farmTile, fertilizerItem)
+                : null;
+            _fertilizerVfxSpawner.SpawnTo(farmTile, onImpact);
+        }
+
+        if (!launched && applyOnImpact)
+            TryApplyFastFertilizer(farmTile, fertilizerItem);
+
+        yield return new WaitForSeconds(_fertilizerActionDuration);
+        FinishSecondaryAction();
+    }
+
+    private void TryApplyFastFertilizer(FarmTile farmTile, ItemDataSO fertilizerItem)
+    {
+        if (farmTile == null)
+            return;
+
+        if (!farmTile.CanApplyFastFertilizer())
+            return;
+
+        bool consumed = TryConsumeFastFertilizerItem(fertilizerItem);
+        if (_owner.IsMine && !consumed)
+            return;
+
+        if (!TryApplyFastFertilizerToTile(farmTile))
+        {
+            RollbackConsumedFastFertilizer(fertilizerItem, consumed);
+            return;
+        }
+
+        SyncFastFertilizerState(farmTile);
+    }
+
+    private bool TryConsumeFastFertilizerItem(ItemDataSO fertilizerItem)
+    {
+        if (!_owner.IsMine)
+            return false;
+
+        if (fertilizerItem == null)
+            return false;
+
+        PlayerInventoryAbility inventory = GetInventory();
+        return inventory != null && inventory.RemoveItem(fertilizerItem, 1);
+    }
+
+    private static bool TryApplyFastFertilizerToTile(FarmTile farmTile)
+    {
+        return farmTile != null && farmTile.ApplyFastFertilizer();
+    }
+
+    private void RollbackConsumedFastFertilizer(ItemDataSO fertilizerItem, bool consumed)
+    {
+        if (!consumed || fertilizerItem == null)
+            return;
+
+        GetInventory()?.AddItem(fertilizerItem, 1);
+    }
+
+    private static void SyncFastFertilizerState(FarmTile farmTile)
+    {
+        BroadcastFarmTileStateFromMaster(farmTile);
     }
 
     private static void PlayHarvestNormalStartSfx(TerrainCell cell)
@@ -311,12 +476,6 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     {
         if (_owner.PlayerOwner == null) return Vector3.right;
         return _owner.PlayerOwner.transform.right;
-    }
-
-    public void InteractSecondary(TerrainCell cell)
-    {
-        // TODO: 우클릭 동작 구현
-        _owner.EndAction();
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)

@@ -2,12 +2,15 @@ using Cysharp.Threading.Tasks;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using UnityEngine;
+using System;
 
 public class DungeonSceneInit : MonoBehaviourPunCallbacks
 {
     [SerializeField] private int _floor = 1;
     [SerializeField] private DungeonEnvironmentController _environmentController;
     [SerializeField] private DungeonTimer _dungeonTimer;
+
+    [SerializeField] private MapNavMeshController _mapNavMeshController;
 
     private GameObject _spawnedCliff;
 
@@ -56,6 +59,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
+        BuildInitialNavMeshIfAvailable();
         DungeonSpawnHelper.SpawnChests(_floor, seed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
@@ -73,6 +77,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(_floor);
         MapManager.Instance.EnterDungeon(_floor, seed);
+        BuildInitialNavMeshIfAvailable();
         DungeonSpawnHelper.SpawnChests(_floor, seed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
@@ -115,6 +120,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         ApplyObjectPrefabs(receivedFloor);
         MapManager.Instance.EnterDungeon(receivedFloor, receivedSeed);
+        BuildInitialNavMeshIfAvailable();
         DungeonSpawnHelper.SpawnChests(receivedFloor, receivedSeed);
         LoadingProgress.Value = 0.7f;
         ApplyEnvironment();
@@ -145,6 +151,12 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
 
         PlaceAllPlayers();
         await UniTask.Yield();
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            SpawnTroublemakers();
+        }
+
         RestoreLocalPlayersAfterDungeonLoad();
         RefreshLocalPlayerCameras();
         StartDungeonTimer();
@@ -235,6 +247,7 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         else
             MapManager.Instance.EnterDungeon(_floor, seed);
 
+        BuildInitialNavMeshIfAvailable();
         DungeonSpawnHelper.SpawnChests(_floor, seed);
         ApplyEnvironment();
         SpawnCliff();
@@ -285,6 +298,20 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
         _dungeonTimer.StartTimer(config.TimeLimitSeconds);
     }
 
+    private void BuildInitialNavMeshIfAvailable()
+    {
+        if (_mapNavMeshController == null)
+            _mapNavMeshController = FindFirstObjectByType<MapNavMeshController>();
+
+        if (_mapNavMeshController == null)
+        {
+            Debug.LogWarning("[DungeonSceneInit] MapNavMeshController is missing. Skipping initial navmesh build.");
+            return;
+        }
+
+        _mapNavMeshController.BuildInitialNavMesh();
+    }
+
     private void ApplyObjectPrefabs(int floor)
     {
         DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(floor);
@@ -330,5 +357,17 @@ public class DungeonSceneInit : MonoBehaviourPunCallbacks
             { SceneTransitionRoomProps.DungeonFloor, null }
         };
         PhotonNetwork.CurrentRoom.SetCustomProperties(clearRoomProps);
+    }
+
+    private void SpawnTroublemakers()
+    {
+        TroublemakerSpawner spawner = FindFirstObjectByType<TroublemakerSpawner>();
+        if (spawner == null || PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+
+        DungeonMapConfig config = MapManager.Instance.GetDungeonConfig(_floor);
+        if (config == null || config.TroublemakerSpawnList == null) return;
+
+        int seed = SceneTransitionData.SeedReady ? SceneTransitionData.DungeonSeed : Environment.TickCount;
+        spawner.SpawnAll(config.TroublemakerSpawnList, _floor, seed);
     }
 }

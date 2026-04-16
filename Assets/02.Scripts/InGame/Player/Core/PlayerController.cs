@@ -21,6 +21,16 @@ public class PlayerController : MonoBehaviour
     public void LockAction() => IsActionLocked = true;
     public void UnlockAction() => IsActionLocked = false;
 
+    // 같은 프레임에서 E키 등 상호작용 입력을 한 Ability만 처리하기 위한 소비 플래그
+    private bool _interactConsumed;
+    /// 호출 시 true면 이번 프레임에서 입력을 선점. false면 이미 다른 Ability가 소비함.
+    public bool TryConsumeInteract()
+    {
+        if (_interactConsumed) return false;
+        _interactConsumed = true;
+        return true;
+    }
+
     private readonly Dictionary<Type, PlayerAbility> _abilityCache = new();
     private Renderer[] _cachedRenderers;
 
@@ -56,6 +66,8 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         if (!IsMine) return;
+
+        _interactConsumed = false;
 
         if (Input.GetKeyDown(KeyCode.Escape))
             SetCursorLock(Cursor.lockState != CursorLockMode.Locked);
@@ -143,6 +155,31 @@ public class PlayerController : MonoBehaviour
             saveable.ImportFrom(saveData);
     }
 
+    public void RequestTrouble(ETroubleEffectType effectType, Vector3 direction, float power, float duration)
+    {
+        if (PhotonView == null) return;
+
+        PhotonView.RPC(
+            nameof(RPC_ApplyTrouble),
+            PhotonView.Owner,
+            (int)effectType,
+            direction,
+            power,
+            duration);
+    }
+
+    public void ReceiveCure()
+    {
+        GetAbility<PlayerStaminaAbility>()?.RecoverFull();
+        GetAbility<PlayerHelperInventoryAbility>()?.RecoverAllHelpersFull();
+        GetAbility<PlayerCuringAbility>()?.MarkCuredToday();
+    }
+
+    public bool CanReceiveCuringToday()
+    {
+        return GetAbility<PlayerCuringAbility>()?.CanReceiveCuringToday() ?? false;
+    }
+
     // === PunRPC ===
 
     [PunRPC]
@@ -178,5 +215,20 @@ public class PlayerController : MonoBehaviour
         var saveData = JsonUtility.FromJson<PlayerSaveData>(json);
         if (SaveManager.Instance != null)
             SaveManager.Instance.ReceiveSaveData(saveData);
+    }
+
+    [PunRPC]
+    public void RPC_ApplyTrouble(int effectType, Vector3 direction, float power, float duration)
+    {
+        TroubleContext context = new TroubleContext
+        {
+            Source = null,
+            EffectType = (ETroubleEffectType)effectType,
+            Direction = direction,
+            Power = power,
+            Duration = duration
+        };
+
+        GetAbility<PlayerTroubleAbility>()?.ApplyTrouble(context);
     }
 }

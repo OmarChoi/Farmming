@@ -26,6 +26,8 @@ public class SaveManager : MonoBehaviourPun
     private PlayerSaveData _pendingPlayerSave;
     private int _pendingSlot;
 
+    public IReadOnlyCollection<PlayerController> RegisteredPlayers => _players.Values;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -144,6 +146,9 @@ public class SaveManager : MonoBehaviourPun
 
             if (BuildingManager.Instance != null)
                 data.Buildings = BuildingManager.Instance.ExportBuildings();
+
+            if (StorageManager.Instance != null)
+                data.Storages = StorageManager.Instance.ExportStorages();
 
             if (TimeSystem.Instance != null)
                 data.Time = TimeSystem.Instance.ExportSaveData();
@@ -272,7 +277,10 @@ public class SaveManager : MonoBehaviourPun
         
         if (BuildingManager.Instance != null && _loadedData.Buildings != null)
             await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
-        
+
+        if (StorageManager.Instance != null)
+            StorageManager.Instance.ImportStorages(_loadedData.Storages);
+
         if (TimeSystem.Instance != null)
             TimeSystem.Instance.ImportTimeSaveData(_loadedData.Time);
 
