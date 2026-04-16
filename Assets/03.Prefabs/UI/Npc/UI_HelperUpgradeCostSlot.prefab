@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4456446043522913047}
   - component: {fileID: 557034765733174675}
   m_Layer: 5
-  m_Name: ItemIcon
+  m_Name: CostIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -303,7 +303,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac007169489f1eb429928349013fde50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_HelperUpgradeCostSlot
-  _itemIcon: {fileID: 557034765733174675}
+  _costIcon: {fileID: 557034765733174675}
   _amountText: {fileID: 2154714947870368678}
 --- !u!114 &9132414348245009904
 MonoBehaviour:
