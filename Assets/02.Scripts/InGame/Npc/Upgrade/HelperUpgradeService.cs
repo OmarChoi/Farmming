@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.Cinemachine.CinemachineSplineRoll;
 
 public class HelperUpgradeService : MonoBehaviour
 {
@@ -115,7 +114,7 @@ public class HelperUpgradeService : MonoBehaviour
         return result;
     }
 
-    public IReadOnlyList<HelperUpgradeCostEntry> GetUpgradeCosts(HelperDataSO data)
+    public IReadOnlyList<HelperUpgradeCostEntry> GetUpgradeItemCosts(HelperDataSO data)
     {
         if (data == null) return Array.Empty<HelperUpgradeCostEntry>();
 
@@ -123,11 +122,25 @@ public class HelperUpgradeService : MonoBehaviour
         return data.GetUpgradeCosts(grade);
     }
 
-    public bool HasRequiredUpgradeCost(HelperDataSO data)
+    public int GetUpgradeGoldCost(HelperDataSO data)
+    {
+        if (data == null) return 0;
+
+        EHelperGrade grade = GetGrade(data);
+        return data.GetUpgradeGoldCost(grade);
+    }
+
+    public int GetOwnedGold()
+    {
+        if (CurrencyManager.Instance == null) return 0;
+        return CurrencyManager.Instance.CurrentGold;
+    }
+
+    public bool HasRequiredUpgradeItemCost(HelperDataSO data)
     {
         if (data == null || _inventoryAbility == null) return false;
 
-        IReadOnlyList<HelperUpgradeCostEntry> costs = GetUpgradeCosts(data);
+        IReadOnlyList<HelperUpgradeCostEntry> costs = GetUpgradeItemCosts(data);
         for (int i = 0; i < costs.Count; i++)
         {
             HelperUpgradeCostEntry cost = costs[i];
@@ -137,6 +150,15 @@ public class HelperUpgradeService : MonoBehaviour
         }
 
         return true;
+    }
+
+    public bool HasRequiredGoldCost(HelperDataSO data)
+    {
+        if (data == null) return false;
+        if (CurrencyManager.Instance == null) return false;
+
+        int goldCost = GetUpgradeGoldCost(data);
+        return CurrencyManager.Instance.CurrentGold >= goldCost;
     }
 
     public bool CanUpgrade(HelperDataSO data)
@@ -150,7 +172,10 @@ public class HelperUpgradeService : MonoBehaviour
         int maxExp = _helperInventoryAbility.GetMaxExpByGrade(data, grade);
         if (maxExp <= 0 || exp < maxExp) return false;
 
-        return HasRequiredUpgradeCost(data);
+        if (!HasRequiredUpgradeItemCost(data)) return false;
+        if (!HasRequiredGoldCost(data)) return false;
+
+        return true;
     }
 
     public EHelperUpgradeBlockReason GetBlockReasonType(HelperDataSO data)
@@ -165,7 +190,8 @@ public class HelperUpgradeService : MonoBehaviour
         int maxExp = _helperInventoryAbility.GetMaxExpByGrade(data, grade);
         if (maxExp <= 0 || exp < maxExp) return EHelperUpgradeBlockReason.NotEnoughExperience;
 
-        if (!HasRequiredUpgradeCost(data)) return EHelperUpgradeBlockReason.NotEnoughCost;
+        if (!HasRequiredUpgradeItemCost(data)) return EHelperUpgradeBlockReason.NotEnoughItemCost;
+        if (!HasRequiredGoldCost(data)) return EHelperUpgradeBlockReason.NotEnoughGoldCost;
 
         return EHelperUpgradeBlockReason.None;
     }
@@ -337,9 +363,10 @@ public class HelperUpgradeService : MonoBehaviour
 
     private bool TryConsumeUpgradeCost(HelperDataSO data)
     {
-        if (data == null || _inventoryAbility == null) return false;
+        if (data == null || _inventoryAbility == null || CurrencyManager.Instance == null) return false;
 
-        IReadOnlyList<HelperUpgradeCostEntry> costs = GetUpgradeCosts(data);
+        IReadOnlyList<HelperUpgradeCostEntry> costs = GetUpgradeItemCosts(data);
+        int goldCost = GetUpgradeGoldCost(data);
 
         for (int i = 0; i < costs.Count; i++)
         {
@@ -349,6 +376,8 @@ public class HelperUpgradeService : MonoBehaviour
             if (_inventoryAbility.GetItemCount(cost.Item) < cost.Amount) return false;
         }
 
+        if (CurrencyManager.Instance.CurrentGold < goldCost) return false;
+
         for (int i = 0; i < costs.Count; i++)
         {
             HelperUpgradeCostEntry cost = costs[i];
@@ -357,10 +386,15 @@ public class HelperUpgradeService : MonoBehaviour
             _inventoryAbility.RemoveItem(cost.Item, cost.Amount);
         }
 
+        if (goldCost > 0)
+        {
+            CurrencyManager.Instance.TrySpendGold(goldCost);
+        }
+
         return true;
     }
 
-    public int GetOwnedCostCount(ItemDataSO item)
+    public int GetOwnedItemCostCount(ItemDataSO item)
     {
         if (_inventoryAbility == null || item == null) return 0;
         return _inventoryAbility.GetItemCount(item);

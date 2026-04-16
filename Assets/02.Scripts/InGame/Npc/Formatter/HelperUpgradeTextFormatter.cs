@@ -86,8 +86,11 @@ public class HelperUpgradeTextFormatter
             case EHelperUpgradeBlockReason.NotEnoughExperience:
                 return "곡룡 경험치가 부족합니다.";
 
-            case EHelperUpgradeBlockReason.NotEnoughCost:
-                return "업그레이드에 필요한 재화가 부족합니다.";
+            case EHelperUpgradeBlockReason.NotEnoughItemCost:
+                return "업그레이드에 필요한 아이템이 부족합니다.";
+
+            case EHelperUpgradeBlockReason.NotEnoughGoldCost:
+                return "업그레이드에 필요한 골드가 부족합니다.";
 
             case EHelperUpgradeBlockReason.None:
             default:
