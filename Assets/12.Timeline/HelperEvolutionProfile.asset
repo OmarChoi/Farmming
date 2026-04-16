@@ -20,10 +20,10 @@ MonoBehaviour:
   AfterLocalEuler: {x: 0, y: 0, z: 0}
   IntroDuration: 2
   ZoomDuration: 0.8
-  RevealDuration: 1.2
+  RevealDuration: 4
   OutroDuration: 1
   IntroSpinSpeed: 900
   IntroCameraLocalPosition: {x: 0, y: 1.3, z: -8}
-  ZoomCameraLocalPosition: {x: 0, y: 1.35, z: -5}
-  RevealCameraLocalPosition: {x: 0, y: 1.2, z: -4.5}
-  FinalCameraLocalPosition: {x: 0, y: 1.5, z: -7}
+  ZoomCameraLocalPosition: {x: 0, y: 1.2, z: -5}
+  RevealCameraLocalPosition: {x: 0, y: 1, z: -4.5}
+  FinalCameraLocalPosition: {x: 0, y: 1.2, z: -7}
