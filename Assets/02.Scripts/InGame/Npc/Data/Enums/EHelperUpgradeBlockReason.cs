@@ -5,5 +5,8 @@ public enum EHelperUpgradeBlockReason
     InvalidData,
     InventoryNotReady,
     MaxGrade,
-    NotEnoughExperience
+    NotEnoughExperience,
+    NotEnoughItemCost,
+    NotEnoughGoldCost,
+    IsCantUpgrade
 }

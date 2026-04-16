@@ -27,11 +27,17 @@ public class UI_HelperUpgrade : MonoBehaviour
     [SerializeField] private Button _upgradeButton;
     [SerializeField] private Button _closeButton;
 
+    [Header("업그레이드 비용")]
+    [SerializeField] private Transform _costSlotParent;
+    [SerializeField] private UI_HelperUpgradeCostSlot _costSlotPrefab;
+    [SerializeField] private Sprite _goldIcon;
+
     [Header("팝업 트윈")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
 
     private readonly List<UI_HelperUpgradeSlot> _slots = new();
     private readonly List<HelperDataSO> _currentHelpers = new();
+    private readonly List<UI_HelperUpgradeCostSlot> _costSlots = new();
 
     private int _selectedIndex = -1;
 
@@ -153,6 +159,7 @@ public class UI_HelperUpgrade : MonoBehaviour
 
         _currentHelpers.Clear();
         _selectedIndex = -1;
+        ClearCostSlots();
     }
 
     public void RefreshAfterUpgrade(HelperDataSO upgradedHelper)
@@ -297,6 +304,8 @@ public class UI_HelperUpgrade : MonoBehaviour
         _helperExpText.text = HelperUpgradeTextFormatter.GetExpText(grade, exp, maxExp);
         _helperRangeText.text = HelperUpgradeTextFormatter.GetRangeText(data, grade);
 
+        RefreshCostSlots(data);
+
         if (_upgradeButton != null)
         {
             _upgradeButton.interactable = canUpgrade;
@@ -317,9 +326,79 @@ public class UI_HelperUpgrade : MonoBehaviour
         _helperRangeText.text = "";
         _helperMessageText.text = "표시할 helper가 없습니다.";
 
+        ClearCostSlots();
+
         if (_upgradeButton != null)
         {
             _upgradeButton.interactable = false;
+        }
+    }
+
+    private void RefreshCostSlots(HelperDataSO data)
+    {
+        if (_helperUpgradeService == null || data == null)
+        {
+            ClearCostSlots();
+            return;
+        }
+
+        IReadOnlyList<HelperUpgradeCostEntry> itemCosts = _helperUpgradeService.GetUpgradeItemCosts(data);
+        int goldCost = _helperUpgradeService.GetUpgradeGoldCost(data);
+
+        bool hasGoldCost = goldCost > 0;
+        int totalCostCount = itemCosts.Count + (hasGoldCost ? 1 : 0);
+
+        while (_costSlots.Count < totalCostCount)
+        {
+            UI_HelperUpgradeCostSlot newSlot = Instantiate(_costSlotPrefab, _costSlotParent);
+            _costSlots.Add(newSlot);
+        }
+
+        int slotIndex = 0;
+
+        // 1. 아이템 비용 슬롯 먼저 추가합니다.
+        for (int i = 0; i < itemCosts.Count; i++)
+        {
+            HelperUpgradeCostEntry cost = itemCosts[i];
+            UI_HelperUpgradeCostSlot slot = _costSlots[slotIndex];
+            slot.gameObject.SetActive(true);
+
+            int ownedCount = _helperUpgradeService.GetOwnedItemCostCount(cost.Item);
+            bool enough = ownedCount >= cost.Amount;
+            Sprite icon = cost.Item != null ? cost.Item.Icon : null;
+
+            slot.BindCostSlot(icon, ownedCount, cost.Amount, enough);
+            slotIndex++;
+        }
+
+        // 2. 이후 골드 비용 슬롯을 추가합니다.
+        if (hasGoldCost)
+        {
+            UI_HelperUpgradeCostSlot goldSlot = _costSlots[slotIndex];
+            goldSlot.gameObject.SetActive(true);
+
+            int ownedGold = _helperUpgradeService.GetOwnedGold();
+            bool enoughGold = ownedGold >= goldCost;
+
+            goldSlot.BindCostSlot(_goldIcon, ownedGold, goldCost, enoughGold);
+            slotIndex++;
+        }
+
+        // 3. 남는 슬롯을 비활성화합니다.
+        for (int i = slotIndex; i < _costSlots.Count; i++)
+        {
+            _costSlots[i].gameObject.SetActive(false);
+        }
+    }
+
+    private void ClearCostSlots()
+    {
+        for (int i = 0; i < _costSlots.Count; i++)
+        {
+            if (_costSlots[i] != null)
+            {
+                _costSlots[i].gameObject.SetActive(false);
+            }
         }
     }
 

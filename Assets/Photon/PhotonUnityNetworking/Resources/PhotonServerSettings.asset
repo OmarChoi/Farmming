@@ -113,9 +113,10 @@ MonoBehaviour:
   - RPC_RequestSwap
   - RPC_RequestSwapInStorage
   - RPC_SyncStorage
-  - RPC_ReceiveGold
-  - RPC_RequestDepositGold
-  - RPC_RequestWithdrawGold
+  - RPC_ApplySnapshot
+  - RPC_RequestAddEffect
+  - RPC_RequestRemoveEffect
+  - RPC_RequestCompleteAtShrine
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
