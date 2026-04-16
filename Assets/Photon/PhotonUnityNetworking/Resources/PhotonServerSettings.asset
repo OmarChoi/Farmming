@@ -95,6 +95,24 @@ MonoBehaviour:
   - RPC_RequestDigPrimary
   - RPC_ConsumePlacedGroundItem
   - RPC_RequestPlaceSecondary
+  - RPC_PlayDetect
+  - RPC_PlayTrouble
+  - RPC_PlayJump
+  - RPC_ApplyTrouble
+  - RPC_PlayFastFertilizer
+  - RPC_ActivateRangeBoost
+  - RPC_DeactivateRangeBoost
+  - RPC_ReceiveItem
+  - RPC_RequestAddItem
+  - RPC_RequestAddItemToSlot
+  - RPC_RequestFullSync
+  - RPC_RequestGiveHeldItem
+  - RPC_RequestPlaceSplit
+  - RPC_RequestRemoveItem
+  - RPC_RequestSplitHalf
+  - RPC_RequestSwap
+  - RPC_RequestSwapInStorage
+  - RPC_SyncStorage
   - RPC_ApplySnapshot
   - RPC_RequestAddEffect
   - RPC_RequestRemoveEffect

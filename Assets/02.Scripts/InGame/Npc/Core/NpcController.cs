@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections.Generic;
 
 public class NpcController : MonoBehaviour
 {
@@ -31,6 +32,8 @@ public class NpcController : MonoBehaviour
     private bool _isInteracting;
 
     private Vector3 _wanderBasePosition;
+    private readonly List<NpcInteractionOption> _runtimeInteractionOptions = new();
+    private NpcInteractionOption[] _interactionOptionCache;
 
     public Animator Animator => _animator;
     public NpcAnimatorController Anim => _anim;
@@ -39,7 +42,7 @@ public class NpcController : MonoBehaviour
     public NpcScheduleSO Schedule => _npcSchedule;
     public Shop Shop => _shop;
     public Transform CurrentInteractor => _currentInteractor;
-    public NpcInteractionOption[] InteractionOptions => _interactionOptions;
+    public NpcInteractionOption[] InteractionOptions => GetInteractionOptions();
     public bool IsInteracting => _isInteracting;
     public bool AutoStartQuestOnInteract => _npcData != null && _npcData.AutoStartQuestOnInteract;
 
@@ -50,8 +53,24 @@ public class NpcController : MonoBehaviour
         if (_movement == null) _movement = GetComponent<NpcMovement>();
         if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
         if (_npcQuest == null) _npcQuest = GetComponent<NpcQuest>();
+    }
 
-        _movement?.SetOwner(IsMine);
+    public void AddRuntimeInteractionOption(ENpcInteractionType type, string buttonName)
+    {
+        if (string.IsNullOrWhiteSpace(buttonName))
+            return;
+
+        NpcInteractionOption[] options = GetInteractionOptions();
+        for (int i = 0; i < options.Length; i++)
+        {
+            NpcInteractionOption option = options[i];
+            if (option == null) continue;
+            if (option.Type == type && option.ButtonName == buttonName)
+                return;
+        }
+
+        _runtimeInteractionOptions.Add(new NpcInteractionOption(type, buttonName));
+        _interactionOptionCache = null;
     }
 
     public void Initialize(NpcDataSO data, bool isLocalOnly = false)
@@ -59,7 +78,19 @@ public class NpcController : MonoBehaviour
         _npcData = data;
         IsLocalOnly = isLocalOnly;
         GenerateTimeOffset();
-        _movement.Initialize(_anim, data.WalkSpeed, data.RunSpeed, data.JumpDuration, data.JumpHeight);
+
+        IMovementAnimator movementAnimator = _anim;
+
+        if (_movement != null && _npcData != null)
+        {
+            _movement.SetOwner(IsMine);
+            _movement.Initialize(
+                movementAnimator,
+                _npcData.WalkSpeed,
+                _npcData.RunSpeed,
+                _npcData.JumpDuration,
+                _npcData.JumpHeight);
+        }
     }
 
     private void Start()
@@ -205,7 +236,7 @@ public class NpcController : MonoBehaviour
 #endif
             return;
         }
-        _movement.MoveTo(targetPosition);
+        _movement.MoveTo(targetPosition, 0f);
 
         if (entry.NpcLocationType != ENpcLocationType.Wandering)
         {
@@ -321,5 +352,25 @@ public class NpcController : MonoBehaviour
             _currentScheduleIndex = latestIndex;
             ExecuteSchedule(latestValidEntry);
         }
+    }
+
+    private NpcInteractionOption[] GetInteractionOptions()
+    {
+        if (_interactionOptionCache != null)
+            return _interactionOptionCache;
+
+        int serializedCount = _interactionOptions != null ? _interactionOptions.Length : 0;
+        int runtimeCount = _runtimeInteractionOptions.Count;
+        if (runtimeCount == 0)
+        {
+            _interactionOptionCache = _interactionOptions ?? System.Array.Empty<NpcInteractionOption>();
+            return _interactionOptionCache;
+        }
+
+        _interactionOptionCache = new NpcInteractionOption[serializedCount + runtimeCount];
+        _interactionOptions?.CopyTo(_interactionOptionCache, 0);
+        _runtimeInteractionOptions.CopyTo(_interactionOptionCache, serializedCount);
+
+        return _interactionOptionCache;
     }
 }

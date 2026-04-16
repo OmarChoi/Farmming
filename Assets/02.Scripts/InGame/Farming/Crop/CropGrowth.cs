@@ -97,6 +97,16 @@ public class CropGrowth : MonoBehaviour
         }
     }
 
+    public void CheckFastFertilizerNightGrowth()
+    {
+        if (!_isGrowing || !_hasStarted || _seedConfig == null)
+        {
+            return;
+        }
+
+        TryGrow();
+    }
+
     private void TryGrow()
     {
         _elapsedDays++;
@@ -146,6 +156,18 @@ public class CropGrowth : MonoBehaviour
         _elapsedDays = 0;
 
         _tile.RemoveSeed();
+        ClearFastFertilizerAfterHarvest();
+    }
+
+    private void ClearFastFertilizerAfterHarvest()
+    {
+        if (_tile == null || !_tile.HasFastFertilizer)
+            return;
+
+        if (_tile.HasCrop)
+            return;
+
+        _tile.ClearFastFertilizer();
     }
 
     public void ExportTo(FarmSaveData farmData)

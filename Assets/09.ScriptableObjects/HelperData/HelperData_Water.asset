@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -20,9 +20,9 @@ MonoBehaviour:
   EpicPrefab: {fileID: 350823004175790314, guid: 266f408554e7f614b923bf0d304d1590, type: 3}
   LegendaryPrefab: {fileID: 350823004175790314, guid: 88e48ce30b775604e9bd14c0593a7c27, type: 3}
   MaxEnergy: 100
-  EnergyRecoveryPerSecond: 3
+  EnergyRecoveryPerSecond: 2
   GatherDamage: 10
-  StaminaCost: 5
+  StaminaCost: 10
   MaxLevel: 10
   BaseEnergyCost: 10
   EnergyReducePerLevel: 1

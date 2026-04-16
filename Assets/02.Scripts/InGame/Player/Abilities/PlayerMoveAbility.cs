@@ -26,6 +26,11 @@ public class PlayerMoveAbility : PlayerAbility
     private bool _wasGrounded = true;
     private float _stepTimer;
 
+    private float _externalMoveSpeedMultiplier = 1f;
+
+    private const float MinMoveSpeedMultiplier = 0.05f;
+    private const float MaxMoveSpeedMultiplier = 1f;
+
     public bool IsMoving { get; private set; }
     public bool IsSprinting { get; private set; }
 
@@ -107,9 +112,10 @@ public class PlayerMoveAbility : PlayerAbility
 
     private void Move(Vector3 direction, bool isSprinting)
     {
-        float speed = isSprinting ? _owner.StatSo.RunSpeed : _owner.StatSo.WalkSpeed;
+        float baseSpeed = isSprinting ? _owner.StatSo.RunSpeed : _owner.StatSo.WalkSpeed;
+        float finalSpeed = baseSpeed * _externalMoveSpeedMultiplier;
 
-        Vector3 velocity = direction * speed;
+        Vector3 velocity = direction * finalSpeed;
         velocity.y = _yVelocity;
 
         _characterController.Move(velocity * Time.deltaTime);
@@ -186,5 +192,15 @@ public class PlayerMoveAbility : PlayerAbility
         float targetParam = isSprinting ? RunAimValue : isMoving ? WalkAnimValue : IdleAnimValue;
         _currentMoveParam = Mathf.Lerp(_currentMoveParam, targetParam, AnimSmoothSpeed * Time.deltaTime);
         _animation.SetMove(_currentMoveParam);
+    }
+
+    public void SetExternalMoveSpeedMultiplier(float multiplier)
+    {
+        _externalMoveSpeedMultiplier = Mathf.Clamp(multiplier, MinMoveSpeedMultiplier, MaxMoveSpeedMultiplier);
+    }
+
+    public void ClearExternalMoveSpeedMultiplier()
+    {
+        _externalMoveSpeedMultiplier = MaxMoveSpeedMultiplier;
     }
 }
