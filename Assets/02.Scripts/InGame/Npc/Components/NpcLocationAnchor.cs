@@ -14,9 +14,14 @@ public class NpcLocationAnchor : MonoBehaviour
     [Header("스타일링 숨김 대상")]
     [SerializeField] private GameObject _stylingHideRoot;
 
+    [Header("자동 등록")]
+    [SerializeField] private bool _registerOnEnable = true;
+
+    private bool _isRegistered;
+
     public string NpcId => _npcData != null ? _npcData.NpcId : "";
 
-    public string RuntimeNpcKey => string.IsNullOrEmpty(_runtimeNpcKey) ? NpcId : _runtimeNpcKey;
+    public string RuntimeNpcKey => _runtimeNpcKey;
 
     public ENpcLocationType LocationType => _locationType;
 
@@ -24,24 +29,24 @@ public class NpcLocationAnchor : MonoBehaviour
 
     public Transform Point => _point != null ? _point : transform;
 
+    public GameObject StylingHideRoot
+    {
+        get
+        {
+            if (_stylingHideRoot != null) return _stylingHideRoot;
+            return transform.root.gameObject;
+        }
+    }
+
     private void OnEnable()
     {
-        if (GetComponentInParent<BuildingGhostMarker>(true) != null) return;
-
-        if (NpcLocationManager.Instance != null)
-        {
-            NpcLocationManager.Instance.Register(this);
-        }
+        if (!_registerOnEnable) return;
+        TryRegister();
     }
 
     private void OnDisable()
     {
-        if (GetComponentInParent<BuildingGhostMarker>(true) != null) return;
-
-        if (NpcLocationManager.Instance != null)
-        {
-            NpcLocationManager.Instance.Unregister(this);
-        }
+        Unregister();
     }
 
     public void Initialize(
@@ -52,10 +57,7 @@ public class NpcLocationAnchor : MonoBehaviour
         Transform point = null,
         GameObject stylingHideRoot = null)
     {
-        if (NpcLocationManager.Instance != null)
-        {
-            NpcLocationManager.Instance.Unregister(this);
-        }
+        Unregister();
 
         _npcData = npcData;
         _runtimeNpcKey = runtimeNpcKey;
@@ -64,18 +66,31 @@ public class NpcLocationAnchor : MonoBehaviour
         _point = point != null ? point : transform;
         _stylingHideRoot = stylingHideRoot;
 
-        if (NpcLocationManager.Instance != null)
-        {
-            NpcLocationManager.Instance.Register(this);
-        }
+        TryRegister();
     }
 
-    public GameObject StylingHideRoot
+    public void SetRegisterOnEnable(bool registerOnEnable)
     {
-        get
-        {
-            if (_stylingHideRoot != null) return _stylingHideRoot;
-            return transform.root.gameObject;
-        }
+        _registerOnEnable = registerOnEnable;
+    }
+
+    private void TryRegister()
+    {
+        if (_isRegistered) return;
+        if (NpcLocationManager.Instance == null) return;
+        if (_npcData == null) return;
+        if (string.IsNullOrEmpty(_runtimeNpcKey)) return;
+
+        NpcLocationManager.Instance.Register(this);
+        _isRegistered = true;
+    }
+
+    private void Unregister()
+    {
+        if (!_isRegistered) return;
+        if (NpcLocationManager.Instance == null) return;
+
+        NpcLocationManager.Instance.Unregister(this);
+        _isRegistered = false;
     }
 }

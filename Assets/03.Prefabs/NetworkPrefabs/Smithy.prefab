@@ -129,7 +129,6 @@ GameObject:
   - component: {fileID: 8282164377884026905}
   - component: {fileID: 901651527898737458}
   - component: {fileID: -4921048592538429506}
-  - component: {fileID: 8232631957567453724}
   m_Layer: 0
   m_Name: Smithy
   m_TagString: Untagged
@@ -205,18 +204,6 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &8232631957567453724
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1324062310112488669}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b32e306db9a4d7d41b9fa436c74a8532, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuildingGhostMarker
 --- !u!1 &1650024946877090336
 GameObject:
   m_ObjectHideFlags: 0
@@ -1640,6 +1627,7 @@ MonoBehaviour:
   _locationKey: Smithy
   _point: {fileID: 136360840796171735}
   _stylingHideRoot: {fileID: 1324062310112488669}
+  _registerOnEnable: 1
 --- !u!1 &5151603050178877944
 GameObject:
   m_ObjectHideFlags: 0
@@ -1969,6 +1957,7 @@ MonoBehaviour:
   _locationKey: 
   _point: {fileID: 1996794622784556360}
   _stylingHideRoot: {fileID: 1324062310112488669}
+  _registerOnEnable: 1
 --- !u!1 &5759904583270982595
 GameObject:
   m_ObjectHideFlags: 0
@@ -4057,6 +4046,7 @@ MonoBehaviour:
   _locationKey: Furnace
   _point: {fileID: 7665609856043562475}
   _stylingHideRoot: {fileID: 1324062310112488669}
+  _registerOnEnable: 1
 --- !u!1 &9028007726750918625
 GameObject:
   m_ObjectHideFlags: 0
