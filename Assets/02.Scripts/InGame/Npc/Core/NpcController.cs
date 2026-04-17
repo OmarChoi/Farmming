@@ -333,7 +333,7 @@ public class NpcController : MonoBehaviour
         }
 
 #if UNITY_EDITOR
-        Debug.LogWarning($"{_npcData?.NpcName}의 하루 시작 위치를 찾지 못했습니다. 현재 위치를 유지합니다.");
+        Debug.LogWarning($"{_npcData?.NpcName ?? "Unknown NPC"}의 하루 시작 위치를 찾지 못했습니다. 현재 위치를 유지합니다.");
 #endif
     }
 
