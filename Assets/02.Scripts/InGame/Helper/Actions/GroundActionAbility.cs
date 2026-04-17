@@ -135,18 +135,18 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             return;
 
         ETileType tileType = GetTileTypeForItem(selectedGround, cell.Data.TileType);
+        Vector3Int targetGridPos = GetPlacePosition(cell);
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
         {
-            Vector3Int pos = cell.GridPosition;
             _owner.PhotonView.RpcSafe(
                 nameof(RPC_RequestPlaceSecondary),
                 RpcTarget.MasterClient,
-                pos.x, pos.y, pos.z, (int)tileType, _generateDirtAmount);
+                targetGridPos.x, targetGridPos.y, targetGridPos.z, (int)tileType, _generateDirtAmount);
             return;
         }
 
         ExecuteSecondaryPlace(
-            cell,
+            targetGridPos,
             tileType,
             _generateDirtAmount,
             consumeLocalInventory: true,
@@ -154,21 +154,19 @@ public class GroundActionAbility : HelperAbility, IHelperAction
     }
 
     private void ExecuteSecondaryPlace(
-        TerrainCell cell,
+        Vector3Int targetGridPos,
         ETileType tileType,
         int dirtAmount,
         bool consumeLocalInventory,
         Photon.Realtime.Player consumeTarget
     )
     {
-        Vector3Int targetGridPos = GetPlacePosition(cell);
-
         bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, tileType, dirtAmount);
         if (!placed) return;
 
         bool destroyedByLava = ShouldDestroyPlacedGroundImmediately(tileType, targetGridPos);
 
-        ClearFarmLandIfCovered(cell, targetGridPos);
+        ClearFarmLandIfCovered(targetGridPos);
 
         _owner.BeginAction();
         _animAbility?.Play(EHelperAnim.EatGround);
@@ -212,14 +210,22 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         _owner.EndAction();
     }
 
-    private void ClearFarmLandIfCovered(TerrainCell sourceCell, Vector3Int placedGridPos)
+    private void ClearFarmLandIfCovered(Vector3Int placedGridPos)
     {
-        if (sourceCell == null) return;
-        if (sourceCell.Data.ObjectType != EGridObjectType.FarmLand) return;
-        if (placedGridPos != sourceCell.GridPosition + Vector3Int.up) return;
+        TerrainCell belowCell = TerrainGridManager.Instance?.GetCell(placedGridPos + Vector3Int.down);
+        if (belowCell == null || belowCell.Data == null)
+            return;
+        if (belowCell.Data.ObjectType != EGridObjectType.FarmLand)
+            return;
+        if (placedGridPos != belowCell.GridPosition + Vector3Int.up)
+            return;
 
-        sourceCell.Data.RemoveObject();
-        sourceCell.Refresh();
+        FarmTile farmTile = belowCell.FarmTile;
+        if (farmTile != null && (farmTile.HasSeed || farmTile.HasCrop))
+            return;
+
+        belowCell.Data.RemoveObject();
+        belowCell.Refresh();
     }
 
     public bool CanInteractPrimary(TerrainCell cell)
@@ -655,13 +661,12 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (!PhotonNetwork.IsMasterClient)
             return;
 
-        TerrainCell cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridX, gridY, gridZ));
-        cell = GetInteractableCell(cell);
-        if (cell == null || !CanPlaceGroundOnCell(cell))
+        Vector3Int targetGridPos = new Vector3Int(gridX, gridY, gridZ);
+        if (!CanPlaceGroundAt(targetGridPos))
             return;
 
         ExecuteSecondaryPlace(
-            cell,
+            targetGridPos,
             (ETileType)tileType,
             dirtAmount,
             consumeLocalInventory: false,
@@ -735,5 +740,26 @@ public class GroundActionAbility : HelperAbility, IHelperAction
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
             StartPlaceCellAnimation(newCell, targetWorldPos);
         }
+    }
+
+    private bool CanPlaceGroundAt(Vector3Int targetGridPos)
+    {
+        if (TerrainGridManager.Instance == null)
+            return false;
+        if (targetGridPos.y >= TerrainGridManager.Instance.MaxHeight)
+            return false;
+
+        TerrainCell targetCell = TerrainGridManager.Instance.GetCell(targetGridPos);
+        if (targetCell != null && targetCell.Data != null && targetCell.Data.CellType != ECellType.Empty)
+            return false;
+
+        TerrainCell belowCell = TerrainGridManager.Instance.GetCell(targetGridPos + Vector3Int.down);
+        if (belowCell == null || belowCell.Data == null)
+            return false;
+
+        if (!belowCell.Data.IsTop)
+            return false;
+
+        return CanPlaceGroundOnCell(belowCell);
     }
 }

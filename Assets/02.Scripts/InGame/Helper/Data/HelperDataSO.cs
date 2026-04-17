@@ -12,6 +12,14 @@ public class HelperDataSO : ScriptableObject
     public HelperController Prefab;         
     public HelperController EpicPrefab;     
     public HelperController LegendaryPrefab;
+
+    [Header("Evolution Preview Prefabs")]
+    [SerializeField] private GameObject _normalEvolutionPreviewPrefab;
+    [SerializeField] private GameObject _epicEvolutionPreviewPrefab;
+    [SerializeField] private GameObject _legendaryEvolutionPreviewPrefab;
+
+    public HelperEvolutionProfileSO EvolutionProfile;
+
     public HelperController GetPrefabForGrade(EHelperGrade grade)
     {
         return grade switch
@@ -19,6 +27,16 @@ public class HelperDataSO : ScriptableObject
             EHelperGrade.Epic      => EpicPrefab      != null ? EpicPrefab      : Prefab,
             EHelperGrade.Legendary => LegendaryPrefab != null ? LegendaryPrefab : Prefab,
             _                      => Prefab
+        };
+    }
+
+    public GameObject GetEvolutionPreviewPrefab(EHelperGrade grade)
+    {
+        return grade switch
+        {
+            EHelperGrade.Epic => _epicEvolutionPreviewPrefab,
+            EHelperGrade.Legendary => _legendaryEvolutionPreviewPrefab,
+            _ => _normalEvolutionPreviewPrefab
         };
     }
 
