@@ -327,12 +327,12 @@ public class EvolutionManager : MonoBehaviour
 
         CacheRenderSettings();
         ApplyCutsceneRenderSettings();
-        ApplyEvolutionLightMasks();
+        ApplyEvolutionLights();
     }
 
     private void DisableEvolutionLighting()
     {
-        RestoreLightMasks();
+        RestoreEvolutionLights();
         RestoreRenderSettings();
     }
 
@@ -379,7 +379,7 @@ public class EvolutionManager : MonoBehaviour
         _hasRenderSettingsCache = false;
     }
 
-    private void ApplyEvolutionLightMasks()
+    private void ApplyEvolutionLights()
     {
         int focusLayer = FocusLayer;
         if (focusLayer < 0)
@@ -388,36 +388,32 @@ public class EvolutionManager : MonoBehaviour
         int focusMask = 1 << focusLayer;
         _lightCache.Clear();
 
-        HashSet<Light> evolutionLightSet = new HashSet<Light>();
         if (_evolutionLights != null)
         {
             foreach (Light evolutionLight in _evolutionLights)
             {
-                if (evolutionLight != null)
-                    evolutionLightSet.Add(evolutionLight);
-            }
-        }
+                if (evolutionLight == null || IsLightCached(evolutionLight))
+                    continue;
 
-        Light[] sceneLights = FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        foreach (Light sceneLight in sceneLights)
-        {
-            if (sceneLight == null)
-                continue;
-
-            _lightCache.Add((sceneLight, sceneLight.cullingMask, sceneLight.enabled));
-            if (evolutionLightSet.Contains(sceneLight))
-            {
-                sceneLight.enabled = true;
-                sceneLight.cullingMask = focusMask;
-            }
-            else
-            {
-                sceneLight.cullingMask &= ~focusMask;
+                _lightCache.Add((evolutionLight, evolutionLight.cullingMask, evolutionLight.enabled));
+                evolutionLight.enabled = true;
+                evolutionLight.cullingMask = focusMask;
             }
         }
     }
 
-    private void RestoreLightMasks()
+    private bool IsLightCached(Light target)
+    {
+        foreach (var entry in _lightCache)
+        {
+            if (entry.light == target)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void RestoreEvolutionLights()
     {
         foreach ((Light light, int cullingMask, bool enabled) in _lightCache)
         {
