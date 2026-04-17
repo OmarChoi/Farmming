@@ -54,6 +54,10 @@ public static class AssetKey
         public const string GamblingBuilding = "GamblingBuilding";
         public const string Shrine = "Shrine";
         public const string Hospital = "Hospital";
+        public const string House1 = "House1";
+        public const string House2 = "House2";
+        public const string House3 = "House3";
+        public const string House4 = "House4";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
@@ -146,6 +150,7 @@ public static class AssetKey
         public const string Shrine = "UI_Shrine";
         public const string VillageState = "UI_VillageState";
         public const string VillageLevelUp = "UI_VillageLevelUp";
+        public const string TradeAmountPopup = "UI_TradeAmountPopup";
 
         private static readonly Dictionary<Type, string> _registered = new Dictionary<Type, string>
         {

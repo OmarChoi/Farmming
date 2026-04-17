@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: GamblerTalkingDialogue2
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: GamblerTalkingDialogue2
+  Lines:
+  - Text: "\uD734\uC6B0... \uC624\uB298\uC740 \uCD5C\uC18C \uBAA9\uD45C \uC190\uB2D8
+      \uC218\uB97C \uCC44\uC6B8 \uC218 \uC788\uC744\uAE4C?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC557! \uC640\uC544~ \uC5B4\uC11C\uC624\uC138\uC694!! \uADC0\uC5EC\uC6B4
+      \uACE1\uB8E1 \uB808\uC774\uC2F1\uC740 \uC5B8\uC81C\uB4E0 \uB2F9\uC2E0\uC744
+      \uAE30\uB2E4\uB9AC\uACE0 \uC788\uB2E4\uAD6C\uC694!!"
+    NextDialogue: {fileID: 0}

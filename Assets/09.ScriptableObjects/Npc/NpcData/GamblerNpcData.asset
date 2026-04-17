@@ -13,29 +13,33 @@ MonoBehaviour:
   m_Name: GamblerNpcData
   m_EditorClassIdentifier: Assembly-CSharp::NpcDataSO
   NpcId: Gambler
-  NpcName: "\uAFBC"
+  NpcName: "\uB864\uB808\uD2B8"
   CanUseAiDialogue: 1
   NpcMbti: ISTJ
-  NpcPersonality: "\uBB34\uC2A8 \uC77C\uC774\uB4E0 \uD55C \uBC88 \uC2DC\uC791\uD55C
-    \uC77C\uC740 \uB05D\uAE4C\uC9C0 \uD574\uB0B8\uB2E4. \uACFC\uBB35\uD558\uACE0
-    \uBB34\uB69D\uB69D\uD55C \uC131\uACA9\uC774\uB2E4. \uC19C\uC528\uAC00 \uB6F0\uC5B4\uB09C
-    \uB300\uC7A5\uC7A5\uC774\uC774\uB2E4."
-  Age: 42
-  Job: "\uB300\uC7A5\uC7A5\uC774"
-  WayOfTone: "\uBB34\uB69D\uB69D\uD55C \uB2E8\uB2F5\uD615 \uB9D0\uD22C"
+  NpcPersonality: "\uAD49\uC7A5\uD788 \uBA85\uB791\uD558\uACE0 \uD65C\uAE30\uCC2C
+    \uC5EC\uC790. \uD56D\uC0C1 \uC0AC\uB78C\uB4E4\uC5D0\uAC8C \uB808\uC774\uC2F1\uC5D0
+    \uB300\uD574 \uD638\uAC1D \uD589\uC704\uB97C \uD558\uACE0 \uC788\uB2E4. \uC0AC\uB78C\uB4E4
+    \uC55E\uC5D0\uC120 \uBC1D\uC740 \uBAA8\uC2B5\uC744 \uBCF4\uC5EC\uC8FC\uC9C0\uB9CC,
+    \uC2E4\uC740 \uD558\uB8E8\uD558\uB8E8 \uC190\uB2D8 \uC218\uB97C \uCC44\uC6B0\uAE30
+    \uC704\uD574 \uB178\uB825\uD558\uACE0 \uC788\uB294 \uAC83\uC774\uB2E4."
+  Age: 24
+  Job: "\uAC9C\uBE14\uB7EC"
+  WayOfTone: "\uD65C\uAE30\uCC28\uACE0 \uBA85\uB791\uD55C \uD638\uAC1D \uD589\uC704
+    \uB9D0\uD22C"
   Prefab: {fileID: 7840605641264675590, guid: 6dec261624b41bc4281191e19a643a67, type: 3}
   WalkSpeed: 1
   RunSpeed: 4.6
   JumpDuration: 1.4
   JumpHeight: 1.6
   GreetDialogues:
-  - {fileID: 11400000, guid: a78c2bf62f5e6db4c800d18480d34288, type: 2}
-  - {fileID: 11400000, guid: 239a7872bcb0cc8478e8b8444ad1c627, type: 2}
-  - {fileID: 11400000, guid: c99b88ed8d561284dbe06fcb1606a4fd, type: 2}
+  - {fileID: 11400000, guid: d4ed5651ee865eb49a026339df912eb1, type: 2}
+  - {fileID: 11400000, guid: 213829e6e56fe9048a4c0de2207d2d26, type: 2}
+  - {fileID: 11400000, guid: f851c3d94c2e9dd46a8de1bd3191dedb, type: 2}
   TalkDialogues:
-  - {fileID: 11400000, guid: 1dc1c40c696f4e04faa9ed6768d463a1, type: 2}
-  - {fileID: 11400000, guid: e1d41f44cc15a97418bfe41edbc09993, type: 2}
-  - {fileID: 11400000, guid: c2f4ca4ef11f94f45958fe6137932098, type: 2}
+  - {fileID: 11400000, guid: 1d5c37c8fac17b44e9d8b70f545c084e, type: 2}
+  - {fileID: 11400000, guid: 08f7edaa6506f794aae52053fbd4bc1e, type: 2}
+  - {fileID: 11400000, guid: 91628e971ee1280418961efff2f32de9, type: 2}
+  - {fileID: 11400000, guid: 661aab6d38e06f3409e01f6b04f7e034, type: 2}
   CuringAskDialogue: {fileID: 0}
   CuringAcceptDialogue: {fileID: 0}
   CuringDeclineDialogue: {fileID: 0}
