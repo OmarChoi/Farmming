@@ -89,11 +89,12 @@ public class EvolutionTimelineRotationController : MonoBehaviour
         }
         else
         {
-            float alignStartAfterTime = Mathf.Clamp(alignStartTime - swapTime, 0f, afterDuration);
-            float alignStartAngle = angleAtSwap + GetAfterAngle(alignStartAfterTime, afterDuration, speedAtSwap);
-            float finalFrontAngle = GetFinalFrontAngle(alignStartAngle);
+            float naturalAngle = angleAtSwap + GetAfterAngle(afterTime, afterDuration, speedAtSwap);
+            float naturalEndAngle = angleAtSwap + GetAfterAngle(afterDuration, afterDuration, speedAtSwap);
+            float finalFrontAngle = GetFinalFrontAngle(naturalEndAngle);
+            float correction = Mathf.DeltaAngle(naturalEndAngle, finalFrontAngle);
             float progress = Evaluate(_frontAlignCurve, Mathf.InverseLerp(alignStartTime, timelineEnd, time));
-            afterAngle = Mathf.Lerp(alignStartAngle, finalFrontAngle, progress);
+            afterAngle = naturalAngle + correction * progress;
         }
 
         ApplyYaw(_afterModelRoot, _afterBaseEuler, afterAngle);
@@ -141,7 +142,7 @@ public class EvolutionTimelineRotationController : MonoBehaviour
     private float GetFinalFrontAngle(float fromAngle)
     {
         float targetOffset = _profile != null ? _profile.FinalFrontYawOffset : 0f;
-        float deltaToNextFront = Mathf.Repeat(targetOffset - fromAngle, 360f);
+        float deltaToNextFront = Mathf.DeltaAngle(fromAngle, targetOffset);
         float extraTurns = _profile != null ? Mathf.Max(0f, _profile.FinalRotationExtraTurns) : 0f;
         return fromAngle + deltaToNextFront + extraTurns * 360f;
     }

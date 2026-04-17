@@ -23,6 +23,7 @@ MonoBehaviour:
   ImpactZoomDuration: 0.45
   AfterPullbackDuration: 1
   AfterScanDuration: 5.4
+  AfterScanVerticalCurvePower: 1.25
   RevealDuration: 5.4
   OutroDuration: 1
   IntroSpinSpeed: 240
@@ -37,21 +38,24 @@ MonoBehaviour:
   AfterCloseCameraLocalPosition: {x: 0, y: 0.35, z: -1.05}
   AfterPullbackCameraLocalPosition: {x: 0, y: 0.45, z: -1.65}
   AfterHeadCameraLocalPosition: {x: 0, y: 1.85, z: -1.75}
-  FinalShowcaseDuration: 5
+  FinalShowcaseDuration: 2
   AfterFullShotLookHeight: 1.05
   AfterFullShotLookLocalPosition: {x: 0, y: 1.05, z: 0}
-  AfterFullShotCameraLocalPosition: {x: 0, y: 1.25, z: -3.25}
+  AfterFullShotCameraLocalPosition: {x: 0, y: 1.3, z: -4}
   FinalRotationAlignDuration: 2
-  FinalFrontYawOffset: 0
+  FinalFrontYawOffset: 180
   FinalRotationExtraTurns: 0
   BeforeEnergyRiseEndTime: 4.55
-  BeforeEnergyRiseDuration: 2.5
+  BeforeEnergyRiseDuration: 2
   BeforeEnergyRiseColor: {r: 1, g: 1, b: 1, a: 1}
-  BeforeEnergyRiseBandWidth: 0.35
-  BeforeEnergyRiseFillAlpha: 0.45
-  BeforeEnergyRiseGlowAlpha: 0.85
-  BeforeEnergyRiseOutlineWidth: 0.045
+  BeforeEnergyRiseBandWidth: 0.9
+  BeforeEnergyRiseFillAlpha: 0.92
+  BeforeEnergyRiseGlowAlpha: 0.45
+  BeforeEnergyRiseOutlineWidth: 0.004
   BeforeEnergyRiseVerticalPadding: 0.1
+  BeforeEnergyRiseRainbowStrength: 1
+  BeforeEnergyRiseRainbowSpeed: 0.3
+  BeforeEnergyRiseSurfaceOffset: 0.018
   IntroCameraLocalPosition: {x: 0, y: 1.55, z: -5.2}
   ZoomCameraLocalPosition: {x: 0, y: 1.05, z: -1.35}
   RevealCameraLocalPosition: {x: 0, y: 0.45, z: -1.65}

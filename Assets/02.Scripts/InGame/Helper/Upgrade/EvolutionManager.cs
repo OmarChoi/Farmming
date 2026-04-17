@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class EvolutionManager : MonoBehaviour
 {
+    private static readonly int AnimHash = Animator.StringToHash("animation");
+
     [Header("Studio")]
     [SerializeField] private Transform _studioAnchor;
     [SerializeField] private Transform _backgroundRoot;
@@ -43,23 +46,26 @@ public class EvolutionManager : MonoBehaviour
     [Header("Galaxy Overlay")]
     [SerializeField] private GalaxyOverlay _galaxyOverlay;
 
+    [Header("Lighting Isolation")]
+    [SerializeField] private bool _isolateLighting = true;
+    [SerializeField] private Light[] _evolutionLights;
+    [SerializeField] private AmbientMode _cutsceneAmbientMode = AmbientMode.Flat;
+    [SerializeField] private Color _cutsceneAmbientColor = Color.white;
+    [SerializeField, Range(0f, 8f)] private float _cutsceneAmbientIntensity = 1f;
+    [SerializeField] private bool _cutsceneFogEnabled;
+    [SerializeField] private Color _cutsceneFogColor = Color.black;
+    [SerializeField, Range(0f, 1f)] private float _cutsceneFogDensity;
+    [SerializeField] private Material _cutsceneSkybox;
+
     public event Action<HelperDataSO> OnEvolutionFinished;
     public bool IsPlaying => _currentData != null;
-
-    private readonly List<(Transform transform, int layer)> _layerCache = new();
-    private readonly List<(Behaviour behaviour, bool enabled)> _behaviourCache = new();
-    private readonly List<(Collider collider, bool enabled)> _colliderCache = new();
 
     private HelperDataSO _currentData;
     private HelperEvolutionProfileSO _currentProfile;
     private GameObject _beforeInstance;
     private GameObject _afterInstance;
     private Action<bool> _onFinished;
-    private Transform _originalParent;
-    private Vector3 _originalPosition;
-    private Quaternion _originalRotation;
-    private Vector3 _originalScale;
-    private bool _usedLiveHelper;
+    private readonly List<(Light light, int cullingMask, bool enabled)> _lightCache = new();
     private bool _wasOverlayEnabled;
     private bool _wasStacked;
     private int _previousPriority;
@@ -67,6 +73,14 @@ public class EvolutionManager : MonoBehaviour
     private Coroutine _spinRoutine;
     private Coroutine _whiteFlashRoutine;
     private Coroutine _fallbackRoutine;
+    private bool _hasRenderSettingsCache;
+    private AmbientMode _cachedAmbientMode;
+    private Color _cachedAmbientLight;
+    private float _cachedAmbientIntensity;
+    private bool _cachedFogEnabled;
+    private Color _cachedFogColor;
+    private float _cachedFogDensity;
+    private Material _cachedSkybox;
 
     private int FocusLayer => LayerMask.NameToLayer(_focusLayerName);
 
@@ -96,6 +110,14 @@ public class EvolutionManager : MonoBehaviour
     {
         if (_director != null)
             _director.stopped -= OnDirectorStopped;
+
+        DisableEvolutionLighting();
+    }
+
+    private void LateUpdate()
+    {
+        if (IsPlaying && _isolateLighting && _hasRenderSettingsCache)
+            ApplyCutsceneRenderSettings();
     }
 
     public bool BeginEvolution(
@@ -109,21 +131,23 @@ public class EvolutionManager : MonoBehaviour
             _afterModelRoot == null || _orbitPivot == null)
             return false;
 
-        HelperController beforePrefab = data.GetPrefabForGrade(currentGrade);
-        HelperController afterPrefab = data.GetPrefabForGrade(GetNextGrade(currentGrade));
+        GameObject beforePrefab = GetEvolutionPreviewSource(data, currentGrade);
+        GameObject afterPrefab = GetEvolutionPreviewSource(data, GetNextGrade(currentGrade));
         if (beforePrefab == null || afterPrefab == null) return false;
 
         _currentData = data;
         _currentProfile = data.EvolutionProfile;
         _onFinished = onFinished;
-        _usedLiveHelper = liveHelper != null && liveHelper.HelperId == data.HelperId;
 
         ApplyProfile(_currentProfile);
 
-        _beforeInstance = _usedLiveHelper ? liveHelper.gameObject : Instantiate(beforePrefab.gameObject);
-        _afterInstance = Instantiate(afterPrefab.gameObject);
+        SetRoot(_beforeModelRoot, false);
+        SetRoot(_afterModelRoot, false);
 
-        PrepareBeforeInstance();
+        _beforeInstance = Instantiate(beforePrefab, _beforeModelRoot, false);
+        _afterInstance = Instantiate(afterPrefab, _afterModelRoot, false);
+
+        PreparePreview(_beforeInstance, _beforeModelRoot, _beforeLocalEuler, true);
         PreparePreview(_afterInstance, _afterModelRoot, _afterLocalEuler, false);
         SetLayerRecursively(_beforeInstance, FocusLayer);
         SetLayerRecursively(_afterInstance, FocusLayer);
@@ -237,7 +261,6 @@ public class EvolutionManager : MonoBehaviour
         _currentData = null;
         _currentProfile = null;
         _onFinished = null;
-        _usedLiveHelper = false;
 
         callback?.Invoke(completed);
         if (finished != null) OnEvolutionFinished?.Invoke(finished);
@@ -251,6 +274,7 @@ public class EvolutionManager : MonoBehaviour
         _wasOverlayEnabled = _evolutionOverlayCamera.enabled;
         _evolutionOverlayCamera.enabled = true;
         _evolutionOverlayCamera.cullingMask = FocusLayer >= 0 ? 1 << FocusLayer : 0;
+        EnableEvolutionLighting();
 
         if (_baseCamera != null)
         {
@@ -275,6 +299,8 @@ public class EvolutionManager : MonoBehaviour
 
     private void DisableEvolutionCamera()
     {
+        DisableEvolutionLighting();
+
         if (_evolutionOverlayCamera != null)
         {
             if (_baseCamera != null)
@@ -292,6 +318,117 @@ public class EvolutionManager : MonoBehaviour
             _evolutionCinemachine.Follow = null;
             _evolutionCinemachine.LookAt = null;
         }
+    }
+
+    private void EnableEvolutionLighting()
+    {
+        if (!_isolateLighting)
+            return;
+
+        CacheRenderSettings();
+        ApplyCutsceneRenderSettings();
+        ApplyEvolutionLightMasks();
+    }
+
+    private void DisableEvolutionLighting()
+    {
+        RestoreLightMasks();
+        RestoreRenderSettings();
+    }
+
+    private void CacheRenderSettings()
+    {
+        if (_hasRenderSettingsCache)
+            return;
+
+        _cachedAmbientMode = RenderSettings.ambientMode;
+        _cachedAmbientLight = RenderSettings.ambientLight;
+        _cachedAmbientIntensity = RenderSettings.ambientIntensity;
+        _cachedFogEnabled = RenderSettings.fog;
+        _cachedFogColor = RenderSettings.fogColor;
+        _cachedFogDensity = RenderSettings.fogDensity;
+        _cachedSkybox = RenderSettings.skybox;
+        _hasRenderSettingsCache = true;
+    }
+
+    private void ApplyCutsceneRenderSettings()
+    {
+        RenderSettings.ambientMode = _cutsceneAmbientMode;
+        RenderSettings.ambientLight = _cutsceneAmbientColor;
+        RenderSettings.ambientIntensity = _cutsceneAmbientIntensity;
+        RenderSettings.fog = _cutsceneFogEnabled;
+        RenderSettings.fogColor = _cutsceneFogColor;
+        RenderSettings.fogDensity = _cutsceneFogDensity;
+
+        if (_cutsceneSkybox != null)
+            RenderSettings.skybox = _cutsceneSkybox;
+    }
+
+    private void RestoreRenderSettings()
+    {
+        if (!_hasRenderSettingsCache)
+            return;
+
+        RenderSettings.ambientMode = _cachedAmbientMode;
+        RenderSettings.ambientLight = _cachedAmbientLight;
+        RenderSettings.ambientIntensity = _cachedAmbientIntensity;
+        RenderSettings.fog = _cachedFogEnabled;
+        RenderSettings.fogColor = _cachedFogColor;
+        RenderSettings.fogDensity = _cachedFogDensity;
+        RenderSettings.skybox = _cachedSkybox;
+        _hasRenderSettingsCache = false;
+    }
+
+    private void ApplyEvolutionLightMasks()
+    {
+        int focusLayer = FocusLayer;
+        if (focusLayer < 0)
+            return;
+
+        int focusMask = 1 << focusLayer;
+        _lightCache.Clear();
+
+        HashSet<Light> evolutionLightSet = new HashSet<Light>();
+        if (_evolutionLights != null)
+        {
+            foreach (Light evolutionLight in _evolutionLights)
+            {
+                if (evolutionLight != null)
+                    evolutionLightSet.Add(evolutionLight);
+            }
+        }
+
+        Light[] sceneLights = FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (Light sceneLight in sceneLights)
+        {
+            if (sceneLight == null)
+                continue;
+
+            _lightCache.Add((sceneLight, sceneLight.cullingMask, sceneLight.enabled));
+            if (evolutionLightSet.Contains(sceneLight))
+            {
+                sceneLight.enabled = true;
+                sceneLight.cullingMask = focusMask;
+            }
+            else
+            {
+                sceneLight.cullingMask &= ~focusMask;
+            }
+        }
+    }
+
+    private void RestoreLightMasks()
+    {
+        foreach ((Light light, int cullingMask, bool enabled) in _lightCache)
+        {
+            if (light == null)
+                continue;
+
+            light.cullingMask = cullingMask;
+            light.enabled = enabled;
+        }
+
+        _lightCache.Clear();
     }
 
     private void StartTimelineCameraController()
@@ -532,20 +669,6 @@ public class EvolutionManager : MonoBehaviour
 
     }
 
-    private void PrepareBeforeInstance()
-    {
-        if (_beforeInstance == null) return;
-        if (_usedLiveHelper)
-        {
-            _originalParent = _beforeInstance.transform.parent;
-            _originalPosition = _beforeInstance.transform.position;
-            _originalRotation = _beforeInstance.transform.rotation;
-            _originalScale = _beforeInstance.transform.localScale;
-            CacheAndDisableLiveState(_beforeInstance);
-        }
-        PreparePreview(_beforeInstance, _beforeModelRoot, _beforeLocalEuler, true);
-    }
-
     private void PreparePreview(GameObject instance, Transform parent, Vector3 localEuler, bool active)
     {
         if (instance == null || parent == null) return;
@@ -558,59 +681,54 @@ public class EvolutionManager : MonoBehaviour
         instance.transform.localRotation = Quaternion.Euler(localEuler);
         instance.transform.localScale = Vector3.one;
 
+        PrepareCutsceneOnlyModel(instance);
+
         foreach (Behaviour behaviour in instance.GetComponentsInChildren<Behaviour>(true))
         {
-            if (!behaviour.enabled || behaviour is Animator || behaviour is HelperAnimationAbility) continue;
-            if (_usedLiveHelper && behaviour.gameObject.transform.IsChildOf(instance.transform))
+            if (behaviour == null || behaviour is Animator) continue;
+            if (false)
             {
                 // live helper 상태는 CacheAndDisableLiveState에서 별도 처리
             }
-            else behaviour.enabled = false;
+            behaviour.enabled = false;
         }
-        foreach (Collider col in instance.GetComponentsInChildren<Collider>(true))
-            col.enabled = false;
-
         instance.SetActive(active);
         if (active) PlayIdle(instance);
     }
 
-    private void CacheAndDisableLiveState(GameObject root)
+    private void PrepareCutsceneOnlyModel(GameObject root)
     {
-        _layerCache.Clear(); _behaviourCache.Clear(); _colliderCache.Clear();
+        if (root == null) return;
 
-        foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
-            _layerCache.Add((child, child.gameObject.layer));
+        SetLayerRecursively(root, FocusLayer);
 
         foreach (Behaviour behaviour in root.GetComponentsInChildren<Behaviour>(true))
         {
-            if (!behaviour.enabled ||
-                behaviour is Animator ||
-                behaviour is HelperAnimationAbility ||
-                behaviour is HelperController) continue;
-            _behaviourCache.Add((behaviour, behaviour.enabled));
+            if (behaviour == null || behaviour is Animator)
+                continue;
+
             behaviour.enabled = false;
         }
 
+        foreach (Animator animator in root.GetComponentsInChildren<Animator>(true))
+            PrepareAnimator(animator);
+
+        foreach (SkinnedMeshRenderer renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            renderer.updateWhenOffscreen = true;
+
         foreach (Collider col in root.GetComponentsInChildren<Collider>(true))
-        {
-            _colliderCache.Add((col, col.enabled));
             col.enabled = false;
+
+        foreach (Rigidbody rigidbody in root.GetComponentsInChildren<Rigidbody>(true))
+        {
+            rigidbody.isKinematic = true;
+            rigidbody.detectCollisions = false;
         }
     }
 
     private void CleanupInstances()
     {
-        if (_usedLiveHelper && _beforeInstance != null)
-        {
-            foreach (var e in _layerCache) if (e.transform != null) e.transform.gameObject.layer = e.layer;
-            foreach (var e in _behaviourCache) if (e.behaviour != null) e.behaviour.enabled = e.enabled;
-            foreach (var e in _colliderCache) if (e.collider != null) e.collider.enabled = e.enabled;
-            _beforeInstance.transform.SetParent(_originalParent, true);
-            _beforeInstance.transform.position = _originalPosition;
-            _beforeInstance.transform.rotation = _originalRotation;
-            _beforeInstance.transform.localScale = _originalScale;
-        }
-        else if (_beforeInstance != null) Destroy(_beforeInstance);
+        if (_beforeInstance != null) Destroy(_beforeInstance);
 
         if (_afterInstance != null) Destroy(_afterInstance);
         SetRoot(_beforeModelRoot, false);
@@ -650,14 +768,23 @@ public class EvolutionManager : MonoBehaviour
     private static void PlayIdle(GameObject target)
     {
         if (target == null) return;
-        HelperAnimationAbility ability =
-            target.GetComponent<HelperAnimationAbility>()
-            ?? target.GetComponentInChildren<HelperAnimationAbility>(true);
-        if (ability != null) { ability.PlayLocal(EHelperAnim.Idle); return; }
 
         Animator animator = target.GetComponentInChildren<Animator>(true);
         if (animator == null) return;
-        animator.Rebind(); animator.Update(0f); animator.Play(0, 0, 0f);
+        PrepareAnimator(animator);
+        animator.SetInteger(AnimHash, (int)EHelperAnim.Idle);
+        animator.Update(0f);
+    }
+
+    private static void PrepareAnimator(Animator animator)
+    {
+        if (animator == null) return;
+
+        animator.enabled = true;
+        animator.applyRootMotion = false;
+        animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        animator.Rebind();
+        animator.Update(0f);
     }
 
     private static void SetRoot(Transform root, bool active)
@@ -670,6 +797,19 @@ public class EvolutionManager : MonoBehaviour
         return currentGrade == EHelperGrade.Normal ? EHelperGrade.Epic :
                currentGrade == EHelperGrade.Epic ? EHelperGrade.Legendary :
                                                      EHelperGrade.Legendary;
+    }
+
+    private static GameObject GetEvolutionPreviewSource(HelperDataSO data, EHelperGrade grade)
+    {
+        if (data == null)
+            return null;
+
+        GameObject previewPrefab = data.GetEvolutionPreviewPrefab(grade);
+        if (previewPrefab != null)
+            return previewPrefab;
+
+        HelperController gameplayPrefab = data.GetPrefabForGrade(grade);
+        return gameplayPrefab != null ? gameplayPrefab.gameObject : null;
     }
 
     public void SetLayerRecursively(GameObject target, int layer)

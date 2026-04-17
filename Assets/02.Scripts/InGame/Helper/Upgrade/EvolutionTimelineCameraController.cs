@@ -96,7 +96,8 @@ public class EvolutionTimelineCameraController : MonoBehaviour
         }
         else if (time < scanEnd)
         {
-            float progress = Evaluate(_smoothScanCurve, Mathf.InverseLerp(pullbackEnd, scanEnd, time));
+            float rawProgress = Mathf.InverseLerp(pullbackEnd, scanEnd, time);
+            float progress = EvaluateScanProgress(rawProgress);
             cameraPosition = Vector3.Lerp(
                 _profile.AfterPullbackCameraLocalPosition,
                 _profile.AfterHeadCameraLocalPosition,
@@ -161,6 +162,13 @@ public class EvolutionTimelineCameraController : MonoBehaviour
     private static float Evaluate(AnimationCurve curve, float value)
     {
         return curve != null ? curve.Evaluate(Mathf.Clamp01(value)) : Mathf.SmoothStep(0f, 1f, value);
+    }
+
+    private float EvaluateScanProgress(float value)
+    {
+        value = Mathf.Clamp01(value);
+        float power = _profile != null ? Mathf.Max(0.1f, _profile.AfterScanVerticalCurvePower) : 1.25f;
+        return Mathf.Pow(value, power);
     }
 
     private float GetTimelineEndTime()
