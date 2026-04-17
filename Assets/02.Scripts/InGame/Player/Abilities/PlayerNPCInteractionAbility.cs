@@ -4,7 +4,7 @@ public class PlayerNPCInteractionAbility : PlayerAbility
 {
     [SerializeField] private float _radius = 5f;
     [SerializeField] private LayerMask _interactionLayer;
-    [SerializeField] private KeyCode _interactKey = KeyCode.P;
+    [SerializeField] private KeyCode _interactKey = KeyCode.E;
     [SerializeField] private float _rotationSpeed = 10f;
     [SerializeField] private CameraPreset _cameraPreset;
 

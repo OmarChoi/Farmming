@@ -15,7 +15,7 @@ public class NpcLocationAnchor : MonoBehaviour
     [SerializeField] private GameObject _stylingHideRoot;
 
     [Header("자동 등록")]
-    [SerializeField] private bool _registerOnEnable = true;
+    [SerializeField] private bool _registerOnEnable = false;
 
     private bool _isRegistered;
 
