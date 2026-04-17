@@ -51,7 +51,10 @@ public class NpcLocationManager : MonoBehaviour
 
     public void Unregister(NpcLocationAnchor anchor)
     {
-        if (anchor == null) return;
+        if (anchor == null)
+        {
+            return;
+        }
 
         string runtimeKey = anchor.RuntimeNpcKey;
         string key = MakeKey(runtimeKey, anchor.LocationType, anchor.LocationKey);

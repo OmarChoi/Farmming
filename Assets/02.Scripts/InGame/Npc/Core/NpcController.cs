@@ -263,7 +263,7 @@ public class NpcController : MonoBehaviour
             }
             return TryGetWanderPosition(entry, out targetPosition);
         }
-        Debug.Log($"[NpcController.TryGetScheduleTargetPosition] npc={_npcData?.NpcName}, runtimeKey={RuntimeNpcKey}, type={entry.NpcLocationType}, locationKey={entry.LocationKey}");
+
         return NpcLocationManager.Instance.TryGetLocation(
             RuntimeNpcKey,
             entry.NpcLocationType,
