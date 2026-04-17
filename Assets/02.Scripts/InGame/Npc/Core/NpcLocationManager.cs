@@ -34,7 +34,6 @@ public class NpcLocationManager : MonoBehaviour
         string runtimeKey = anchor.RuntimeNpcKey;
         string key = MakeKey(runtimeKey, anchor.LocationType, anchor.LocationKey);
         _anchorMap[key] = anchor;
-      
         if (string.IsNullOrEmpty(runtimeKey)) return;
 
         if (!_anchorsByRuntimeKey.TryGetValue(runtimeKey, out List<NpcLocationAnchor> list))
