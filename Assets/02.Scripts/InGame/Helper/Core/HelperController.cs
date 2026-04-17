@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
@@ -32,6 +33,9 @@ public class HelperController : MonoBehaviourPunCallbacks
     private readonly Dictionary<Type, HelperAbility> _abilityCache = new();
     private PhotonTransformView _transformView;
     private CharacterController _characterController;
+    private Collider[] _colliders;
+    private bool[] _colliderInitialEnabled;
+    private bool _isBackEquipped;
 
     private const float SummonOffset = 1.5f;
 
@@ -43,6 +47,7 @@ public class HelperController : MonoBehaviourPunCallbacks
         PhotonView = GetComponent<PhotonView>();
         _transformView = GetComponent<PhotonTransformView>();
         _characterController = GetComponent<CharacterController>();
+        CacheCollisionComponents();
 
         Level = new HelperLevel(_data);
         Grade = new HelperGrade(_data);
@@ -53,6 +58,7 @@ public class HelperController : MonoBehaviourPunCallbacks
         Energy.OnRecovered += OnEnergyRecovered;
 
         _originalScale = transform.localScale;
+        SetCollisionEnabled(false);
     }
 
     private void OnDestroy()
@@ -96,19 +102,22 @@ public class HelperController : MonoBehaviourPunCallbacks
         PlayerOwner = playerOwner;
         FollowTarget = playerOwner.transform;
         State = EHelperState.Summoned;
-        SetCharacterControllerEnabled(true);
+        _isBackEquipped = false;
+        SetCollisionEnabled(true);
         transform.SetParent(null);
+        transform.localScale = _originalScale;
         transform.position = FollowTarget.position + FollowTarget.right * SummonOffset;
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
         PlayHelperSfx(AssetKey.SFX.HelperSummon, ESpatialMode.FollowTransform);
     }
 
-    public void Equip(Transform equipSlot)
+    public void Equip(Transform equipSlot, bool isBack = false)
     {
         SetTransformSync(false);
         State = EHelperState.Equipped;
-        SetCharacterControllerEnabled(false);
+        _isBackEquipped = isBack;
+        SetCollisionEnabled(false);
         transform.SetParent(equipSlot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
@@ -136,7 +145,8 @@ public class HelperController : MonoBehaviourPunCallbacks
     public void Unequip()
     {
         State = EHelperState.Summoned;
-        SetCharacterControllerEnabled(true);
+        _isBackEquipped = false;
+        SetCollisionEnabled(true);
         transform.SetParent(null);
         transform.localScale = _originalScale;
         transform.position = FollowTarget.position;
@@ -153,10 +163,30 @@ public class HelperController : MonoBehaviourPunCallbacks
             _transformView.enabled = enabled;
     }
 
-    private void SetCharacterControllerEnabled(bool enabled)
+    private void CacheCollisionComponents()
+    {
+        _colliders = GetComponentsInChildren<Collider>(true);
+        _colliderInitialEnabled = new bool[_colliders.Length];
+        for (int i = 0; i < _colliders.Length; i++)
+            _colliderInitialEnabled[i] = _colliders[i] != null && _colliders[i].enabled;
+    }
+
+    private void SetCollisionEnabled(bool enabled)
     {
         if (_characterController != null)
             _characterController.enabled = enabled;
+
+        if (_colliders == null || _colliderInitialEnabled == null || _colliders.Length != _colliderInitialEnabled.Length)
+            CacheCollisionComponents();
+
+        for (int i = 0; i < _colliders.Length; i++)
+        {
+            Collider col = _colliders[i];
+            if (col == null || col == _characterController)
+                continue;
+
+            col.enabled = enabled && _colliderInitialEnabled[i];
+        }
     }
 
     public void LoadState(HelperSaveData data)
@@ -237,17 +267,24 @@ public class HelperController : MonoBehaviourPunCallbacks
     [PunRPC]
     internal void RPC_Summon(int ownerViewId)
     {
-        var ownerView = PhotonView.Find(ownerViewId);
-        if (ownerView == null) return;
+        if (!TryResolveOwner(ownerViewId, out PlayerController playerController))
+        {
+            StartCoroutine(ApplySummonWhenOwnerReady(ownerViewId));
+            return;
+        }
 
-        var playerController = ownerView.GetComponent<PlayerController>();
-        if (playerController == null) return;
+        ApplyNetworkSummon(playerController);
+    }
 
+    private void ApplyNetworkSummon(PlayerController playerController)
+    {
         PlayerOwner = playerController;
         FollowTarget = playerController.transform;
         State = EHelperState.Summoned;
-        SetCharacterControllerEnabled(true);
+        _isBackEquipped = false;
+        SetCollisionEnabled(true);
         transform.SetParent(null);
+        transform.localScale = _originalScale;
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
         PlayHelperSfx(AssetKey.SFX.HelperSummon, ESpatialMode.FollowTransform);
@@ -256,24 +293,42 @@ public class HelperController : MonoBehaviourPunCallbacks
     [PunRPC]
     internal void RPC_Equip(int ownerViewId, bool isBack)
     {
-        var ownerView = PhotonView.Find(ownerViewId);
-        if (ownerView == null) return;
+        SetTransformSync(false);
+        State = EHelperState.Equipped;
+        _isBackEquipped = isBack;
+        SetCollisionEnabled(false);
 
-        var interaction = ownerView.GetComponentInChildren<PlayerHelperInteractionAbility>();
+        if (!TryResolveOwner(ownerViewId, out PlayerController playerController))
+        {
+            StartCoroutine(ApplyEquipWhenOwnerReady(ownerViewId, isBack));
+            return;
+        }
+
+        ApplyNetworkEquip(playerController, isBack);
+    }
+
+    private void ApplyNetworkEquip(PlayerController playerController, bool isBack)
+    {
+        PlayerOwner = playerController;
+        FollowTarget = playerController.transform;
+
+        var interaction = playerController.GetComponentInChildren<PlayerHelperInteractionAbility>();
         if (interaction == null) return;
 
         var equipSlot = (isBack && interaction.BackEquipSlot != null) ? interaction.BackEquipSlot : interaction.EquipSlot;
         if (equipSlot == null) return;
 
-        Equip(equipSlot);
+        Equip(equipSlot, isBack);
     }
 
     [PunRPC]
     internal void RPC_Unequip()
     {
         State = EHelperState.Summoned;
+        _isBackEquipped = false;
         transform.SetParent(null);
-        SetCharacterControllerEnabled(true);
+        transform.localScale = _originalScale;
+        SetCollisionEnabled(true);
         SetTransformSync(true);
         PlayHelperSfx(AssetKey.SFX.HelperUnequip, ESpatialMode.FollowTransform);
     }
@@ -293,6 +348,54 @@ public class HelperController : MonoBehaviourPunCallbacks
     }
 
     #endregion
+
+    private bool TryResolveOwner(int ownerViewId, out PlayerController playerController)
+    {
+        playerController = null;
+
+        var ownerView = PhotonView.Find(ownerViewId);
+        if (ownerView == null)
+            return false;
+
+        playerController = ownerView.GetComponent<PlayerController>();
+        return playerController != null;
+    }
+
+    private IEnumerator ApplySummonWhenOwnerReady(int ownerViewId)
+    {
+        const float timeout = 2f;
+        float elapsed = 0f;
+
+        while (elapsed < timeout)
+        {
+            if (TryResolveOwner(ownerViewId, out PlayerController playerController))
+            {
+                ApplyNetworkSummon(playerController);
+                yield break;
+            }
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+    }
+
+    private IEnumerator ApplyEquipWhenOwnerReady(int ownerViewId, bool isBack)
+    {
+        const float timeout = 2f;
+        float elapsed = 0f;
+
+        while (elapsed < timeout)
+        {
+            if (TryResolveOwner(ownerViewId, out PlayerController playerController))
+            {
+                ApplyNetworkEquip(playerController, isBack);
+                yield break;
+            }
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+    }
 
     private void ApplyRuntimeState(
         int level,
@@ -363,5 +466,25 @@ public class HelperController : MonoBehaviourPunCallbacks
             Energy.Current,
             isRangeBoostActive,
             remainingRangeBoostMinutes);
+
+        SyncPresentationState(newPlayer);
+    }
+
+    private void SyncPresentationState(Player target)
+    {
+        if (target == null || PlayerOwner == null || PlayerOwner.PhotonView == null)
+            return;
+
+        int ownerViewId = PlayerOwner.PhotonView.ViewID;
+        switch (State)
+        {
+            case EHelperState.Summoned:
+                PhotonView.RPC(nameof(RPC_Summon), target, ownerViewId);
+                break;
+
+            case EHelperState.Equipped:
+                PhotonView.RPC(nameof(RPC_Equip), target, ownerViewId, _isBackEquipped);
+                break;
+        }
     }
 }
