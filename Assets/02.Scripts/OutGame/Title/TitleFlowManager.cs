@@ -19,6 +19,7 @@ public class TitleFlowManager : MonoBehaviour
     private void Awake()
     {
         Instantiate(_pun2Manager);
+        EnsureResourceManager();
         SlotService = new SaveSlotService(new LocalJsonSaveRepository(), _maxSlots);
     }
 
@@ -32,6 +33,15 @@ public class TitleFlowManager : MonoBehaviour
         await UniTask.WaitUntil(() => SoundManager.Instance != null && ResourceManager.Instance != null);
         await UniTask.Yield();
         SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.StartScene);
+    }
+
+    private void EnsureResourceManager()
+    {
+        if (ResourceManager.Instance != null)
+            return;
+
+        var resourceManagerObject = new GameObject(nameof(ResourceManager));
+        resourceManagerObject.AddComponent<ResourceManager>();
     }
 
     public async UniTask RefreshSlotsAsync()

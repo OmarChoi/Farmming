@@ -241,15 +241,31 @@ public class HelperUpgradeService : MonoBehaviour
         if (_evolutionManager == null || data == null || currentGrade >= EHelperGrade.Legendary) return false;
 
         HelperController liveHelper = FindLiveHelperForEvolution(data);
+        bool upgradeFinalized = false;
+        bool upgradeFailed = false;
+
         bool started = _evolutionManager.BeginEvolution(data, currentGrade, liveHelper, completed =>
             {
                 if (!completed)
                 {
-                    OnUpgradeFailed?.Invoke(data);
+                    if (!upgradeFinalized && !upgradeFailed)
+                        OnUpgradeFailed?.Invoke(data);
                     return;
                 }
 
-                TryFinalizeUpgrade(data);
+                if (!upgradeFinalized && !upgradeFailed)
+                {
+                    upgradeFinalized = TryFinalizeUpgrade(data);
+                    upgradeFailed = !upgradeFinalized;
+                }
+            },
+            onEvolvedModelShown: () =>
+            {
+                if (upgradeFinalized || upgradeFailed)
+                    return;
+
+                upgradeFinalized = TryFinalizeUpgrade(data);
+                upgradeFailed = !upgradeFinalized;
             });
 
         if (!started) return false;
@@ -267,18 +283,18 @@ public class HelperUpgradeService : MonoBehaviour
 
         return null;
     }
-    private void TryFinalizeUpgrade(HelperDataSO data)
+    private bool TryFinalizeUpgrade(HelperDataSO data)
     {
         if (!TryConsumeUpgradeCost(data))
         {
             OnUpgradeFailed?.Invoke(data);
-            return;
+            return false;
         }
 
-        CompleteUpgrade(data);
+        return CompleteUpgrade(data);
     }
 
-    private void CompleteUpgrade(HelperDataSO data)
+    private bool CompleteUpgrade(HelperDataSO data)
     {
         bool success = _helperInventoryAbility.TryUpgradeHelper(data);
         if (!success)
@@ -287,7 +303,7 @@ public class HelperUpgradeService : MonoBehaviour
             Debug.LogWarning($"업그레이드 실패 - {data.HelperId}");
 #endif
             OnUpgradeFailed?.Invoke(data);
-            return;
+            return false;
         }
 
         _helperInventoryAbility.RespawnHelper(data);
@@ -298,6 +314,7 @@ public class HelperUpgradeService : MonoBehaviour
 
         OnHelperUpgraded?.Invoke(data);
         OnUpgradeSucceeded?.Invoke(data);
+        return true;
     }
 
     public EHelperGrade GetGrade(HelperDataSO data)
