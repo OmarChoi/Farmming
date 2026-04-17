@@ -1846,6 +1846,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 14b2d9b09a6ea9542a759e094b34d4e2, type: 3}
+--- !u!114 &221505137 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8256209281548755036, guid: 14b2d9b09a6ea9542a759e094b34d4e2, type: 3}
+  m_PrefabInstance: {fileID: 221505136}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ebf7f08a17c2eb4bb2bcbc4cd8e6d7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI_TradeAmountPopup
 --- !u!1 &230285010
 GameObject:
   m_ObjectHideFlags: 0
@@ -3093,6 +3104,10 @@ PrefabInstance:
       propertyPath: _tooltip
       value: 
       objectReference: {fileID: 431289951}
+    - target: {fileID: 6434373360074362083, guid: 02d30b51d16efbc46b643b03a0f4ff3f, type: 3}
+      propertyPath: _tradeAmountPopup
+      value: 
+      objectReference: {fileID: 221505137}
     - target: {fileID: 8292767044679046127, guid: 02d30b51d16efbc46b643b03a0f4ff3f, type: 3}
       propertyPath: m_Name
       value: UI_Inventory
