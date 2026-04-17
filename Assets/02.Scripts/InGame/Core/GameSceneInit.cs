@@ -40,7 +40,7 @@ public class GameSceneInit : MonoBehaviour
                 CacheVillageData();
 
                 QuestDataMarkLoaded();
-                TryStartTutorial(localPlayer);
+                // TryStartTutorial(localPlayer);
 
                 var props = new Hashtable { { PropTerrainReady, true } };
                 PhotonNetwork.LocalPlayer.SetCustomProperties(props);
@@ -92,6 +92,8 @@ public class GameSceneInit : MonoBehaviour
                 return;
             }
 
+            StorageManager.Instance.ImportStorages(VillageCache.Storages);
+
             VillageCache.RestorePlayerPositions();
             LoadingProgress.Value = 0.6f;
 
@@ -103,7 +105,7 @@ public class GameSceneInit : MonoBehaviour
             await WaitForAllTerrainReady();
 
             localPlayer = FindLocalPlayer();
-            TryStartTutorial(localPlayer);
+            // TryStartTutorial(localPlayer);
             OnCompleteInitialize?.Invoke();
             return;
         }
@@ -129,7 +131,7 @@ public class GameSceneInit : MonoBehaviour
 
         CacheVillageData();
         await WaitForAllTerrainReady();
-        TryStartTutorial(localPlayer);
+        // TryStartTutorial(localPlayer);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -233,6 +235,8 @@ public class GameSceneInit : MonoBehaviour
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
 
+            StorageManager.Instance.ImportStorages(VillageCache.Storages);
+
             VillageCache.RestorePlayerPositions();
 
             QuestDataMarkLoaded();
@@ -280,6 +284,8 @@ public class GameSceneInit : MonoBehaviour
             
             if (VillageCache.Buildings != null && BuildingManager.Instance != null)
                 await BuildingManager.Instance.ImportBuildings(VillageCache.Buildings);
+
+            StorageManager.Instance.ImportStorages(VillageCache.Storages);
             
             _mapNavMeshController.BuildInitialNavMesh();
 
@@ -337,7 +343,7 @@ public class GameSceneInit : MonoBehaviour
         LoadingProgress.Value = 0.6f;
         RoomManager.Instance.OpenRoom();
         await WaitForAllTerrainReady();
-        TryStartTutorial(localPlayer);
+        // TryStartTutorial(localPlayer);
         OnCompleteInitialize?.Invoke();
     }
 

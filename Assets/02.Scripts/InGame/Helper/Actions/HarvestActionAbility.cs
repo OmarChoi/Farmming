@@ -262,6 +262,11 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             return false;
 
         int harvestAmount = UnityEngine.Random.Range(seed.HarvestAmountMin, seed.HarvestAmountMax + 1);
+        if (WorldEffectManager.Instance != null)
+        {
+            harvestAmount = WorldEffectManager.ApplyMultiplier(
+                harvestAmount, WorldEffectManager.Instance.GetAcquireMultiplier());
+        }
 
         PlayerInventoryAbility inventory = GetInventory();
         bool success = false;

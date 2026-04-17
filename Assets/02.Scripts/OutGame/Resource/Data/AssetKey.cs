@@ -23,6 +23,8 @@ public static class AssetKey
         public const string Blacksmith = "Blacksmith";
         public const string Hairdresser = "Hairdresser";
         public const string Merchant = "Merchant";
+        public const string Gambler = "Gambler";
+        public const string Doctor = "Doctor";
         public const string GroundHelper = "GroundHelper";
         public const string LightHelper = "LightHelper";
         public const string HarvestHelper = "HarvestHelper";
@@ -39,6 +41,15 @@ public static class AssetKey
         public const string WoodCuttingLegendaryHelper = "WoodCuttingLegendaryHelper";
         public const string JungleTroublemaker = "JungleTroublemaker";
         public const string CaveTroublemaker1 = "CaveTroublemaker1";
+        public const string MarketStall = "MarketStall";
+        public const string Smithy = "Smithy";
+        public const string HairShop = "HairShop";
+        public const string Storage = "Storage";
+        public const string QuestBoard = "QuestBoard";
+        public const string Portal = "Portal";
+        public const string GamblingBuilding = "GamblingBuilding";
+        public const string Shrine = "Shrine";
+        public const string Hospital = "Hospital";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
@@ -108,25 +119,6 @@ public static class AssetKey
         public const string NormalTree = "NormalTree";
     }
 
-    public static class Building
-    {
-        private const string MarketStall = "MarketStall";
-        private const string Smithy = "Smithy";
-        private const string HairShop = "HairShop";
-
-        private static readonly HashSet<string> _registered = new HashSet<string>
-        {
-            MarketStall,
-            Smithy,
-            HairShop
-        };
-
-        public static string GetKey(string buildingId)
-        {
-            return _registered.Contains(buildingId) ? buildingId : null;
-        }
-    }
-
     public static class BGM
     {
         public const string StartScene = "SFXstartscenebgm";
@@ -147,6 +139,7 @@ public static class AssetKey
         public const string Stamina = "UI_Stamina";
         public const string BuildingList = "UI_BuildingList";
         public const string BuildInfo = "UI_BuildInfo";
+        public const string Shrine = "UI_Shrine";
         public const string VillageState = "UI_VillageState";
         public const string VillageLevelUp = "UI_VillageLevelUp";
 
@@ -154,8 +147,10 @@ public static class AssetKey
         {
             {typeof(UI_BuildingList), BuildingList},
             {typeof(UI_BuildInfo), BuildInfo},
+            {typeof(UI_Shrine), Shrine},
             {typeof(UI_VillageState), VillageState},
             {typeof(UI_VillageLevelUp), VillageLevelUp},
+            {typeof(UI_QuestBoard), QuestBoard},
         };
 
         public static string GetKey<T>() where T : UIBase

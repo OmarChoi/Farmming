@@ -41,3 +41,20 @@ MonoBehaviour:
   _rightClickIcon: {fileID: 21300000, guid: 7fb397a705dff8445a260ee2cb130988, type: 3}
   _leftClickExplanation: "\uC218\uD655"
   _rightClickExplanation: "\uBE44\uB8CC \uBFCC\uB9AC\uAE30"
+  _upgradeCosts:
+  - _fromGrade: 0
+    _goldCost: 5000
+    _costs:
+    - _item: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
+      _amount: 10
+    - _item: {fileID: 11400000, guid: c558e2f649524882960abddccd7fde57, type: 2}
+      _amount: 5
+  - _fromGrade: 1
+    _goldCost: 20000
+    _costs:
+    - _item: {fileID: 11400000, guid: 2cb7b9cac4014c34b8952bb1db1f96c3, type: 2}
+      _amount: 20
+    - _item: {fileID: 11400000, guid: 78d7924df0e35d34397129f8fba7695b, type: 2}
+      _amount: 50
+    - _item: {fileID: 11400000, guid: bcef9f143af28bb419294d387caf8190, type: 2}
+      _amount: 10

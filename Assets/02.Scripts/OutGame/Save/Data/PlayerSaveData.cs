@@ -11,6 +11,7 @@ public class PlayerSaveData
     public float RotY;
     public int Gold;
     public int InventorySlotCount = 16;
+    public int LastCuredDay = -1;
     public List<InventorySlotSaveData> Inventory = new();
     public List<HelperSaveData> Helpers = new();
     public CustomizeSaveData Customize = new();

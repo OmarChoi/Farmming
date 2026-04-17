@@ -4,5 +4,6 @@ public enum EQuestCategory
 {
     Main,
     Sub,
-    Daily
+    Daily,
+    ForcedTimed
 }

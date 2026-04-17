@@ -147,11 +147,20 @@ public class SaveManager : MonoBehaviourPun
             if (BuildingManager.Instance != null)
                 data.Buildings = BuildingManager.Instance.ExportBuildings();
 
+            if (StorageManager.Instance != null)
+                data.Storages = StorageManager.Instance.ExportStorages();
+
             if (TimeSystem.Instance != null)
                 data.Time = TimeSystem.Instance.ExportSaveData();
             
             if (VillageLevelManager.Instance != null)
                 data.Village = VillageLevelManager.Instance.ExportSaveData();
+
+            if (WorldEffectManager.Instance != null)
+                data.WorldEffects = WorldEffectManager.Instance.ExportSaveData();
+
+            if (WorldEffectQuestService.Instance != null)
+                data.ForcedTimedQuest = WorldEffectQuestService.Instance.ExportSaveData();
 
             _receivedSaveData.Clear();
             _expectedResponses = 0;
@@ -255,6 +264,7 @@ public class SaveManager : MonoBehaviourPun
         if (_loadedData == null)
         {
             Debug.Log($"저장 데이터 없음 (슬롯 {slot})");
+            WorldEffectManager.Instance?.ClearEffects();
             _isLoadCompleted = true;
             RestoreRegisteredPlayers();
             return;
@@ -267,9 +277,18 @@ public class SaveManager : MonoBehaviourPun
         
         if (BuildingManager.Instance != null && _loadedData.Buildings != null)
             await BuildingManager.Instance.ImportBuildings(_loadedData.Buildings);
-        
+
+        if (StorageManager.Instance != null)
+            StorageManager.Instance.ImportStorages(_loadedData.Storages);
+
         if (TimeSystem.Instance != null)
             TimeSystem.Instance.ImportTimeSaveData(_loadedData.Time);
+
+        if (WorldEffectManager.Instance != null)
+            WorldEffectManager.Instance.ImportSaveData(_loadedData.WorldEffects);
+
+        if (WorldEffectQuestService.Instance != null)
+            WorldEffectQuestService.Instance.ImportSaveData(_loadedData.ForcedTimedQuest);
 
         _isLoadCompleted = true;
         RestoreRegisteredPlayers();

@@ -620,6 +620,8 @@ MonoBehaviour:
   _dialogueController: {fileID: 0}
   _aiDialogueController: {fileID: 0}
   _shopController: {fileID: 0}
+  _helperUpgradeService: {fileID: 0}
+  _stylingCustomizeService: {fileID: 0}
   _npcQuestService: {fileID: 0}
 --- !u!1 &5720044989875460714
 GameObject:
@@ -1237,11 +1239,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 146
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -66.36
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

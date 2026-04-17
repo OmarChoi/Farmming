@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: DoctorTalkingDialogue2
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: DoctorTalkingDialogue2
+  Lines:
+  - Text: "\uC5B4\uC9F8\uC11C \uC758\uC0AC\uAC00 \uC9C4\uB8CC\uB3C4 \uBCF4\uACE0
+      \uC57D\uB3C4 \uD30C\uB0D0\uACE0?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uADF8\uAC8C \uB354 \uD6A8\uC728\uC801\uC774\uACE0 \uC2F8\uAC8C \uBA39\uD788\uAC70\uB4E0.
+      \uD750\uD750\uD750..."
+    NextDialogue: {fileID: 0}

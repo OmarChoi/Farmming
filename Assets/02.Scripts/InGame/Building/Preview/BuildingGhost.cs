@@ -28,6 +28,12 @@ public class BuildingGhost
         _lastValid = null;
 
         _instance = Object.Instantiate(prefab, parent);
+
+        if (_instance.GetComponent<BuildingGhostMarker>() == null)
+        {
+            _instance.AddComponent<BuildingGhostMarker>();
+        }
+
         _originalMaterials.Clear();
 
         // Renderer 캐싱 + Ghost 머티리얼로 교체 (sharedMaterial 사용, 인스턴스 생성 없음)

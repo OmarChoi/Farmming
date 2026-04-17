@@ -10,6 +10,11 @@ public class QuestRuntimeData
 
     public int CurrentAmount;
 
+    public int AcceptedDay;
+    public int ExpireDay;
+
+    public int RemainingDays => Mathf.Max(0, ExpireDay - TimeEvents.CurrentDay - 1);
+
     [SerializeField] private List<QuestItemProgressEntry> _itemProgressList = new();
     private Dictionary<int, int> _itemProgressMap;
 
@@ -91,6 +96,9 @@ public class QuestRuntimeData
         {
             case EQuestObjectiveType.BreakObject:
             case EQuestObjectiveType.TalkToNpc:
+            case EQuestObjectiveType.DryFarmTile:
+            case EQuestObjectiveType.PlantSeed:
+            case EQuestObjectiveType.WaterFarmTile:
                 return CurrentAmount >= QuestData.RequiredAmount;
 
             case EQuestObjectiveType.CollectItem:

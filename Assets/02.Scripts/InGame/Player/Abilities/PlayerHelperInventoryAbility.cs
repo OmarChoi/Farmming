@@ -134,7 +134,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             Rotate(-1);
         if (Input.GetKeyDown(_rotateRightKey))
             Rotate(1);
-        if (Input.GetKeyDown(_summonKey))
+        if (Input.GetKeyDown(_summonKey) && _owner.TryConsumeInteract())
             ToggleSummon();
     }
 
@@ -320,18 +320,24 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     private void HandleMorning()
     {
+        RecoverAllHelpersFull();
+    }
+
+    public void RecoverAllHelpersFull()
+    {
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        RecoverActiveHelper(_activeMainHelper, now);
-        RecoverActiveHelper(_activeLightHelper, now);
+        RecoverActiveHelperAndSync(_activeMainHelper, now);
+        RecoverActiveHelperAndSync(_activeLightHelper, now);
         RecoverSavedHelpers(now);
     }
 
-    private void RecoverActiveHelper(HelperController helper, long savedAt)
+    private void RecoverActiveHelperAndSync(HelperController helper, long savedAt)
     {
         if (helper == null) return;
 
         helper.Energy.RecoverFull();
+        helper.SyncRuntimeState();
         SaveHelperState(helper, savedAt);
     }
 

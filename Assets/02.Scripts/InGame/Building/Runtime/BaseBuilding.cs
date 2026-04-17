@@ -9,6 +9,7 @@ public abstract class BaseBuilding : MonoBehaviour
     public BuildingDataSO BuildingData { get; private set; }
     public BuildingSaveData SaveData { get; private set; }
     public BuildingConstructionContext ConstructionContext { get; private set; }
+    public NpcController BuildingNpc => _buildingNpc;
 
     public float ConstructionProgress { get; private set; }
     public bool IsConstructionComplete => SaveData == null || SaveData.RemainingDays <= 0;
@@ -18,9 +19,20 @@ public abstract class BaseBuilding : MonoBehaviour
     private bool _constructionCompletedHandled;
     private bool _onLoading;
 
+    /// 클라이언트는 마스터의 PhotonNetwork.Instantiate 자동 복제로 생성되므로
+    /// TryBuild의 Initialize 경로를 거치지 않는다. PhotonView.InstantiationData에서
+    /// BuildingSaveData를 복원해 BuildingManager에 자가 등록한다.
+    /// 마스터/로컬 모드는 TryBuild에서 명시적으로 Initialize되므로 여기선 skip.
+    protected virtual void Start()
+    {
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient) return;
+        if (BuildingManager.Instance == null) return;
+        BuildingManager.Instance.RegisterClientSpawnedBuilding(this);
+    }
+
     public void Initialize(
-        BuildingDataSO buildingData, 
-        BuildingSaveData saveData, 
+        BuildingDataSO buildingData,
+        BuildingSaveData saveData,
         BuildingConstructionContext constructionContext,
         bool onLoading = false)
     {
@@ -50,10 +62,30 @@ public abstract class BaseBuilding : MonoBehaviour
         OnBuildingInitialized();
         OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
 
-        if (IsConstructionComplete)
+        if (!IsConstructionComplete) return;
+
+        // 복원/실경과 공통 경로. _constructionCompletedHandled 가드로 이벤트 중복을 막고,
+        // NPC 스폰은 HandleConstructionCompleted 내부의 _onLoading 체크로 억제된다.
+        TryHandleConstructionCompleted();
+    }
+
+    /// 저장/스냅샷 복원 경로에서 RemainingDays만 교체하고 시각 상태를 맞춘다.
+    /// 이벤트는 _constructionCompletedHandled 가드로 최초 1회만 발생한다.
+    public void ApplyConstructionRemainingDays(int remainingDays)
+    {
+        if (SaveData == null) return;
+
+        SaveData.RemainingDays = remainingDays;
+        ConstructionProgress = CalculateConstructionProgress();
+        OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
+
+        if (!IsConstructionComplete)
         {
-            TryHandleConstructionCompleted();
+            _constructionCompletedHandled = false;
+            return;
         }
+
+        TryHandleConstructionCompleted();
     }
 
     private void OnLoadingFinished()
@@ -69,12 +101,17 @@ public abstract class BaseBuilding : MonoBehaviour
             NpcSpawnManager.Instance.Despawn(_buildingNpc);
         }
         GameSceneInit.OnCompleteInitialize -= OnLoadingFinished;
-        
+
+        // 클라이언트는 PhotonNetwork.Destroy 자동 복제로 파괴되므로 _registry/_placement도 같이 정리.
+        // 마스터는 TryRemoveResolved 경로가 _registry를 먼저 비운 후 Destroy하므로 여기선 skip.
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient && BuildingManager.Instance != null)
+            BuildingManager.Instance.UnregisterClientSpawnedBuilding(this);
+
         if (!_isDayBound) return;
 
         TimeEvents.OnNetDayStarted -= AdvanceDay;
         _isDayBound = false;
-        
+
     }
 
     private void AdvanceDay()
@@ -84,11 +121,19 @@ public abstract class BaseBuilding : MonoBehaviour
         SaveData.RemainingDays--;
         ConstructionProgress = CalculateConstructionProgress();
         OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
+        LogBuildingSync($"AdvanceDay id={SaveData.BuildingId} anchor=({SaveData.AnchorX},{SaveData.AnchorY},{SaveData.AnchorZ}) remaining={SaveData.RemainingDays}");
 
         if (SaveData.RemainingDays <= 0)
         {
             TryHandleConstructionCompleted();
         }
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+    private static void LogBuildingSync(string message)
+    {
+        Debug.Log($"[BuildingSync] {message}");
     }
 
     public void SetNpc(NpcController npc)
@@ -105,7 +150,9 @@ public abstract class BaseBuilding : MonoBehaviour
             BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
             if (spawner != null && spawner.HasValidData)
             {
-                NpcController npc = spawner.SpawnNpc();
+                InitializeBuildingNpcAnchors(spawner);
+
+                NpcController npc = spawner.SpawnNpc(SaveData);
                 if (npc != null)
                 {
                     _buildingNpc = npc;
@@ -136,5 +183,38 @@ public abstract class BaseBuilding : MonoBehaviour
         if (BuildingData == null || BuildingData.ConstructionDays <= 0) return 1f;
         if (SaveData == null) return 1f;
         return Mathf.Clamp01(1f - (float)SaveData.RemainingDays / BuildingData.ConstructionDays);
+    }
+
+    private void InitializeBuildingNpcAnchors(BuildingNpcSpawner spawner)
+    {
+        if (spawner == null || !spawner.HasValidData || SaveData == null) return;
+
+        string runtimeNpcKey = NpcRuntimeKeyUtility.CreateBuildingNpcKey(spawner.NpcData, SaveData);
+        if (string.IsNullOrEmpty(runtimeNpcKey)) return;
+
+        NpcLocationAnchor[] anchors = GetComponentsInChildren<NpcLocationAnchor>(true);
+        if (anchors == null || anchors.Length == 0) return;
+
+        for (int i = 0; i < anchors.Length; i++)
+        {
+            NpcLocationAnchor anchor = anchors[i];
+            if (anchor == null) continue;
+
+            anchor.Initialize(
+                spawner.NpcData,
+                runtimeNpcKey,
+                anchor.LocationType,
+                anchor.LocationKey,
+                anchor.Point,
+                anchor.StylingHideRoot);
+        }
+    }
+
+    public void InitializeNpcAnchorsIfNeeded()
+    {
+        BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
+        if (spawner == null || !spawner.HasValidData) return;
+
+        InitializeBuildingNpcAnchors(spawner);
     }
 }

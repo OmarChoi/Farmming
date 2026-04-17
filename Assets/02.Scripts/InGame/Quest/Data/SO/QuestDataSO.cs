@@ -70,6 +70,9 @@ public class QuestDataSO : ScriptableObject
 
     public bool HasMultipleItemRequirements => ItemRequirements != null && ItemRequirements.Count > 0;
 
+    public ItemDataSO RepresentativeItem =>
+        HasMultipleItemRequirements ? ItemRequirements[0].Item : null;
+
     public bool UsesItemRequirementList()
     {
         return ObjectiveType == EQuestObjectiveType.CollectItem ||
