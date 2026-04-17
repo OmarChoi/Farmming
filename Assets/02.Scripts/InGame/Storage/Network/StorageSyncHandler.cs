@@ -138,6 +138,34 @@ public class StorageSyncHandler : MonoBehaviourPun
         }
     }
 
+    /// 지갑 → 창고 입금 요청. 마스터가 창고에 가산한 뒤 RPC_SpendGold로 요청자 지갑을 차감한다.
+    public void RequestDepositGold(int amount)
+    {
+        if (IsMaster)
+        {
+            ExecuteDepositGold(amount, PhotonNetwork.LocalPlayer?.ActorNumber ?? -1);
+        }
+        else
+        {
+            photonView.RPC(nameof(RPC_RequestDepositGold), RpcTarget.MasterClient,
+                amount, PhotonNetwork.LocalPlayer.ActorNumber);
+        }
+    }
+
+    /// 창고 → 지갑 출금 요청. 마스터가 잔액 검증 후 지급한다.
+    public void RequestWithdrawGold(int amount)
+    {
+        if (IsMaster)
+        {
+            ExecuteWithdrawGold(amount, PhotonNetwork.LocalPlayer?.ActorNumber ?? -1);
+        }
+        else
+        {
+            photonView.RPC(nameof(RPC_RequestWithdrawGold), RpcTarget.MasterClient,
+                amount, PhotonNetwork.LocalPlayer.ActorNumber);
+        }
+    }
+
     // === 마스터 실행 로직 ===
 
     private void ExecuteAddItem(int itemId, int amount, int actorNumber)
@@ -264,6 +292,61 @@ public class StorageSyncHandler : MonoBehaviourPun
         BroadcastFullSync();
     }
 
+    private void ExecuteDepositGold(int amount, int actorNumber)
+    {
+        if (amount <= 0) return;
+        _storage.AddGold(amount);
+        BroadcastFullSync();
+        DeductGoldFromPlayer(actorNumber, amount);
+    }
+
+    private void ExecuteWithdrawGold(int amount, int actorNumber)
+    {
+        if (amount <= 0) return;
+        if (!_storage.TryRemoveGold(amount)) return;
+
+        GiveGoldToPlayer(actorNumber, amount);
+        BroadcastFullSync();
+    }
+
+    private void GiveGoldToPlayer(int actorNumber, int amount)
+    {
+        if (PhotonNetwork.IsConnected && actorNumber >= 0)
+        {
+            var target = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
+            if (target != null)
+            {
+                if (target.IsLocal)
+                    CurrencyManager.Instance?.AddGold(amount);
+                else
+                    photonView.RPC(nameof(RPC_ReceiveGold), target, amount);
+            }
+        }
+        else
+        {
+            CurrencyManager.Instance?.AddGold(amount);
+        }
+    }
+
+    private void DeductGoldFromPlayer(int actorNumber, int amount)
+    {
+        if (PhotonNetwork.IsConnected && actorNumber >= 0)
+        {
+            var target = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
+            if (target != null)
+            {
+                if (target.IsLocal)
+                    CurrencyManager.Instance?.TrySpendGold(amount);
+                else
+                    photonView.RPC(nameof(RPC_SpendGold), target, amount);
+            }
+        }
+        else
+        {
+            CurrencyManager.Instance?.TrySpendGold(amount);
+        }
+    }
+
     private void GiveItemToPlayer(int actorNumber, int itemId, int amount, int inventorySlotIndex = -1)
     {
         if (PhotonNetwork.IsConnected && actorNumber >= 0)
@@ -314,7 +397,11 @@ public class StorageSyncHandler : MonoBehaviourPun
 
     private string Serialize()
     {
-        var data = new StorageSyncData { Slots = ExportSlots() };
+        var data = new StorageSyncData
+        {
+            Slots = ExportSlots(),
+            Gold = _storage.Gold
+        };
         return JsonUtility.ToJson(data);
     }
 
@@ -322,6 +409,7 @@ public class StorageSyncHandler : MonoBehaviourPun
     {
         var data = JsonUtility.FromJson<StorageSyncData>(json);
         ImportSlots(_slotCount, data?.Slots);
+        _storage.SetGold(data?.Gold ?? 0);
     }
 
     public List<InventorySlotSaveData> ExportSlots()
@@ -447,11 +535,38 @@ public class StorageSyncHandler : MonoBehaviourPun
         ReceiveItem(itemId, amount, inventorySlotIndex);
     }
 
+    [PunRPC]
+    private void RPC_RequestDepositGold(int amount, int actorNumber)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        ExecuteDepositGold(amount, actorNumber);
+    }
+
+    [PunRPC]
+    private void RPC_RequestWithdrawGold(int amount, int actorNumber)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        ExecuteWithdrawGold(amount, actorNumber);
+    }
+
+    [PunRPC]
+    private void RPC_ReceiveGold(int amount)
+    {
+        CurrencyManager.Instance?.AddGold(amount);
+    }
+
+    [PunRPC]
+    private void RPC_SpendGold(int amount)
+    {
+        CurrencyManager.Instance?.TrySpendGold(amount);
+    }
+
     // === 네트워크 동기화 DTO ===
 
     [System.Serializable]
     private class StorageSyncData
     {
         public List<InventorySlotSaveData> Slots;
+        public int Gold;
     }
 }

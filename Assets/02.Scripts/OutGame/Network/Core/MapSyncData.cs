@@ -8,5 +8,6 @@ public class MapSyncData
     public List<BuildingSaveData> Buildings;
     public List<StorageSaveData> Storages;
     public VillageSaveData Village;
+    public WorldEffectSaveData WorldEffects;
     public int MaxHeight;
 }

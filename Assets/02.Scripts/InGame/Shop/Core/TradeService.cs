@@ -33,8 +33,11 @@ public class TradeService
         if (amount <= 0 || slot.Count < amount) return false;
 
         ItemDataSO item = slot.Item;
-        int totalCost = item.SellCost * amount;
-        CurrencyManager.Instance.AddGold(totalCost);
+        int basePrice = item.SellCost * amount;
+        int finalPrice = WorldEffectManager.Instance != null
+            ? WorldEffectManager.ApplyMultiplier(basePrice, WorldEffectManager.Instance.GetSellPriceMultiplier())
+            : basePrice;
+        CurrencyManager.Instance.AddGold(finalPrice);
         _playerInventory.RemoveAt(slotIndex, amount);
         return true;
     }

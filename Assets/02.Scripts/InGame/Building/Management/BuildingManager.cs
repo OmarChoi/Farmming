@@ -470,7 +470,8 @@ public class BuildingManager : MonoBehaviourPunCallbacks
             BuildingNpcSpawner spawner = instance.GetComponent<BuildingNpcSpawner>();
             if (spawner != null && spawner.HasValidData)
             {
-                instance.SetNpc(spawner.SpawnNpc());
+                instance.InitializeNpcAnchorsIfNeeded();
+                instance.SetNpc(spawner.SpawnNpc(kvp.Value));
             }
         }
     }

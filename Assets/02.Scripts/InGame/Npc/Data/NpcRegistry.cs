@@ -18,37 +18,37 @@ public class NpcRegistry : MonoBehaviour
         Instance = this;
     }
 
-    public bool TryGet(string npcId, out NpcController controller)
+    public bool TryGet(string runtimeNpcKey, out NpcController controller)
     {
-        if (string.IsNullOrEmpty(npcId))
+        if (string.IsNullOrEmpty(runtimeNpcKey))
         {
             controller = null;
             return false;
         }
 
-        if (_npcMap.TryGetValue(npcId, out controller))
+        if (_npcMap.TryGetValue(runtimeNpcKey, out controller))
         {
             if (controller != null) return true;
-            _npcMap.Remove(npcId);
+            _npcMap.Remove(runtimeNpcKey);
         }
 
         controller = null;
         return false;
     }
 
-    public void Register(string npcId, NpcController controller)
+    public void Register(string runtimeNpcKey, NpcController controller)
     {
-        if (string.IsNullOrEmpty(npcId) || controller == null) return;
-        _npcMap[npcId] = controller;
+        if (string.IsNullOrEmpty(runtimeNpcKey) || controller == null) return;
+        _npcMap[runtimeNpcKey] = controller;
     }
 
-    public void Unregister(string npcId, NpcController controller)
+    public void Unregister(string runtimeNpcKey, NpcController controller)
     {
-        if (string.IsNullOrEmpty(npcId) || controller == null) return;
+        if (string.IsNullOrEmpty(runtimeNpcKey) || controller == null) return;
 
-        if (_npcMap.TryGetValue(npcId, out var current) && current == controller)
+        if (_npcMap.TryGetValue(runtimeNpcKey, out var current) && current == controller)
         {
-            _npcMap.Remove(npcId);
+            _npcMap.Remove(runtimeNpcKey);
         }
     }
 }

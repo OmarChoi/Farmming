@@ -10,16 +10,20 @@ public class BuildingNpcSpawner : MonoBehaviour
 
     public bool HasValidData => _npcData != null && SpawnPoint != null;
 
-    public NpcController SpawnNpc() => NpcSpawnManager.Instance.GetOrSpawn(CreateRequest());
-    
-    public NpcSpawnRequest CreateRequest()
+    public NpcController SpawnNpc(BuildingSaveData saveData) => NpcSpawnManager.Instance.GetOrSpawn(CreateRequest(saveData));
+
+    public NpcSpawnRequest CreateRequest(BuildingSaveData saveData)
     {
+        string runtimeNpcKey = NpcRuntimeKeyUtility.CreateBuildingNpcKey(_npcData, saveData);
+
         return new NpcSpawnRequest(
             _npcData,
             SpawnPoint.position,
             SpawnPoint.rotation,
             null,
             false,
-            "BuildingNpcSpawner");
+            "BuildingNpcSpawner",
+            false,
+            runtimeNpcKey);
     }
 }

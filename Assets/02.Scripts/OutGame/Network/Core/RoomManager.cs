@@ -140,6 +140,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        WorldEffectManager.Instance?.ClearEffects();
+
         _onLeftRoomCallback?.Invoke();
         _onLeftRoomCallback = null;
 

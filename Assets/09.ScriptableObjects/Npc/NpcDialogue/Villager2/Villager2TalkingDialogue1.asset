@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: Villager2TalkingDialogue1
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: Villager2TalkingDialogue1
+  Lines:
+  - Text: "\uB2F9\uC2E0\uC740 \uBB34\uC5C7\uC744 \uAC00\uC7A5 \uC88B\uC544\uD558\uB098\uC694?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uC800\uB294 \uB2F9\uC5F0\uD788 \uC800\uB97C \uAC00\uC7A5 \uC88B\uC544\uD55C\uB2F5\uB2C8\uB2E4!"
+    NextDialogue: {fileID: 0}
