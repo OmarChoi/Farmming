@@ -46,6 +46,9 @@ public class NpcPromptBuilder
         sb.AppendLine("[상황]");
         sb.AppendLine(request.Context);
         sb.AppendLine();
+        sb.AppendLine("[세계관 용어]");
+        sb.AppendLine("- 곡룡: 공룡을 닮은 작은 생명체이다. 농사와 채집을 도와준다");
+        sb.AppendLine();
 
         if (!string.IsNullOrWhiteSpace(request.RollingSummary))
         {
