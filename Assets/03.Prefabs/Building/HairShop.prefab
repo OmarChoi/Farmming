@@ -114,6 +114,56 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.1027832, y: 4.6258273, z: 3.1027856}
   m_Center: {x: 0, y: 0.06612301, z: 0}
+--- !u!1 &3853700086395253332
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5751961996608737705}
+  - component: {fileID: 2072118881184501114}
+  m_Layer: 0
+  m_Name: NpcStayPoint1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5751961996608737705
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3853700086395253332}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.2, y: 0, z: -4.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4293331502559167373}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2072118881184501114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3853700086395253332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
+  _npcData: {fileID: 11400000, guid: c855705d4c37a394aa2c8ecafc310524, type: 2}
+  _runtimeNpcKey: 
+  _locationType: 4
+  _locationKey: 
+  _point: {fileID: 5751961996608737705}
+  _stylingHideRoot: {fileID: 4355009135852530363}
 --- !u!1 &4355009135852530363
 GameObject:
   m_ObjectHideFlags: 0
@@ -126,6 +176,7 @@ GameObject:
   - component: {fileID: 2359277274173549919}
   - component: {fileID: 1551985855749911825}
   - component: {fileID: 5782949145652138658}
+  - component: {fileID: 2321878509715642487}
   m_Layer: 0
   m_Name: HairShop
   m_TagString: Untagged
@@ -148,6 +199,7 @@ Transform:
   m_Children:
   - {fileID: 6884798805020625010}
   - {fileID: 6041427041139515623}
+  - {fileID: 5751961996608737705}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2359277274173549919
@@ -198,6 +250,18 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &2321878509715642487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4355009135852530363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b32e306db9a4d7d41b9fa436c74a8532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingGhostMarker
 --- !u!1 &5891186506416487098
 GameObject:
   m_ObjectHideFlags: 0
@@ -404,7 +468,7 @@ Transform:
   m_GameObject: {fileID: 8518989891677286714}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.5, y: 0, z: -4.5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -423,7 +487,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
   _npcData: {fileID: 11400000, guid: c855705d4c37a394aa2c8ecafc310524, type: 2}
-  _locationType: 4
-  _locationKey: Hairdresser_HairShop
+  _runtimeNpcKey: 
+  _locationType: 0
+  _locationKey: 
   _point: {fileID: 6041427041139515623}
   _stylingHideRoot: {fileID: 4355009135852530363}

@@ -19,11 +19,16 @@ public class NpcController : MonoBehaviour
     [SerializeField] private NpcScheduleSO _npcSchedule;
     [SerializeField] private NpcInteractionOption[] _interactionOptions;
 
+    [Header("런타임 식별자")]
+    [SerializeField] private string _runtimeNpcKey;
+
     [Header("상점 옵션")]
     [SerializeField] private Shop _shop;
 
+    [Header("퀘스트 옵션")]
     [SerializeField] private NpcDataSO _npcData;
     [SerializeField] private NpcQuest _npcQuest;
+
     private Transform _currentInteractor;
 
     private int _timeOffset;
@@ -32,6 +37,7 @@ public class NpcController : MonoBehaviour
     private bool _isInteracting;
 
     private Vector3 _wanderBasePosition;
+
     private readonly List<NpcInteractionOption> _runtimeInteractionOptions = new();
     private NpcInteractionOption[] _interactionOptionCache;
 
@@ -45,6 +51,17 @@ public class NpcController : MonoBehaviour
     public NpcInteractionOption[] InteractionOptions => GetInteractionOptions();
     public bool IsInteracting => _isInteracting;
     public bool AutoStartQuestOnInteract => _npcData != null && _npcData.AutoStartQuestOnInteract;
+    public string BaseNpcId => _npcData != null ? _npcData.NpcId : string.Empty;
+
+    public string RuntimeNpcKey
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(_runtimeNpcKey)) return _runtimeNpcKey;
+
+            return BaseNpcId;
+        }
+    }
 
     private void Awake()
     {
@@ -55,29 +72,12 @@ public class NpcController : MonoBehaviour
         if (_npcQuest == null) _npcQuest = GetComponent<NpcQuest>();
     }
 
-    public void AddRuntimeInteractionOption(ENpcInteractionType type, string buttonName)
-    {
-        if (string.IsNullOrWhiteSpace(buttonName))
-            return;
-
-        NpcInteractionOption[] options = GetInteractionOptions();
-        for (int i = 0; i < options.Length; i++)
-        {
-            NpcInteractionOption option = options[i];
-            if (option == null) continue;
-            if (option.Type == type && option.ButtonName == buttonName)
-                return;
-        }
-
-        _runtimeInteractionOptions.Add(new NpcInteractionOption(type, buttonName));
-        _interactionOptionCache = null;
-    }
-
-    public void Initialize(NpcDataSO data, bool isLocalOnly = false)
+    public void Initialize(NpcDataSO data, bool isLocalOnly = false, string runtimeNpcKey = null)
     {
         _npcData = data;
         IsLocalOnly = isLocalOnly;
         GenerateTimeOffset();
+        _runtimeNpcKey = string.IsNullOrEmpty(runtimeNpcKey) && data != null ? data.NpcId : runtimeNpcKey;
 
         IMovementAnimator movementAnimator = _anim;
 
@@ -265,7 +265,7 @@ public class NpcController : MonoBehaviour
         }
 
         return NpcLocationManager.Instance.TryGetLocation(
-            _npcData.NpcId,
+            RuntimeNpcKey,
             entry.NpcLocationType,
             entry.LocationKey,
             out targetPosition);
@@ -307,7 +307,7 @@ public class NpcController : MonoBehaviour
 
         NpcScheduleEntry firstEntry = _npcSchedule.ScheduleEntries[0];
         bool found = NpcLocationManager.Instance.TryGetLocation(
-            _npcData.NpcId,
+            RuntimeNpcKey,
             firstEntry.NpcLocationType,
             firstEntry.LocationKey,
             out Vector3 startPosition);
@@ -329,7 +329,7 @@ public class NpcController : MonoBehaviour
         if (_npcSchedule == null || _npcSchedule.ScheduleEntries == null || _npcSchedule.ScheduleEntries.Count == 0) return;
 
         NpcScheduleEntry latestValidEntry = null;
-        int latestIndex = _currentScheduleIndex;
+        int latestIndex = 0;
 
         for (int i = 0; i < _npcSchedule.ScheduleEntries.Count; i++)
         {
@@ -350,6 +350,12 @@ public class NpcController : MonoBehaviour
         if (latestValidEntry != null)
         {
             _currentScheduleIndex = latestIndex;
+
+            if (latestValidEntry.NpcLocationType == ENpcLocationType.Wandering)
+            {
+                _wanderBasePosition = transform.position;
+            }
+
             ExecuteSchedule(latestValidEntry);
         }
     }
@@ -357,7 +363,9 @@ public class NpcController : MonoBehaviour
     private NpcInteractionOption[] GetInteractionOptions()
     {
         if (_interactionOptionCache != null)
+        {
             return _interactionOptionCache;
+        }
 
         int serializedCount = _interactionOptions != null ? _interactionOptions.Length : 0;
         int runtimeCount = _runtimeInteractionOptions.Count;
@@ -372,5 +380,15 @@ public class NpcController : MonoBehaviour
         _runtimeInteractionOptions.CopyTo(_interactionOptionCache, serializedCount);
 
         return _interactionOptionCache;
+    }
+
+    public void SetInitialScheduleBase(Vector3 basePosition)
+    {
+        _wanderBasePosition = basePosition;
+    }
+
+    public void SyncScheduleToCurrentTime()
+    {
+        ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
     }
 }

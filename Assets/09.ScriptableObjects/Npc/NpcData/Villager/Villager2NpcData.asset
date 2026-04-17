@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29943a3ad3f2dbf4f9cf2a769a5b2ee0, type: 3}
+  m_Name: Villager2NpcData
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDataSO
+  NpcId: Villager2
+  NpcName: "\uC0E4\uB97C"
+  CanUseAiDialogue: 1
+  NpcMbti: ENFP
+  NpcPersonality: "\uD56D\uC0C1 \uC790\uC2E0\uC774 \uC544\uB984\uB2F5\uB2E4\uACE0
+    \uC0DD\uAC01\uD558\uB294 \uB098\uB974\uC2DC\uC998\uC744 \uAC00\uC9C4 \uB0A8\uC790\uC774\uB2E4.
+    \uC5B4\uB5A4 \uC774\uC57C\uAE30\uB97C \uD558\uB358 \uC790\uC2E0\uC758 \uC544\uB984\uB2E4\uC6C0\uC744
+    \uCC2C\uC591\uD558\uB294 \uB0B4\uC6A9\uC73C\uB85C \uB3CC\uC544\uC628\uB2E4. \uD558\uC9C0\uB9CC
+    \uC131\uACA9 \uC790\uCCB4\uB294 \uCC29\uD558\uACE0 \uC21C\uD55C \uD3B8\uC774\uB2E4."
+  Age: 21
+  Job: "\uC5C6\uC74C"
+  WayOfTone: "\uAC10\uD0C4\uC0AC\uB97C \uB9CE\uC774 \uC4F0\uB294 \uC790\uD654\uC790\uCC2C\uD558\uB294
+    \uD574\uC694\uCCB4"
+  Prefab: {fileID: 7840605641264675590, guid: 67d7507350a30d648a87f7adba190372, type: 3}
+  WalkSpeed: 2.6
+  RunSpeed: 4.4
+  JumpDuration: 0.9
+  JumpHeight: 2
+  GreetDialogues:
+  - {fileID: 11400000, guid: ae3039d1331e8bd4c9837500cf4da5a8, type: 2}
+  - {fileID: 11400000, guid: a94b4e9cf41f0b244bde6f875e593af4, type: 2}
+  - {fileID: 11400000, guid: f48925a80155be0449d0e5fa0dc852db, type: 2}
+  TalkDialogues:
+  - {fileID: 11400000, guid: fb6cf939dd783ca42bbf62049d3180ce, type: 2}
+  - {fileID: 11400000, guid: 144cc92257969e64bbeec1bbecfdcf5f, type: 2}
+  - {fileID: 11400000, guid: 22179e6d7d0c95c40bf743a0c06818c9, type: 2}
+  CuringAskDialogue: {fileID: 0}
+  CuringAcceptDialogue: {fileID: 0}
+  CuringDeclineDialogue: {fileID: 0}
+  CuringAlreadyDoneDialogue: {fileID: 0}
+  UseRandomTimeOffset: 1
+  MinTimeOffset: 0
+  MaxTimeOffset: 20
+  AutoStartQuestOnInteract: 0
