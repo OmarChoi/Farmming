@@ -13,7 +13,8 @@ GameObject:
   - component: {fileID: -4574306607601296923}
   - component: {fileID: 2980356990852411098}
   - component: {fileID: 4669769040115381432}
-  m_Layer: 12
+  - component: {fileID: 7568190441202663401}
+  m_Layer: 13
   m_Name: Portal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -109,6 +110,18 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d04f46f16d45e704994f1e48c3b1a843, type: 2}
   - {fileID: 11400000, guid: 80c7174be23f3c546ac0053670a90b71, type: 2}
   _gatherRadius: 10
+--- !u!114 &7568190441202663401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328115115517046253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b32e306db9a4d7d41b9fa436c74a8532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingGhostMarker
 --- !u!1 &3365701487416238299
 GameObject:
   m_ObjectHideFlags: 0
@@ -121,7 +134,7 @@ GameObject:
   - component: {fileID: 44491578010782762}
   - component: {fileID: 3693496702800165765}
   - component: {fileID: 6130022725487133860}
-  m_Layer: 12
+  m_Layer: 13
   m_Name: PortalEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -233,7 +246,7 @@ GameObject:
   - component: {fileID: 3355435600860902657}
   - component: {fileID: 6894052041011894876}
   - component: {fileID: 4475568259526866977}
-  m_Layer: 12
+  m_Layer: 13
   m_Name: bushesportalgreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
