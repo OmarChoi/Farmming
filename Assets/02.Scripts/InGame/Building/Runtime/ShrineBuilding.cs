@@ -38,11 +38,14 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
             return;
         }
 
-        _ui = await UIController.Instance.OpenAsync<UI_Shrine>(ui =>
+        UI_Shrine ui = await UIController.Instance.OpenAsync(new UILifecycleActions<UI_Shrine>
         {
-            ui.Configure(this, EndInteractionFromUI);
+            OnOpen = instance =>
+            {
+                instance.Configure(this, EndInteractionFromUI);
+            },
         });
-
+        
         if (_ui == null)
         {
             EndInteraction(false);
