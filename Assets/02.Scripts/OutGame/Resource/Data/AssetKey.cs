@@ -25,6 +25,10 @@ public static class AssetKey
         public const string Merchant = "Merchant";
         public const string Gambler = "Gambler";
         public const string Doctor = "Doctor";
+        public const string Villager1 = "Villager1";
+        public const string Villager2 = "Villager2";
+        public const string Villager3 = "Villager3";
+        public const string Villager4 = "Villager4";
         public const string GroundHelper = "GroundHelper";
         public const string LightHelper = "LightHelper";
         public const string HarvestHelper = "HarvestHelper";
