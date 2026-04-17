@@ -908,7 +908,7 @@ MonoBehaviour:
     DefaultMode: 2
   DefaultBlend:
     Style: 1
-    Time: 2
+    Time: 0.3
     CustomCurve:
       serializedVersion: 2
       m_Curve: []
@@ -1007,7 +1007,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4087
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -3404,6 +3404,7 @@ GameObject:
   - component: {fileID: 695722600}
   - component: {fileID: 695722599}
   - component: {fileID: 695722598}
+  - component: {fileID: 695722602}
   m_Layer: 0
   m_Name: FollowCamera
   m_TagString: Untagged
@@ -3513,6 +3514,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!320 &695722602
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 695722596}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 4e6caee7d961fe54a987ac83c625854a, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings: []
+  m_ExposedReferences:
+    m_References: []
 --- !u!1 &730240382
 GameObject:
   m_ObjectHideFlags: 0
@@ -5200,7 +5218,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1021484812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5553,7 +5571,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HelperUpgradeService
   _uiHelperUpgrade: {fileID: 987751509}
   _dialogueController: {fileID: 2028739916}
-  _evolutionManager: {fileID: 0}
+  _evolutionManager: {fileID: 2187446793687843881}
 --- !u!1 &1197303842
 GameObject:
   m_ObjectHideFlags: 0
@@ -6785,6 +6803,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 194613cbb07b10a458709158bf15560b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_InfoPage
+--- !u!328 &1469200774 stripped
+VideoPlayer:
+  m_CorrespondingSourceObject: {fileID: 1099005822469932899, guid: 12ec2bb716a73cd4c983c7f8b0cc1a3c, type: 3}
+  m_PrefabInstance: {fileID: 1469200771}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1479912972
 GameObject:
   m_ObjectHideFlags: 0
@@ -7112,6 +7135,72 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1021484813}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1662520903
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1662520904}
+  - component: {fileID: 1662520906}
+  - component: {fileID: 1662520905}
+  m_Layer: 5
+  m_Name: GalaxyOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1662520904
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1662520903}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1619675774}
+  m_Father: {fileID: 396751642}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1920, y: 1080}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &1662520905
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1662520903}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &1662520906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1662520903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0faa4069c219b3e46b6e6175b9d525f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GalaxyOverlay
+  _canvasGroup: {fileID: 1662520905}
+  _galaxyImage: {fileID: 1619675775}
+  _fadeInDuration: 0.5
+  _fadeOutDuration: 0.7
 --- !u!1001 &1678978432
 PrefabInstance:
   m_ObjectHideFlags: 0

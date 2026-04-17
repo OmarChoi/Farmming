@@ -31,6 +31,7 @@ public class HelperController : MonoBehaviourPunCallbacks
 
     private readonly Dictionary<Type, HelperAbility> _abilityCache = new();
     private PhotonTransformView _transformView;
+    private CharacterController _characterController;
 
     private const float SummonOffset = 1.5f;
 
@@ -41,6 +42,7 @@ public class HelperController : MonoBehaviourPunCallbacks
     {
         PhotonView = GetComponent<PhotonView>();
         _transformView = GetComponent<PhotonTransformView>();
+        _characterController = GetComponent<CharacterController>();
 
         Level = new HelperLevel(_data);
         Grade = new HelperGrade(_data);
@@ -94,6 +96,7 @@ public class HelperController : MonoBehaviourPunCallbacks
         PlayerOwner = playerOwner;
         FollowTarget = playerOwner.transform;
         State = EHelperState.Summoned;
+        SetCharacterControllerEnabled(true);
         transform.SetParent(null);
         transform.position = FollowTarget.position + FollowTarget.right * SummonOffset;
         gameObject.SetActive(true);
@@ -104,6 +107,7 @@ public class HelperController : MonoBehaviourPunCallbacks
     {
         SetTransformSync(false);
         State = EHelperState.Equipped;
+        SetCharacterControllerEnabled(false);
         transform.SetParent(equipSlot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
@@ -129,6 +133,7 @@ public class HelperController : MonoBehaviourPunCallbacks
     public void Unequip()
     {
         State = EHelperState.Summoned;
+        SetCharacterControllerEnabled(true);
         transform.SetParent(null);
         transform.localScale = _originalScale;
         transform.position = FollowTarget.position;
@@ -142,6 +147,12 @@ public class HelperController : MonoBehaviourPunCallbacks
     {
         if (_transformView != null)
             _transformView.enabled = enabled;
+    }
+
+    private void SetCharacterControllerEnabled(bool enabled)
+    {
+        if (_characterController != null)
+            _characterController.enabled = enabled;
     }
 
     public void LoadState(HelperSaveData data)
@@ -231,6 +242,7 @@ public class HelperController : MonoBehaviourPunCallbacks
         PlayerOwner = playerController;
         FollowTarget = playerController.transform;
         State = EHelperState.Summoned;
+        SetCharacterControllerEnabled(true);
         transform.SetParent(null);
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
@@ -256,6 +268,7 @@ public class HelperController : MonoBehaviourPunCallbacks
     {
         State = EHelperState.Summoned;
         transform.SetParent(null);
+        SetCharacterControllerEnabled(true);
         SetTransformSync(true);
     }
 
