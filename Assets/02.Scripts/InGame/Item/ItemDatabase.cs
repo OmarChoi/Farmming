@@ -6,7 +6,7 @@ public class ItemDatabase : ScriptableObject
 {
     [SerializeField] private List<ItemDataSO> _items;
     private Dictionary<int, ItemDataSO> _itemDictionary;
-
+    public IList<ItemDataSO> Items => _items;
     public ItemDataSO GetById(int itemId)
     {
         EnsureDictionary();
