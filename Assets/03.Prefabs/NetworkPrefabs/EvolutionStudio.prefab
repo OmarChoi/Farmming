@@ -92,6 +92,9 @@ MonoBehaviour:
   _baseCamera: {fileID: 0}
   _evolutionOverlayCamera: {fileID: 3645452470394383560}
   _evolutionCinemachine: {fileID: 1317633885511355583}
+  _timelineCameraController: {fileID: 0}
+  _timelineRotationController: {fileID: 0}
+  _timelineEnergyRiseController: {fileID: 0}
   _cutsceneCameraPriority: 100
   _whiteFlashCanvasGroup: {fileID: 0}
   _whiteFlashColor: {r: 1, g: 1, b: 1, a: 1}
@@ -99,6 +102,15 @@ MonoBehaviour:
   _whiteFlashHold: 0.2
   _whiteFlashFadeOut: 0.05
   _galaxyOverlay: {fileID: 0}
+  _isolateLighting: 1
+  _evolutionLights: []
+  _cutsceneAmbientMode: 3
+  _cutsceneAmbientColor: {r: 1, g: 1, b: 1, a: 1}
+  _cutsceneAmbientIntensity: 1
+  _cutsceneFogEnabled: 0
+  _cutsceneFogColor: {r: 0, g: 0, b: 0, a: 1}
+  _cutsceneFogDensity: 0
+  _cutsceneSkybox: {fileID: 0}
 --- !u!320 &5123183178874242405
 PlayableDirector:
   m_ObjectHideFlags: 0
@@ -109,7 +121,7 @@ PlayableDirector:
   m_Enabled: 1
   serializedVersion: 3
   m_PlayableAsset: {fileID: 11400000, guid: bde461b9c88df744693729201bd2d869, type: 2}
-  m_InitialState: 0
+  m_InitialState: 1
   m_WrapMode: 2
   m_DirectorUpdateMode: 1
   m_InitialTime: 0
@@ -306,7 +318,7 @@ GameObject:
   - component: {fileID: 8277490461920344323}
   - component: {fileID: 6840960840105560716}
   - component: {fileID: 1325578786537271180}
-  - component: {fileID: 3772660125866020744}
+  - component: {fileID: 1854142814871202489}
   m_Layer: 12
   m_Name: BGQuad
   m_TagString: Untagged
@@ -362,7 +374,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 34ac69175babebf44ad4de8224f68f35, type: 2}
+  - {fileID: 2100000, guid: 2f0a934818a3d8847bf3c044c0f7aa72, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -408,42 +420,20 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!328 &3772660125866020744
-VideoPlayer:
+--- !u!114 &1854142814871202489
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4677398714918238979}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 3ef1abd0583b2da4dba5a356d9948496, type: 3}
-  m_TargetCameraAlpha: 1
-  m_TargetCamera3DLayout: 0
-  m_TargetCamera: {fileID: 0}
-  m_TargetTexture: {fileID: 8400000, guid: c5576ede67cd75a49a839758df4e468f, type: 2}
-  m_TimeReference: 0
-  m_TargetMaterialRenderer: {fileID: 0}
-  m_TargetMaterialProperty: <noninit>
-  m_RenderMode: 2
-  m_AspectRatio: 2
-  m_DataSource: 0
-  m_TimeUpdateMode: 2
-  m_PlaybackSpeed: 1
-  m_AudioOutputMode: 0
-  m_TargetAudioSources:
-  - {fileID: 0}
-  m_DirectAudioVolumes:
-  - 1
-  m_Url: 
-  m_EnabledAudioTracks: 01
-  m_DirectAudioMutes: 00
-  m_ControlledAudioTrackCount: 1
-  m_PlayOnAwake: 0
-  m_SkipOnDrop: 1
-  m_Looping: 1
-  m_WaitForFirstFrame: 1
-  m_FrameReadyEventEnabled: 0
-  m_VideoShaders: []
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f8917167ce02034cb11d9d62dd57f0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BackgroundScroller
+  Direction: {x: 1, y: -2}
+  Speed: 0.2
 --- !u!1 &5462744525202120981
 GameObject:
   m_ObjectHideFlags: 0
@@ -874,7 +864,7 @@ MonoBehaviour:
     DefaultMode: 2
   DefaultBlend:
     Style: 1
-    Time: 0.3
+    Time: 0.2
     CustomCurve:
       serializedVersion: 2
       m_Curve: []
