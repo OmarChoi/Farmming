@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: DoctorCuringAlreadyDoneDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: DoctorCuringAlreadyDoneDialogue
+  Lines:
+  - Text: "\uCE58\uB8CC\uB294 \uD558\uB8E8\uC5D0 \uD55C \uBC88\uB9CC \uD574\uC900\uB2E4\uACE0
+      \uB9D0\uD588\uC744 \uD150\uB370? \uADF8\uB807\uAC8C \uACC4\uC18D \uC5BC\uCA61\uB300\uBA74
+      \uB2E4\uB9AC\uBABD\uB315\uC774\uB97C \uBD84\uC9C8\uB7EC \uBC84\uB9AC\uB294
+      \uC218\uAC00 \uC788\uC5B4."
+    NextDialogue: {fileID: 0}
+  - Text: "\uC544, \uAC71\uC815 \uB9C8. \uADF8\uB807\uAC8C \uB2E4\uCE5C \uAC74 \uBC14\uB85C
+      \uCE58\uB8CC\uB294 \uD574\uC904 \uD14C\uB2C8\uAE4C \uB9D0\uC57C."
+    NextDialogue: {fileID: 0}

@@ -59,6 +59,8 @@ GameObject:
   - component: {fileID: 1126301704286780688}
   - component: {fileID: 4491963025146124486}
   - component: {fileID: 6418720862039522863}
+  - component: {fileID: 676377919193482508}
+  - component: {fileID: 9219670498808211090}
   m_Layer: 8
   m_Name: Ability
   m_TagString: Untagged
@@ -370,6 +372,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerTroubleAbility
   _knockbackJumpHeight: 0.6
+--- !u!114 &676377919193482508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 203f43ca14ac2b04abede414cad73c9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerObjectInteractionAbility
+  _radius: 3
+  _interactionLayer:
+    serializedVersion: 2
+    m_Bits: 4096
+  _interactKey: 101
+--- !u!114 &9219670498808211090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d027bcd7ea8768468d27e602524679a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCuringAbility
 --- !u!1 &2101610759984280812
 GameObject:
   m_ObjectHideFlags: 0

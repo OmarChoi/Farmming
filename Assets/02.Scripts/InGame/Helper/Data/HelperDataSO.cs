@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "HelperDataSO", menuName = "Scriptable Objects/HelperDataSO")]
@@ -75,4 +77,34 @@ public class HelperDataSO : ScriptableObject
     public Sprite RightClickIcon => _rightClickIcon;
     public string LeftClickExplanation => _leftClickExplanation;
     public string RightClickExplanation => _rightClickExplanation;
+
+    [SerializeField] private HelperUpgradeCostGroup[] _upgradeCosts;
+
+    public IReadOnlyList<HelperUpgradeCostGroup> UpgradeCosts => _upgradeCosts;
+
+    // 업그레이드에 필요한 아이템 비용을 가져오는 메서드입니다.
+    public IReadOnlyList<HelperUpgradeCostEntry> GetUpgradeCosts(EHelperGrade fromGrade)
+    {
+        if (_upgradeCosts == null) return Array.Empty<HelperUpgradeCostEntry>();
+
+        for (int i = 0; i < _upgradeCosts.Length; i++)
+        {
+            if (_upgradeCosts[i].FromGrade == fromGrade) return _upgradeCosts[i].Costs;
+        }
+
+        return Array.Empty<HelperUpgradeCostEntry>();
+    }
+
+    // 업그레이드에 필요한 골드 비용을 가져오는 메서드입니다.
+    public int GetUpgradeGoldCost(EHelperGrade fromGrade)
+    {
+        if (_upgradeCosts == null) return 0;
+
+        for (int i = 0; i < _upgradeCosts.Length; i++)
+        {
+            if (_upgradeCosts[i].FromGrade == fromGrade) return _upgradeCosts[i].GoldCost;
+        }
+
+        return 0;
+    }
 }

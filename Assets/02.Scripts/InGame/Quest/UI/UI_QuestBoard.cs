@@ -1,18 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
-public class UI_QuestBoard : MonoBehaviour
+// 일일 퀘스트 보드 팝업. UIController 경로로만 Open/Close되며,
+// 게임플레이 쪽 후처리(커서락/상호작용 종료 등)는 UILifecycleActions.OnClose가 담당한다.
+public class UI_QuestBoard : UIBase
 {
     [Header("컴포넌트 옵션")]
     [SerializeField] private Transform _slotParent;
     [SerializeField] private UI_QuestBoardSlot _slotPrefab;
-    [SerializeField] private GameObject _questBoardRoot;
-    [SerializeField] private QuestManager _questManager;
-
-    private IQuestProgressService _questProgressService;
 
     [Header("팝업 트윈")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
@@ -21,34 +18,18 @@ public class UI_QuestBoard : MonoBehaviour
     [SerializeField] private Button _exitButton;
 
     private readonly List<UI_QuestBoardSlot> _slots = new();
-
-    private List<QuestDataSO> _currentQuests = new();
-
-    public Action OnCloseRequested;
+    private readonly List<QuestDataSO> _currentQuests = new();
 
     private void Awake()
     {
-        if (_questManager == null)
-        {
-            _questManager = FindFirstObjectByType<QuestManager>();
-        }
-        _questProgressService = _questManager;
-
         if (_exitButton != null)
         {
             _exitButton.onClick.AddListener(OnClickCloseButton);
         }
     }
 
-    private void Start()
-    {
-        if (_questBoardRoot != null)
-        {
-            _questBoardRoot.SetActive(false);
-        }
-    }
-
-    public async UniTask OpenAsync(List<QuestDataSO> quests)
+    // UIController.OpenAsync의 OnOpen 콜백에서 데이터 주입.
+    public void SetQuests(IReadOnlyList<QuestDataSO> quests)
     {
         _currentQuests.Clear();
 
@@ -56,43 +37,43 @@ public class UI_QuestBoard : MonoBehaviour
         {
             _currentQuests.AddRange(quests);
         }
+    }
 
+    protected override void OnOpen()
+    {
         CreateOrRefreshSlots();
+    }
 
+    protected override async UniTask OnOpenAnimation()
+    {
         if (_popupDoTween != null)
         {
             await _popupDoTween.PlayOpenAsync();
         }
-        else if (_questBoardRoot != null)
-        {
-            _questBoardRoot.SetActive(true);
-        }
     }
 
-    public async UniTask CloseAsync()
+    protected override async UniTask OnCloseAnimation()
     {
         if (_popupDoTween != null)
         {
             await _popupDoTween.PlayCloseAsync();
         }
-        else if (_questBoardRoot != null)
-        {
-            _questBoardRoot.SetActive(false);
-        }
+    }
 
+    protected override void OnClose()
+    {
         _currentQuests.Clear();
     }
 
+    // 현재 퀘스트 목록에 맞춰 슬롯을 재사용/생성.
     private void CreateOrRefreshSlots()
     {
-        if (_currentQuests == null) return;
-
         int slotCount = _currentQuests.Count;
 
         while (_slots.Count < slotCount)
         {
             UI_QuestBoardSlot newSlot = Instantiate(_slotPrefab, _slotParent);
-            newSlot.Initialized(_questProgressService);
+            newSlot.Initialized(QuestManager.Instance);
             newSlot.Init(this, _slots.Count);
             _slots.Add(newSlot);
         }
@@ -109,20 +90,22 @@ public class UI_QuestBoard : MonoBehaviour
         }
     }
 
+    // 슬롯에서 수락/완료 버튼을 눌렀을 때 호출.
     public void OnQuestSlotClicked(QuestDataSO questData)
     {
-        if (questData == null || _questProgressService == null) return;
+        var questProgressService = QuestManager.Instance;
+        if (questData == null || questProgressService == null) return;
         if (string.IsNullOrEmpty(questData.QuestId)) return;
 
         string questId = questData.QuestId;
 
-        bool hasQuest = _questProgressService.HasQuest(questId);
+        bool hasQuest = questProgressService.HasQuest(questId);
 
         if (hasQuest)
         {
-            if (_questProgressService.CanCompleteQuest(questId))
+            if (questProgressService.CanCompleteQuest(questId))
             {
-                bool success = _questProgressService.CompleteQuest(questId);
+                bool success = questProgressService.CompleteQuest(questId);
 
 #if UNITY_EDITOR
                 if (success)
@@ -144,9 +127,9 @@ public class UI_QuestBoard : MonoBehaviour
         }
         else
         {
-            if (_questProgressService.CanAcceptQuest(questData))
+            if (questProgressService.CanAcceptQuest(questData))
             {
-                bool success = _questProgressService.AcceptQuest(questData);
+                bool success = questProgressService.AcceptQuest(questData);
 
 #if UNITY_EDITOR
                 if (success)
@@ -170,8 +153,10 @@ public class UI_QuestBoard : MonoBehaviour
         CreateOrRefreshSlots();
     }
 
-    public void OnClickCloseButton()
+    // 닫기 버튼 → UIController 경유로 닫아 스택/애니메이션·콜백 처리를 일관 유지.
+    private void OnClickCloseButton()
     {
-        OnCloseRequested?.Invoke();
+        if (UIController.Instance == null) return;
+        UIController.Instance.CloseAsync<UI_QuestBoard>().Forget();
     }
 }

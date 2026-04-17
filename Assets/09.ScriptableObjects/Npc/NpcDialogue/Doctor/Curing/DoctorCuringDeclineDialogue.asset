@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: DoctorCuringDeclineDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: DoctorCuringDeclineDialogue
+  Lines:
+  - Text: "\uC774\uB7F0. \uBB50, \uD544\uC694\uD558\uC9C0 \uC54A\uC744 \uC218\uB3C4
+      \uC788\uC8E0, \uD658\uC790 \uBD84. \uCE58\uB8CC\uAC00 \uD544\uC694\uD558\uBA74
+      \uC5B8\uC81C\uB4E0 \uB2E5\uD130 \uADF8\uB7A8\uC744 \uCC3E\uC544\uC8FC\uC2DC\uC8E0.
+      \uD750\uD750."
+    NextDialogue: {fileID: 0}
