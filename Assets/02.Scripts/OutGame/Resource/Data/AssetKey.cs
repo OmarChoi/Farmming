@@ -142,6 +142,7 @@ public static class AssetKey
         public const string Shrine = "UI_Shrine";
         public const string VillageState = "UI_VillageState";
         public const string VillageLevelUp = "UI_VillageLevelUp";
+        public const string Pause = "UI_Pause";
 
         private static readonly Dictionary<Type, string> _registered = new Dictionary<Type, string>
         {
@@ -151,6 +152,7 @@ public static class AssetKey
             {typeof(UI_VillageState), VillageState},
             {typeof(UI_VillageLevelUp), VillageLevelUp},
             {typeof(UI_QuestBoard), QuestBoard},
+            {typeof(UI_Pause), Pause},
         };
 
         public static string GetKey<T>() where T : UIBase
