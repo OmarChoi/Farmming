@@ -5686,6 +5686,25 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1679340242}
   m_Mesh: {fileID: 1699659592569077701, guid: 3f7264317de665d42975f9ae4905d2d7, type: 3}
+--- !u!1 &1705436148 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4677398714918238979, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
+  m_PrefabInstance: {fileID: 2187446793687843880}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1705436150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1705436148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f8917167ce02034cb11d9d62dd57f0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BackgroundScroller
+  Direction: {x: 1, y: -2}
+  Speed: 0.2
 --- !u!1 &1726496943
 GameObject:
   m_ObjectHideFlags: 0
@@ -6617,14 +6636,22 @@ PrefabInstance:
       propertyPath: m_InitialState
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6840960840105560716, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2f0a934818a3d8847bf3c044c0f7aa72, type: 2}
     - target: {fileID: 7021852460394487764, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
       propertyPath: DefaultBlend.Time
       value: 0.2
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3772660125866020744, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4677398714918238979, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1705436150}
   m_SourcePrefab: {fileID: 100100000, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
 --- !u!114 &2187446793687843881 stripped
 MonoBehaviour:

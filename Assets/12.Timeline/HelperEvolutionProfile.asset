@@ -18,13 +18,41 @@ MonoBehaviour:
   FlashColor: {r: 1, g: 1, b: 1, a: 1}
   PivotHeight: 1.2
   BeforeLocalEuler: {x: 0, y: 180, z: 0}
-  AfterLocalEuler: {x: 0, y: 0, z: 0}
-  IntroDuration: 2
-  ZoomDuration: 0.8
-  RevealDuration: 4
+  AfterLocalEuler: {x: 0, y: 180, z: 0}
+  IntroDuration: 4.1
+  ImpactZoomDuration: 0.45
+  AfterPullbackDuration: 1
+  AfterScanDuration: 5.4
+  RevealDuration: 5.4
   OutroDuration: 1
-  IntroSpinSpeed: 900
-  IntroCameraLocalPosition: {x: 0, y: 1.3, z: -8}
-  ZoomCameraLocalPosition: {x: 0, y: 1.2, z: -5}
-  RevealCameraLocalPosition: {x: 0, y: 1, z: -4.5}
-  FinalCameraLocalPosition: {x: 0, y: 1.2, z: -7}
+  IntroSpinSpeed: 240
+  ModelSwapTime: 4.65
+  BeforeSpinAccelerationDuration: 4.1
+  TimelineSpinMaxSpeed: 360
+  BeforeLookHeight: 1.2
+  AfterFootLookHeight: 0.35
+  AfterHeadLookHeight: 1.75
+  BeforeIntroCameraLocalPosition: {x: 0, y: 1.55, z: -5.2}
+  BeforeImpactZoomCameraLocalPosition: {x: 0, y: 1.05, z: -1.35}
+  AfterCloseCameraLocalPosition: {x: 0, y: 0.35, z: -1.05}
+  AfterPullbackCameraLocalPosition: {x: 0, y: 0.45, z: -1.65}
+  AfterHeadCameraLocalPosition: {x: 0, y: 1.85, z: -1.75}
+  FinalShowcaseDuration: 5
+  AfterFullShotLookHeight: 1.05
+  AfterFullShotLookLocalPosition: {x: 0, y: 1.05, z: 0}
+  AfterFullShotCameraLocalPosition: {x: 0, y: 1.25, z: -3.25}
+  FinalRotationAlignDuration: 2
+  FinalFrontYawOffset: 0
+  FinalRotationExtraTurns: 0
+  BeforeEnergyRiseEndTime: 4.55
+  BeforeEnergyRiseDuration: 2.5
+  BeforeEnergyRiseColor: {r: 1, g: 1, b: 1, a: 1}
+  BeforeEnergyRiseBandWidth: 0.35
+  BeforeEnergyRiseFillAlpha: 0.45
+  BeforeEnergyRiseGlowAlpha: 0.85
+  BeforeEnergyRiseOutlineWidth: 0.045
+  BeforeEnergyRiseVerticalPadding: 0.1
+  IntroCameraLocalPosition: {x: 0, y: 1.55, z: -5.2}
+  ZoomCameraLocalPosition: {x: 0, y: 1.05, z: -1.35}
+  RevealCameraLocalPosition: {x: 0, y: 0.45, z: -1.65}
+  FinalCameraLocalPosition: {x: 0, y: 1.85, z: -1.75}
