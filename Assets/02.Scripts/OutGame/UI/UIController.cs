@@ -115,7 +115,7 @@ public class UIController : MonoBehaviour
     {
         if (_activeInstance.Count == 0)
         {
-            // todo: 일시정지 UI Popup 표시
+            OpenAsync<UI_Pause>().Forget();
             return;
         }
         for (int i = _activeInstance.Count - 1; i >= 0; i--)
