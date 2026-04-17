@@ -104,7 +104,10 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         {
             CurrentVitality -= CurrentVitalityThreshold;
             CurrentLevel++;
-            UIController.Instance.OpenAsync<UI_VillageLevelUp>(ui => ui.SetData(CurrentLevel).Forget()).Forget();
+            UIController.Instance.OpenAsync(new UILifecycleActions<UI_VillageLevelUp>
+            {
+                OnOpen = ui => ui.SetData(CurrentLevel).Forget(),
+            }).Forget();
             OnVillageStateChanged?.Invoke();
             return;
         }
@@ -121,7 +124,10 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         int threshold = CurrentVitalityThreshold;
         CurrentVitality -= threshold;
         CurrentLevel++;
-        UIController.Instance.OpenAsync<UI_VillageLevelUp>(ui => ui.SetData(CurrentLevel).Forget()).Forget();
+        UIController.Instance.OpenAsync(new UILifecycleActions<UI_VillageLevelUp>
+        {
+            OnOpen = ui => ui.SetData(CurrentLevel).Forget(),
+        }).Forget();
 
         photonView.RpcSafe(nameof(RPC_SetVillageLevel), RpcTarget.Others, CurrentLevel, CurrentVitality);
         OnVillageStateChanged?.Invoke();
@@ -133,7 +139,10 @@ public class VillageLevelManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsMasterClient) return;
         CurrentLevel = level;
         CurrentVitality = gauge;
-        UIController.Instance.OpenAsync<UI_VillageLevelUp>(ui => ui.SetData(CurrentLevel).Forget()).Forget();
+        UIController.Instance.OpenAsync(new UILifecycleActions<UI_VillageLevelUp>
+        {
+            OnOpen = ui => ui.SetData(CurrentLevel).Forget(),
+        }).Forget();
         OnVillageStateChanged?.Invoke();
     }
 

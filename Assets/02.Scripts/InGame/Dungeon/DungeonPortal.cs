@@ -5,7 +5,7 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class DungeonPortal : MonoBehaviour, IInteraction
+public class DungeonPortal : MonoBehaviour, IWorldInteractable
 {
     [SerializeField] private UI_DungeonPortal _ui;
     [SerializeField] private DungeonMapConfig[] _dungeonConfigs;
@@ -31,7 +31,7 @@ public class DungeonPortal : MonoBehaviour, IInteraction
             MapSyncManager.Instance.OnDungeonEntryRequested -= OnMasterReceiveEntry;
     }
 
-    public void RequestInteract(PlayerController player)
+    public void Interact(PlayerController player)
     {
         if (!ResolveUI())
         {
@@ -43,7 +43,7 @@ public class DungeonPortal : MonoBehaviour, IInteraction
         _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
 
         _playerController?.EnterUIMode();
-        _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction);
+        _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteract);
     }
 
     private void OnSelectDungeon(int floor)
@@ -60,7 +60,7 @@ public class DungeonPortal : MonoBehaviour, IInteraction
             currentGold,
             item => inventory.GetItemCount(item),
             () => OnConfirmEnter(floor),
-            () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction));
+            () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteract));
     }
 
     private void OnConfirmEnter(int floor)
@@ -73,13 +73,13 @@ public class DungeonPortal : MonoBehaviour, IInteraction
         if (!AreAllPlayersNearby())
         {
             _ui.SetDescription("모든 플레이어가 근처에 있어야 합니다.",
-                () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction));
+                () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteract));
             return;
         }
 
         var config = _dungeonConfigs[floor - 1];
         var inventory = _playerController.GetAbility<PlayerInventoryAbility>();
-        Action backToSelection = () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteraction);
+        Action backToSelection = () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteract);
 
         // 골드 체크
         if (config.EntryCost > 0 && (CurrencyManager.Instance == null || !CurrencyManager.Instance.CanAfford(config.EntryCost)))
@@ -115,7 +115,7 @@ public class DungeonPortal : MonoBehaviour, IInteraction
                 inventory.RemoveItem(req.Item, req.Amount);
         }
 
-        EndInteraction();
+        EndInteract();
         await EnterDungeon(floor);
     }
 
@@ -204,7 +204,7 @@ public class DungeonPortal : MonoBehaviour, IInteraction
         return true;
     }
 
-    public void EndInteraction()
+    public void EndInteract()
     {
         _ui?.Close();
         _playerController?.ExitUIMode();
@@ -221,4 +221,6 @@ public class DungeonPortal : MonoBehaviour, IInteraction
         _ui = FindFirstObjectByType<UI_DungeonPortal>(FindObjectsInactive.Include);
         return _ui != null;
     }
+    
+    public string AnimationTrigger => string.Empty;
 }

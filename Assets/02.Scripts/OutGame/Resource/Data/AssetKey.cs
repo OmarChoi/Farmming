@@ -45,6 +45,8 @@ public static class AssetKey
         public const string Smithy = "Smithy";
         public const string HairShop = "HairShop";
         public const string Storage = "Storage";
+        public const string QuestBoard = "QuestBoard";
+        public const string Portal = "Portal";
         public const string GamblingBuilding = "GamblingBuilding";
         public const string Shrine = "Shrine";
         public const string Hospital = "Hospital";
@@ -117,33 +119,6 @@ public static class AssetKey
         public const string NormalTree = "NormalTree";
     }
 
-    public static class Building
-    {
-        private const string MarketStall = "MarketStall";
-        private const string Smithy = "Smithy";
-        private const string HairShop = "HairShop";
-        private const string Shrine = "Shrine";
-        private const string Storage = "Storage";
-        private const string GamblingBuilding = "GamblingBuilding";
-        private const string Hospital = "Hospital";
-
-        private static readonly HashSet<string> _registered = new HashSet<string>
-        {
-            MarketStall,
-            Smithy,
-            HairShop,
-            Shrine,
-            Storage,
-            GamblingBuilding,
-            Hospital
-        };
-
-        public static string GetKey(string buildingId)
-        {
-            return _registered.Contains(buildingId) ? buildingId : null;
-        }
-    }
-
     public static class BGM
     {
         public const string StartScene = "SFXstartscenebgm";
@@ -175,6 +150,7 @@ public static class AssetKey
             {typeof(UI_Shrine), Shrine},
             {typeof(UI_VillageState), VillageState},
             {typeof(UI_VillageLevelUp), VillageLevelUp},
+            {typeof(UI_QuestBoard), QuestBoard},
         };
 
         public static string GetKey<T>() where T : UIBase
