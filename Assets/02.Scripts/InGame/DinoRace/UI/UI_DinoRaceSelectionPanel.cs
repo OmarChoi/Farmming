@@ -23,15 +23,20 @@ public class UI_DinoRaceSelectionPanel : MonoBehaviour
     private int _betAmount;
     private int _betStepAmount;
     private int _minBetAmount;
+    private UI_DinoRaceRunnerButton[] _runnerButtonEffects;
 
     private void Awake()
     {
         int runnerButtonCount = _runnerButtons != null ? _runnerButtons.Length : 0;
+        _runnerButtonEffects = new UI_DinoRaceRunnerButton[runnerButtonCount];
         for (int i = 0; i < runnerButtonCount; i++)
         {
             int capturedIndex = i;
             if (_runnerButtons[i] != null)
+            {
                 _runnerButtons[i].onClick.AddListener(() => SelectRunner(capturedIndex));
+                _runnerButtonEffects[i] = _runnerButtons[i].GetComponent<UI_DinoRaceRunnerButton>();
+            }
         }
 
         if (_decreaseBetButton != null)
@@ -135,6 +140,13 @@ public class UI_DinoRaceSelectionPanel : MonoBehaviour
         {
             if (_runnerHighlights[i] != null)
                 _runnerHighlights[i].enabled = i == _selectedRunnerIndex;
+        }
+
+        int effectCount = _runnerButtonEffects != null ? _runnerButtonEffects.Length : 0;
+        for (int i = 0; i < effectCount; i++)
+        {
+            if (_runnerButtonEffects[i] != null)
+                _runnerButtonEffects[i].SetSelected(i == _selectedRunnerIndex);
         }
     }
 
