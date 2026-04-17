@@ -117,6 +117,14 @@ MonoBehaviour:
   - RPC_BuildRejected
   - RPC_RemoveAccepted
   - RPC_RemoveRejected
+  - RPC_ApplySnapshot
+  - RPC_RequestAddEffect
+  - RPC_RequestRemoveEffect
+  - RPC_RequestCompleteAtShrine
+  - RPC_ReceiveGold
+  - RPC_RequestDepositGold
+  - RPC_RequestWithdrawGold
+  - RPC_SpendGold
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

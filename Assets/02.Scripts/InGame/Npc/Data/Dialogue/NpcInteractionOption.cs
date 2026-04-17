@@ -9,4 +9,14 @@ public class NpcInteractionOption
 
     public ENpcInteractionType Type => _type;
     public string ButtonName => _buttonName;
+
+    public NpcInteractionOption()
+    {
+    }
+
+    public NpcInteractionOption(ENpcInteractionType type, string buttonName)
+    {
+        _type = type;
+        _buttonName = buttonName;
+    }
 }

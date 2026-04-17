@@ -111,11 +111,14 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
     protected virtual void OnDepleted(GatheringInfo info)
     {
-        PlayerInventoryAbility inventory = info.Player.GetAbility<PlayerInventoryAbility>();
-        DropEntry[] drops = _gatheringData.GetDropsForModelIndex(_selectedModelIndex);
-        foreach (DropEntry entry in drops)
+        var inventory = info.Player.GetAbility<PlayerInventoryAbility>();
+        float yieldMultiplier = WorldEffectManager.Instance != null
+            ? WorldEffectManager.Instance.GetAcquireMultiplier()
+            : 1f;
+        foreach (DropEntry entry in _gatheringData.Drops)
         {
-            QuestReportItemHelper.AddItemAndReportQuest(inventory, entry.Item, entry.GetRandomQuantity());
+            int qty = WorldEffectManager.ApplyMultiplier(entry.GetRandomQuantity(), yieldMultiplier);
+            QuestReportItemHelper.AddItemAndReportQuest(inventory, entry.Item, qty);
         }
 
         info.HelperExperience?.Add(_gatherExperience);

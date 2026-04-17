@@ -9,6 +9,7 @@ public class UI_QuestJournalSlot : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _questProgressText;
     [SerializeField] private TextMeshProUGUI _questStatusText;
     [SerializeField] private TextMeshProUGUI _questRewardText;
+    [SerializeField] private TextMeshProUGUI _questRemainingDaysText;
 
     private UI_QuestJournal _uiQuestJournal;
     private int _slotIndex;
@@ -34,6 +35,7 @@ public class UI_QuestJournalSlot : MonoBehaviour
             _questProgressText.text = "";
             _questStatusText.text = "";
             _questRewardText.text = "";
+            if (_questRemainingDaysText != null) _questRemainingDaysText.text = "";
             return;
         }
 
@@ -44,5 +46,17 @@ public class UI_QuestJournalSlot : MonoBehaviour
         _questProgressText.text = QuestObjectiveTextFormatter.BuildProgressText(runtimeData);
         _questStatusText.text = QuestStatusTextFormatter.BuildStatusText(runtimeData);
         _questRewardText.text = QuestRewardTextFormatter.BuildQuestReward(quest.Reward);
+
+        if (_questRemainingDaysText != null)
+        {
+            if (quest.QuestCategory == EQuestCategory.ForcedTimed && runtimeData.ExpireDay > 0)
+            {
+                _questRemainingDaysText.text = $"남은 기간: {runtimeData.RemainingDays}일";
+            }
+            else
+            {
+                _questRemainingDaysText.text = "";
+            }
+        }
     }
 }

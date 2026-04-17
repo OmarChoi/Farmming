@@ -159,6 +159,27 @@ public class StorageTransferService
         _storage.PlaceSplit(sourceIndex, targetIndex, item, amount);
     }
 
+    /// 지갑 → 창고 입금
+    public virtual bool DepositGold(int amount)
+    {
+        if (amount <= 0) return false;
+        var currency = CurrencyManager.Instance;
+        if (currency == null || !currency.TrySpendGold(amount)) return false;
+
+        _storage.AddGold(amount);
+        return true;
+    }
+
+    /// 창고 → 지갑 출금
+    public virtual bool WithdrawGold(int amount)
+    {
+        if (amount <= 0) return false;
+        if (!_storage.TryRemoveGold(amount)) return false;
+
+        CurrencyManager.Instance?.AddGold(amount);
+        return true;
+    }
+
     private int CalculateAvailableSpace(SlotContainerDomain container, ItemDataSO item)
     {
         int space = 0;

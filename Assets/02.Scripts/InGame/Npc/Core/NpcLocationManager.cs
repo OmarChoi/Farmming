@@ -6,40 +6,41 @@ public class NpcLocationManager : MonoBehaviour
     public static NpcLocationManager Instance { get; private set; }
 
     private readonly Dictionary<string, NpcLocationAnchor> _anchorMap = new();
-    private readonly Dictionary<string, List<NpcLocationAnchor>> _anchorsByNpcId = new();
+    private readonly Dictionary<string, List<NpcLocationAnchor>> _anchorsByRuntimeKey = new();
 
     private void Awake()
     {
         Instance = this;
     }
 
-    private string MakeKey(string npcId, ENpcLocationType type, string locationKey)
+    private string MakeKey(string runtimeNpcKey, ENpcLocationType type, string locationKey)
     {
         if (string.IsNullOrEmpty(locationKey))
         {
-            return MakeDefaultKey(npcId, type);
+            return MakeDefaultKey(runtimeNpcKey, type);
         }
-        return $"{npcId}_{type}_{locationKey}";
+        return $"{runtimeNpcKey}_{type}_{locationKey}";
     }
 
-    private string MakeDefaultKey(string npcId, ENpcLocationType type)
+    private string MakeDefaultKey(string runtimeNpcKey, ENpcLocationType type)
     {
-        return $"{npcId}_{type}";
+        return $"{runtimeNpcKey}_{type}";
     }
 
     public void Register(NpcLocationAnchor anchor)
     {
         if (anchor == null) return;
 
-        string key = MakeKey(anchor.NpcId, anchor.LocationType, anchor.LocationKey);
+        string runtimeKey = anchor.RuntimeNpcKey;
+        string key = MakeKey(runtimeKey, anchor.LocationType, anchor.LocationKey);
         _anchorMap[key] = anchor;
+        Debug.Log($"[NpcLocationManager.Register] runtimeKey={runtimeKey}, type={anchor.LocationType}, locationKey={anchor.LocationKey}, finalKey={key}");
+        if (string.IsNullOrEmpty(runtimeKey)) return;
 
-        if (string.IsNullOrEmpty(anchor.NpcId)) return;
-
-        if (!_anchorsByNpcId.TryGetValue(anchor.NpcId, out List<NpcLocationAnchor> list))
+        if (!_anchorsByRuntimeKey.TryGetValue(runtimeKey, out List<NpcLocationAnchor> list))
         {
             list = new List<NpcLocationAnchor>();
-            _anchorsByNpcId.Add(anchor.NpcId, list);
+            _anchorsByRuntimeKey.Add(runtimeKey, list);
         }
 
         if (!list.Contains(anchor))
@@ -50,9 +51,13 @@ public class NpcLocationManager : MonoBehaviour
 
     public void Unregister(NpcLocationAnchor anchor)
     {
-        if (anchor == null) return;
+        if (anchor == null)
+        {
+            return;
+        }
 
-        string key = MakeKey(anchor.NpcId, anchor.LocationType, anchor.LocationKey);
+        string runtimeKey = anchor.RuntimeNpcKey;
+        string key = MakeKey(runtimeKey, anchor.LocationType, anchor.LocationKey);
 
         if (_anchorMap.TryGetValue(key, out var current))
         {
@@ -62,39 +67,39 @@ public class NpcLocationManager : MonoBehaviour
             }
         }
 
-        if (string.IsNullOrEmpty(anchor.NpcId)) return;
+        if (string.IsNullOrEmpty(runtimeKey)) return;
 
-        if (_anchorsByNpcId.TryGetValue(anchor.NpcId, out List<NpcLocationAnchor> list))
+        if (_anchorsByRuntimeKey.TryGetValue(runtimeKey, out List<NpcLocationAnchor> list))
         {
             list.Remove(anchor);
 
             if (list.Count == 0)
             {
-                _anchorsByNpcId.Remove(anchor.NpcId);
+                _anchorsByRuntimeKey.Remove(anchor.RuntimeNpcKey);
             }
         }
     }
 
-    public bool TryGetLocation(string npcId, ENpcLocationType type, string locationKey, out Vector3 position)
+    public bool TryGetLocation(string runtimeNpcKey, ENpcLocationType type, string locationKey, out Vector3 position)
     {
         // 상세 위치를 먼저 찾습니다.
         if (!string.IsNullOrEmpty(locationKey))
         {
-            string key = MakeKey(npcId, type, locationKey);
+            string key = MakeKey(runtimeNpcKey, type, locationKey);
 
             if (_anchorMap.TryGetValue(key, out var anchor) && anchor != null)
             {
-                position = anchor.Position;
+                position = anchor.Point.position;
                 return true;
             }
         }
 
         // 기본 위치로 폴백을 시도합니다.
-        string defaultKey = MakeDefaultKey(npcId, type);
+        string defaultKey = MakeDefaultKey(runtimeNpcKey, type);
 
         if (_anchorMap.TryGetValue(defaultKey, out var defaultAnchor) && defaultAnchor != null)
         {
-            position = defaultAnchor.Position;
+            position = defaultAnchor.Point.position;
             return true;
         }
 
@@ -102,26 +107,25 @@ public class NpcLocationManager : MonoBehaviour
         return false;
     }
 
-    public bool TryGetAnchor(string npcId, ENpcLocationType type, string locationKey, out NpcLocationAnchor anchor)
+    public bool TryGetAnchor(string runtimeNpcKey, ENpcLocationType type, string locationKey, out NpcLocationAnchor anchor)
     {
         if (!string.IsNullOrEmpty(locationKey))
         {
-            string key = MakeKey(npcId, type, locationKey);
-
+            string key = MakeKey(runtimeNpcKey, type, locationKey);
             if (_anchorMap.TryGetValue(key, out anchor) && anchor != null) return true;
         }
 
-        string defaultKey = MakeDefaultKey(npcId, type);
-
+        string defaultKey = MakeDefaultKey(runtimeNpcKey, type);
         if (_anchorMap.TryGetValue(defaultKey, out anchor) && anchor != null) return true;
 
         anchor = null;
         return false;
     }
 
-    public bool TryGetFirstAnchor(string npcId, out NpcLocationAnchor anchor)
+    public bool TryGetFirstAnchor(string runtimeNpcKey, out NpcLocationAnchor anchor)
     {
-        if (!string.IsNullOrEmpty(npcId) && _anchorsByNpcId.TryGetValue(npcId, out List<NpcLocationAnchor> list))
+        if (!string.IsNullOrEmpty(runtimeNpcKey) &&
+            _anchorsByRuntimeKey.TryGetValue(runtimeNpcKey, out List<NpcLocationAnchor> list))
         {
             for (int i = 0; i < list.Count; i++)
             {

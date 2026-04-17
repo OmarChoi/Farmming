@@ -300,6 +300,7 @@ public class NpcDialogueController : MonoBehaviour
             case ENpcInteractionType.Upgrade:
             case ENpcInteractionType.Styling:
             case ENpcInteractionType.Quest:
+            case ENpcInteractionType.DinoRace:
             case ENpcInteractionType.Curing:
             case ENpcInteractionType.EndTalk:
                 _interactionService.Execute(type, CreateContext());
