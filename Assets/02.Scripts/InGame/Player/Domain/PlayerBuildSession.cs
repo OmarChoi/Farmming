@@ -163,7 +163,7 @@ public class PlayerBuildSession
             return;
         }
 
-        string prefabKey = AssetKey.Building.GetKey(requested.BuildingId);
+        string prefabKey = AssetKey.NetworkPrefab.GetKey(requested.BuildingId);
         if (string.IsNullOrEmpty(prefabKey)) return;
 
         var prefab = await ResourceManager.Instance.LoadAsync<GameObject>(prefabKey);

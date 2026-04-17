@@ -260,7 +260,8 @@ public class MapSyncManager : MonoBehaviourPunCallbacks
             VillageLevelManager.Instance.ImportSaveData(syncData.Village);
         }
             
-        if (syncData.Buildings != null && syncData.Buildings.Count > 0 && BuildingManager.Instance != null)
+        // 빈 리스트도 전달한다 — 클라이언트는 stale pending snapshot 정리에 사용한다.
+        if (syncData.Buildings != null && BuildingManager.Instance != null)
         {
             await BuildingManager.Instance.ImportBuildings(syncData.Buildings);
         }
