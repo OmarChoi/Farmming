@@ -23,6 +23,7 @@ public class HelperEvolutionProfileSO : ScriptableObject
     public float ImpactZoomDuration = 0.35f;
     public float AfterPullbackDuration = 0.45f;
     public float AfterScanDuration = 2.4f;
+    [Range(0.5f, 3f)] public float AfterScanVerticalCurvePower = 1.25f;
     public float RevealDuration = 1.2f;
     public float OutroDuration = 1.0f;
     public float IntroSpinSpeed = 90f;
@@ -60,6 +61,9 @@ public class HelperEvolutionProfileSO : ScriptableObject
     [Range(0f, 2f)] public float BeforeEnergyRiseGlowAlpha = 0.85f;
     public float BeforeEnergyRiseOutlineWidth = 0.045f;
     public float BeforeEnergyRiseVerticalPadding = 0.1f;
+    [Range(0f, 1f)] public float BeforeEnergyRiseRainbowStrength = 1f;
+    [Range(0f, 2f)] public float BeforeEnergyRiseRainbowSpeed = 0.25f;
+    public float BeforeEnergyRiseSurfaceOffset = 0.018f;
 
     [Header("Legacy Fallback Camera")]
     public Vector3 IntroCameraLocalPosition = new Vector3(0f, 1.8f, -6f);

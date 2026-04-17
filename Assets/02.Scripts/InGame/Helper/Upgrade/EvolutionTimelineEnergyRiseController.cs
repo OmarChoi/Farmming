@@ -13,6 +13,9 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
     private static readonly int FillAlphaId = Shader.PropertyToID("_FillAlpha");
     private static readonly int GlowAlphaId = Shader.PropertyToID("_GlowAlpha");
     private static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
+    private static readonly int RainbowStrengthId = Shader.PropertyToID("_RainbowStrength");
+    private static readonly int RainbowSpeedId = Shader.PropertyToID("_RainbowSpeed");
+    private static readonly int SurfaceOffsetId = Shader.PropertyToID("_SurfaceOffset");
 
     [Header("Runtime References")]
     [SerializeField] private PlayableDirector _director;
@@ -95,6 +98,9 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
             material.SetFloat(FillAlphaId, _profile.BeforeEnergyRiseFillAlpha);
             material.SetFloat(GlowAlphaId, _profile.BeforeEnergyRiseGlowAlpha * easedProgress);
             material.SetFloat(OutlineWidthId, Mathf.Max(0f, _profile.BeforeEnergyRiseOutlineWidth));
+            material.SetFloat(RainbowStrengthId, Mathf.Clamp01(_profile.BeforeEnergyRiseRainbowStrength));
+            material.SetFloat(RainbowSpeedId, Mathf.Max(0f, _profile.BeforeEnergyRiseRainbowSpeed));
+            material.SetFloat(SurfaceOffsetId, Mathf.Max(0f, _profile.BeforeEnergyRiseSurfaceOffset));
         }
     }
 
