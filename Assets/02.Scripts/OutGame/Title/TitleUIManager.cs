@@ -27,6 +27,7 @@ public class TitleUIManager : MonoBehaviour
 
     private void Awake()
     {
+        
         _flowManager.OnPanelChanged += ShowPanel;
         _flowManager.OnRoomIdReady += roomId => _createdRoomIdText.text = roomId;
         _flowManager.OnJoinError += msg => { if (_joinErrorText != null) _joinErrorText.text = msg; };
@@ -34,6 +35,8 @@ public class TitleUIManager : MonoBehaviour
 
     private void Start()
     {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.Confined;
         ShowPanel(ETitlePanel.Title);
     }
 

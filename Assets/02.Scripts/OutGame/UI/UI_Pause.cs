@@ -30,8 +30,8 @@ public class UI_Pause : UIBase
         _toLobbyButton.onClick.AddListener(ChangeSceneToLobby);
         _exitGameButton.onClick.AddListener(ExitGame);
         
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.Confined;
+        PlayerController pc = FindFirstObjectByType<PlayerController>();
+        pc.EnterUIMode();
     }
 
     private void OnDisable()
@@ -41,9 +41,8 @@ public class UI_Pause : UIBase
         _toLobbyButton.onClick.RemoveListener(ChangeSceneToLobby);
         _exitGameButton.onClick.RemoveListener(ExitGame);
         
-        
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        PlayerController pc = FindFirstObjectByType<PlayerController>();
+        pc.ExitUIMode();
     }
 
     protected override void OnOpen()
@@ -67,7 +66,7 @@ public class UI_Pause : UIBase
             RefreshRoomId();
         }
     }
-    
+
     protected override UniTask OnOpenAnimation()
     {
         _ = _popupDoTween.PlayOpenAsync();
@@ -104,7 +103,14 @@ public class UI_Pause : UIBase
     private void ChangeSceneToLobby()
     {
         // todo. 책임 위치 변경(씬 변경 "요청")
-        UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
+        if (PhotonNetwork.IsConnected)
+        {
+            RoomManager.Instance.LeaveRoom();
+        }
+        else
+        {
+            SceneManager.LoadScene(SceneName.Title);
+        }
     }
 
     private void ExitGame()
