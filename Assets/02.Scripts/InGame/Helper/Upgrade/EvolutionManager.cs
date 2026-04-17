@@ -28,6 +28,9 @@ public class EvolutionManager : MonoBehaviour
     [SerializeField] private Camera _baseCamera;
     [SerializeField] private Camera _evolutionOverlayCamera;
     [SerializeField] private CinemachineCamera _evolutionCinemachine;
+    [SerializeField] private EvolutionTimelineCameraController _timelineCameraController;
+    [SerializeField] private EvolutionTimelineRotationController _timelineRotationController;
+    [SerializeField] private EvolutionTimelineEnergyRiseController _timelineEnergyRiseController;
     [SerializeField] private int _cutsceneCameraPriority = 100;
 
     [Header("White Flash")]
@@ -69,6 +72,19 @@ public class EvolutionManager : MonoBehaviour
 
     private void Awake()
     {
+        if (_timelineCameraController == null)
+            _timelineCameraController = GetComponent<EvolutionTimelineCameraController>();
+        if (_timelineCameraController == null)
+            _timelineCameraController = gameObject.AddComponent<EvolutionTimelineCameraController>();
+        if (_timelineRotationController == null)
+            _timelineRotationController = GetComponent<EvolutionTimelineRotationController>();
+        if (_timelineRotationController == null)
+            _timelineRotationController = gameObject.AddComponent<EvolutionTimelineRotationController>();
+        if (_timelineEnergyRiseController == null)
+            _timelineEnergyRiseController = GetComponent<EvolutionTimelineEnergyRiseController>();
+        if (_timelineEnergyRiseController == null)
+            _timelineEnergyRiseController = gameObject.AddComponent<EvolutionTimelineEnergyRiseController>();
+
         EnsureWhiteFlashOverlay();
         if (_backgroundRenderer != null)
             _backgroundRenderer.enabled = _backgroundRenderer.sprite != null;
@@ -112,7 +128,7 @@ public class EvolutionManager : MonoBehaviour
         SetLayerRecursively(_beforeInstance, FocusLayer);
         SetLayerRecursively(_afterInstance, FocusLayer);
 
-        // ✅ StartEvolutionCutscene 하나만 실행 (내부에서 카메라/스핀/연출 처리)
+       // StartEvolutionCutscene 하나만 실행 (내부에서 카메라/스핀/연출 처리)
         StartCoroutine(StartEvolutionCutscene());
         return true;
     }
@@ -122,6 +138,9 @@ public class EvolutionManager : MonoBehaviour
         if (!IsPlaying) return;
         if (_fallbackRoutine != null) StopCoroutine(_fallbackRoutine);
         if (_spinRoutine != null) StopCoroutine(_spinRoutine);
+        if (_timelineCameraController != null) _timelineCameraController.Stop();
+        if (_timelineRotationController != null) _timelineRotationController.Stop();
+        if (_timelineEnergyRiseController != null) _timelineEnergyRiseController.Stop();
         _spinRoutine = null;
         if (_director != null) { _director.stopped -= OnDirectorStopped; _director.Stop(); }
         FinishEvolution(false);
@@ -142,16 +161,6 @@ public class EvolutionManager : MonoBehaviour
         SetRoot(_afterModelRoot, true);
         _afterInstance.SetActive(true);
         PlayIdle(_afterInstance);
-
-        if (_spinRoutine != null) { StopCoroutine(_spinRoutine); _spinRoutine = null; }
-
-        float revealDur = _currentProfile != null ? _currentProfile.RevealDuration : 1.2f;
-        _spinRoutine = StartCoroutine(
-            SpinLoopEaseOut(
-                _currentProfile != null ? _currentProfile.IntroSpinSpeed : 90f,
-                revealDur,
-                _afterModelRoot,
-                _afterLocalEuler.y + 180f));
     }
 
     public void Timeline_PlayEvolvedIdle() => PlayIdle(_afterInstance);
@@ -165,11 +174,6 @@ public class EvolutionManager : MonoBehaviour
         // 2. 카메라 전환 (가려진 순간 조용히 전환)
         EnableEvolutionCamera();
 
-        // 3. 스핀 시작
-        float spin = _currentProfile != null ? _currentProfile.IntroSpinSpeed : 90f;
-        float introDur = _currentProfile != null ? _currentProfile.IntroDuration : 2f;
-        _spinRoutine = StartCoroutine(SpinLoopEaseIn(spin, introDur));
-
         // 4. 은하수 페이드 아웃 (진화 배경 드러남)
         if (_galaxyOverlay != null)
             yield return _galaxyOverlay.FadeOut();
@@ -177,6 +181,9 @@ public class EvolutionManager : MonoBehaviour
         // 5. Timeline or Fallback 연출 시작
         if (_director != null && _director.playableAsset != null)
         {
+            StartTimelineCameraController();
+            StartTimelineRotationController();
+            StartTimelineEnergyRiseController();
             _director.stopped -= OnDirectorStopped;
             _director.stopped += OnDirectorStopped;
             _director.time = 0d;
@@ -185,6 +192,9 @@ public class EvolutionManager : MonoBehaviour
         }
         else
         {
+            float spin = _currentProfile != null ? _currentProfile.IntroSpinSpeed : 90f;
+            float introDur = _currentProfile != null ? _currentProfile.IntroDuration : 2f;
+            _spinRoutine = StartCoroutine(SpinLoopEaseIn(spin, introDur));
             _fallbackRoutine = StartCoroutine(FallbackEvolution());
         }
     }
@@ -194,6 +204,9 @@ public class EvolutionManager : MonoBehaviour
     private void FinishEvolution(bool completed)
     {
         if (_spinRoutine != null) { StopCoroutine(_spinRoutine); _spinRoutine = null; }
+        if (_timelineCameraController != null) _timelineCameraController.Stop();
+        if (_timelineRotationController != null) _timelineRotationController.Stop();
+        if (_timelineEnergyRiseController != null) _timelineEnergyRiseController.Stop();
         if (_whiteFlashRoutine != null) { StopCoroutine(_whiteFlashRoutine); _whiteFlashRoutine = null; }
         if (_whiteFlashCanvasGroup != null)
         {
@@ -281,6 +294,52 @@ public class EvolutionManager : MonoBehaviour
         }
     }
 
+    private void StartTimelineCameraController()
+    {
+        if (_timelineCameraController == null || _currentProfile == null)
+            return;
+
+        Transform cameraTransform = _evolutionCinemachine != null
+            ? _evolutionCinemachine.transform
+            : _evolutionOverlayCamera != null
+                ? _evolutionOverlayCamera.transform
+                : null;
+
+        _timelineCameraController.Configure(
+            _currentProfile,
+            _director,
+            cameraTransform,
+            _orbitPivot);
+        _timelineCameraController.Play();
+    }
+
+    private void StartTimelineRotationController()
+    {
+        if (_timelineRotationController == null || _currentProfile == null)
+            return;
+
+        _timelineRotationController.Configure(
+            _currentProfile,
+            _director,
+            _beforeModelRoot,
+            _afterModelRoot,
+            _beforeLocalEuler,
+            _afterLocalEuler);
+        _timelineRotationController.Play();
+    }
+
+    private void StartTimelineEnergyRiseController()
+    {
+        if (_timelineEnergyRiseController == null || _currentProfile == null)
+            return;
+
+        _timelineEnergyRiseController.Configure(
+            _currentProfile,
+            _director,
+            _beforeModelRoot);
+        _timelineEnergyRiseController.Play();
+    }
+
     private IEnumerator FallbackEvolution()
     {
         HelperEvolutionProfileSO p = _currentProfile;
@@ -290,14 +349,17 @@ public class EvolutionManager : MonoBehaviour
             ? _evolutionCinemachine.transform
             : _evolutionOverlayCamera.transform;
 
-        Vector3 intro = p != null ? p.IntroCameraLocalPosition : new Vector3(0f, 1.8f, -6f);
-        Vector3 zoom = p != null ? p.ZoomCameraLocalPosition : new Vector3(0f, 1.35f, -3.4f);
-        Vector3 reveal = p != null ? p.RevealCameraLocalPosition : new Vector3(0f, 0.45f, -2.5f);
-        Vector3 final = p != null ? p.FinalCameraLocalPosition : new Vector3(0f, 1.5f, -5.5f);
+        Vector3 intro = p != null ? p.BeforeIntroCameraLocalPosition : new Vector3(0f, 1.6f, -6f);
+        Vector3 zoom = p != null ? p.BeforeImpactZoomCameraLocalPosition : new Vector3(0f, 1.05f, -1.45f);
+        Vector3 close = p != null ? p.AfterCloseCameraLocalPosition : new Vector3(0f, 0.45f, -1.35f);
+        Vector3 pullback = p != null ? p.AfterPullbackCameraLocalPosition : new Vector3(0f, 0.55f, -2.05f);
+        Vector3 head = p != null ? p.AfterHeadCameraLocalPosition : new Vector3(0f, 1.95f, -2.15f);
+        Vector3 fullShot = p != null ? p.AfterFullShotCameraLocalPosition : new Vector3(0f, 1.25f, -3.25f);
         float introDur = p != null ? p.IntroDuration : 2f;
-        float zoomDur = p != null ? p.ZoomDuration : 0.8f;
-        float revealDur = p != null ? p.RevealDuration : 1.2f;
-        float outroDur = p != null ? p.OutroDuration : 1f;
+        float zoomDur = p != null ? p.ImpactZoomDuration : 0.35f;
+        float pullbackDur = p != null ? p.AfterPullbackDuration : 0.45f;
+        float scanDur = p != null ? p.AfterScanDuration : 2.4f;
+        float outroDur = p != null ? p.FinalShowcaseDuration : 2f;
 
         // Intro: 카메라 고정 (스핀은 StartEvolutionCutscene에서 이미 시작됨)
         cam.localPosition = intro;
@@ -312,12 +374,13 @@ public class EvolutionManager : MonoBehaviour
         yield return new WaitForSeconds(Mathf.Max(_whiteFlashFadeIn * 0.75f, 0.03f));
         Timeline_SwapToEvolvedModel();
 
-        // Reveal: 카메라 이동 (SpinLoopEaseOut은 SwapToEvolvedModel에서 시작됨)
-        cam.localPosition = reveal;
-        yield return MoveCamera(cam, reveal, final, revealDur);
+        // AfterActive: close -> small pullback -> foot to head scan
+        cam.localPosition = close;
+        yield return MoveCamera(cam, close, pullback, pullbackDur);
+        yield return MoveCamera(cam, pullback, head, scanDur);
 
         // Outro: 카메라 살짝 뒤로
-        yield return MoveCamera(cam, final, final + new Vector3(0f, 0.15f, -1.1f), outroDur);
+        yield return MoveCamera(cam, head, fullShot, outroDur);
 
         if (_spinRoutine != null) { StopCoroutine(_spinRoutine); _spinRoutine = null; }
         _fallbackRoutine = null;
