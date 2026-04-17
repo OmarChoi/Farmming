@@ -108,21 +108,6 @@ public class NpcLocationManager : MonoBehaviour
         return false;
     }
 
-    public bool TryGetAnchor(string runtimeNpcKey, ENpcLocationType type, string locationKey, out NpcLocationAnchor anchor)
-    {
-        if (!string.IsNullOrEmpty(locationKey))
-        {
-            string key = MakeKey(runtimeNpcKey, type, locationKey);
-            if (_anchorMap.TryGetValue(key, out anchor) && anchor != null) return true;
-        }
-
-        string defaultKey = MakeDefaultKey(runtimeNpcKey, type);
-        if (_anchorMap.TryGetValue(defaultKey, out anchor) && anchor != null) return true;
-
-        anchor = null;
-        return false;
-    }
-
     public bool TryGetFirstAnchor(string runtimeNpcKey, out NpcLocationAnchor anchor)
     {
         if (!string.IsNullOrEmpty(runtimeNpcKey) &&
