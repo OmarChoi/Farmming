@@ -31,8 +31,8 @@ public abstract class BaseBuilding : MonoBehaviour
     }
 
     public void Initialize(
-        BuildingDataSO buildingData, 
-        BuildingSaveData saveData, 
+        BuildingDataSO buildingData,
+        BuildingSaveData saveData,
         BuildingConstructionContext constructionContext,
         bool onLoading = false)
     {
@@ -62,10 +62,30 @@ public abstract class BaseBuilding : MonoBehaviour
         OnBuildingInitialized();
         OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
 
-        if (IsConstructionComplete)
+        if (!IsConstructionComplete) return;
+
+        // 복원/실경과 공통 경로. _constructionCompletedHandled 가드로 이벤트 중복을 막고,
+        // NPC 스폰은 HandleConstructionCompleted 내부의 _onLoading 체크로 억제된다.
+        TryHandleConstructionCompleted();
+    }
+
+    /// 저장/스냅샷 복원 경로에서 RemainingDays만 교체하고 시각 상태를 맞춘다.
+    /// 이벤트는 _constructionCompletedHandled 가드로 최초 1회만 발생한다.
+    public void ApplyConstructionRemainingDays(int remainingDays)
+    {
+        if (SaveData == null) return;
+
+        SaveData.RemainingDays = remainingDays;
+        ConstructionProgress = CalculateConstructionProgress();
+        OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
+
+        if (!IsConstructionComplete)
         {
-            TryHandleConstructionCompleted();
+            _constructionCompletedHandled = false;
+            return;
         }
+
+        TryHandleConstructionCompleted();
     }
 
     private void OnLoadingFinished()
@@ -101,11 +121,19 @@ public abstract class BaseBuilding : MonoBehaviour
         SaveData.RemainingDays--;
         ConstructionProgress = CalculateConstructionProgress();
         OnConstructionStateChanged(ConstructionProgress, IsConstructionComplete);
+        LogBuildingSync($"AdvanceDay id={SaveData.BuildingId} anchor=({SaveData.AnchorX},{SaveData.AnchorY},{SaveData.AnchorZ}) remaining={SaveData.RemainingDays}");
 
         if (SaveData.RemainingDays <= 0)
         {
             TryHandleConstructionCompleted();
         }
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+    private static void LogBuildingSync(string message)
+    {
+        Debug.Log($"[BuildingSync] {message}");
     }
 
     public void SetNpc(NpcController npc)
