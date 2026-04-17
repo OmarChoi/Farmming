@@ -113,6 +113,10 @@ MonoBehaviour:
   - RPC_RequestSwap
   - RPC_RequestSwapInStorage
   - RPC_SyncStorage
+  - RPC_BuildAccepted
+  - RPC_BuildRejected
+  - RPC_RemoveAccepted
+  - RPC_RemoveRejected
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

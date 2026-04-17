@@ -43,6 +43,9 @@ public static class AssetKey
         public const string Storage = "Storage";
         public const string QuestBoard = "QuestBoard";
         public const string Portal = "Portal";
+        public const string MarketStall = "MarketStall";
+        public const string Smithy = "Smithy";
+        public const string HairShop = "HairShop";
 
         // 상수를 추가할 때 수동 누락이 없도록 public const string 필드를 리플렉션으로 수집한다.
         private static readonly string[] _all = typeof(NetworkPrefab)
@@ -110,31 +113,6 @@ public static class AssetKey
     {
         public const string NormalRock = "NormalRock";
         public const string NormalTree = "NormalTree";
-    }
-
-    public static class Building
-    {
-        private const string MarketStall = "MarketStall";
-        private const string Smithy = "Smithy";
-        private const string HairShop = "HairShop";
-        private const string Storage = "Storage";
-        private const string QuestBoard = "QuestBoard";
-        private const string Portal = "Portal";
-
-        private static readonly HashSet<string> _registered = new HashSet<string>
-        {
-            MarketStall,
-            Smithy,
-            HairShop,
-            Storage,
-            QuestBoard,
-            Portal
-        };
-
-        public static string GetKey(string buildingId)
-        {
-            return _registered.Contains(buildingId) ? buildingId : null;
-        }
     }
 
     public static class BGM
