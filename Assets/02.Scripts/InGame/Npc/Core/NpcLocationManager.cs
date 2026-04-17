@@ -29,12 +29,11 @@ public class NpcLocationManager : MonoBehaviour
 
     public void Register(NpcLocationAnchor anchor)
     {
-        if (anchor == null) return;
+        if (anchor == null || string.IsNullOrEmpty(anchor.RuntimeNpcKey)) return;
 
         string runtimeKey = anchor.RuntimeNpcKey;
         string key = MakeKey(runtimeKey, anchor.LocationType, anchor.LocationKey);
         _anchorMap[key] = anchor;
-        Debug.Log($"[NpcLocationManager.Register] runtimeKey={runtimeKey}, type={anchor.LocationType}, locationKey={anchor.LocationKey}, finalKey={key}");
         if (string.IsNullOrEmpty(runtimeKey)) return;
 
         if (!_anchorsByRuntimeKey.TryGetValue(runtimeKey, out List<NpcLocationAnchor> list))
@@ -104,21 +103,7 @@ public class NpcLocationManager : MonoBehaviour
         }
 
         position = Vector3.zero;
-        return false;
-    }
-
-    public bool TryGetAnchor(string runtimeNpcKey, ENpcLocationType type, string locationKey, out NpcLocationAnchor anchor)
-    {
-        if (!string.IsNullOrEmpty(locationKey))
-        {
-            string key = MakeKey(runtimeNpcKey, type, locationKey);
-            if (_anchorMap.TryGetValue(key, out anchor) && anchor != null) return true;
-        }
-
-        string defaultKey = MakeDefaultKey(runtimeNpcKey, type);
-        if (_anchorMap.TryGetValue(defaultKey, out anchor) && anchor != null) return true;
-
-        anchor = null;
+        Debug.LogWarning($"[TryGetLocationFail] runtimeNpcKey={runtimeNpcKey}, type={type}, locationKey={locationKey}");
         return false;
     }
 

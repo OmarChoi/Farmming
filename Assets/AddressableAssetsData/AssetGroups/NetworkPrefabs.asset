@@ -15,6 +15,12 @@ MonoBehaviour:
   m_GroupName: NetworkPrefabs
   m_GUID: 8703f340ff4132648bef16f962914d94
   m_SerializeEntries:
+  - m_GUID: 0265f7e840e85db4fa66e25e373010f1
+    m_Address: Villager3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 04068b708f38fd7449347d1df530ff5e
     m_Address: JungleTroublemaker
     m_ReadOnly: 0
@@ -51,8 +57,20 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2f8778e05f605a848b3a44d5b1c85e6c
+    m_Address: Villager4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 33d4fbbdafcf8ea4ea3c7cd8802e88f1
     m_Address: Player
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 54b4dad7438d24148a43a51d1067a13f
+    m_Address: Villager1
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab
@@ -143,6 +161,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eed40b82e23022a46b900e549b777f16
     m_Address: SowEpicHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f04dabe060ecf9448980ffdcf0267bf3
+    m_Address: Villager2
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab

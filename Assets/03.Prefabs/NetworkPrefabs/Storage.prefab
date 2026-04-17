@@ -16,7 +16,6 @@ GameObject:
   - component: {fileID: 6157395430500208556}
   - component: {fileID: 7424616647906971841}
   - component: {fileID: 3698030153028732861}
-  - component: {fileID: -6267928422002973158}
   m_Layer: 13
   m_Name: Storage
   m_TagString: Untagged
@@ -179,15 +178,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bb0ab032ef54d34eaa5dafb0830ecdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultBuilding
---- !u!114 &-6267928422002973158
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1128516414551324245}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b32e306db9a4d7d41b9fa436c74a8532, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuildingGhostMarker
