@@ -197,7 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3f49665a75b68c4a841e27f836dee64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcController
-  _animator: {fileID: 0}
+  _animator: {fileID: 7599980197395476099}
   _movement: {fileID: 5316030158967195761}
   _anim: {fileID: 6185204389369995894}
   _npcSchedule: {fileID: 11400000, guid: daa31087eb231f046a2e96e5e9962561, type: 2}
@@ -212,6 +212,7 @@ MonoBehaviour:
     _buttonName: "\uD018\uC2A4\uD2B8"
   - _type: 6
     _buttonName: "\uB300\uD654 \uC885\uB8CC"
+  _runtimeNpcKey: 
   _shop: {fileID: 7734502852426753408}
   _npcData: {fileID: 11400000, guid: 4f6f1a23e841728449f1881583ac4cc7, type: 2}
   _npcQuest: {fileID: 3994691458747384774}
