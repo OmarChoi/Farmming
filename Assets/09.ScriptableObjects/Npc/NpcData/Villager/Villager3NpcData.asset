@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29943a3ad3f2dbf4f9cf2a769a5b2ee0, type: 3}
+  m_Name: Villager3NpcData
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDataSO
+  NpcId: Villager3
+  NpcName: "\uC18C\uD53C\uC544"
+  CanUseAiDialogue: 1
+  NpcMbti: ISFP
+  NpcPersonality: "\uC18C\uC2EC\uD558\uACE0 \uC870\uC6A9\uD558\uC9C0\uB9CC \uCC29\uD55C
+    \uC5EC\uC790\uC774\uB2E4."
+  Age: 23
+  Job: "\uC5C6\uC74C"
+  WayOfTone: "\uBD80\uB4DC\uB7FD\uACE0 \uB2E4\uC815\uD558\uC9C0\uB9CC \uB2F9\uD669\uD558\uB294
+    \uC874\uB313\uB9D0"
+  Prefab: {fileID: 7840605641264675590, guid: 9547b4542c50b3d4598b56eaaaa728a1, type: 3}
+  WalkSpeed: 1.6
+  RunSpeed: 3.6
+  JumpDuration: 0.8
+  JumpHeight: 1.6
+  GreetDialogues:
+  - {fileID: 11400000, guid: 9dacb75311f486c44be8b2cd34237d35, type: 2}
+  - {fileID: 11400000, guid: 7d3c9239996cb814a809626f327c0012, type: 2}
+  - {fileID: 11400000, guid: 80f039084a64f7a449268be189552563, type: 2}
+  TalkDialogues:
+  - {fileID: 11400000, guid: fa7c9a7e376e6bd41be49731e9393c41, type: 2}
+  - {fileID: 11400000, guid: 87645e5165a3fc645bb6f1e6424ade54, type: 2}
+  - {fileID: 11400000, guid: 9ba2881c324c1e34fbeb2e788fc53217, type: 2}
+  CuringAskDialogue: {fileID: 0}
+  CuringAcceptDialogue: {fileID: 0}
+  CuringDeclineDialogue: {fileID: 0}
+  CuringAlreadyDoneDialogue: {fileID: 0}
+  UseRandomTimeOffset: 1
+  MinTimeOffset: 0
+  MaxTimeOffset: 5
+  AutoStartQuestOnInteract: 0
