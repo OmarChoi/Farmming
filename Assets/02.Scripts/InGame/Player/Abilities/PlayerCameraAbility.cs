@@ -10,7 +10,7 @@ public class PlayerCameraAbility : PlayerAbility
     [SerializeField] private float _impactShakeStrength = 0.15f;
     [SerializeField] private int _impactShakeVibrato = 18;
     private const float MinVerticalAngle = -60f;
-    private const float MaxVerticalAngle = 60f;
+    private const float MaxVerticalAngle = 10f;
     private const float DefaultReturnSpeed = 10f;
 
     private float _mx;
