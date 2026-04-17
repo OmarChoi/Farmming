@@ -2,15 +2,5 @@ using UnityEngine;
 
 public class BuildingGhostMarker : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // 건설 시 고스트 상태를 마킹하기 위한 클래스입니다.
 }

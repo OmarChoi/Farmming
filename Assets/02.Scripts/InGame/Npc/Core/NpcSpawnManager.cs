@@ -22,7 +22,10 @@ public class NpcSpawnManager : MonoBehaviour
 
     public NpcController GetOrSpawn(NpcSpawnRequest request)
     {
-        if (!ValidateRequest(request)) return null;
+        if (!ValidateRequest(request))
+        {
+            return null;
+        }
 
         string runtimeNpcKey = GetSpawnKey(request);
 
