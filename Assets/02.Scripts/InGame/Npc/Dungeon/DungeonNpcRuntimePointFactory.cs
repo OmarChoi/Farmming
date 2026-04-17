@@ -4,6 +4,7 @@ public static class DungeonNpcRuntimePointFactory
 {
     public static GameObject CreateSpawnPoint(
         NpcDataSO npcData,
+        string runtimeNpcKey,
         Vector3 spawnPosition,
         string locationKey,
         ENpcLocationType locationType = ENpcLocationType.Dungeon,
@@ -19,7 +20,7 @@ public static class DungeonNpcRuntimePointFactory
         go.transform.rotation = Quaternion.identity;
 
         NpcLocationAnchor anchor = go.AddComponent<NpcLocationAnchor>();
-        anchor.Initialize(npcData, locationType, locationKey, go.transform, go);
+        anchor.Initialize(npcData, runtimeNpcKey, locationType, locationKey, go.transform, go);
 
         return go;
     }

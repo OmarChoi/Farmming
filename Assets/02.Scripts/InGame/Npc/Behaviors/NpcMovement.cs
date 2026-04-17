@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.AI;
 using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using System.Threading;
 
 [RequireComponent(typeof(NavMeshAgent))]

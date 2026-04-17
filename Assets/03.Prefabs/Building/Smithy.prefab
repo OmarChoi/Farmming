@@ -129,6 +129,7 @@ GameObject:
   - component: {fileID: 8282164377884026905}
   - component: {fileID: 901651527898737458}
   - component: {fileID: -4921048592538429506}
+  - component: {fileID: 8232631957567453724}
   m_Layer: 0
   m_Name: Smithy
   m_TagString: Untagged
@@ -152,6 +153,7 @@ Transform:
   - {fileID: 6843348731717000127}
   - {fileID: 7084319067389688574}
   - {fileID: 1996794622784556360}
+  - {fileID: 136360840796171735}
   - {fileID: 7665609856043562475}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -203,6 +205,18 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &8232631957567453724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1324062310112488669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b32e306db9a4d7d41b9fa436c74a8532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingGhostMarker
 --- !u!1 &1650024946877090336
 GameObject:
   m_ObjectHideFlags: 0
@@ -1576,6 +1590,56 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &5066283216813323772
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 136360840796171735}
+  - component: {fileID: 7706002050136318270}
+  m_Layer: 0
+  m_Name: NpcStayPoint1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &136360840796171735
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5066283216813323772}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.4, y: 0, z: -5.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5937352189484691985}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7706002050136318270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5066283216813323772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
+  _npcData: {fileID: 11400000, guid: e557f1a4feae2354d9069b8a1bc1679c, type: 2}
+  _runtimeNpcKey: 
+  _locationType: 3
+  _locationKey: Smithy
+  _point: {fileID: 136360840796171735}
+  _stylingHideRoot: {fileID: 1324062310112488669}
 --- !u!1 &5151603050178877944
 GameObject:
   m_ObjectHideFlags: 0
@@ -1881,7 +1945,7 @@ Transform:
   m_GameObject: {fileID: 5499262780661246209}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: -3.4, y: 0, z: -5.6}
+  m_LocalPosition: {x: -2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1900,8 +1964,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
   _npcData: {fileID: 11400000, guid: e557f1a4feae2354d9069b8a1bc1679c, type: 2}
-  _locationType: 3
-  _locationKey: Blacksmith_Smithy1
+  _runtimeNpcKey: 
+  _locationType: 0
+  _locationKey: 
   _point: {fileID: 1996794622784556360}
   _stylingHideRoot: {fileID: 1324062310112488669}
 --- !u!1 &5759904583270982595
@@ -3953,7 +4018,7 @@ GameObject:
   - component: {fileID: 7665609856043562475}
   - component: {fileID: 3039757313538302562}
   m_Layer: 0
-  m_Name: NpcStayPoint1
+  m_Name: NpcStayPoint2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3987,10 +4052,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
   _npcData: {fileID: 11400000, guid: e557f1a4feae2354d9069b8a1bc1679c, type: 2}
+  _runtimeNpcKey: 
   _locationType: 3
-  _locationKey: Blacksmith_Smithy2
+  _locationKey: Furnace
   _point: {fileID: 7665609856043562475}
-  _stylingHideRoot: {fileID: 0}
+  _stylingHideRoot: {fileID: 1324062310112488669}
 --- !u!1 &9028007726750918625
 GameObject:
   m_ObjectHideFlags: 0

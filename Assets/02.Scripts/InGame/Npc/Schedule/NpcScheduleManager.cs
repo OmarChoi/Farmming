@@ -16,13 +16,13 @@ public class NpcScheduleManager : MonoBehaviour
     private void OnEnable()
     {
         TimeEvents.OnMinuteChanged += HandleTimeChanged;
-        TimeEvents.OnNetDayEnded += HandleDayChanged;
+        TimeEvents.OnNetDayChanged += HandleDayChanged;
     }
 
     private void OnDisable()
     {
         TimeEvents.OnMinuteChanged -= HandleTimeChanged;
-        TimeEvents.OnNetDayEnded -= HandleDayChanged;
+        TimeEvents.OnNetDayChanged -= HandleDayChanged;
     }
 
     public void Register(NpcController npc)
