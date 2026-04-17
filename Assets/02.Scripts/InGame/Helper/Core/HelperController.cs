@@ -101,6 +101,7 @@ public class HelperController : MonoBehaviourPunCallbacks
         transform.position = FollowTarget.position + FollowTarget.right * SummonOffset;
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
+        PlayHelperSfx(AssetKey.SFX.HelperSummon, ESpatialMode.FollowTransform);
     }
 
     public void Equip(Transform equipSlot)
@@ -127,6 +128,8 @@ public class HelperController : MonoBehaviourPunCallbacks
         {
             GetAbility<HelperAnimationAbility>()?.Play(EHelperAnim.Equipped);
         }
+
+        PlayHelperSfx(AssetKey.SFX.HelperEquip, ESpatialMode.FollowTransform);
         
     }
 
@@ -141,6 +144,7 @@ public class HelperController : MonoBehaviourPunCallbacks
 
         Vector3 backDir = -FollowTarget.forward;
         GetAbility<HelperFollowAbility>()?.LaunchBack(backDir);
+        PlayHelperSfx(AssetKey.SFX.HelperUnequip, ESpatialMode.FollowTransform);
     }
 
     private void SetTransformSync(bool enabled)
@@ -246,6 +250,7 @@ public class HelperController : MonoBehaviourPunCallbacks
         transform.SetParent(null);
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
+        PlayHelperSfx(AssetKey.SFX.HelperSummon, ESpatialMode.FollowTransform);
     }
 
     [PunRPC]
@@ -270,6 +275,7 @@ public class HelperController : MonoBehaviourPunCallbacks
         transform.SetParent(null);
         SetCharacterControllerEnabled(true);
         SetTransformSync(true);
+        PlayHelperSfx(AssetKey.SFX.HelperUnequip, ESpatialMode.FollowTransform);
     }
 
     [PunRPC]
@@ -325,6 +331,18 @@ public class HelperController : MonoBehaviourPunCallbacks
             animationAbility.Play(EHelperAnim.Idle);
         else
             animationAbility.Play(EHelperAnim.Equipped);
+    }
+
+    private void PlayHelperSfx(string clipKey, ESpatialMode spatialMode = ESpatialMode.Positional3D)
+    {
+        if (SoundManager.Instance == null || string.IsNullOrEmpty(clipKey))
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: clipKey,
+            spatialMode: spatialMode,
+            position: transform.position,
+            followTarget: transform));
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)

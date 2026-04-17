@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -11,6 +12,16 @@ using UnityEngine.UI;
 public class EvolutionManager : MonoBehaviour
 {
     private static readonly int AnimHash = Animator.StringToHash("animation");
+    private static readonly string[] CutsceneHiddenTransformNameTokens =
+    {
+        "mouthpoint",
+        "effectspawnpoint",
+        "spawnpoint",
+        "seedbubble",
+        "bubbleimage",
+        "seedicon",
+        "seedcounttext"
+    };
 
     [Header("Studio")]
     [SerializeField] private Transform _studioAnchor;
@@ -46,6 +57,15 @@ public class EvolutionManager : MonoBehaviour
     [Header("Galaxy Overlay")]
     [SerializeField] private GalaxyOverlay _galaxyOverlay;
 
+    [Header("Sound")]
+    [SerializeField] private float _fieldBgmMuteFadeDuration = 0.25f;
+    [SerializeField] private float _fieldBgmRestoreFadeDuration = 0.8f;
+    [SerializeField] private float _evolutionBgmFadeInDuration = 0.25f;
+    [SerializeField] private float _evolutionBgmFadeOutDuration = 0.6f;
+    [SerializeField, Range(0f, 2f)] private float _evolutionBgmVolumeMultiplier = 1f;
+    [SerializeField] private float _evolutionSfxLeadTime = 2f;
+    [SerializeField] private float _evolutionSfxFallbackDuration = 3f;
+
     [Header("Lighting Isolation")]
     [SerializeField] private bool _isolateLighting = true;
     [SerializeField] private Light[] _evolutionLights;
@@ -65,6 +85,7 @@ public class EvolutionManager : MonoBehaviour
     private GameObject _beforeInstance;
     private GameObject _afterInstance;
     private Action<bool> _onFinished;
+    private Action _onEvolvedModelShown;
     private readonly List<(Light light, int cullingMask, bool enabled)> _lightCache = new();
     private bool _wasOverlayEnabled;
     private bool _wasStacked;
@@ -73,6 +94,11 @@ public class EvolutionManager : MonoBehaviour
     private Coroutine _spinRoutine;
     private Coroutine _whiteFlashRoutine;
     private Coroutine _fallbackRoutine;
+    private Coroutine _evolutionSfxRoutine;
+    private Coroutine _evolvedModelShownRoutine;
+    private float _evolutionSfxEndRealtime;
+    private bool _evolutionSfxPlayed;
+    private bool _evolvedModelShownNotified;
     private bool _hasRenderSettingsCache;
     private AmbientMode _cachedAmbientMode;
     private Color _cachedAmbientLight;
@@ -124,7 +150,8 @@ public class EvolutionManager : MonoBehaviour
         HelperDataSO data,
         EHelperGrade currentGrade,
         HelperController liveHelper,
-        Action<bool> onFinished = null)
+        Action<bool> onFinished = null,
+        Action onEvolvedModelShown = null)
     {
         if (IsPlaying || data == null ||
             _studioAnchor == null || _beforeModelRoot == null ||
@@ -138,6 +165,8 @@ public class EvolutionManager : MonoBehaviour
         _currentData = data;
         _currentProfile = data.EvolutionProfile;
         _onFinished = onFinished;
+        _onEvolvedModelShown = onEvolvedModelShown;
+        _evolvedModelShownNotified = false;
 
         ApplyProfile(_currentProfile);
 
@@ -162,10 +191,14 @@ public class EvolutionManager : MonoBehaviour
         if (!IsPlaying) return;
         if (_fallbackRoutine != null) StopCoroutine(_fallbackRoutine);
         if (_spinRoutine != null) StopCoroutine(_spinRoutine);
+        if (_evolutionSfxRoutine != null) StopCoroutine(_evolutionSfxRoutine);
+        if (_evolvedModelShownRoutine != null) StopCoroutine(_evolvedModelShownRoutine);
         if (_timelineCameraController != null) _timelineCameraController.Stop();
         if (_timelineRotationController != null) _timelineRotationController.Stop();
         if (_timelineEnergyRiseController != null) _timelineEnergyRiseController.Stop();
         _spinRoutine = null;
+        _evolutionSfxRoutine = null;
+        _evolvedModelShownRoutine = null;
         if (_director != null) { _director.stopped -= OnDirectorStopped; _director.Stop(); }
         FinishEvolution(false);
     }
@@ -185,6 +218,7 @@ public class EvolutionManager : MonoBehaviour
         SetRoot(_afterModelRoot, true);
         _afterInstance.SetActive(true);
         PlayIdle(_afterInstance);
+        NotifyEvolvedModelShown();
     }
 
     public void Timeline_PlayEvolvedIdle() => PlayIdle(_afterInstance);
@@ -197,6 +231,7 @@ public class EvolutionManager : MonoBehaviour
 
         // 2. 카메라 전환 (가려진 순간 조용히 전환)
         EnableEvolutionCamera();
+        BeginEvolutionAudio();
 
         // 4. 은하수 페이드 아웃 (진화 배경 드러남)
         if (_galaxyOverlay != null)
@@ -213,12 +248,16 @@ public class EvolutionManager : MonoBehaviour
             _director.time = 0d;
             _director.Evaluate();
             _director.Play();
+            StartEvolutionSfxTrigger();
+            StartEvolvedModelShownFallbackTrigger();
         }
         else
         {
             float spin = _currentProfile != null ? _currentProfile.IntroSpinSpeed : 90f;
             float introDur = _currentProfile != null ? _currentProfile.IntroDuration : 2f;
+            float zoomDur = _currentProfile != null ? _currentProfile.ImpactZoomDuration : 0.35f;
             _spinRoutine = StartCoroutine(SpinLoopEaseIn(spin, introDur));
+            _evolutionSfxRoutine = StartCoroutine(PlayEvolutionSfxAfterDelay(Mathf.Max(0f, introDur + zoomDur - _evolutionSfxLeadTime)));
             _fallbackRoutine = StartCoroutine(FallbackEvolution());
         }
     }
@@ -232,6 +271,8 @@ public class EvolutionManager : MonoBehaviour
         if (_timelineRotationController != null) _timelineRotationController.Stop();
         if (_timelineEnergyRiseController != null) _timelineEnergyRiseController.Stop();
         if (_whiteFlashRoutine != null) { StopCoroutine(_whiteFlashRoutine); _whiteFlashRoutine = null; }
+        if (_evolutionSfxRoutine != null) { StopCoroutine(_evolutionSfxRoutine); _evolutionSfxRoutine = null; }
+        if (_evolvedModelShownRoutine != null) { StopCoroutine(_evolvedModelShownRoutine); _evolvedModelShownRoutine = null; }
         if (_whiteFlashCanvasGroup != null)
         {
             _whiteFlashCanvasGroup.alpha = 0f;
@@ -255,15 +296,147 @@ public class EvolutionManager : MonoBehaviour
         if (_galaxyOverlay != null)
             yield return _galaxyOverlay.FadeOut();
 
+        yield return RestoreEvolutionAudio();
+
         // 4. 상태 초기화 후 콜백
         HelperDataSO finished = _currentData;
         Action<bool> callback = _onFinished;
         _currentData = null;
         _currentProfile = null;
         _onFinished = null;
+        _onEvolvedModelShown = null;
+        _evolvedModelShownNotified = false;
 
         callback?.Invoke(completed);
         if (finished != null) OnEvolutionFinished?.Invoke(finished);
+    }
+
+    private void BeginEvolutionAudio()
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        _evolutionSfxEndRealtime = 0f;
+        _evolutionSfxPlayed = false;
+
+        SoundManager.Instance.DuckMainBgm(_fieldBgmMuteFadeDuration);
+        SoundManager.Instance.PlayOverlayBgm(
+            AssetKey.BGM.HelperEvolution,
+            new BgmTransitionConfig(0f, _evolutionBgmFadeInDuration, _evolutionBgmVolumeMultiplier));
+    }
+
+    private IEnumerator RestoreEvolutionAudio()
+    {
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopOverlayBgm(_evolutionBgmFadeOutDuration);
+
+        float sfxRemaining = Mathf.Max(0f, _evolutionSfxEndRealtime - Time.realtimeSinceStartup);
+        float waitBeforeRestore = Mathf.Max(_evolutionBgmFadeOutDuration, sfxRemaining);
+        if (waitBeforeRestore > 0f)
+            yield return new WaitForSecondsRealtime(waitBeforeRestore);
+
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.RestoreMainBgm(_fieldBgmRestoreFadeDuration);
+
+        if (_fieldBgmRestoreFadeDuration > 0f)
+            yield return new WaitForSecondsRealtime(_fieldBgmRestoreFadeDuration);
+
+        _evolutionSfxEndRealtime = 0f;
+        _evolutionSfxPlayed = false;
+    }
+
+    private void StartEvolutionSfxTrigger()
+    {
+        if (_evolutionSfxRoutine != null)
+            StopCoroutine(_evolutionSfxRoutine);
+
+        _evolutionSfxRoutine = StartCoroutine(PlayEvolutionSfxAtTimelineTime(GetEvolutionSfxTriggerTime()));
+    }
+
+    private void StartEvolvedModelShownFallbackTrigger()
+    {
+        if (_evolvedModelShownRoutine != null)
+            StopCoroutine(_evolvedModelShownRoutine);
+
+        _evolvedModelShownRoutine = StartCoroutine(NotifyEvolvedModelShownAtTimelineTime(GetModelSwapTime()));
+    }
+
+    private float GetModelSwapTime()
+    {
+        return _currentProfile != null ? Mathf.Max(0f, _currentProfile.ModelSwapTime) : 0f;
+    }
+
+    private float GetEvolutionSfxTriggerTime()
+    {
+        float swapTime = _currentProfile != null ? _currentProfile.ModelSwapTime : 0f;
+        return Mathf.Max(0f, swapTime - _evolutionSfxLeadTime);
+    }
+
+    private IEnumerator NotifyEvolvedModelShownAtTimelineTime(float triggerTime)
+    {
+        while (IsPlaying && _director != null && _director.playableAsset != null && _director.time < triggerTime)
+            yield return null;
+
+        NotifyEvolvedModelShown();
+        _evolvedModelShownRoutine = null;
+    }
+
+    private void NotifyEvolvedModelShown()
+    {
+        if (_evolvedModelShownNotified)
+            return;
+
+        _evolvedModelShownNotified = true;
+        _onEvolvedModelShown?.Invoke();
+    }
+
+    private IEnumerator PlayEvolutionSfxAtTimelineTime(float triggerTime)
+    {
+        while (IsPlaying && _director != null && _director.playableAsset != null && _director.time < triggerTime)
+            yield return null;
+
+        PlayEvolutionSfx();
+        _evolutionSfxRoutine = null;
+    }
+
+    private IEnumerator PlayEvolutionSfxAfterDelay(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        PlayEvolutionSfx();
+        _evolutionSfxRoutine = null;
+    }
+
+    private void PlayEvolutionSfx()
+    {
+        if (_evolutionSfxPlayed || SoundManager.Instance == null)
+            return;
+
+        _evolutionSfxPlayed = true;
+        _evolutionSfxEndRealtime = Mathf.Max(
+            _evolutionSfxEndRealtime,
+            Time.realtimeSinceStartup + Mathf.Max(0f, _evolutionSfxFallbackDuration));
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.HelperEvolution,
+            spatialMode: ESpatialMode.Flat2D));
+
+        TrackEvolutionSfxLengthAsync().Forget();
+    }
+
+    private async UniTaskVoid TrackEvolutionSfxLengthAsync()
+    {
+        if (ResourceManager.Instance == null)
+            return;
+
+        AudioClip clip = await ResourceManager.Instance.LoadAsync<AudioClip>(AssetKey.SFX.HelperEvolution);
+        if (clip == null)
+            return;
+
+        _evolutionSfxEndRealtime = Mathf.Max(
+            _evolutionSfxEndRealtime,
+            Time.realtimeSinceStartup + clip.length);
     }
 
     private void EnableEvolutionCamera()
@@ -469,7 +642,8 @@ public class EvolutionManager : MonoBehaviour
         _timelineEnergyRiseController.Configure(
             _currentProfile,
             _director,
-            _beforeModelRoot);
+            _beforeModelRoot,
+            _afterModelRoot);
         _timelineEnergyRiseController.Play();
     }
 
@@ -709,6 +883,8 @@ public class EvolutionManager : MonoBehaviour
         foreach (Animator animator in root.GetComponentsInChildren<Animator>(true))
             PrepareAnimator(animator);
 
+        HideCutsceneMarkerRenderers(root);
+
         foreach (SkinnedMeshRenderer renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             renderer.updateWhenOffscreen = true;
 
@@ -720,6 +896,35 @@ public class EvolutionManager : MonoBehaviour
             rigidbody.isKinematic = true;
             rigidbody.detectCollisions = false;
         }
+    }
+
+    private static void HideCutsceneMarkerRenderers(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
+        {
+            if (renderer != null && IsCutsceneHiddenTransform(renderer.transform))
+                renderer.enabled = false;
+        }
+    }
+
+    private static bool IsCutsceneHiddenTransform(Transform transform)
+    {
+        while (transform != null)
+        {
+            string lowerName = transform.name.ToLowerInvariant();
+            foreach (string token in CutsceneHiddenTransformNameTokens)
+            {
+                if (lowerName.Contains(token))
+                    return true;
+            }
+
+            transform = transform.parent;
+        }
+
+        return false;
     }
 
     private void CleanupInstances()
