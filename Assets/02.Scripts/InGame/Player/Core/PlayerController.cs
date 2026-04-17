@@ -69,8 +69,8 @@ public class PlayerController : MonoBehaviour
 
         _interactConsumed = false;
 
-        if (Input.GetKeyDown(KeyCode.Escape))
-            SetCursorLock(Cursor.lockState != CursorLockMode.Locked);
+        // if (Input.GetKeyDown(KeyCode.Escape))
+        //     SetCursorLock(Cursor.lockState != CursorLockMode.Locked);
     }
 
     private void OnDestroy()
