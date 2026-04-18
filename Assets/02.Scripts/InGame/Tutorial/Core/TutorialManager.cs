@@ -89,7 +89,15 @@ public class TutorialManager : MonoBehaviour
 
         DespawnTutorialNpc();
 
-        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, _currentPlayer);
+        bool isFirstTutorialQuestCompleted =
+            _tutorialProgressController != null &&
+            _tutorialProgressController.IsFirstTutorialQuestCompleted();
+
+        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(
+            _tutorialNpc,
+            _currentPlayer,
+            isFirstTutorialQuestCompleted);
+
         if (_tutorialNpcController == null)
         {
             ClearTutorial();
