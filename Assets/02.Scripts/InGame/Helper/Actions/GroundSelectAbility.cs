@@ -44,12 +44,7 @@ public class GroundSelectAbility : HelperAbility
 
     private void Start()
     {
-        _inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
-        if (_inventory != null)
-        {
-            _inventory.OnSlotChanged += OnInventoryChanged;
-        }
-
+        EnsureInventoryBinding();
         RefreshGrounds();
     }
 
@@ -63,6 +58,8 @@ public class GroundSelectAbility : HelperAbility
 
     private void LateUpdate()
     {
+        EnsureInventoryBinding();
+
         if (_helperController != null && _helperController.State != EHelperState.Equipped && _selectedGround != null)
         {
             ClearSelection();
@@ -123,6 +120,8 @@ public class GroundSelectAbility : HelperAbility
 
     public bool TrySelectGround(ItemDataSO groundItem)
     {
+        EnsureInventoryBinding();
+
         if (groundItem == null || _inventory == null)
             return false;
 
@@ -139,6 +138,8 @@ public class GroundSelectAbility : HelperAbility
 
     public bool TrySelectFirstAvailableGround(int minimumAmount = 1)
     {
+        EnsureInventoryBinding();
+
         ItemDataSO firstGround = FindFirstAvailableGround(minimumAmount);
         if (firstGround == null)
             return false;
@@ -159,6 +160,8 @@ public class GroundSelectAbility : HelperAbility
 
     private void RefreshGrounds()
     {
+        EnsureInventoryBinding();
+
         if (_inventory == null)
         {
             _selectedGround = null;
@@ -183,6 +186,21 @@ public class GroundSelectAbility : HelperAbility
             _selectedGround = FindFirstAvailableGround();
 
         NotifySelectionChanged();
+    }
+
+    private void EnsureInventoryBinding()
+    {
+        PlayerInventoryAbility currentInventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (currentInventory == _inventory)
+            return;
+
+        if (_inventory != null)
+            _inventory.OnSlotChanged -= OnInventoryChanged;
+
+        _inventory = currentInventory;
+
+        if (_inventory != null)
+            _inventory.OnSlotChanged += OnInventoryChanged;
     }
 
     private bool CanUseGroundItem(ItemDataSO item)
