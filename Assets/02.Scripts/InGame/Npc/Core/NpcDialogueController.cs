@@ -4,10 +4,14 @@ using System.Collections.Generic;
 
 public class NpcDialogueController : MonoBehaviour
 {
+    public static NpcDialogueController Instance { get; private set; }
+
     [SerializeField] private NpcFriendshipManager _friendshipManager;
     [SerializeField] private UI_NpcDialogue _uiDialogue;
     [SerializeField] private UI_FriendshipBar _uiFriendshipBar;
     [SerializeField] private InteractService _interactionService;
+
+    public bool IsReady =>_uiDialogue != null && _uiDialogue.IsReady && _uiFriendshipBar != null && _interactionService != null;
 
     private IFriendshipService _friendshipService;
 
@@ -25,6 +29,13 @@ public class NpcDialogueController : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         if (_friendshipManager == null)
         {
             _friendshipManager = FindFirstObjectByType<NpcFriendshipManager>();

@@ -2,12 +2,12 @@ using UnityEngine;
 
 public static class TutorialNpcSpawner
 {
-    private const float SpawnRadius = 3.8f;
-    private const float FirstTutorialSpawnRadius = 8.2f;
+    private const float SpawnRadius = 4.2f;
+    private const float FirstTutorialSpawnRadius = 14.2f;
 
     private const int MaxSpawnTryCount = 4;
-    private const float GroundCheckStartHeight = 10f;
-    private const float GroundCheckDistance = 20f;
+    private const float GroundCheckStartHeight = 20f;
+    private const float GroundCheckDistance = 40f;
     private const float GroundOffsetY = 0.05f;
 
     public static NpcController SpawnNearPlayer(NpcDataSO data, PlayerController player, bool isFirstTutorialQuestCompleted)

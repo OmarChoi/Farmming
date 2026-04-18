@@ -17,10 +17,18 @@ public class UI_NpcDialogue : MonoBehaviour
     [SerializeField] private Button _dialoguePanelButton;
     [SerializeField] private TypewriterWithWrap _typewriter;
 
+    public bool IsReady => _dialoguePanelButton != null && _typewriter != null;
+
     private Action _onClickDialoguePanel;
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
         gameObject.SetActive(false);
     }
