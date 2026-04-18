@@ -143,6 +143,11 @@ public class NpcSpawnManager : MonoBehaviour
     // 우선 스폰 위치는 Home을 기준으로 합니다.
     private Vector3 ResolveInitialSpawnPosition(NpcSpawnRequest request, string runtimeNpcKey)
     {
+        if (request.Reason == "TutorialNpc")
+        {
+            return ResolveSpawnPosition(request.RequestedPosition);
+        }
+
         if (NpcLocationManager.Instance != null &&
             NpcLocationManager.Instance.TryGetLocation(
                 runtimeNpcKey,

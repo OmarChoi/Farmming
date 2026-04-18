@@ -2,8 +2,8 @@ using UnityEngine;
 
 public static class TutorialNpcSpawner
 {
-    private const float SpawnRadius = 4.2f;
-    private const float FirstTutorialSpawnRadius = 14.2f;
+    private const float SpawnRadius = 4.4f;
+    private const float FirstTutorialSpawnRadius = 28.2f;
 
     private const int MaxSpawnTryCount = 4;
     private const float GroundCheckStartHeight = 20f;

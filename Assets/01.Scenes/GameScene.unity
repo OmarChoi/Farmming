@@ -7107,8 +7107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28053dd8bc9d04847acc3d422c67e441, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TutorialProgressController
-  _entryTutorialQuest: {fileID: 11400000, guid: 71b16020e4de22346aaf43d0672a8ddd, type: 2}
+  _entryTutorialQuest: {fileID: 11400000, guid: 697f8ca8a7130a440be8ba7d68840294, type: 2}
   _tutorialQuestSequence:
+  - {fileID: 11400000, guid: 697f8ca8a7130a440be8ba7d68840294, type: 2}
   - {fileID: 11400000, guid: 71b16020e4de22346aaf43d0672a8ddd, type: 2}
   - {fileID: 11400000, guid: 68ad8745b185b5c4c873555553366dcd, type: 2}
   - {fileID: 11400000, guid: 14acf40ff966f2340a14af3c3ddbdd7d, type: 2}
@@ -8914,7 +8915,7 @@ MonoBehaviour:
   _dialogueController: {fileID: 2028739916}
   _questManager: {fileID: 1925945244}
   _npcFriendshipManager: {fileID: 158083902}
-  _tutorialProgressController: {fileID: 0}
+  _tutorialProgressController: {fileID: 1652054065}
 --- !u!4 &2058502417
 Transform:
   m_ObjectHideFlags: 0

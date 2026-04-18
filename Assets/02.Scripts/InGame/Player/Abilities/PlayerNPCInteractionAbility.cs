@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// E키로 NPC와 상호작용.
+/// 범위 내 INpcInteraction이 있으면 E키를 선점하여 헬퍼 소환보다 우선 처리.
+[DefaultExecutionOrder(-5)] // PlayerHelperInventoryAbility보다 먼저 실행, PlayerObjectInteractionAbility보다 나중 실행
 public class PlayerNPCInteractionAbility : PlayerAbility
 {
     [SerializeField] private float _radius = 5f;
@@ -58,14 +61,15 @@ public class PlayerNPCInteractionAbility : PlayerAbility
             }
         }
 
-        if (closest != null)
-        {
-            _faceTarget = (closest as Component).transform;
-            _owner.LockAction();
-            _animation?.PlayGreet();
-            _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
-            closest.RequestInteract(_owner);
-        }
+        if (closest == null) return;
+
+        if (!_owner.TryConsumeInteract()) return;
+
+        _faceTarget = (closest as Component).transform;
+        _owner.LockAction();
+        _animation?.PlayGreet();
+        _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
+        closest.RequestInteract(_owner);
     }
 
     public void EndInteraction()
@@ -83,7 +87,7 @@ public class PlayerNPCInteractionAbility : PlayerAbility
 
         Quaternion targetRotation = Quaternion.LookRotation(dir);
         _owner.transform.rotation = Quaternion.Slerp(
-            _owner.transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+        _owner.transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
     }
 
     public void BeginAutoInteraction(IInteraction target)
