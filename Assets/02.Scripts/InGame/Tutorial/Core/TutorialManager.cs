@@ -13,7 +13,6 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private TutorialProgressController _tutorialProgressController;
 
     private PlayerController _currentPlayer;
-    private Transform _playerTransform;
     private NpcController _tutorialNpcController;
     private bool _isTutorialStarted;
     private bool _isWaitingToStartTutorial;
@@ -42,7 +41,6 @@ public class TutorialManager : MonoBehaviour
         if (questAbility.TutorialState == ETutorialState.Completed) return;
 
         _currentPlayer = player;
-        _playerTransform = player.transform;
 
         bool saveLoaded = SaveManager.Instance == null || SaveManager.Instance.IsLoadCompleted;
         bool questLoaded = QuestManager.Instance != null && QuestManager.Instance.IsLoaded;
@@ -83,7 +81,7 @@ public class TutorialManager : MonoBehaviour
 
     private void StartTutorial()
     {
-        if (_playerTransform == null)
+        if (_currentPlayer == null)
         {
             ClearTutorial();
             return;
@@ -91,7 +89,7 @@ public class TutorialManager : MonoBehaviour
 
         DespawnTutorialNpc();
 
-        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, _playerTransform);
+        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, _currentPlayer);
         if (_tutorialNpcController == null)
         {
             ClearTutorial();
@@ -117,14 +115,14 @@ public class TutorialManager : MonoBehaviour
     {
         yield return null;
 
-        if (_tutorialNpcController == null || _playerTransform == null || _tutorialProgressController == null)
+        if (_tutorialNpcController == null || _currentPlayer == null || _tutorialProgressController == null)
         {
             ClearTutorial();
             yield break;
         }
 
         NpcInteractionComponent npcInteraction = _tutorialNpcController.GetComponent<NpcInteractionComponent>();
-        PlayerNPCInteractionAbility playerInteraction = _playerTransform.GetComponentInChildren<PlayerNPCInteractionAbility>();
+        PlayerNPCInteractionAbility playerInteraction = _currentPlayer.GetComponentInChildren<PlayerNPCInteractionAbility>();
 
         if (npcInteraction == null || playerInteraction == null)
         {
@@ -149,7 +147,6 @@ public class TutorialManager : MonoBehaviour
         _tutorialProgressController?.ResetRuntimeState();
         _isTutorialStarted = false;
         _currentPlayer = null;
-        _playerTransform = null;
 
         if (SaveManager.Instance != null && RoomManager.Instance != null)
         {
@@ -164,7 +161,6 @@ public class TutorialManager : MonoBehaviour
         _tutorialProgressController?.ResetRuntimeState();
         _isTutorialStarted = false;
         _currentPlayer = null;
-        _playerTransform = null;
     }
 
     // 기존에 존재하는 튜토리얼 NPC가 있다면 제거합니다.
