@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 
+[DefaultExecutionOrder(-20)]
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private PlayerStatSO _statSo;
