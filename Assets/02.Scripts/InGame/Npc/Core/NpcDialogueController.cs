@@ -12,7 +12,9 @@ public class NpcDialogueController : MonoBehaviour
     [SerializeField] private InteractService _interactionService;
 
     public bool IsReady =>_uiDialogue != null && _uiDialogue.IsReady && _uiFriendshipBar != null && _interactionService != null;
+    public static event Action OnDialogueReady;
 
+    private bool _hasRaisedReadyEvent;
     private IFriendshipService _friendshipService;
 
     private NpcController _currentNpc;
@@ -26,6 +28,7 @@ public class NpcDialogueController : MonoBehaviour
     private EDialogueUiState _dialogueState = EDialogueUiState.None;
 
     private Func<bool> _onDialogueEnded;
+
 
     private void Awake()
     {
@@ -61,6 +64,8 @@ public class NpcDialogueController : MonoBehaviour
         {
             _friendshipService.OnFriendshipChanged += HandleFriendshipChanged;
         }
+
+        TryRaiseReadyEvent();
     }
 
     private void OnDisable()
@@ -74,10 +79,22 @@ public class NpcDialogueController : MonoBehaviour
     private void Start()
     {
         _uiDialogue.BindDialoguePanel(OnClickDialoguePanel);
+
+        TryRaiseReadyEvent();
+    }
+
+    private void TryRaiseReadyEvent()
+    {
+        if (_hasRaisedReadyEvent || !IsReady) return;
+
+        _hasRaisedReadyEvent = true;
+        OnDialogueReady?.Invoke();
     }
 
     public void Open(NpcController npc, PlayerController player)
     {
+        TryRaiseReadyEvent();
+
         _currentNpc = npc;
         _currentInteractor = player;
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
