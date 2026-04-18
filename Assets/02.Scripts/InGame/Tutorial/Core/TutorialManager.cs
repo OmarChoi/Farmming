@@ -42,10 +42,7 @@ public class TutorialManager : MonoBehaviour
 
         _currentPlayer = player;
 
-        bool saveLoaded = SaveManager.Instance == null || SaveManager.Instance.IsLoadCompleted;
-        bool questLoaded = QuestManager.Instance != null && QuestManager.Instance.IsLoaded;
-
-        if (!saveLoaded || !questLoaded)
+        if (!IsTutorialStartReady())
         {
             _isWaitingToStartTutorial = true;
             WaitAndStartTutorialAsync().Forget();
@@ -59,12 +56,7 @@ public class TutorialManager : MonoBehaviour
     {
         try
         {
-            await UniTask.WaitUntil(() =>
-            {
-                bool saveLoaded = SaveManager.Instance == null || SaveManager.Instance.IsLoadCompleted;
-                bool questLoaded = QuestManager.Instance != null && QuestManager.Instance.IsLoaded;
-                return saveLoaded && questLoaded;
-            }, cancellationToken: this.GetCancellationTokenOnDestroy());
+            await UniTask.WaitUntil(() => IsTutorialStartReady(), cancellationToken: this.GetCancellationTokenOnDestroy());
 
             if (_currentPlayer == null) return;
 
@@ -130,7 +122,7 @@ public class TutorialManager : MonoBehaviour
         }
 
         NpcInteractionComponent npcInteraction = _tutorialNpcController.GetComponent<NpcInteractionComponent>();
-        PlayerNPCInteractionAbility playerInteraction = _currentPlayer.GetComponentInChildren<PlayerNPCInteractionAbility>();
+        PlayerNPCInteractionAbility playerInteraction = _currentPlayer.GetAbility<PlayerNPCInteractionAbility>();
 
         if (npcInteraction == null || playerInteraction == null)
         {
@@ -171,7 +163,15 @@ public class TutorialManager : MonoBehaviour
         _currentPlayer = null;
     }
 
-    // 기존에 존재하는 튜토리얼 NPC가 있다면 제거합니다.
+    private bool IsTutorialStartReady()
+    {
+        bool saveLoaded = SaveManager.Instance == null || SaveManager.Instance.IsLoadCompleted;
+        bool questLoaded = QuestManager.Instance != null && QuestManager.Instance.IsLoaded;
+        bool dialogueReady = NpcDialogueController.Instance != null && NpcDialogueController.Instance.IsReady;
+
+        return saveLoaded && questLoaded && dialogueReady;
+    }
+
     public void DespawnTutorialNpc()
     {
         if (_tutorialNpcController == null) return;

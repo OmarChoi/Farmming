@@ -221,6 +221,7 @@ public class GameSceneInit : MonoBehaviour
         if (existing != null && CustomizeData.Instance != null)
             existing.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
 
+        TryStartTutorial(existing);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -264,6 +265,8 @@ public class GameSceneInit : MonoBehaviour
         ReturningFromDungeon = false;
         UnfreezeExistingPlayers();
         SceneTransitionData.Clear();
+
+        TryStartTutorial(existing);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -512,7 +515,7 @@ public class GameSceneInit : MonoBehaviour
 
     private bool ShouldStartTutorial(PlayerController player)
     {
-        if (player == null || ReturningFromDungeon || TutorialManager.Instance == null) return false;
+        if (player == null || ReturningFromDungeon) return false;
 
         PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
         if (questAbility == null) return false;
@@ -524,6 +527,36 @@ public class GameSceneInit : MonoBehaviour
     private void TryStartTutorial(PlayerController player)
     {
         if (!ShouldStartTutorial(player)) return;
+        if (TutorialManager.Instance == null) return;
+
+        TryStartTutorialAsync(player).Forget();
+    }
+
+    private async UniTaskVoid TryStartTutorialAsync(PlayerController player)
+    {
+        bool managerReady = false;
+
+        try
+        {
+            await UniTask.WaitUntil(
+                () => TutorialManager.Instance != null,
+                cancellationToken: this.GetCancellationTokenOnDestroy());
+
+            managerReady = true;
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (!managerReady) return;
+
+        if (!ShouldStartTutorial(player))
+        {
+            Debug.LogWarning("[TryStartTutorialAsync] blocked by ShouldStartTutorial");
+            return;
+        }
+
         TutorialManager.Instance.TryStartTutorial(player);
     }
 
