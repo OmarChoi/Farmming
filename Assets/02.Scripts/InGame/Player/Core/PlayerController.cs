@@ -232,4 +232,10 @@ public class PlayerController : MonoBehaviour
 
         GetAbility<PlayerTroubleAbility>()?.ApplyTrouble(context);
     }
+
+    [PunRPC]
+    public void RPC_InitializeEmptyPlayerState()
+    {
+        GetAbility<PlayerQuestAbility>()?.InitializeEmptyState();
+    }
 }

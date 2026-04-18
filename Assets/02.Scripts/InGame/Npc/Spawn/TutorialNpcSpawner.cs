@@ -5,7 +5,7 @@ public static class TutorialNpcSpawner
     private const float SpawnRadius = 4.4f;
     private const float FirstTutorialSpawnRadius = 28.2f;
 
-    private const int MaxSpawnTryCount = 4;
+    private const int MaxSpawnTryCount = 6;
     private const float GroundCheckStartHeight = 20f;
     private const float GroundCheckDistance = 40f;
     private const float GroundOffsetY = 0.05f;
@@ -29,12 +29,6 @@ public static class TutorialNpcSpawner
         return NpcSpawnManager.Instance.GetOrSpawn(request);
     }
 
-    private static Vector3 GetRandomOffset(float radius)
-    {
-        Vector2 circle = Random.insideUnitCircle * radius;
-        return new Vector3(circle.x, 0f, circle.y);
-    }
-
     private static Vector3 FindSpawnPosition(Vector3 playerPosition, float radius)
     {
         for (int i = 0; i < MaxSpawnTryCount; i++)
@@ -49,6 +43,12 @@ public static class TutorialNpcSpawner
 
         // 실패 시 플레이어 높이를 기준으로 fallback합니다.
         return playerPosition;
+    }
+
+    private static Vector3 GetRandomOffset(float radius)
+    {
+        Vector2 circle = Random.insideUnitCircle * radius;
+        return new Vector3(circle.x, 0f, circle.y);
     }
 
     private static bool TryResolveGroundPosition(Vector3 position, out Vector3 groundedPosition)
