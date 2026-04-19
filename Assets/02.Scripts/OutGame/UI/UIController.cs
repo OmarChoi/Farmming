@@ -10,7 +10,7 @@ public class UIController : MonoBehaviour
 
     
     [SerializeField] private KeyCode _escapeKey = KeyCode.Escape;
-    
+
     [Header("Canvas 참조")]
     [SerializeField] private Transform _hudCanvas;
     [SerializeField] private Transform _popupCanvas;
