@@ -42,6 +42,20 @@ public class PlayerNPCInteractionAbility : PlayerAbility
 
     private void TryInteract()
     {
+        IInteraction closest = GetClosestInteraction();
+        if (closest == null) return;
+
+        if (!_owner.TryConsumeInteract()) return;
+
+        _faceTarget = (closest as Component).transform;
+        _owner.LockAction();
+        _animation?.PlayGreet();
+        _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
+        closest.RequestInteract(_owner);
+    }
+
+    public IInteraction GetClosestInteraction()
+    {
         Collider[] hits = Physics.OverlapSphere(transform.position, _radius, _interactionLayer);
 
         IInteraction closest = null;
@@ -53,7 +67,6 @@ public class PlayerNPCInteractionAbility : PlayerAbility
             if (interactable == null) continue;
 
             float dist = Vector3.Distance(transform.position, hit.transform.position);
-
             if (dist < minDist)
             {
                 minDist = dist;
@@ -61,15 +74,7 @@ public class PlayerNPCInteractionAbility : PlayerAbility
             }
         }
 
-        if (closest == null) return;
-
-        if (!_owner.TryConsumeInteract()) return;
-
-        _faceTarget = (closest as Component).transform;
-        _owner.LockAction();
-        _animation?.PlayGreet();
-        _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
-        closest.RequestInteract(_owner);
+        return closest;
     }
 
     public void EndInteraction()
