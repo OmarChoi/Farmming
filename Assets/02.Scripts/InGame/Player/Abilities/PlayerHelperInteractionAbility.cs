@@ -171,7 +171,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             }
             else
             {
-                _currentHelper.Equip(_equipSlot);
+                _currentHelper.Equip(_equipSlot, false);
                 _currentHelper.PhotonView.RpcSafe(
                     nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID, false);
             }
@@ -189,7 +189,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             }
             else
             {
-                _backHelper.Equip(slot);
+                _backHelper.Equip(slot, true);
                 _backHelper.PhotonView.RpcSafe(
                     nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID, true);
             }

@@ -45,17 +45,29 @@ MonoBehaviour:
   FinalRotationAlignDuration: 2
   FinalFrontYawOffset: 180
   FinalRotationExtraTurns: 0
-  BeforeEnergyRiseEndTime: 4.55
-  BeforeEnergyRiseDuration: 2
+  BeforeEnergyRiseSourceMaterial: {fileID: 2100000, guid: cc14c327fbd45b44d804d4304f949f8a, type: 2}
+  BeforeEnergyRiseStartDelay: 1
+  BeforeEnergyRiseDuration: 3.45
   BeforeEnergyRiseColor: {r: 1, g: 1, b: 1, a: 1}
-  BeforeEnergyRiseBandWidth: 0.9
-  BeforeEnergyRiseFillAlpha: 0.92
-  BeforeEnergyRiseGlowAlpha: 0.45
-  BeforeEnergyRiseOutlineWidth: 0.004
+  BeforeEnergyRiseBandWidth: 0.22
+  BeforeEnergyRiseFillAlpha: 1
+  BeforeEnergyRiseGlowAlpha: 0.65
+  BeforeEnergyRiseEffectStrength: 1
+  BeforeEnergyRiseOutlineWidth: 0.01
   BeforeEnergyRiseVerticalPadding: 0.1
   BeforeEnergyRiseRainbowStrength: 1
   BeforeEnergyRiseRainbowSpeed: 0.3
-  BeforeEnergyRiseSurfaceOffset: 0.018
+  BeforeEnergyRiseSurfaceOffset: 0.025
+  AfterEnergyClearSourceMaterial: {fileID: 2100000, guid: cc14c327fbd45b44d804d4304f949f8a, type: 2}
+  AfterEnergyClearStartOffset: 0
+  AfterEnergyClearEndOffset: 0
+  AfterEnergyClearBandWidth: 0.22
+  AfterEnergyClearFillAlpha: 1
+  AfterEnergyClearGlowAlpha: 0.65
+  AfterEnergyClearEffectStrength: 1
+  AfterEnergyClearOutlineWidth: 0.01
+  AfterEnergyClearVerticalPadding: 0.1
+  AfterEnergyClearSurfaceOffset: 0.025
   IntroCameraLocalPosition: {x: 0, y: 1.55, z: -5.2}
   ZoomCameraLocalPosition: {x: 0, y: 1.05, z: -1.35}
   RevealCameraLocalPosition: {x: 0, y: 0.45, z: -1.65}

@@ -19,7 +19,7 @@ public class LightActionAbility : HelperAbility,IEquipOverride
 
     [SerializeField] private float _playerHeadOffset = 5f;
     [SerializeField] private float _equippedCenterOffset = -1.4f;
-    [SerializeField] private float _equippedRange = 20f;
+    [SerializeField] private float _equippedRange = 250f;
     [SerializeField] private float _equippedIntensity = 100f;
 
     [SerializeField] private float _defaultHeadHeight = 2f;
