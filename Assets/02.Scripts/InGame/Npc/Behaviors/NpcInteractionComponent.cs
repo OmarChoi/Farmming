@@ -20,10 +20,9 @@ public class NpcInteractionComponent : MonoBehaviour, IInteraction
 
     public void RequestInteract(PlayerController player)
     {
-        if (!_npcController.CanStartInteraction(player))
-        {
-            return;
-        }
+        if (player == null || !player.IsMine) return;
+
+        if (!_npcController.CanStartInteraction(player)) return;
 
         _playerController = player;
         _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
