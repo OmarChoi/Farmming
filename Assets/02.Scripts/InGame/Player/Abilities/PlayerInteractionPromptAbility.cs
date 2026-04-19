@@ -27,7 +27,6 @@ public class PlayerInteractionPromptAbility : PlayerAbility
 
     private void Start()
     {
-        Debug.Log($"[{name}] NPC Offset = {_npcPromptOffset}, Object Offset = {_objectPromptOffset}");
         TryBindPromptUi();
     }
 
@@ -85,7 +84,6 @@ public class PlayerInteractionPromptAbility : PlayerAbility
         {
             _cachedPromptTarget = objectComponent.transform;
             _cachedPromptOffset = _objectPromptOffset;
-            Debug.Log($"Object Offset: {_objectPromptOffset}, Cached: {_cachedPromptOffset}");
             return;
         }
 
@@ -97,7 +95,6 @@ public class PlayerInteractionPromptAbility : PlayerAbility
         {
             _cachedPromptTarget = npcComponent.transform;
             _cachedPromptOffset = _npcPromptOffset;
-            Debug.Log($"NPC Offset: {_npcPromptOffset}, Cached: {_cachedPromptOffset}");
             return;
         }
 

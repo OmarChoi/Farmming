@@ -93,6 +93,8 @@ public class NpcDialogueController : MonoBehaviour
 
     public void Open(NpcController npc, PlayerController player)
     {
+        if (player == null || !player.IsMine) return;
+
         TryRaiseReadyEvent();
 
         _currentNpc = npc;
