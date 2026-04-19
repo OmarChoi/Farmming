@@ -33,6 +33,14 @@ public class UI_NpcDialogue : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    private void OnDestroy()
+    { 
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     private void Start()
     {
         if (_dialoguePanelButton != null)

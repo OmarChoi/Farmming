@@ -11,7 +11,7 @@ public class NpcDialogueController : MonoBehaviour
     [SerializeField] private UI_FriendshipBar _uiFriendshipBar;
     [SerializeField] private InteractService _interactionService;
 
-    public bool IsReady =>_uiDialogue != null && _uiDialogue.IsReady && _uiFriendshipBar != null && _interactionService != null;
+    public bool IsReady => _uiDialogue != null && _uiDialogue.IsReady && _uiFriendshipBar != null && _interactionService != null;
     public static event Action OnDialogueReady;
 
     private bool _hasRaisedReadyEvent;
@@ -58,6 +58,15 @@ public class NpcDialogueController : MonoBehaviour
             _interactionService = FindFirstObjectByType<InteractService>();
         }
     }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     private void OnEnable()
     {
         if (_friendshipService != null)

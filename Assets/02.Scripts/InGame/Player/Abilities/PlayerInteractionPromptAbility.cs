@@ -15,7 +15,7 @@ public class PlayerInteractionPromptAbility : PlayerAbility
     private Vector3 _cachedPromptOffset;
 
     private float _nextScanTime;
-    private float _nextScanTimeSampling = 0.1f;
+    private const float NextScanTimeSampling = 0.1f;
 
 
     protected override void Awake()
@@ -34,7 +34,7 @@ public class PlayerInteractionPromptAbility : PlayerAbility
     {
         if (_promptUi != null) return;
 
-        _promptUi = FindFirstObjectByType<UI_InteractionPrompt>(FindObjectsInactive.Include);
+        _promptUi = UI_InteractionPrompt.Instance;
     }
 
     private void Update()
@@ -59,7 +59,7 @@ public class PlayerInteractionPromptAbility : PlayerAbility
         // 상호작용 대상 스캔은 0.1초마다 한 번씩만 계산하여 캐싱합니다.
         if (Time.time >= _nextScanTime)
         {
-            _nextScanTime = Time.time + _nextScanTimeSampling;
+            _nextScanTime = Time.time + NextScanTimeSampling;
             CachePromptTarget();
         }
 
