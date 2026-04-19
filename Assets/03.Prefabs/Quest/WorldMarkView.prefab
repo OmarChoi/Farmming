@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4724778257578247227
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8461216425595885346}
+  - component: {fileID: 4093656176280853668}
+  m_Layer: 0
+  m_Name: WorldMarkView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8461216425595885346
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4724778257578247227}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4093656176280853668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4724778257578247227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9459a02c113cb34eab24a8ce60452f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldMarkView
+  _availableMarkObject: {fileID: 3167167266408127938, guid: bdf32f15b90e626479c4bdb96c878f54, type: 3}
+  _inProgressMarkObject: {fileID: 3167167266408127938, guid: 1139120dac4ab1543b5d040af56aee2f, type: 3}
+  _canCompleteMarkObject: {fileID: 784943664356881892, guid: d16064c01a3ccc34c9eb6a721139f520, type: 3}
+  _updatedMarkObject: {fileID: 784943664356881892, guid: c43e276504f2c054092f6afd0ddd8b86, type: 3}
+  _pulseTarget: {fileID: 8461216425595885346}
+  _pulseScale: 1.1
+  _pulseDuration: 1
