@@ -16,7 +16,7 @@ public class UI_InteractionPrompt : MonoBehaviour
     [Header("UI 위치")]
     [SerializeField] private RectTransform _panel;
 
-    private string _interactionText = "상호작용";
+    private static readonly string _interactionText = "상호작용";
 
     private Transform _target;
     private Vector3 _offset;
