@@ -45,6 +45,8 @@ public class HelperInteractionAbility : HelperAbility
         {
             if (_action is GroundActionAbility groundAction)
                 groundAction.NotifySecondaryInteractBlocked(cell);
+            else if (_action is SowActionAbility sowAction)
+                sowAction.NotifySecondaryInteractBlocked(cell);
 
             return false;
         }

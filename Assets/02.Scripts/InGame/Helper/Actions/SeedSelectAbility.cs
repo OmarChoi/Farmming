@@ -11,17 +11,27 @@ public class SeedSelectAbility : HelperAbility
     private PlayerInventoryAbility _inventory;
 
     public SeedItemDataSO SelectedSeed => _selectedSeed;
-    public int SelectedSeedCount => GetSeedCount(_selectedSeed);
-    public bool HasSelectedSeedAvailable => _selectedSeed != null && SelectedSeedCount > 0;
+    public int SelectedSeedCount
+    {
+        get
+        {
+            EnsureInventoryBinding();
+            return GetSeedCount(_selectedSeed);
+        }
+    }
+    public bool HasSelectedSeedAvailable => HasValidSeed();
+    public bool HasAnySeedAvailable
+    {
+        get
+        {
+            EnsureInventoryBinding();
+            return FindFirstAvailableSeed() != null;
+        }
+    }
 
     private void Start()
     {
-        _inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
-        if (_inventory != null)
-        {
-            _inventory.OnSlotChanged += OnInventoryChanged;
-        }
-
+        EnsureInventoryBinding();
         RefreshSeeds();
     }
 
@@ -40,15 +50,49 @@ public class SeedSelectAbility : HelperAbility
 
     public bool TrySelectSeed(SeedItemDataSO seed)
     {
+        EnsureInventoryBinding();
+
         if (seed == null || _inventory == null)
             return false;
 
-        if (!_availableSeeds.Contains(seed) || GetSeedCount(seed) <= 0)
+        if (!IsSeedAvailable(seed))
             return false;
 
-        _selectedSeed = seed;
-        NotifySelectionChanged();
+        SetSelectedSeed(seed);
         return true;
+    }
+
+    public bool TryAutoSelectSeed()
+    {
+        EnsureInventoryBinding();
+
+        if (HasValidSeed())
+            return true;
+        if (_selectedSeed != null)
+            return false;
+
+        return TrySelectFirstAvailableSeed();
+    }
+
+    public bool TrySwitchNextSeed()
+    {
+        EnsureInventoryBinding();
+
+        if (HasValidSeed())
+        {
+            NotifySelectionChanged();
+            return true;
+        }
+
+        SeedItemDataSO seed = FindFirstAvailableSeed();
+        SetSelectedSeed(seed);
+        return seed != null;
+    }
+
+    public bool HasValidSeed()
+    {
+        EnsureInventoryBinding();
+        return IsSeedAvailable(_selectedSeed);
     }
 
     public void ClearSelection()
@@ -56,16 +100,16 @@ public class SeedSelectAbility : HelperAbility
         if (_selectedSeed == null)
             return;
 
-        _selectedSeed = null;
-        NotifySelectionChanged();
+        SetSelectedSeed(null);
     }
 
     private void RefreshSeeds()
     {
+        EnsureInventoryBinding();
+
         if (_inventory == null)
         {
-            _selectedSeed = null;
-            NotifySelectionChanged();
+            SetSelectedSeed(null);
             return;
         }
 
@@ -74,15 +118,20 @@ public class SeedSelectAbility : HelperAbility
         for (int i = 0; i < _inventory.SlotCount; i++)
         {
             InventorySlot slot = _inventory.GetSlot(i);
-            if (slot.IsEmpty)
-            {
+            if (slot == null || slot.IsEmpty)
                 continue;
-            }
 
-            if (slot.Item.Type == EItemType.Seed && slot.Item is SeedItemDataSO seedItem)
+            if (IsSeedItem(slot.Item) && GetSeedCount((SeedItemDataSO)slot.Item) > 0)
             {
+                SeedItemDataSO seedItem = (SeedItemDataSO)slot.Item;
                 _availableSeeds.Add(seedItem);
             }
+        }
+
+        if (_selectedSeed != null && !IsSeedAvailable(_selectedSeed))
+        {
+            TrySwitchNextSeed();
+            return;
         }
 
         NotifySelectionChanged();
@@ -94,6 +143,74 @@ public class SeedSelectAbility : HelperAbility
             return 0;
 
         return _inventory.GetItemCount(seed);
+    }
+
+    private bool TrySelectFirstAvailableSeed(int minimumAmount = 1)
+    {
+        SeedItemDataSO seed = FindFirstAvailableSeed(minimumAmount);
+        if (seed == null)
+            return false;
+
+        SetSelectedSeed(seed);
+        return true;
+    }
+
+    private bool IsSeedAvailable(SeedItemDataSO seed, int minimumAmount = 1)
+    {
+        if (seed == null || _inventory == null || !IsSeedItem(seed))
+            return false;
+
+        return GetSeedCount(seed) >= minimumAmount;
+    }
+
+    private SeedItemDataSO FindFirstAvailableSeed(int minimumAmount = 1)
+    {
+        if (_inventory == null)
+            return null;
+
+        for (int i = 0; i < _inventory.SlotCount; i++)
+        {
+            InventorySlot slot = _inventory.GetSlot(i);
+            if (slot == null || slot.IsEmpty)
+                continue;
+
+            if (IsSeedItem(slot.Item) && GetSeedCount((SeedItemDataSO)slot.Item) >= minimumAmount)
+                return (SeedItemDataSO)slot.Item;
+        }
+
+        return null;
+    }
+
+    public static bool IsSeedItem(ItemDataSO item)
+    {
+        return item != null && item.Type == EItemType.Seed && item is SeedItemDataSO;
+    }
+
+    private void SetSelectedSeed(SeedItemDataSO seed)
+    {
+        if (_selectedSeed == seed)
+        {
+            NotifySelectionChanged();
+            return;
+        }
+
+        _selectedSeed = seed;
+        NotifySelectionChanged();
+    }
+
+    private void EnsureInventoryBinding()
+    {
+        PlayerInventoryAbility inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (_inventory == inventory)
+            return;
+
+        if (_inventory != null)
+            _inventory.OnSlotChanged -= OnInventoryChanged;
+
+        _inventory = inventory;
+
+        if (_inventory != null)
+            _inventory.OnSlotChanged += OnInventoryChanged;
     }
 
     private void NotifySelectionChanged()
