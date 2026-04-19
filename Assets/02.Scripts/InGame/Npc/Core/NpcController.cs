@@ -125,6 +125,7 @@ public class NpcController : MonoBehaviour
     {
         if (_isInteracting)
         {
+            if (_currentInteractor == player?.transform) return true; // 같은 플레이어의 중복 요청 허용 여부는 선택
             return false;
         }
 

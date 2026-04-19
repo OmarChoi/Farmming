@@ -13,35 +13,36 @@ MonoBehaviour:
   m_Name: TutorialQuestData6
   m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
   QuestId: TutorialQuestData6
-  QuestName: "\uC774\uC81C\uB294 \uC6B0\uB9AC\uAC00 \uD5E4\uC5B4\uC838\uC57C \uD560
-    \uC2DC\uAC04"
-  Description: "\uACE1\uB8E1 \uCE5C\uAD6C\uB4E4\uC5D0\uAC8C \uB9D0\uC744 \uAC78\uC5B4\uBCF4\uC790."
+  QuestName: "\uC544\uB984\uB2E4\uC6C0\uC774 \uD53C\uC5B4\uB0AC\uB2E4!"
+  Description: "\uD638\uBC15\uC774 \uB2E4 \uC790\uB77C\uBA74 \uC218\uD655 \uACE1\uB8E1\uACFC
+    \uD568\uAED8 \uD638\uBC15 3\uAC1C\uB97C \uC218\uD655\uD558\uC790."
   QuestCategory: 0
   IsTutorial: 1
   StartNpcId: TutorialNpc
   CompleteNpcId: TutorialNpc
   IsForcedAccept: 1
-  ObjectiveType: 3
+  ObjectiveType: 2
   TargetId: 
-  ItemRequirements: []
+  ItemRequirements:
+  - _item: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
+    _amount: 3
   TargetNpcId: TutorialNpc
   RequiredAmount: 1
   PrerequisiteQuests:
-  - {fileID: 11400000, guid: 063bb8600a1e02c46913243b390732fd, type: 2}
+  - {fileID: 11400000, guid: df4f2711cc2e30e48a926ad6f3a1be59, type: 2}
   RequiredFriendship: 0
   Reward:
     Rewards:
-    - RewardType: 0
-      RewardItem: {fileID: 0}
-      Amount: 2000
-      TargetNpcId: 
     - RewardType: 1
-      RewardItem: {fileID: 11400000, guid: 23f586b2b6f49e0418c2d40a1eccd1e8, type: 2}
+      RewardItem: {fileID: 11400000, guid: 1b1cd9f5869d8e14ea32fbc0eb9dce4a, type: 2}
       Amount: 3
+      RewardHelper: {fileID: 0}
       TargetNpcId: 
   AcceptDialogue: {fileID: 0}
-  AcceptResultDialogue: {fileID: 11400000, guid: 2fae1d50d57c6324cbe394467018c4fb, type: 2}
+  AcceptResultDialogue: {fileID: 11400000, guid: 76acb150133267740b0a950ff131a6a4, type: 2}
   DeclineDialogue: {fileID: 0}
-  InProgressDialogue: {fileID: 11400000, guid: 9070380b5194eea49a4245c99bfb9d08, type: 2}
-  CompleteDialogue: {fileID: 11400000, guid: 3b66227dbc5433b4db812d4f06e07876, type: 2}
-  NoQuestDialogue: {fileID: 11400000, guid: fe6fa0ea4657a694da9548cdd14cdcc7, type: 2}
+  InProgressDialogue: {fileID: 11400000, guid: 838b994af3c5ddf488f64259d097cdc0, type: 2}
+  CompleteDialogue: {fileID: 11400000, guid: 47ba0e4af1cbfb640a939fe3d70f1823, type: 2}
+  NoQuestDialogue: {fileID: 11400000, guid: 75af0582be79624449cdb8535eba8502, type: 2}
+  AcceptInfoPageSet: {fileID: 11400000, guid: 9c9f6633c76cfbd4f9910b4d32aaa588, type: 2}
+  CompleteInfoPageSet: {fileID: 0}
