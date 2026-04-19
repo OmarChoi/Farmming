@@ -3,7 +3,7 @@ using UnityEngine;
 public static class TutorialNpcSpawner
 {
     private const float SpawnRadius = 4.4f;
-    private const float FirstTutorialSpawnRadius = 28.2f;
+    private const float FirstTutorialSpawnRadius = 28.4f;
 
     private const int MaxSpawnTryCount = 6;
     private const float GroundCheckStartHeight = 20f;
@@ -41,7 +41,14 @@ public static class TutorialNpcSpawner
             }
         }
 
-        // 실패 시 플레이어 높이를 기준으로 fallback합니다.
+        // 모든 시도가 실패하면 플레이어 위치에서 수직으로 raycast하여 fallback합니다.
+        if (TryResolveGroundPosition(playerPosition, out Vector3 fallbackGroundedPosition))
+        {
+            return fallbackGroundedPosition;
+        }
+
+
+        // 그래도 실패 시 플레이어 높이를 기준으로 fallback합니다.
         return playerPosition;
     }
 
