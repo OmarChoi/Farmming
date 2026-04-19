@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class SowActionAbility : HelperAbility, IHelperAction
 {
+    private const string NoSeedItemMessage = "씨앗 아이템이 없습니다";
+
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _seedVfxPrefab;
     [SerializeField] private GameObject _cultivateGroundEffectPrefab;
@@ -58,7 +60,7 @@ public class SowActionAbility : HelperAbility, IHelperAction
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
-        return CanSow(cell) && HasAvailableSelectedSeed();
+        return CanSow(cell) && EnsureSeedReadyForInteraction(showNoSeedMessage: false);
     }
 
     public void InteractPrimary(TerrainCell cell)
@@ -763,6 +765,8 @@ public class SowActionAbility : HelperAbility, IHelperAction
             return;
         if (_owner.IsMine && !ConsumeSeed(seed))
             return;
+        if (_owner.IsMine)
+            _seedSelector?.TrySwitchNextSeed();
 
         farmTile.PlantSeed(seed);
         _anySeedPlanted = true;
@@ -826,6 +830,43 @@ public class SowActionAbility : HelperAbility, IHelperAction
     private bool HasAvailableSelectedSeed()
     {
         return _seedSelector != null && _seedSelector.HasSelectedSeedAvailable;
+    }
+
+    public void NotifySecondaryInteractBlocked(TerrainCell cell)
+    {
+        if (PhotonNetwork.IsConnected && !_owner.IsMine)
+            return;
+
+        cell = GetInteractableCell(cell);
+        if (cell == null || !CanSow(cell))
+            return;
+
+        EnsureSeedReadyForInteraction(showNoSeedMessage: true);
+    }
+
+    private bool EnsureSeedReadyForInteraction(bool showNoSeedMessage)
+    {
+        if (HasAvailableSelectedSeed())
+            return true;
+
+        if (PhotonNetwork.IsConnected && !_owner.IsMine)
+            return false;
+
+        bool selected = false;
+        if (_seedSelector != null)
+        {
+            selected = _seedSelector.SelectedSeed == null
+                ? _seedSelector.TryAutoSelectSeed()
+                : _seedSelector.TrySwitchNextSeed();
+        }
+
+        if (selected)
+            return true;
+
+        if (showNoSeedMessage)
+            ShowNoSeedItemMessage();
+
+        return false;
     }
 
     private bool ConsumeSeed(SeedItemDataSO seed)
@@ -920,5 +961,16 @@ public class SowActionAbility : HelperAbility, IHelperAction
     {
         if (farmTile == null) return;
         BroadcastTerrainCellStateFromMaster(farmTile.GetComponentInParent<TerrainCell>());
+    }
+
+    private static void ShowNoSeedItemMessage()
+    {
+        if (HarvestNotificationManager.Instance != null)
+        {
+            HarvestNotificationManager.Instance.ShowMessage(NoSeedItemMessage);
+            return;
+        }
+
+        Debug.Log(NoSeedItemMessage);
     }
 }
