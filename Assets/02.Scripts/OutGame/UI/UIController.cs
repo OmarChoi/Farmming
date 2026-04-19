@@ -32,7 +32,6 @@ public class UIController : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
 
         _canvases.Add(EUILayer.HUD, _hudCanvas);
         _canvases.Add(EUILayer.Popup, _popupCanvas);
@@ -40,7 +39,7 @@ public class UIController : MonoBehaviour
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
-
+    
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
