@@ -4,7 +4,7 @@ using Photon.Pun;
 using UnityEngine;
 using System;
 
-public class GroundActionAbility : HelperAbility, IHelperAction
+public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInteractBlockNotifier
 {
     private const string NoGroundItemMessage = "땅 아이템이 없습니다";
 

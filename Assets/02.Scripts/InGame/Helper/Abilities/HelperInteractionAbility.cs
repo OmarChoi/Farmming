@@ -43,10 +43,8 @@ public class HelperInteractionAbility : HelperAbility
         if (!CanInteract()) return false;
         if (!_action.CanInteractSecondary(cell))
         {
-            if (_action is GroundActionAbility groundAction)
-                groundAction.NotifySecondaryInteractBlocked(cell);
-            else if (_action is SowActionAbility sowAction)
-                sowAction.NotifySecondaryInteractBlocked(cell);
+            if (_action is ISecondaryInteractBlockNotifier notifier)
+                notifier.NotifySecondaryInteractBlocked(cell);
 
             return false;
         }

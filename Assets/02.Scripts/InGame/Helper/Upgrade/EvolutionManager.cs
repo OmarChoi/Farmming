@@ -914,10 +914,9 @@ public class EvolutionManager : MonoBehaviour
     {
         while (transform != null)
         {
-            string lowerName = transform.name.ToLowerInvariant();
             foreach (string token in CutsceneHiddenTransformNameTokens)
             {
-                if (lowerName.Contains(token))
+                if (transform.name.Contains(token, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
 
