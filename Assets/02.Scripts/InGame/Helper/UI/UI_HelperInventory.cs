@@ -113,12 +113,17 @@ public class UI_HelperInventory : MonoBehaviour
 
     private void Unbind()
     {
-        if (_ability == null) return;
+        if (_ability == null)
+        {
+            _slotDataByIcon.Clear();
+            return;
+        }
 
         _ability.OnSelectionChanged -= OnInput;
         _ability.OnSummonChanged -= OnSummonInput;
         _ability.OnHelperGradeChanged -= OnHelperGradeChanged;
         _ability = null;
+        _slotDataByIcon.Clear();
     }
 
     private void OnInput(int direction)
