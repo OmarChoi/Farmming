@@ -49,6 +49,14 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         OnQuestManagerReady?.Invoke();
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     private void OnEnable()
     {
         PlayerInventoryAbility.OnLocalPlayerReady += OnPlayerInventoryReady;

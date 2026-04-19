@@ -28,24 +28,7 @@ public class PlayerObjectInteractionAbility : PlayerAbility
 
     private void TryInteract()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, _radius, _interactionLayer);
-
-        IWorldInteractable closest = null;
-        float minDist = float.MaxValue;
-
-        foreach (var hit in hits)
-        {
-            var interactable = hit.GetComponentInParent<IWorldInteractable>();
-            if (interactable == null) continue;
-
-            float dist = Vector3.Distance(transform.position, hit.transform.position);
-            if (dist < minDist)
-            {
-                minDist = dist;
-                closest = interactable;
-            }
-        }
-
+        IWorldInteractable closest = GetClosestInteraction();
         if (closest == null) return;
 
         // E키 소비 — 같은 프레임에서 헬퍼 소환이 동시에 발동하지 않도록
@@ -56,5 +39,28 @@ public class PlayerObjectInteractionAbility : PlayerAbility
             _animation?.PlayTrigger(closest.AnimationTrigger);
 
         closest.Interact(_owner);
+    }
+
+    public IWorldInteractable GetClosestInteraction()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, _radius, _interactionLayer);
+
+        IWorldInteractable closest = null;
+        float minDist = float.MaxValue;
+
+        foreach (var hit in hits)
+        {
+            IWorldInteractable interactable = hit.GetComponentInParent<IWorldInteractable>();
+            if (interactable == null) continue;
+
+            float dist = Vector3.Distance(transform.position, hit.transform.position);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = interactable;
+            }
+        }
+
+        return closest;
     }
 }

@@ -27,7 +27,11 @@ MonoBehaviour:
   JumpHeight: 0
   GreetDialogues: []
   TalkDialogues: []
-  UseRandomTimeOffset: 1
+  CuringAskDialogue: {fileID: 0}
+  CuringAcceptDialogue: {fileID: 0}
+  CuringDeclineDialogue: {fileID: 0}
+  CuringAlreadyDoneDialogue: {fileID: 0}
+  UseRandomTimeOffset: 0
   MinTimeOffset: 0
   MaxTimeOffset: 10
   AutoStartQuestOnInteract: 1

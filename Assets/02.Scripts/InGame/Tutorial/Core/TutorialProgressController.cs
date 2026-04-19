@@ -167,6 +167,41 @@ public class TutorialProgressController : MonoBehaviour
         return false;
     }
 
+    // 현재 상호작용하는 NPC가 튜토리얼 NPC인지 확인하는 메서드입니다.
+    public bool IsTutorialNpc(NpcController npc)
+    {
+        if (npc == null) return false;
+
+        NpcQuest provider = npc.Quest;
+        if (provider == null || provider.Quests == null) return false;
+
+        foreach (QuestDataSO questData in provider.Quests)
+        {
+            if (questData == null) continue;
+            if (questData.IsTutorial) return true;
+        }
+
+        return false;
+    }
+
+    public void ResetRuntimeState()
+    {
+        _tutorialNpcController = null;
+        _player = null;
+        _pendingNextTutorialQuest = null;
+        _isWaitingForFinalTutorialComplete = false;
+    }
+
+    public bool IsFirstTutorialQuestCompleted()
+    {
+        if (_tutorialQuestSequence == null || _tutorialQuestSequence.Count == 0) return false;
+
+        QuestDataSO firstQuest = _tutorialQuestSequence[0];
+        if (firstQuest == null || string.IsNullOrEmpty(firstQuest.QuestId)) return false;
+
+        return QuestManager.Instance != null && QuestManager.Instance.IsQuestCompleted(firstQuest.QuestId);
+    }
+
     private async UniTaskVoid AcceptNextTutorialQuestDeferred(QuestDataSO questData)
     {
         await UniTask.Yield(this.GetCancellationTokenOnDestroy());
@@ -197,31 +232,6 @@ public class TutorialProgressController : MonoBehaviour
     private void CompleteTutorial()
     {
         TutorialManager.Instance?.CompleteTutorial();
-    }
-
-    // 현재 상호작용하는 NPC가 튜토리얼 NPC인지 확인하는 메서드입니다.
-    public bool IsTutorialNpc(NpcController npc)
-    {
-        if (npc == null) return false;
-
-        NpcQuest provider = npc.Quest;
-        if (provider == null || provider.Quests == null) return false;
-
-        foreach (QuestDataSO questData in provider.Quests)
-        {
-            if (questData == null) continue;
-            if (questData.IsTutorial) return true;
-        }
-
-        return false;
-    }
-
-    public void ResetRuntimeState()
-    {
-        _tutorialNpcController = null;
-        _player = null;
-        _pendingNextTutorialQuest = null;
-        _isWaitingForFinalTutorialComplete = false;
     }
 
     private void OnValidate()
