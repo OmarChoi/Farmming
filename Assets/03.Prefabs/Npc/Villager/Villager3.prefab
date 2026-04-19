@@ -742,7 +742,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5102955954846870827}
-  - component: {fileID: 3786116846682755088}
   m_Layer: 0
   m_Name: Npc_E2
   m_TagString: Untagged
@@ -768,36 +767,6 @@ Transform:
   - {fileID: 1408504869574084378}
   m_Father: {fileID: 2523895088908993143}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &3786116846682755088
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5591931193746323345}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 3eecabbe01143694b8602161a902615f, type: 3}
-  m_Controller: {fileID: 9100000, guid: 95f8b242afce969478656bada853f81f, type: 2}
-  m_CullingMode: 1
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
-    are already bound by a Humanoid avatar. These transforms can only be changed
-    by Humanoid clips.\n\tTransform 'Bip001 R Clavicle'\n\tTransform 'Bip001 R UpperArm'\n\tTransform
-    'Bip001 Head'\n\tTransform 'Bip001 Spine1'\n\tTransform 'Bip001 R Finger11'\n\tTransform
-    'Bip001 L UpperArm'\n\tTransform 'Bip001 R Foot'\n\tTransform 'Bip001 L Clavicle'\n\tTransform
-    'Bip001 L Finger11'\n\tTransform 'Bip001 R Calf'\n\tand more ...\n\tFrom animation
-    clip 'npc_idle_ani'\n\tFrom animation clip 'Bore_ani'\n\tFrom animation clip
-    'Run_ani'\n\tFrom animation clip 'npc_talk_ani'\n\tFrom animation clip 'npc_Hi'\n\tFrom
-    animation clip 'Walk_ani'"
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6294740445541308557
 GameObject:
   m_ObjectHideFlags: 0
@@ -984,7 +953,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: fedcb014a13315b40ab6522acbde57cb, type: 2}
+  - {fileID: 2100000, guid: 3a4ff17670e12734893827f274bc1ef7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

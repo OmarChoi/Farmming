@@ -194,7 +194,6 @@ GameObject:
   - component: {fileID: 7008372838564728277}
   - component: {fileID: 7550010576521248487}
   - component: {fileID: 4788035854923925565}
-  - component: {fileID: 5548312435584436320}
   - component: {fileID: 2378203626541505628}
   m_Layer: 0
   m_Name: House2
@@ -233,7 +232,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 530284dfabd27dd4c8b14b6ce673fe19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingNpcSpawner
-  _npcData: {fileID: 11400000, guid: 112ac7f64d1e260439a2b3bea488e512, type: 2}
+  _npcData: {fileID: 11400000, guid: 69efa6db033801a459bca47fd1e50efb, type: 2}
   _spawnPoint: {fileID: 8515872263752538951}
 --- !u!114 &7550010576521248487
 MonoBehaviour:
@@ -269,18 +268,6 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &5548312435584436320
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5125974786377812681}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b32e306db9a4d7d41b9fa436c74a8532, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuildingGhostMarker
 --- !u!65 &2378203626541505628
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -346,12 +333,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
-  _npcData: {fileID: 11400000, guid: b686a55189e8f10409eaa1c17c31e916, type: 2}
+  _npcData: {fileID: 11400000, guid: 69efa6db033801a459bca47fd1e50efb, type: 2}
   _runtimeNpcKey: 
   _locationType: 0
   _locationKey: Inside
   _point: {fileID: 8515872263752538951}
   _stylingHideRoot: {fileID: 5125974786377812681}
+  _registerOnEnable: 0
 --- !u!1 &8496019711803014684
 GameObject:
   m_ObjectHideFlags: 0
@@ -486,9 +474,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22cbfecc9cf1d2844b0b731ebc147ef1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationAnchor
-  _npcData: {fileID: 11400000, guid: b686a55189e8f10409eaa1c17c31e916, type: 2}
+  _npcData: {fileID: 11400000, guid: 69efa6db033801a459bca47fd1e50efb, type: 2}
   _runtimeNpcKey: 
   _locationType: 0
   _locationKey: Outside
   _point: {fileID: 1779735022244748283}
   _stylingHideRoot: {fileID: 5125974786377812681}
+  _registerOnEnable: 0
