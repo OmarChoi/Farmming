@@ -19,6 +19,7 @@ public class GroundSelectAbility : HelperAbility
     private readonly List<ItemDataSO> _availableGrounds = new();
     private ItemDataSO _selectedGround;
     private PlayerInventoryAbility _inventory;
+    private PlayerController _boundPlayerOwner;
     private GroundActionAbility _groundActionAbility;
     private HelperController _helperController;
     private Camera _mainCamera;
@@ -190,13 +191,21 @@ public class GroundSelectAbility : HelperAbility
 
     private void EnsureInventoryBinding()
     {
-        PlayerInventoryAbility currentInventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
-        if (currentInventory == _inventory)
+        PlayerController playerOwner = _owner.PlayerOwner;
+        if (_boundPlayerOwner == playerOwner && (_inventory != null || playerOwner == null))
             return;
+
+        PlayerInventoryAbility currentInventory = playerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (currentInventory == _inventory)
+        {
+            _boundPlayerOwner = playerOwner;
+            return;
+        }
 
         if (_inventory != null)
             _inventory.OnSlotChanged -= OnInventoryChanged;
 
+        _boundPlayerOwner = playerOwner;
         _inventory = currentInventory;
 
         if (_inventory != null)

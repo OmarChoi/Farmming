@@ -1,10 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using Photon.Pun;
 using UnityEngine;
 
-public class SowActionAbility : HelperAbility, IHelperAction
+public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteractBlockNotifier
 {
     private const string NoSeedItemMessage = "씨앗 아이템이 없습니다";
 

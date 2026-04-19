@@ -9,6 +9,7 @@ public class SeedSelectAbility : HelperAbility
     private readonly HashSet<SeedItemDataSO> _availableSeeds = new();
     private SeedItemDataSO _selectedSeed;
     private PlayerInventoryAbility _inventory;
+    private PlayerController _boundPlayerOwner;
 
     public SeedItemDataSO SelectedSeed => _selectedSeed;
     public int SelectedSeedCount
@@ -200,13 +201,21 @@ public class SeedSelectAbility : HelperAbility
 
     private void EnsureInventoryBinding()
     {
-        PlayerInventoryAbility inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
-        if (_inventory == inventory)
+        PlayerController playerOwner = _owner.PlayerOwner;
+        if (_boundPlayerOwner == playerOwner && (_inventory != null || playerOwner == null))
             return;
+
+        PlayerInventoryAbility inventory = playerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (_inventory == inventory)
+        {
+            _boundPlayerOwner = playerOwner;
+            return;
+        }
 
         if (_inventory != null)
             _inventory.OnSlotChanged -= OnInventoryChanged;
 
+        _boundPlayerOwner = playerOwner;
         _inventory = inventory;
 
         if (_inventory != null)
