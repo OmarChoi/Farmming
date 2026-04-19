@@ -67,6 +67,9 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
     private readonly OverlayState _afterOverlay = new();
     private HelperEvolutionProfileSO _profile;
     private bool _isPlaying;
+    private float _afterOverlayVisibleStart;
+    private float _afterOverlayClearStart;
+    private float _afterOverlayClearEnd;
 
     private sealed class OverlayState
     {
@@ -96,6 +99,7 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
         EnsureMaterial();
         RebuildOverlay(_beforeOverlay, _beforeModelRoot, GetBeforeSourceMaterial(), _profile.BeforeEnergyRiseVerticalPadding);
         RebuildOverlay(_afterOverlay, _afterModelRoot, GetAfterSourceMaterial(), _profile.AfterEnergyClearVerticalPadding);
+        CacheAfterOverlayTimes();
         ApplyAtTime(0f);
     }
 
@@ -156,15 +160,13 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
         if (_afterOverlay.Renderers.Count == 0)
             return;
 
-        GetAfterClearTimes(out float clearStart, out float clearEnd);
-        float visibleStart = Mathf.Max(0f, _profile.ModelSwapTime);
-        bool visible = time >= visibleStart && time <= clearEnd;
+        bool visible = time >= _afterOverlayVisibleStart && time <= _afterOverlayClearEnd;
         SetOverlayVisible(_afterOverlay, visible);
         if (!visible) return;
 
-        float progress = time < clearStart
+        float progress = time < _afterOverlayClearStart
             ? 0f
-            : Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(clearStart, clearEnd, time));
+            : Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(_afterOverlayClearStart, _afterOverlayClearEnd, time));
 
         ApplyOverlayMaterials(
             _afterOverlay,
@@ -209,6 +211,12 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
             material.SetFloat(SurfaceOffsetId, Mathf.Max(0f, surfaceOffset));
             material.SetFloat(EffectStrengthId, Mathf.Max(0f, effectStrength));
         }
+    }
+
+    private void CacheAfterOverlayTimes()
+    {
+        _afterOverlayVisibleStart = Mathf.Max(0f, _profile.ModelSwapTime);
+        GetAfterClearTimes(out _afterOverlayClearStart, out _afterOverlayClearEnd);
     }
 
     private void GetAfterClearTimes(out float clearStart, out float clearEnd)
