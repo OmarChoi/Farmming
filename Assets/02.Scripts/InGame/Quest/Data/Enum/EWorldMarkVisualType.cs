@@ -5,5 +5,5 @@ public enum EWorldMarkVisualType
     Available,
     InProgress,
     Complete,
-    Refresh
+    Updated
 }

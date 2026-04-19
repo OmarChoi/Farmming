@@ -6,8 +6,8 @@ public class WorldMarkView : MonoBehaviour
     [Header("마크 오브젝트")]
     [SerializeField] private GameObject _availableMarkObject;
     [SerializeField] private GameObject _inProgressMarkObject;
-    [SerializeField] private GameObject _completeMarkObject;
-    [SerializeField] private GameObject _refreshMarkObject;
+    [SerializeField] private GameObject _canCompleteMarkObject;
+    [SerializeField] private GameObject _updatedMarkObject;
 
     [Header("펄스 대상")]
     [SerializeField] private Transform _pulseTarget;
@@ -35,16 +35,16 @@ public class WorldMarkView : MonoBehaviour
         PlayPulse(_inProgressMarkObject);
     }
 
-    public void ShowComplete()
+    public void ShowCanComplete()
     {
         SetActiveMarks(false, false, true, false);
-        PlayPulse(_completeMarkObject);
+        PlayPulse(_canCompleteMarkObject);
     }
 
-    public void ShowRefresh()
+    public void ShowUpdated()
     {
         SetActiveMarks(false, false, false, true);
-        PlayPulse(_refreshMarkObject);
+        PlayPulse(_updatedMarkObject);
     }
 
     public void HideAll()
@@ -65,14 +65,14 @@ public class WorldMarkView : MonoBehaviour
             _inProgressMarkObject.SetActive(showInProgress);
         }
 
-        if (_completeMarkObject != null)
+        if (_canCompleteMarkObject != null)
         {
-            _completeMarkObject.SetActive(showComplete);
+            _canCompleteMarkObject.SetActive(showComplete);
         }
 
-        if (_refreshMarkObject != null)
+        if (_updatedMarkObject != null)
         {
-            _refreshMarkObject.SetActive(showRefresh);
+            _updatedMarkObject.SetActive(showRefresh);
         }
     }
 
@@ -100,8 +100,8 @@ public class WorldMarkView : MonoBehaviour
 
         ResetScale(_availableMarkObject);
         ResetScale(_inProgressMarkObject);
-        ResetScale(_completeMarkObject);
-        ResetScale(_refreshMarkObject);
+        ResetScale(_canCompleteMarkObject);
+        ResetScale(_updatedMarkObject);
     }
 
     private void ResetScale(GameObject targetObject)
