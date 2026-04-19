@@ -9,6 +9,12 @@ public class HelperDataSO : ScriptableObject
     public string HelperName;
     public EHelperType HelperType = EHelperType.Unknown;
     public Sprite HelperIcon;
+
+    [Header("Helper Grade Icons")]
+    [SerializeField] private Sprite _normalIcon;
+    [SerializeField] private Sprite _epicIcon;
+    [SerializeField] private Sprite _legendaryIcon;
+
     public HelperController Prefab;         
     public HelperController EpicPrefab;     
     public HelperController LegendaryPrefab;
@@ -28,6 +34,26 @@ public class HelperDataSO : ScriptableObject
             EHelperGrade.Legendary => LegendaryPrefab != null ? LegendaryPrefab : Prefab,
             _                      => Prefab
         };
+    }
+
+    public Sprite GetIconForGrade(EHelperGrade grade)
+    {
+        return grade switch
+        {
+            EHelperGrade.Legendary => _legendaryIcon != null ? _legendaryIcon : GetEpicIcon(),
+            EHelperGrade.Epic => GetEpicIcon(),
+            _ => GetNormalIcon()
+        };
+    }
+
+    private Sprite GetNormalIcon()
+    {
+        return _normalIcon != null ? _normalIcon : HelperIcon;
+    }
+
+    private Sprite GetEpicIcon()
+    {
+        return _epicIcon != null ? _epicIcon : GetNormalIcon();
     }
 
     public GameObject GetEvolutionPreviewPrefab(EHelperGrade grade)
