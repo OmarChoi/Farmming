@@ -129,9 +129,10 @@ public static class AssetKey
 
     public static class BGM
     {
-        public const string StartScene = "SFXstartscenebgm";
-        public const string Village = "SFXvillagebgm";
-        public const string Dungeon2 = "SFXdungeon2bgm";
+        public const string StartScene = "BGMStartScene";
+        public const string Village = "BGMVillage";
+        public const string Dungeon1 = "Dungeon1Bgm";
+        public const string HelperEvolution = "HelperEvolutionBGM";
     }
 
     public static class UI
@@ -185,6 +186,11 @@ public static class AssetKey
         public const string WaterEpicSplash = "SFXwaterepic";
         public const string WaterLegendarySplash = "SFXwaterlegendary";
         public const string WoodLeaf = "SFXwoodleaf";
+        public const string HelperSummon = "SFXhelpersummon";
+        public const string HelperEquip = "SFXhelperequip";
+        public const string HelperUnequip = "SFXhelperunequip";
+        public const string HelperFollow = "SFXhelperfollow";
+        public const string HelperEvolution = "HelperEvolution";
 
         #endregion
     }

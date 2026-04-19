@@ -41,7 +41,13 @@ public class HelperInteractionAbility : HelperAbility
     public bool InteractSecondary(TerrainCell cell)
     {
         if (!CanInteract()) return false;
-        if (!_action.CanInteractSecondary(cell)) return false;
+        if (!_action.CanInteractSecondary(cell))
+        {
+            if (_action is ISecondaryInteractBlockNotifier notifier)
+                notifier.NotifySecondaryInteractBlocked(cell);
+
+            return false;
+        }
 
         float secondaryCost = _action.GetSecondaryCost();
         if (secondaryCost >= 0)

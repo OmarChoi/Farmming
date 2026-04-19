@@ -109,8 +109,8 @@ public class MapManager : MonoBehaviour
             case EMapType.Village:
                 SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Village);
                 break;
-            case EMapType.Dungeon2:
-                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Dungeon2);
+            case EMapType.Dungeon1:
+                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Dungeon1);
                 break;
         }
     }

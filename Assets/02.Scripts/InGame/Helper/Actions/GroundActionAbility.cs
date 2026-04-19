@@ -4,8 +4,10 @@ using Photon.Pun;
 using UnityEngine;
 using System;
 
-public class GroundActionAbility : HelperAbility, IHelperAction
+public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInteractBlockNotifier
 {
+    private const string NoGroundItemMessage = "땅 아이템이 없습니다";
+
     [Serializable]
     private struct GroundItemMapping
     {
@@ -64,6 +66,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (item == null || _groundItemMappings == null)
             return false;
 
+        // Ground items are the inventory items explicitly mapped to a placeable tile type.
         foreach (GroundItemMapping mapping in _groundItemMappings)
         {
             if (mapping.Item == item)
@@ -119,8 +122,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return;
 
-        ItemDataSO selectedGround = _groundSelector?.SelectedGround;
-        int groundSlotIndex = _groundSelector?.SelectedGroundSlotIndex ?? -1;
+        if (!TryResolveGroundSelection(inventory, showNoGroundMessage: true, out ItemDataSO selectedGround, out int groundSlotIndex))
+            return;
 
         if (selectedGround == null || groundSlotIndex < 0)
         {
@@ -246,7 +249,28 @@ public class GroundActionAbility : HelperAbility, IHelperAction
 
         ItemDataSO selectedGround = _groundSelector?.SelectedGround;
         int groundSlotIndex = _groundSelector?.SelectedGroundSlotIndex ?? -1;
-        return HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount);
+        return HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount)
+               || HasAnyGroundAmount(inventory, _generateDirtAmount);
+    }
+
+    public void NotifySecondaryInteractBlocked(TerrainCell cell)
+    {
+        cell = GetInteractableCell(cell);
+        if (cell == null) return;
+        if (!CanPlaceGroundOnCell(cell)) return;
+
+        PlayerInventoryAbility inventory = GetInventory();
+        if (inventory == null) return;
+
+        ItemDataSO selectedGround = _groundSelector?.SelectedGround;
+        int groundSlotIndex = _groundSelector?.SelectedGroundSlotIndex ?? -1;
+        if (HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount))
+            return;
+
+        if (HasAnyGroundAmount(inventory, _generateDirtAmount))
+            return;
+
+        ShowNoGroundItemMessage();
     }
 
     private bool CanPlaceGroundOnCell(TerrainCell cell)
@@ -276,7 +300,66 @@ public class GroundActionAbility : HelperAbility, IHelperAction
         if (slot.Item != selectedGround)
             return false;
 
-        return slot.Count >= requiredAmount;
+        return inventory.GetItemCount(selectedGround) >= requiredAmount;
+    }
+
+    private bool TryResolveGroundSelection(
+        PlayerInventoryAbility inventory,
+        bool showNoGroundMessage,
+        out ItemDataSO selectedGround,
+        out int groundSlotIndex
+    )
+    {
+        selectedGround = _groundSelector?.SelectedGround;
+        groundSlotIndex = _groundSelector?.SelectedGroundSlotIndex ?? -1;
+
+        if (HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount))
+            return true;
+
+        if (_groundSelector != null && _groundSelector.TrySelectFirstAvailableGround(_generateDirtAmount))
+        {
+            selectedGround = _groundSelector.SelectedGround;
+            groundSlotIndex = _groundSelector.SelectedGroundSlotIndex;
+            if (HasSelectedGroundAmount(inventory, selectedGround, groundSlotIndex, _generateDirtAmount))
+                return true;
+        }
+
+        selectedGround = null;
+        groundSlotIndex = -1;
+
+        if (showNoGroundMessage)
+            ShowNoGroundItemMessage();
+
+        return false;
+    }
+
+    private bool HasAnyGroundAmount(PlayerInventoryAbility inventory, int requiredAmount)
+    {
+        if (inventory == null)
+            return false;
+
+        for (int i = 0; i < inventory.SlotCount; i++)
+        {
+            InventorySlot slot = inventory.GetSlot(i);
+            if (slot == null || slot.IsEmpty)
+                continue;
+
+            if (CanUseGroundItem(slot.Item) && inventory.GetItemCount(slot.Item) >= requiredAmount)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static void ShowNoGroundItemMessage()
+    {
+        if (HarvestNotificationManager.Instance != null)
+        {
+            HarvestNotificationManager.Instance.ShowMessage(NoGroundItemMessage);
+            return;
+        }
+
+        Debug.Log(NoGroundItemMessage);
     }
 
     private bool ShouldDestroyPlacedGroundImmediately(ETileType placedTileType, Vector3Int targetGridPos)
