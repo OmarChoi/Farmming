@@ -97,7 +97,8 @@ public class UI_Pause : UIBase
 
     private void Setting()
     {
-        // todo. 설정 UI 열기
+        // UI_Setting은 Popup Layer이므로 UIController가 스택 최상단에 쌓아 ESC로 단독 닫기가 가능하다.
+        UIController.Instance.OpenAsync<UI_Setting>().Forget();
     }
 
     private void ChangeSceneToLobby()
