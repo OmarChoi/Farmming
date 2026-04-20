@@ -10,7 +10,7 @@ public class UIController : MonoBehaviour
 
     
     [SerializeField] private KeyCode _escapeKey = KeyCode.Escape;
-    
+
     [Header("Canvas 참조")]
     [SerializeField] private Transform _hudCanvas;
     [SerializeField] private Transform _popupCanvas;
@@ -32,7 +32,6 @@ public class UIController : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
 
         _canvases.Add(EUILayer.HUD, _hudCanvas);
         _canvases.Add(EUILayer.Popup, _popupCanvas);
@@ -40,7 +39,7 @@ public class UIController : MonoBehaviour
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
-
+    
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -115,7 +114,7 @@ public class UIController : MonoBehaviour
     {
         if (_activeInstance.Count == 0)
         {
-            // todo: 일시정지 UI Popup 표시
+            OpenPauseAsync().Forget();
             return;
         }
         for (int i = _activeInstance.Count - 1; i >= 0; i--)
@@ -128,6 +127,19 @@ public class UIController : MonoBehaviour
             _activeInstance.RemoveAt(i);
             return;
         }
+    }
+
+    private UniTask<UI_Pause> OpenPauseAsync()
+    {
+        PlayerController localPlayer = PlayerController.Local;
+
+        return OpenAsync<UI_Pause>
+        (
+            new UILifecycleActions<UI_Pause>
+            {
+                OnOpen = ui => ui.SetOwnerPlayer(localPlayer)
+            }
+        );
     }
 
     private void PushToStack(UIBase ui)

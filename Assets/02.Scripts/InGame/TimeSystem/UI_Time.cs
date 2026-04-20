@@ -3,13 +3,13 @@ using UnityEngine.UI;
 
 public class UI_Time : MonoBehaviour
 {
-    // 08:00을 0도 기준으로 삼음 (한 시간 = 15도)
     private const int AngleOriginMinutes = 8 * GameTime.MinutesPerHour;
-    
-    [SerializeField] private Image _backgroundImage;
-    [SerializeField] private RectTransform _timeImage;
-    [SerializeField] private Sprite _nightBackground;
-    [SerializeField] private Sprite _dayBackground;
+
+    private const int MaxDegree = 85;
+    [SerializeField] private Image _arrowImage;
+    [SerializeField] private Image _iconImage;
+    [SerializeField] private Sprite[] _arrowSprites;
+    [SerializeField] private Sprite[] _iconSprites;
 
     private void OnEnable()
     {
@@ -25,19 +25,29 @@ public class UI_Time : MonoBehaviour
         TimeEvents.OnNetSunSet -= SetNightImage;
     }
 
+    private void Start()
+    {
+        UpdateTime(TimeEvents.CurrentTime);
+        if (TimeEvents.IsDayTime) SetMorningImage();
+        else SetNightImage();
+    }
+    
     private void SetMorningImage()
     {
-        _backgroundImage.sprite = _dayBackground;
+        _arrowImage.sprite = _arrowSprites[0];
+        _iconImage.sprite = _iconSprites[0];
     }
 
     private void SetNightImage()
     {
-        _backgroundImage.sprite = _nightBackground;
+        _arrowImage.sprite = _arrowSprites[1];
+        _iconImage.sprite = _iconSprites[1];
     }
     
     private void UpdateTime(GameTime time)
     {
-        float angle = ((time.TotalMinutes - AngleOriginMinutes) / (float)GameTime.MinutesPerDay) * 360f;
-        _timeImage.localRotation = Quaternion.Euler(0f, 0f, -angle);
+        float progress = (time.TotalMinutes - AngleOriginMinutes) / (float)GameTime.MinutesPerDay;
+        float angle = Mathf.Repeat(progress * MaxDegree * 2, MaxDegree * 2) - MaxDegree;
+        _arrowImage.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -angle);
     }
 }
