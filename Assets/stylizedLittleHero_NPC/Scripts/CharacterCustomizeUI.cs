@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using TMPro;
 
 /// <summary>
 /// Character Customization UI Manager
@@ -17,37 +18,37 @@ public class CharacterCustomizeUI : MonoBehaviour
     [Header("Body Buttons")]
     public Button bodyPrevButton;
     public Button bodyNextButton;
-    public Text bodyIndexText;  // Optional: display current index
+    public TextMeshProUGUI bodyIndexText;  // Optional: display current index
 
     [Header("Hair Buttons")]
     public Button hairPrevButton;
     public Button hairNextButton;
-    public Text hairIndexText;
+    public TextMeshProUGUI hairIndexText;
 
     [Header("Hat Buttons")]
     public Button hatPrevButton;
     public Button hatNextButton;
-    public Text hatIndexText;
+    public TextMeshProUGUI hatIndexText;
 
     [Header("Eye Buttons")]
     public Button eyePrevButton;
     public Button eyeNextButton;
-    public Text eyeIndexText;
+    public TextMeshProUGUI eyeIndexText;
 
     [Header("Mouth Buttons")]
     public Button mouthPrevButton;
     public Button mouthNextButton;
-    public Text mouthIndexText;
+    public TextMeshProUGUI mouthIndexText;
 
     [Header("Eyebrow Buttons")]
     public Button eyebrowPrevButton;
     public Button eyebrowNextButton;
-    public Text eyebrowIndexText;
+    public TextMeshProUGUI eyebrowIndexText;
 
     [Header("Cheek Buttons")]
     public Button cheekPrevButton;
     public Button cheekNextButton;
-    public Text cheekIndexText;
+    public TextMeshProUGUI cheekIndexText;
 
     [Header("Other Buttons")]
     public Button randomizeButton;
@@ -131,7 +132,7 @@ public class CharacterCustomizeUI : MonoBehaviour
             });
     }
 
-    private void UpdateIndexText(Text textComponent, int index)
+    private void UpdateIndexText(TextMeshProUGUI textComponent, int index)
     {
         if (textComponent != null)
         {

@@ -20,8 +20,8 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
     private int _summonedMainIndex = -1;
     private int _summonedLightIndex = -1;
 
-    private void OnMainHelperGradeChanged() => OnSummonChanged?.Invoke(SummonedIndex);
-    private void OnLightHelperGradeChanged() => OnSummonChanged?.Invoke(SummonedIndex);
+    private void OnMainHelperGradeChanged() => NotifyHelperGradeChanged(_activeMainHelper);
+    private void OnLightHelperGradeChanged() => NotifyHelperGradeChanged(_activeLightHelper);
 
     public int CurrentIndex => _currentIndex;
     public int Count => _helperDataList.Count;
@@ -54,6 +54,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
 
     public event Action<int> OnSelectionChanged;
     public event Action<int> OnSummonChanged;
+    public event Action<string, EHelperGrade> OnHelperGradeChanged;
 
     public int GetHelperExperience(HelperDataSO data)
     {
@@ -467,6 +468,7 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
         state.Energy = data.MaxEnergy;
 
         _savedStates[data.HelperId] = state;
+        NotifyHelperGradeChanged(data.HelperId, (EHelperGrade)state.Grade);
         return true;
     }
 
@@ -535,6 +537,22 @@ public class PlayerHelperInventoryAbility : PlayerAbility, ISaveableAbility
             return _activeLightHelper;
 
         return null;
+    }
+
+    private void NotifyHelperGradeChanged(HelperController helper)
+    {
+        if (helper == null)
+            return;
+
+        NotifyHelperGradeChanged(helper.HelperId, helper.Grade.CurrentGrade);
+    }
+
+    private void NotifyHelperGradeChanged(string helperId, EHelperGrade grade)
+    {
+        if (string.IsNullOrEmpty(helperId))
+            return;
+
+        OnHelperGradeChanged?.Invoke(helperId, grade);
     }
 
     private bool HasBlockingMainHelperAction()

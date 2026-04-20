@@ -60,7 +60,7 @@ public class UI_HelperUpgradeSlot : MonoBehaviour
 
         bool canUpgrade = _uiHelperUpgrade != null && _uiHelperUpgrade.CanUpgrade(helper);
         
-        _helperIcon.sprite = HelperUpgradeTextFormatter.GetHelperIcon(helper);
+        _helperIcon.sprite = HelperUpgradeTextFormatter.GetHelperIcon(helper, grade);
         _helperNameText.text = HelperUpgradeTextFormatter.GetHelperName(helper);
         _helperGradeText.text = HelperUpgradeTextFormatter.GetGradeText(grade);
         _upgradeReadyText.text = canUpgrade ? "업그레이드 가능!" : "업그레이드 불가능";
