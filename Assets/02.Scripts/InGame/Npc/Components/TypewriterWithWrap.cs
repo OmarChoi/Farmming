@@ -15,6 +15,8 @@ public class TypewriterWithWrap : MonoBehaviour
 
     private Coroutine _typingCoroutine;
     private Action<char> _onChar;
+    private WaitForSeconds _typingWait;
+    private float _cachedTypingSpeed = -1f;
 
     void Awake()
     {
@@ -31,6 +33,14 @@ public class TypewriterWithWrap : MonoBehaviour
         string wrapped = WrapText(input);
         _fullText = wrapped;
         _onChar = onChar;
+
+        // _typingSpeed가 런타임에 바뀔 수 있으므로 값이 달라질 때만 WaitForSeconds를 재생성한다.
+        if (_typingWait == null || !Mathf.Approximately(_cachedTypingSpeed, _typingSpeed))
+        {
+            _typingWait = new WaitForSeconds(_typingSpeed);
+            _cachedTypingSpeed = _typingSpeed;
+        }
+
         _typingCoroutine = StartCoroutine(TypingTextCoroutine(wrapped));
     }
 
@@ -57,7 +67,7 @@ public class TypewriterWithWrap : MonoBehaviour
             char ch = text[i];
             _tmp.text += ch;
             _onChar?.Invoke(ch);
-            yield return new WaitForSeconds(_typingSpeed);
+            yield return _typingWait;
         }
 
         _isTyping = false;
