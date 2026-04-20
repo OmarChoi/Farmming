@@ -557,6 +557,7 @@ GameObject:
   - component: {fileID: -8594337761533760552}
   - component: {fileID: 4912140031319917065}
   - component: {fileID: 6957052209044821639}
+  - component: {fileID: -6676057726436854057}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -742,6 +743,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f984e833ade0c489537c9f8c67e721, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVFXEventRelay
+--- !u!114 &-6676057726436854057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9063863777396371556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4602b4e8bd4e01e4fb9d8111135f31da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInfoPanelAbility
+  _toggleKey: 9
 --- !u!1001 &5139120670093869900
 PrefabInstance:
   m_ObjectHideFlags: 0
