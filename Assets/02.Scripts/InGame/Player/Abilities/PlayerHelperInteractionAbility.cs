@@ -124,12 +124,10 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (_currentHelper.State == EHelperState.Equipped)
             _currentHelper.Unequip();
 
-        if (PhotonNetwork.IsConnected)
-            PhotonNetwork.Destroy(_currentHelper.gameObject);
-        else
-            Destroy(_currentHelper.gameObject);
-
+        HelperController helperToDestroy = _currentHelper;
         _currentHelper = null;
+
+        PlayDespawnAndDestroy(helperToDestroy);
     }
 
     public void UnsummonBack()
@@ -139,12 +137,38 @@ public class PlayerHelperInteractionAbility : PlayerAbility
         if (_backHelper.State == EHelperState.Equipped)
             _backHelper.Unequip();
 
-        if (PhotonNetwork.IsConnected)
-            PhotonNetwork.Destroy(_backHelper.gameObject);
-        else
-            Destroy(_backHelper.gameObject);
-
+        HelperController helperToDestroy = _backHelper;
         _backHelper = null;
+
+        PlayDespawnAndDestroy(helperToDestroy);
+    }
+
+    private void PlayDespawnAndDestroy(HelperController helper)
+    {
+        if (helper == null) return;
+
+        helper.PhotonView.RpcSafe(
+            nameof(HelperController.RPC_PlayDespawnShrink),
+            RpcTarget.Others);
+
+        HelperSummonVfxAbility vfx = helper.GetAbility<HelperSummonVfxAbility>();
+        if (vfx == null)
+        {
+            DestroyHelper(helper);
+            return;
+        }
+
+        vfx.PlayOnDespawn(() => DestroyHelper(helper));
+    }
+
+    private void DestroyHelper(HelperController helper)
+    {
+        if (helper == null) return;
+
+        if (PhotonNetwork.IsConnected)
+            PhotonNetwork.Destroy(helper.gameObject);
+        else
+            Destroy(helper.gameObject);
     }
 
     private void OnHelperActionStarted()

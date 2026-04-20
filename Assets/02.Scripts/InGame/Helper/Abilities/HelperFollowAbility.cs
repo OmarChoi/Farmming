@@ -11,8 +11,8 @@ public class HelperFollowAbility : HelperAbility
     [SerializeField] private float _smoothTime = 0.2f;
     [SerializeField] private float _teleportDelay = 1f;
     [SerializeField] private float _runSpeedThreshold = 0.5f;
-    [SerializeField] private float _unequipJumpForce = 5f;
-    [SerializeField] private float _unequipBackForce = 3f;
+    [SerializeField] private float _unequipJumpForce = 6f;
+    [SerializeField] private float _unequipBackForce = 4f;
     [SerializeField] private float _launchRotationSpeed = 10f;
     [SerializeField] private float _autoJumpForce = 8f;
     [SerializeField] private float _autoJumpCheckDist = 2f;
