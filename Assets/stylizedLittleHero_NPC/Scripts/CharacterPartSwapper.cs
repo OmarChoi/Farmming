@@ -70,6 +70,26 @@ public class CharacterPartSwapper : MonoBehaviour
                 Debug.LogWarning("Could not find head_dummy!");
             }
         }
+ 
+        ApplyAllParts();
+    }
+
+    public void ApplyAllParts()
+    {
+        if (bodyPrefabs != null && bodyPrefabs.Length > 0)
+            SetBody(currentBodyIndex);
+        if (hairPrefabs != null && hairPrefabs.Length > 0)
+            SetHair(currentHairIndex);
+        if (hatPrefabs != null && hatPrefabs.Length > 0)
+            SetHat(currentHatIndex);
+        if (eyePrefabs != null && eyePrefabs.Length > 0)
+            SetEye(currentEyeIndex);
+        if (mouthPrefabs != null && mouthPrefabs.Length > 0)
+            SetMouth(currentMouthIndex);
+        if (eyebrowPrefabs != null && eyebrowPrefabs.Length > 0)
+            SetEyebrow(currentEyebrowIndex);
+        if (cheekPrefabs != null && cheekPrefabs.Length > 0)
+            SetCheek(currentCheekIndex);
     }
 
     // ==================== Body Part Swapping ====================

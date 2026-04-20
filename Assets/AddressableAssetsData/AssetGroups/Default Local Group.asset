@@ -54,6 +54,34 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - CommonSound
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26609f7040e02184486b5f969db180f0
+    m_Address: UI_Setting
+  - m_GUID: 0142ca2184b166d4e88f03cb46c6657d
+    m_Address: SFXhelperequip
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 002da25d76d5e3a4a9d16c745a0250a7
+    m_Address: SFXhelperunequip
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60e3487e6ef02574790ea20bc99f8af7
+    m_Address: SFXhelperfollow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6ba1481c20cbf842b92dc12d87fc385
+    m_Address: HelperEvolution
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a25295cd1fea3b149a967d7f586a5584
+    m_Address: HelperEvolutionBGM
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2beab69326107ad48aa064e00293e0aa
     m_Address: UI_QuestBoard
@@ -63,8 +91,7 @@ MonoBehaviour:
   - m_GUID: 30ec1520558c9a045a7c274ce80f5be4
     m_Address: GamblingBuilding
     m_ReadOnly: 0
-    m_SerializedLabels:
-    - NetworkPrefab
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 33f7b241af573944ab6a83a9395957e6
     m_Address: BGMVillage
@@ -89,6 +116,14 @@ MonoBehaviour:
     m_SerializedLabels:
     - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30ec1520558c9a045a7c274ce80f5be4
+    m_Address: GamblingBuilding
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3f18f96d1035ee548be0a0aa9ae3c637
+    m_Address: SFXstartscenebgm
   - m_GUID: 46f5e5cfad5f9954eb152d6ac8db3438
     m_Address: BGMStartScene
     m_ReadOnly: 0
@@ -116,6 +151,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5685c2ce5f13e424f8a8699b9fb0ae6f
+    m_Address: UI_Pause
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5dc103abe652e2b4b98c42bb9f1beaaf
     m_Address: UI_BuildingList
@@ -202,6 +242,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bddcd437c49071c4493bcd7650e3a69d
+    m_Address: UI_VillageInfoPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bfe67b56fd9887140bce54e08522fb4b
     m_Address: SFXwoodleaf
