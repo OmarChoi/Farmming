@@ -114,7 +114,7 @@ public class UIController : MonoBehaviour
     {
         if (_activeInstance.Count == 0)
         {
-            OpenAsync<UI_Pause>().Forget();
+            OpenPauseAsync().Forget();
             return;
         }
         for (int i = _activeInstance.Count - 1; i >= 0; i--)
@@ -127,6 +127,19 @@ public class UIController : MonoBehaviour
             _activeInstance.RemoveAt(i);
             return;
         }
+    }
+
+    private UniTask<UI_Pause> OpenPauseAsync()
+    {
+        PlayerController localPlayer = PlayerController.Local;
+
+        return OpenAsync<UI_Pause>
+        (
+            new UILifecycleActions<UI_Pause>
+            {
+                OnOpen = ui => ui.SetOwnerPlayer(localPlayer)
+            }
+        );
     }
 
     private void PushToStack(UIBase ui)
