@@ -420,7 +420,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12b65e13ba0b4264697941de996b893b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TypewriterWithWrap
-  _typingSpeed: 0.05
+  _typingSpeed: 0.07
 --- !u!1 &4467633638904876092
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,6 +623,8 @@ MonoBehaviour:
   _helperUpgradeService: {fileID: 0}
   _stylingCustomizeService: {fileID: 0}
   _npcQuestService: {fileID: 0}
+  _dinoRaceInteractionService: {fileID: 0}
+  _npcCuringService: {fileID: 0}
 --- !u!1 &5720044989875460714
 GameObject:
   m_ObjectHideFlags: 0
@@ -1239,11 +1241,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 16
+      value: 146
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -20
+      value: -66.36
       objectReference: {fileID: 0}
     - target: {fileID: 6430841876820738962, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
