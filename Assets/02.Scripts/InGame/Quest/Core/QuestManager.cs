@@ -368,14 +368,6 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         TryAddSimpleProgress(EQuestObjectiveType.BreakObject, objectId, amount);
     }
 
-    public void ReportItemCollected(int itemId, int amount = 1)
-    {
-        if (!CanProcessLocalQuest()) return;
-        if (itemId < 0 || amount <= 0) return;
-
-        RefreshItemQuestProgress(itemId);
-    }
-
     public void RefreshCollectItemProgress(int itemId)
     {
         if (!CanProcessLocalQuest()) return;
@@ -523,6 +515,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
             QuestDataSO questData = quest.QuestData;
 
             if (questData.ObjectiveType != objectiveType) continue;
+            if (!IsSimpleTargetMatched(questData, objectiveType, targetId)) continue;
 
             quest.CurrentAmount += amount;
 
