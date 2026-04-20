@@ -5,7 +5,7 @@ public static class TutorialNpcSpawner
     private const float SpawnRadius = 4.4f;
     private const float FirstTutorialSpawnRadius = 28.4f;
 
-    private const int MaxSpawnTryCount = 6;
+    private const int MaxSpawnTryCount = 8;
     private const float GroundCheckStartHeight = 20f;
     private const float GroundCheckDistance = 40f;
     private const float GroundOffsetY = 0.05f;
