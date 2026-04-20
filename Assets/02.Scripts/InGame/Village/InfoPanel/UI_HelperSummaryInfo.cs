@@ -30,7 +30,6 @@ public class UI_HelperSummaryInfo : UI_InfoSectionBase
     
     public override void Refresh()
     {
-        throw new System.NotImplementedException();
     }
 
 }

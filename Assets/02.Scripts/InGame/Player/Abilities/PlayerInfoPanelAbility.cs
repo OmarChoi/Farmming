@@ -40,7 +40,7 @@ public class PlayerInfoPanelAbility : PlayerAbility
             (
                 new UILifecycleActions<UI_InfoPannel>
                 {
-                    OnOpen = ui => ui.SetPlayerController(_owner);
+                    OnOpen = ui => ui.SetPlayerController(_owner)
                 }
             ).Forget();
         }

@@ -514,9 +514,9 @@ MonoBehaviour:
   _panels:
   - {fileID: 5555047322411640392}
   - {fileID: 3050276866054434382}
-  _slideOffset: 40
-  _slideDuration: 0.25
-  _slideEase: 9
+  _liftOffset: 20
+  _liftDuration: 0.2
+  _liftEase: 9
 --- !u!1 &2974120170343511059
 GameObject:
   m_ObjectHideFlags: 0
@@ -1079,10 +1079,10 @@ RectTransform:
   - {fileID: 5361359714288067926}
   m_Father: {fileID: 5946681369031840660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100, y: -129.6}
+  m_SizeDelta: {x: 200, y: 259.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4169208864671068941
 CanvasRenderer:
@@ -2634,7 +2634,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9115164118617512749}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
@@ -2687,10 +2687,10 @@ RectTransform:
   - {fileID: 4716224162717047874}
   m_Father: {fileID: 5946681369031840660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 310, y: -129.6}
+  m_SizeDelta: {x: 200, y: 259.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7186931289606288495
 CanvasRenderer:
