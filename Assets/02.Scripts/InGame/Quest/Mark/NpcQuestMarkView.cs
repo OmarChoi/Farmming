@@ -24,6 +24,11 @@ public class NpcQuestMarkView : MonoBehaviour
         {
             _questMarkService = FindFirstObjectByType<QuestMarkService>();
         }
+
+        if (NpcFriendshipManager.Instance != null)
+        {
+            NpcFriendshipManager.Instance.OnFriendshipChanged += OnFriendshipChanged;
+        }
     }
 
     private void OnEnable()
@@ -34,6 +39,11 @@ public class NpcQuestMarkView : MonoBehaviour
             QuestManager.Instance.OnQuestUpdated += OnQuestChanged;
             QuestManager.Instance.OnQuestCompleted += OnQuestChanged;
             QuestManager.Instance.OnQuestRemoved += OnQuestRemoved;
+        }
+
+        if (NpcFriendshipManager.Instance != null)
+        {
+            NpcFriendshipManager.Instance.OnFriendshipChanged += OnFriendshipChanged;
         }
 
         QuestManager.OnQuestDataLoaded += Refresh;
@@ -50,6 +60,11 @@ public class NpcQuestMarkView : MonoBehaviour
             QuestManager.Instance.OnQuestCompleted -= OnQuestChanged;
             QuestManager.Instance.OnQuestRemoved -= OnQuestRemoved;
         }
+        
+        if (NpcFriendshipManager.Instance != null)
+        {
+            NpcFriendshipManager.Instance.OnFriendshipChanged -= OnFriendshipChanged;
+        }
 
         QuestManager.OnQuestDataLoaded -= Refresh;
     }
@@ -61,6 +76,13 @@ public class NpcQuestMarkView : MonoBehaviour
 
     private void OnQuestRemoved(string _)
     {
+        Refresh();
+    }
+
+    private void OnFriendshipChanged(string npcId, int oldValue, int newValue, ENpcFriendshipReason reason)
+    {
+        if (_npc == null || _npc.Data == null || _npc.Data.NpcId != npcId) return;
+
         Refresh();
     }
 

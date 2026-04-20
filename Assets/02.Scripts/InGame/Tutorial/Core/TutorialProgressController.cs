@@ -227,6 +227,9 @@ public class TutorialProgressController : MonoBehaviour
             interaction);
 
         _npcQuestService.ExecuteTutorialQuestInteraction(context, questData);
+
+        NpcQuestMarkView markView = _tutorialNpcController.GetComponentInChildren<NpcQuestMarkView>(true);
+        markView?.Refresh();
     }
 
     private void CompleteTutorial()
