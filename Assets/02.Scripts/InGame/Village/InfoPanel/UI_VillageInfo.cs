@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class UI_VillageInfo : UI_InfoSectionBase
 {
-    private const string LevelFormat = "Level {0:0}";
+    private const string LevelFormat = "마을 레벨 : {0:0}";
     private const string GaugeFormat = "{0:0} / {1:0}";
     private const string MaxLevelLabel = "MAX LEVEL";
     private const string EmptyLabel = "-";

@@ -142,7 +142,7 @@ public static class AssetKey
         public const string Shrine = "UI_Shrine";
         public const string VillageLevelUp = "UI_VillageLevelUp";
         public const string Pause = "UI_Pause";
-        public const string InfoPannel = "UI_InfoPannel";
+        public const string VillageInfoPopup = "UI_VillageInfoPopup";
         public const string Setting = "UI_Setting";
 
         private static readonly Dictionary<Type, string> _registered = new Dictionary<Type, string>
@@ -153,7 +153,7 @@ public static class AssetKey
             {typeof(UI_VillageLevelUp), VillageLevelUp},
             {typeof(UI_QuestBoard), QuestBoard},
             {typeof(UI_Pause), Pause},
-            {typeof(UI_InfoPannel), InfoPannel},
+            {typeof(UI_VillageInfoPopup), VillageInfoPopup},
             {typeof(UI_Setting), Setting},
         };
 
