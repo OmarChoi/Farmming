@@ -1,9 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class QuestMarkService : MonoBehaviour
 {
+    [Header("참조 컴포넌트")]
     [SerializeField] private QuestManager _questManager;
     [SerializeField] private NpcFriendshipManager _friendshipManager;
+
+    private PlayerQuestAbility _localPlayerQuestAbility;
 
     private void Awake()
     {
@@ -16,6 +20,27 @@ public class QuestMarkService : MonoBehaviour
         {
             _friendshipManager = NpcFriendshipManager.Instance;
         }
+    }
+
+    private void OnEnable()
+    {
+        GameSceneInit.OnLocalPlayerSceneReady += HandleLocalPlayerReady;
+    }
+
+    private void OnDisable()
+    {
+        GameSceneInit.OnLocalPlayerSceneReady -= HandleLocalPlayerReady;
+    }
+
+    private void HandleLocalPlayerReady(PlayerController player)
+    {
+        if (player == null) return;
+        _localPlayerQuestAbility = player.GetAbility<PlayerQuestAbility>();
+    }
+
+    private PlayerQuestAbility GetLocalPlayerQuestAbility()
+    {
+        return _localPlayerQuestAbility;
     }
 
     public EWorldMarkVisualType GetNpcQuestMarkVisualType(NpcController npc)
@@ -38,7 +63,7 @@ public class QuestMarkService : MonoBehaviour
 
             if (IsQuestCompletableAtNpc(quest, npcId))
             {
-                return EWorldMarkVisualType.Complete;
+                return EWorldMarkVisualType.CanComplete;
             }
         }
 
@@ -71,6 +96,83 @@ public class QuestMarkService : MonoBehaviour
         }
 
         return EWorldMarkVisualType.None;
+    }
+
+    public EWorldMarkVisualType GetQuestBoardMarkVisualType(QuestBoardDataSO boardData)
+    {
+        if (_questManager == null || DailyQuestManager.Instance == null || boardData == null)
+        {
+            return EWorldMarkVisualType.None;
+        }
+
+        if (boardData.AllQuests == null || boardData.AllQuests.Count == 0)
+        {
+            return EWorldMarkVisualType.None;
+        }
+
+        IReadOnlyList<QuestDataSO> todayQuests = DailyQuestManager.Instance.TodayDailyQuests;
+        if (todayQuests == null || todayQuests.Count == 0)
+        {
+            return EWorldMarkVisualType.None;
+        }
+
+        PlayerQuestAbility playerQuestAbility = GetLocalPlayerQuestAbility();
+        bool hasCheckedToday = playerQuestAbility != null &&
+                               playerQuestAbility.HasCheckedDailyQuestBoardToday();
+
+        HashSet<QuestDataSO> boardQuestSet = new HashSet<QuestDataSO>(boardData.AllQuests);
+        bool hasNewQuest = false;
+
+        foreach (QuestDataSO questData in todayQuests)
+        {
+            if (questData == null) continue;
+            if (!boardQuestSet.Contains(questData)) continue;
+
+            QuestRuntimeData activeQuest = _questManager.GetQuest(questData.QuestId);
+
+            if (activeQuest != null && activeQuest.Status == EQuestStatus.CanComplete)
+            {
+                return EWorldMarkVisualType.CanComplete;
+            }
+
+            if (_questManager.CanAcceptQuest(questData))
+            {
+                hasNewQuest = true;
+            }
+        }
+
+        if (hasNewQuest && !hasCheckedToday)
+        {
+            return EWorldMarkVisualType.Updated;
+        }
+
+        return hasNewQuest ? EWorldMarkVisualType.Updated : EWorldMarkVisualType.None;
+    }
+
+    public EWorldMarkVisualType GetShrineQuestMarkVisualType()
+    {
+        if (_questManager == null || WorldEffectQuestService.Instance == null)
+        {
+            return EWorldMarkVisualType.None;
+        }
+
+        string activeQuestId = WorldEffectQuestService.Instance.ActiveQuestId;
+        if (string.IsNullOrEmpty(activeQuestId))
+        {
+            return EWorldMarkVisualType.None;
+        }
+
+        QuestRuntimeData quest = _questManager.GetQuest(activeQuestId);
+        if (quest != null && quest.Status == EQuestStatus.CanComplete)
+        {
+            return EWorldMarkVisualType.CanComplete;
+        }
+
+        PlayerQuestAbility playerQuestAbility = GetLocalPlayerQuestAbility();
+        bool hasChecked = playerQuestAbility != null &&
+                          playerQuestAbility.HasCheckedWorldEffectQuest(activeQuestId);
+
+        return hasChecked ? EWorldMarkVisualType.None : EWorldMarkVisualType.Updated;
     }
 
     private bool IsQuestCompletableAtNpc(QuestRuntimeData quest, string npcId)

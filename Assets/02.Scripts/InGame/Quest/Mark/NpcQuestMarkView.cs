@@ -97,7 +97,7 @@ public class NpcQuestMarkView : MonoBehaviour
                 _worldMarkView.ShowInProgress();
                 break;
 
-            case EWorldMarkVisualType.Complete:
+            case EWorldMarkVisualType.CanComplete:
                 _worldMarkView.ShowCanComplete();
                 break;
 

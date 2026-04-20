@@ -4,6 +4,6 @@ public enum EWorldMarkVisualType
     None,
     Available,
     InProgress,
-    Complete,
+    CanComplete,
     Updated
 }
