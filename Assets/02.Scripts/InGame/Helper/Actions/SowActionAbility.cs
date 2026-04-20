@@ -19,7 +19,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
     [SerializeField] private float _cultivateLegendarySpinFadeOutDuration = 0.05f;
     [SerializeField] private float _secondaryOpenFallbackDelay = 0.35f;
     [SerializeField] private float _secondaryCompleteFallbackDelay = 5f;
-    [SerializeField] private float _epicCultivateSfxMinInterval = 0.15f;
+    [SerializeField, Min(0f)] private float _epicCultivateSfxMinInterval = 0.15f;
 
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
@@ -39,7 +39,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
     private Coroutine _secondaryOpenFallbackCoroutine;
     private Coroutine _secondaryCompleteFallbackCoroutine;
     private bool _secondaryOpened;
-    private float _lastEpicCultivateSfxTime = -999f;
+    private float _lastEpicCultivateSfxTime = float.MinValue;
 
     protected override void Awake()
     {
