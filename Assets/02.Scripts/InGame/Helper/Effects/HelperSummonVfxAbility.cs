@@ -13,13 +13,6 @@ public class HelperSummonVfxAbility : HelperAbility
     private GameObject _effectInstance;
     private ParticleSystem[] _particleSystems;
     private Tween _scaleTween;
-    private Vector3 _targetScale;
-
-    protected override void Awake()
-    {
-        base.Awake();
-        _targetScale = _owner.transform.localScale;
-    }
 
     public void PlayOnSummon()
     {
@@ -61,7 +54,7 @@ public class HelperSummonVfxAbility : HelperAbility
         _scaleTween?.Kill();
         _owner.transform.localScale = Vector3.zero;
         _scaleTween = _owner.transform
-            .DOScale(_targetScale, _scaleDuration)
+            .DOScale(_owner.OriginalScale, _scaleDuration)
             .SetEase(_scaleEase);
     }
 

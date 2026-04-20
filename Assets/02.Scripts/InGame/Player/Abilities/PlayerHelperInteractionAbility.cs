@@ -121,8 +121,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             _owner.UnlockAction();
         }
 
-        if (_currentHelper.State == EHelperState.Equipped)
-            _currentHelper.Unequip();
+        _currentHelper.DetachForDespawn();
 
         HelperController helperToDestroy = _currentHelper;
         _currentHelper = null;
@@ -134,8 +133,7 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     {
         if (_backHelper == null) return;
 
-        if (_backHelper.State == EHelperState.Equipped)
-            _backHelper.Unequip();
+        _backHelper.DetachForDespawn();
 
         HelperController helperToDestroy = _backHelper;
         _backHelper = null;
@@ -146,6 +144,8 @@ public class PlayerHelperInteractionAbility : PlayerAbility
     private void PlayDespawnAndDestroy(HelperController helper)
     {
         if (helper == null) return;
+
+        helper.BeginDespawn();
 
         helper.PhotonView.RpcSafe(
             nameof(HelperController.RPC_PlayDespawnShrink),

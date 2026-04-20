@@ -17,6 +17,7 @@ public class HelperController : MonoBehaviourPunCallbacks
     public Transform FollowTarget { get; private set; }
 
     public bool IsActing { get; private set; }
+    public bool IsDespawning { get; private set; }
 
     public event Action OnActionStarted;
     public event Action OnActionEnded;
@@ -41,6 +42,8 @@ public class HelperController : MonoBehaviourPunCallbacks
 
     private Vector3 _originalScale;
     private float _equippedSmallScale = 0.55f;
+
+    public Vector3 OriginalScale => _originalScale;
 
     private void Awake()
     {
@@ -80,7 +83,25 @@ public class HelperController : MonoBehaviourPunCallbacks
     private void Update()
     {
         if (!IsMine) return;
+        if (IsDespawning) return;
         Energy.Recover(Time.deltaTime);
+    }
+
+    public void BeginDespawn()
+    {
+        if (IsDespawning) return;
+        IsDespawning = true;
+        SetCollisionEnabled(false);
+        SetTransformSync(false);
+    }
+
+    public void DetachForDespawn()
+    {
+        if (State != EHelperState.Equipped) return;
+
+        State = EHelperState.Summoned;
+        _isBackEquipped = false;
+        transform.SetParent(null, worldPositionStays: true);
     }
 
     public T GetAbility<T>() where T : HelperAbility
@@ -324,6 +345,8 @@ public class HelperController : MonoBehaviourPunCallbacks
     [PunRPC]
     internal void RPC_PlayDespawnShrink()
     {
+        DetachForDespawn();
+        BeginDespawn();
         GetAbility<HelperSummonVfxAbility>()?.PlayOnDespawn(null);
     }
 
