@@ -227,7 +227,7 @@ public class NpcDialogueController : MonoBehaviour
             return;
         }
 
-        _uiDialogue.ShowLine(_currentDialogue.Lines[_currentLineIndex].Text);
+        _uiDialogue.ShowLine(_currentDialogue.Lines[_currentLineIndex].Text, _currentNpc?.Voice);
     }
 
     private void NextLine()
