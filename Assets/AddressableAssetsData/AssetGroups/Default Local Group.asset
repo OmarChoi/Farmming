@@ -24,8 +24,7 @@ MonoBehaviour:
   - m_GUID: 0142ca2184b166d4e88f03cb46c6657d
     m_Address: SFXhelperequip
     m_ReadOnly: 0
-    m_SerializedLabels:
-    - CommonSound
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 02d30b51d16efbc46b643b03a0f4ff3f
     m_Address: UI_Inventory
@@ -54,32 +53,9 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - CommonSound
-    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 26609f7040e02184486b5f969db180f0
     m_Address: UI_Setting
-  - m_GUID: 0142ca2184b166d4e88f03cb46c6657d
-    m_Address: SFXhelperequip
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 002da25d76d5e3a4a9d16c745a0250a7
-    m_Address: SFXhelperunequip
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 60e3487e6ef02574790ea20bc99f8af7
-    m_Address: SFXhelperfollow
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a6ba1481c20cbf842b92dc12d87fc385
-    m_Address: HelperEvolution
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a25295cd1fea3b149a967d7f586a5584
-    m_Address: HelperEvolutionBGM
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -91,7 +67,8 @@ MonoBehaviour:
   - m_GUID: 30ec1520558c9a045a7c274ce80f5be4
     m_Address: GamblingBuilding
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 33f7b241af573944ab6a83a9395957e6
     m_Address: BGMVillage
@@ -116,14 +93,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 30ec1520558c9a045a7c274ce80f5be4
-    m_Address: GamblingBuilding
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - NetworkPrefab
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3f18f96d1035ee548be0a0aa9ae3c637
     m_Address: SFXstartscenebgm
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 46f5e5cfad5f9954eb152d6ac8db3438
     m_Address: BGMStartScene
     m_ReadOnly: 0
@@ -165,8 +139,7 @@ MonoBehaviour:
   - m_GUID: 60e3487e6ef02574790ea20bc99f8af7
     m_Address: SFXhelperfollow
     m_ReadOnly: 0
-    m_SerializedLabels:
-    - CommonSound
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 68a913d4aa437d440a3c89817c3dd1ea
     m_Address: SFXsowepiccultivate
