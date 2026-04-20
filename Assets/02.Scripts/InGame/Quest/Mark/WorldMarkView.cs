@@ -17,7 +17,11 @@ public class WorldMarkView : MonoBehaviour
     [SerializeField] private float _pulseScale = 1.1f;
     [SerializeField] private float _pulseDuration = 1.0f;
 
+    private const float PulseCycleDurationMultiplier = 2f; // Yoyo 왕복횟수에 따른 전체 사이클 시간 배수
+    private const float PulseCyclesPerRotation = 2f;
+
     private Tween _pulseTween;
+    private Tween _rotateTween;
 
     private readonly Dictionary<Transform, Vector3> _originalScales = new();
 
@@ -100,12 +104,22 @@ public class WorldMarkView : MonoBehaviour
         target.localScale = baseScale;
 
         _pulseTween = target.DOScale(baseScale * _pulseScale, _pulseDuration).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
+
+        float rotationDuration = _pulseDuration * PulseCycleDurationMultiplier * PulseCyclesPerRotation;
+
+        _rotateTween = target
+            .DOLocalRotate(new Vector3(0f, 360f, 0f), rotationDuration, RotateMode.LocalAxisAdd)
+            .SetEase(Ease.Linear)
+            .SetLoops(-1, LoopType.Restart);
     }
 
     private void StopPulse()
     {
         _pulseTween?.Kill();
         _pulseTween = null;
+
+        _rotateTween?.Kill();
+        _rotateTween = null;
 
         ResetScale(_pulseTarget);
         ResetScale(_availableMarkObject);
