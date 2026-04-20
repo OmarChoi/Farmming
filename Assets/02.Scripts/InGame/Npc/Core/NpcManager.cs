@@ -12,4 +12,12 @@ public class NpcManager : MonoBehaviour
         }
         Instance = this;
     }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
 }

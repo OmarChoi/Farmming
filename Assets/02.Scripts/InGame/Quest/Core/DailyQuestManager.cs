@@ -24,6 +24,14 @@ public class DailyQuestManager : MonoBehaviour
         Instance = this;
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     private void OnEnable()
     {
         TimeEvents.OnNetDayStarted += HandleDayChanged;

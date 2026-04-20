@@ -53,17 +53,31 @@ public class HelperEvolutionProfileSO : ScriptableObject
     public float FinalRotationExtraTurns;
 
     [Header("Before Energy Rise")]
-    public float BeforeEnergyRiseEndTime = 4.55f;
+    public Material BeforeEnergyRiseSourceMaterial;
+    public float BeforeEnergyRiseStartDelay = 1f;
     public float BeforeEnergyRiseDuration = 2.5f;
     public Color BeforeEnergyRiseColor = Color.white;
     public float BeforeEnergyRiseBandWidth = 0.35f;
     [Range(0f, 1f)] public float BeforeEnergyRiseFillAlpha = 0.45f;
     [Range(0f, 2f)] public float BeforeEnergyRiseGlowAlpha = 0.85f;
+    [Range(0f, 3f)] public float BeforeEnergyRiseEffectStrength = 1f;
     public float BeforeEnergyRiseOutlineWidth = 0.045f;
     public float BeforeEnergyRiseVerticalPadding = 0.1f;
     [Range(0f, 1f)] public float BeforeEnergyRiseRainbowStrength = 1f;
     [Range(0f, 2f)] public float BeforeEnergyRiseRainbowSpeed = 0.25f;
     public float BeforeEnergyRiseSurfaceOffset = 0.018f;
+
+    [Header("After Energy Clear")]
+    public Material AfterEnergyClearSourceMaterial;
+    public float AfterEnergyClearStartOffset;
+    public float AfterEnergyClearEndOffset;
+    public float AfterEnergyClearBandWidth = 0.22f;
+    [Range(0f, 1f)] public float AfterEnergyClearFillAlpha = 0.72f;
+    [Range(0f, 2f)] public float AfterEnergyClearGlowAlpha = 0.65f;
+    [Range(0f, 3f)] public float AfterEnergyClearEffectStrength = 1f;
+    public float AfterEnergyClearOutlineWidth = 0.01f;
+    public float AfterEnergyClearVerticalPadding = 0.1f;
+    public float AfterEnergyClearSurfaceOffset = 0.025f;
 
     [Header("Legacy Fallback Camera")]
     public Vector3 IntroCameraLocalPosition = new Vector3(0f, 1.8f, -6f);

@@ -6,3 +6,8 @@ public interface IHelperAction
     bool CanInteractPrimary(TerrainCell cell) => cell != null;
     bool CanInteractSecondary(TerrainCell cell) => cell != null;
 }
+
+public interface ISecondaryInteractBlockNotifier
+{
+    void NotifySecondaryInteractBlocked(TerrainCell cell);
+}

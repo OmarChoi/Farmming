@@ -16,11 +16,32 @@ public class HarvestNotification : MonoBehaviour
 
     public void Setup(Sprite icon, string seedName, int amount)
     {
-        _icon.sprite = icon;
-        _text.text = $"{seedName}  x{amount}";
+        if (_icon != null)
+        {
+            _icon.gameObject.SetActive(true);
+            _icon.sprite = icon;
+        }
+
+        if (_text != null)
+            _text.text = $"{seedName}  x{amount}";
 
         // 텍스트 길이에 맞게 배경 가로 크기 자동 조절
-        LayoutRebuilder.ForceRebuildLayoutImmediate(_background);
+        if (_background != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_background);
+        StartCoroutine(PlayAnimation());
+    }
+
+    public void SetupMessage(string message)
+    {
+        if (_icon != null)
+            _icon.gameObject.SetActive(false);
+
+        if (_text != null)
+            _text.text = message ?? string.Empty;
+
+        if (_background != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_background);
+
         StartCoroutine(PlayAnimation());
     }
 

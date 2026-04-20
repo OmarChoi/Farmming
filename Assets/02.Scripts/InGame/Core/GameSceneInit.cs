@@ -8,6 +8,7 @@ public class GameSceneInit : MonoBehaviour
 {
     public static bool ReturningFromDungeon{ get; set; }
     public static event Action OnCompleteInitialize;
+    public static event Action<PlayerController> OnLocalPlayerSceneReady;
 
     private const string PlayerPrefabKey = AssetKey.NetworkPrefab.Player;
     [SerializeField] private MapManager _mapManager;
@@ -40,7 +41,7 @@ public class GameSceneInit : MonoBehaviour
                 CacheVillageData();
 
                 QuestDataMarkLoaded();
-                // TryStartTutorial(localPlayer);
+                OnLocalPlayerSceneReady?.Invoke(localPlayer);
 
                 var props = new Hashtable { { PropTerrainReady, true } };
                 PhotonNetwork.LocalPlayer.SetCustomProperties(props);
@@ -105,7 +106,7 @@ public class GameSceneInit : MonoBehaviour
             await WaitForAllTerrainReady();
 
             localPlayer = FindLocalPlayer();
-            // TryStartTutorial(localPlayer);
+            OnLocalPlayerSceneReady?.Invoke(localPlayer);
             OnCompleteInitialize?.Invoke();
             return;
         }
@@ -129,9 +130,11 @@ public class GameSceneInit : MonoBehaviour
             localPlayer = SpawnPlayer(pos);
         }
 
+        await UniTask.Yield();
+
         CacheVillageData();
         await WaitForAllTerrainReady();
-        // TryStartTutorial(localPlayer);
+        OnLocalPlayerSceneReady?.Invoke(localPlayer);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -221,6 +224,7 @@ public class GameSceneInit : MonoBehaviour
         if (existing != null && CustomizeData.Instance != null)
             existing.GetAbility<PlayerCustomizeAbility>()?.Initialize(CustomizeData.Instance.Data);
 
+        OnLocalPlayerSceneReady?.Invoke(existing);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -264,6 +268,8 @@ public class GameSceneInit : MonoBehaviour
         ReturningFromDungeon = false;
         UnfreezeExistingPlayers();
         SceneTransitionData.Clear();
+
+        OnLocalPlayerSceneReady?.Invoke(existing);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -343,7 +349,7 @@ public class GameSceneInit : MonoBehaviour
         LoadingProgress.Value = 0.6f;
         RoomManager.Instance.OpenRoom();
         await WaitForAllTerrainReady();
-        // TryStartTutorial(localPlayer);
+        OnLocalPlayerSceneReady?.Invoke(localPlayer);
         OnCompleteInitialize?.Invoke();
     }
 
@@ -508,23 +514,6 @@ public class GameSceneInit : MonoBehaviour
         }
 
         return null;
-    }
-
-    private bool ShouldStartTutorial(PlayerController player)
-    {
-        if (player == null || ReturningFromDungeon || TutorialManager.Instance == null) return false;
-
-        PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
-        if (questAbility == null) return false;
-
-        return questAbility.TutorialState == ETutorialState.None ||
-               questAbility.TutorialState == ETutorialState.InProgress;
-    }
-
-    private void TryStartTutorial(PlayerController player)
-    {
-        if (!ShouldStartTutorial(player)) return;
-        TutorialManager.Instance.TryStartTutorial(player);
     }
 
     private void QuestDataMarkLoaded()

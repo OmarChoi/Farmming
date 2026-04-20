@@ -125,6 +125,7 @@ public class NpcController : MonoBehaviour
     {
         if (_isInteracting)
         {
+            if (_currentInteractor == player?.transform) return true; // 같은 플레이어의 중복 요청 허용 여부는 선택
             return false;
         }
 
@@ -217,35 +218,44 @@ public class NpcController : MonoBehaviour
         if (time >= scheduleTime)
         {
             entry = nextEntry;
-            _currentScheduleIndex++;
             return true;
         }
 
         return false;
     }
 
-    // 일정이 있다면 스케줄대로 행동을 실행합니다.
-    public void ExecuteSchedule(NpcScheduleEntry entry)
+    // 스케줄 인덱스를 한 칸 전진합니다. NpcScheduleManager에서 ExecuteSchedule 성공 후 호출합니다.
+    public void AdvanceScheduleIndex()
     {
-        if (_npcData == null || _isInteracting) return;
+        _currentScheduleIndex++;
+    }
+
+    // 일정이 있다면 스케줄대로 행동을 실행합니다. 인덱스는 건드리지 않습니다.
+    public bool ExecuteSchedule(NpcScheduleEntry entry)
+    {
+        if (_npcData == null || _isInteracting) return false;
 
         if (!TryGetScheduleTargetPosition(entry, out Vector3 targetPosition))
         {
 #if UNITY_EDITOR
             Debug.LogWarning($"{_npcData.NpcName}의 목적지를 찾지 못했습니다. ({entry.NpcLocationType} / {entry.LocationKey})");
 #endif
-            return;
+            return false;
         }
+
         _movement.MoveTo(targetPosition, 0f);
 
+        // Wandering이 아닌 경우 목적지를 Wander 기준점으로 저장합니다.
+        // Wandering인 경우는 현재 실제 위치를 기준점으로 유지합니다.
         if (entry.NpcLocationType != ENpcLocationType.Wandering)
         {
             _wanderBasePosition = targetPosition;
         }
 
 #if UNITY_EDITOR
-        Debug.Log($"{_npcData.NpcName}가 이동합니다: {entry.NpcLocationType} / {entry.LocationKey}");
+        Debug.Log($"{_npcData.NpcName}가 이동합니다: {entry.NpcLocationType} / {entry.LocationKey} -> {targetPosition}");
 #endif
+        return true;
     }
 
     private bool TryGetScheduleTargetPosition(NpcScheduleEntry entry, out Vector3 targetPosition)
@@ -305,22 +315,37 @@ public class NpcController : MonoBehaviour
 
         if (_npcSchedule == null || _npcSchedule.ScheduleEntries == null || _npcSchedule.ScheduleEntries.Count == 0) return;
 
-        NpcScheduleEntry firstEntry = _npcSchedule.ScheduleEntries[0];
-        bool found = NpcLocationManager.Instance.TryGetLocation(
-            RuntimeNpcKey,
-            firstEntry.NpcLocationType,
-            firstEntry.LocationKey,
-            out Vector3 startPosition);
-
-        if (!found)
+        // Wandering을 제외한 첫 번째 항목을 찾아 하루 시작 위치로 사용합니다.
+        for (int i = 0; i < _npcSchedule.ScheduleEntries.Count; i++)
         {
-#if UNITY_EDITOR
-            Debug.LogWarning($"{_npcData.NpcName}의 하루 시작 위치를 찾지 못했습니다.");
-#endif
-            return;
+            NpcScheduleEntry candidate = _npcSchedule.ScheduleEntries[i];
+            if (candidate.NpcLocationType == ENpcLocationType.Wandering) continue;
+
+            if (NpcLocationManager.Instance.TryGetLocation(
+                RuntimeNpcKey,
+                candidate.NpcLocationType,
+                candidate.LocationKey,
+                out Vector3 startPosition))
+            {
+                _wanderBasePosition = startPosition;
+                _movement.TeleportTo(startPosition);
+                return;
+            }
         }
-        _wanderBasePosition = startPosition;
-        _movement.TeleportTo(startPosition);
+
+#if UNITY_EDITOR
+        Debug.LogWarning($"{_npcData?.NpcName ?? "Unknown NPC"}의 하루 시작 위치를 찾지 못했습니다. 현재 위치를 유지합니다.");
+#endif
+    }
+
+    public void SetInitialScheduleBase(Vector3 basePosition)
+    {
+        _wanderBasePosition = basePosition;
+    }
+
+    public void SyncScheduleToCurrentTime()
+    {
+        ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
     }
 
     // 대화 등으로 스케줄이 끊기면 재개합니다.
@@ -347,17 +372,29 @@ public class NpcController : MonoBehaviour
             }
         }
 
-        if (latestValidEntry != null)
+        if (latestValidEntry == null) return;
+
+        // 인덱스만 맞춰두고 ExecuteSchedule은 호출하지 않습니다.
+        _currentScheduleIndex = latestIndex;
+
+        if (!TryGetScheduleTargetPosition(latestValidEntry, out Vector3 targetPosition))
         {
-            _currentScheduleIndex = latestIndex;
-
-            if (latestValidEntry.NpcLocationType == ENpcLocationType.Wandering)
-            {
-                _wanderBasePosition = transform.position;
-            }
-
-            ExecuteSchedule(latestValidEntry);
+#if UNITY_EDITOR
+            Debug.LogWarning($"{_npcData.NpcName} 재개 목적지 없음: {latestValidEntry.NpcLocationType} / {latestValidEntry.LocationKey}");
+#endif
+            return;
         }
+
+        _movement.MoveTo(targetPosition, 0f);
+
+        if (latestValidEntry.NpcLocationType != ENpcLocationType.Wandering)
+        {
+            _wanderBasePosition = targetPosition;
+        }
+
+#if UNITY_EDITOR
+        Debug.Log($"{_npcData.NpcName} 스케줄 재개: {latestValidEntry.NpcLocationType} / {latestValidEntry.LocationKey}");
+#endif
     }
 
     private NpcInteractionOption[] GetInteractionOptions()
@@ -380,15 +417,5 @@ public class NpcController : MonoBehaviour
         _runtimeInteractionOptions.CopyTo(_interactionOptionCache, serializedCount);
 
         return _interactionOptionCache;
-    }
-
-    public void SetInitialScheduleBase(Vector3 basePosition)
-    {
-        _wanderBasePosition = basePosition;
-    }
-
-    public void SyncScheduleToCurrentTime()
-    {
-        ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
     }
 }

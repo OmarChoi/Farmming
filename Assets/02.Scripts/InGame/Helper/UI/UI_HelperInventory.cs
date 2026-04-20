@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -50,6 +51,7 @@ public class UI_HelperInventory : MonoBehaviour
     private float[] _slotX;
     private float[] _slotScale;
     private float[] _hiddenScale;
+    private readonly Dictionary<Image, HelperDataSO> _slotDataByIcon = new();
 
     private void Awake()
     {
@@ -105,16 +107,23 @@ public class UI_HelperInventory : MonoBehaviour
         _ability = ability;
         _ability.OnSelectionChanged += OnInput;
         _ability.OnSummonChanged += OnSummonInput;
+        _ability.OnHelperGradeChanged += OnHelperGradeChanged;
         Refresh();
     }
 
     private void Unbind()
     {
-        if (_ability == null) return;
+        if (_ability == null)
+        {
+            _slotDataByIcon.Clear();
+            return;
+        }
 
         _ability.OnSelectionChanged -= OnInput;
         _ability.OnSummonChanged -= OnSummonInput;
+        _ability.OnHelperGradeChanged -= OnHelperGradeChanged;
         _ability = null;
+        _slotDataByIcon.Clear();
     }
 
     private void OnInput(int direction)
@@ -132,6 +141,27 @@ public class UI_HelperInventory : MonoBehaviour
     {
         Show();
         Refresh();
+    }
+
+    private void OnHelperGradeChanged(string helperId, EHelperGrade grade)
+    {
+        if (string.IsNullOrEmpty(helperId))
+            return;
+
+        foreach (var pair in _slotDataByIcon)
+        {
+            Image icon = pair.Key;
+            HelperDataSO data = pair.Value;
+
+            if (icon == null || data == null || data.HelperId != helperId)
+                continue;
+
+            SetIconSprite(icon, data.GetIconForGrade(grade));
+        }
+
+        HelperDataSO actionInfoData = _isShowing ? _ability?.CenterData : _ability?.SummonedData;
+        if (actionInfoData != null && actionInfoData.HelperId == helperId)
+            RefreshHelperName();
     }
 
     private void Slide(int direction)
@@ -323,13 +353,36 @@ public class UI_HelperInventory : MonoBehaviour
 
     private void SetSlot(Image icon, HelperDataSO data)
     {
-        if (data == null || data.HelperIcon == null)
+        if (icon == null)
+            return;
+
+        _slotDataByIcon[icon] = data;
+        Sprite sprite = GetHelperIcon(data);
+        SetIconSprite(icon, sprite);
+    }
+
+    private Sprite GetHelperIcon(HelperDataSO data)
+    {
+        if (data == null)
+            return null;
+
+        EHelperGrade grade = _ability != null ? _ability.GetHelperGrade(data) : EHelperGrade.Normal;
+        return data.GetIconForGrade(grade);
+    }
+
+    private void SetIconSprite(Image icon, Sprite sprite)
+    {
+        if (icon == null)
+            return;
+
+        if (sprite == null)
         {
             icon.enabled = false;
+            icon.sprite = null;
             return;
         }
 
         icon.enabled = true;
-        icon.sprite = data.HelperIcon;
+        icon.sprite = sprite;
     }
 }

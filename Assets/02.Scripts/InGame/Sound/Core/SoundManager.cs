@@ -128,6 +128,14 @@ public class SoundManager : MonoBehaviour
     // 기본 설정으로 BGM을 크로스페이드 전환한다
     public void CrossfadeBgm(string clipKey) => _bgmPlayer.CrossfadeAsync(clipKey, BgmTransitionConfig.Default).Forget();
 
+    public void DuckMainBgm(float fadeDuration = 0.25f) => _bgmPlayer.DuckMainAsync(fadeDuration).Forget();
+
+    public void RestoreMainBgm(float fadeDuration = 0.8f) => _bgmPlayer.RestoreMainAsync(fadeDuration).Forget();
+
+    public void PlayOverlayBgm(string clipKey, BgmTransitionConfig config) => _bgmPlayer.PlayOverlayAsync(clipKey, config).Forget();
+
+    public void StopOverlayBgm(float fadeDuration = 0.6f) => _bgmPlayer.StopOverlayAsync(fadeDuration).Forget();
+
     // BGM을 페이드 아웃 후 정지한다
     public void StopBgm(float fadeDuration = 0.5f) => _bgmPlayer.StopAsync(fadeDuration).Forget();
 

@@ -1,6 +1,6 @@
+using UnityEngine;
 using System.Collections.Generic;
 using Photon.Pun;
-using UnityEngine;
 
 public class NpcScheduleManager : MonoBehaviour
 {
@@ -52,7 +52,11 @@ public class NpcScheduleManager : MonoBehaviour
         {
             if (npc.TryGetNextScheduleEntry(currentTime, out var entry))
             {
-                npc.ExecuteSchedule(entry);
+                // ExecuteSchedule 성공 시에만 인덱스를 전진하고, 실패하면 다음 분에 재시도합니다.
+                if (npc.ExecuteSchedule(entry))
+                {
+                    npc.AdvanceScheduleIndex();
+                }
             }
         }
     }

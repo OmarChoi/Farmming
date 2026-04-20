@@ -41,7 +41,13 @@ public class HelperInteractionAbility : HelperAbility
     public bool InteractSecondary(TerrainCell cell)
     {
         if (!CanInteract()) return false;
-        if (!_action.CanInteractSecondary(cell)) return false;
+        if (!_action.CanInteractSecondary(cell))
+        {
+            if (_action is ISecondaryInteractBlockNotifier notifier)
+                notifier.NotifySecondaryInteractBlocked(cell);
+
+            return false;
+        }
 
         float secondaryCost = _action.GetSecondaryCost();
         if (secondaryCost >= 0)
@@ -79,6 +85,7 @@ public class HelperInteractionAbility : HelperAbility
 
     private bool CanInteract()
     {
+        if (_owner.IsDespawning) return false;
         if (_owner.IsActing) return false;
         if (_action == null) return false;
         if (!_owner.Energy.HasEnough(_owner.Level.GetEnergyCost())) return false;
