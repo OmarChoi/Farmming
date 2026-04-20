@@ -37,7 +37,7 @@ public class HelperController : MonoBehaviourPunCallbacks
     private bool[] _colliderInitialEnabled;
     private bool _isBackEquipped;
 
-    private const float SummonOffset = 1.5f;
+    private const float SummonOffset = 2.5f;
 
     private Vector3 _originalScale;
     private float _equippedSmallScale = 0.55f;
@@ -105,10 +105,10 @@ public class HelperController : MonoBehaviourPunCallbacks
         _isBackEquipped = false;
         SetCollisionEnabled(true);
         transform.SetParent(null);
-        transform.localScale = _originalScale;
         transform.position = FollowTarget.position + FollowTarget.right * SummonOffset;
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
+        GetAbility<HelperSummonVfxAbility>()?.PlayOnSummon();
         PlayHelperSfx(AssetKey.SFX.HelperSummon, ESpatialMode.FollowTransform);
     }
 
@@ -284,9 +284,9 @@ public class HelperController : MonoBehaviourPunCallbacks
         _isBackEquipped = false;
         SetCollisionEnabled(true);
         transform.SetParent(null);
-        transform.localScale = _originalScale;
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
+        GetAbility<HelperSummonVfxAbility>()?.PlayOnSummon();
         PlayHelperSfx(AssetKey.SFX.HelperSummon, ESpatialMode.FollowTransform);
     }
 
@@ -319,6 +319,12 @@ public class HelperController : MonoBehaviourPunCallbacks
         if (equipSlot == null) return;
 
         Equip(equipSlot, isBack);
+    }
+
+    [PunRPC]
+    internal void RPC_PlayDespawnShrink()
+    {
+        GetAbility<HelperSummonVfxAbility>()?.PlayOnDespawn(null);
     }
 
     [PunRPC]
