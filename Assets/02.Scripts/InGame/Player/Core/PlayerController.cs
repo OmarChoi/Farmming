@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private PlayerStatSO _statSo;
 
+    public static PlayerController Local { get; private set; }
     public PlayerStatSO StatSo => _statSo;
 
     public PhotonView PhotonView { get; private set; }
@@ -56,6 +57,8 @@ public class PlayerController : MonoBehaviour
 
         if (!IsMine) return;
 
+        Local = this;
+
         // 로컬 전용: 자기 자신도 등록 (비마스터 클라이언트)
         if (!Photon.Pun.PhotonNetwork.IsMasterClient && SaveManager.Instance != null)
             SaveManager.Instance.RegisterPlayer(PlayerId, this);
@@ -77,6 +80,9 @@ public class PlayerController : MonoBehaviour
     {
         if (SaveManager.Instance != null && PlayerId != null)
             SaveManager.Instance.UnregisterPlayer(PlayerId);
+
+        if (Local == this)
+            Local = null;
     }
 
     public T GetAbility<T>() where T : PlayerAbility

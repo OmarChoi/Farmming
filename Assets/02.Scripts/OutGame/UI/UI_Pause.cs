@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class UI_Pause : UIBase
 {
     private UI_PopupDoTween _popupDoTween;
+    private PlayerController _player;
 
     [Header("Buttons")]
     [SerializeField] private Button _continueButton;
@@ -29,9 +30,6 @@ public class UI_Pause : UIBase
         _settingButton.onClick.AddListener(Setting);
         _toLobbyButton.onClick.AddListener(ChangeSceneToLobby);
         _exitGameButton.onClick.AddListener(ExitGame);
-        
-        PlayerController pc = FindFirstObjectByType<PlayerController>();
-        pc.EnterUIMode();
     }
 
     private void OnDisable()
@@ -40,9 +38,11 @@ public class UI_Pause : UIBase
         _settingButton.onClick.RemoveListener(Setting);
         _toLobbyButton.onClick.RemoveListener(ChangeSceneToLobby);
         _exitGameButton.onClick.RemoveListener(ExitGame);
-        
-        PlayerController pc = FindFirstObjectByType<PlayerController>();
-        pc.ExitUIMode();
+    }
+
+    public void SetOwnerPlayer(PlayerController player)
+    {
+        _player = player;
     }
 
     protected override void OnOpen()
@@ -53,6 +53,8 @@ public class UI_Pause : UIBase
             return;
         }
         
+        _player?.EnterUIMode();
+
         if (SceneManager.GetActiveScene().name == SceneName.Title)
         {
             // 메인 화면으로, 방 코드 표시 X
@@ -67,16 +69,18 @@ public class UI_Pause : UIBase
         }
     }
 
-    protected override UniTask OnOpenAnimation()
+    protected override void OnClose()
     {
-        _ = _popupDoTween.PlayOpenAsync();
-        return base.OnOpenAnimation();
+        _player?.ExitUIMode();
     }
 
-    protected override UniTask OnCloseAnimation()
+    protected override async UniTask OnOpenAnimation()
     {
-        _ = _popupDoTween.PlayCloseAsync();
-        return base.OnCloseAnimation();
+        await _popupDoTween.PlayOpenAsync();
+    }
+    protected override async UniTask OnCloseAnimation()
+    {
+        await _popupDoTween.PlayCloseAsync();
     }
     
     private void RefreshRoomId()
@@ -97,13 +101,11 @@ public class UI_Pause : UIBase
 
     private void Setting()
     {
-        // UI_Setting은 Popup Layer이므로 UIController가 스택 최상단에 쌓아 ESC로 단독 닫기가 가능하다.
         UIController.Instance.OpenAsync<UI_Setting>().Forget();
     }
 
     private void ChangeSceneToLobby()
     {
-        // todo. 책임 위치 변경(씬 변경 "요청")
         if (PhotonNetwork.IsConnected)
         {
             RoomManager.Instance.LeaveRoom();
@@ -116,7 +118,6 @@ public class UI_Pause : UIBase
 
     private void ExitGame()
     {
-        // todo. 책임 위치 변경(데이터 저장 및 게임 종료 "요청")
         Application.Quit();
     }
 }
