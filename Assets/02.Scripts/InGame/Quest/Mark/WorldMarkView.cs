@@ -99,7 +99,7 @@ public class WorldMarkView : MonoBehaviour
         Vector3 baseScale = GetOriginalScale(target);
         target.localScale = baseScale;
 
-        _pulseTween = target.DOScale(_pulseScale, _pulseDuration).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
+        _pulseTween = target.DOScale(baseScale * _pulseScale, _pulseDuration).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
     }
 
     private void StopPulse()

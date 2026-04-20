@@ -32,6 +32,11 @@ public class ShrineQuestMarkView : MonoBehaviour
         QuestManager.OnQuestDataLoaded += Refresh;
         TimeEvents.OnNetDayChanged += Refresh;
 
+        if (_questMarkService != null)
+        {
+            _questMarkService.OnMarkStateChanged += Refresh;
+        }
+
         Refresh();
     }
 
@@ -47,6 +52,11 @@ public class ShrineQuestMarkView : MonoBehaviour
 
         QuestManager.OnQuestDataLoaded -= Refresh;
         TimeEvents.OnNetDayChanged -= Refresh;
+
+        if (_questMarkService != null)
+        {
+            _questMarkService.OnMarkStateChanged -= Refresh;
+        }
     }
 
     private void OnQuestChanged(QuestRuntimeData _)

@@ -11,6 +11,7 @@ public class PlayerQuestAbility : PlayerAbility, ISaveableAbility
 
     private int _lastCheckedDailyQuestDay = -1;
     private string _lastCheckedWorldEffectQuestId;
+    public event Action OnQuestMarkCheckStateChanged;
 
     public int LastCheckedDailyQuestDay => _lastCheckedDailyQuestDay;
     public string LastCheckedWorldEffectQuestId => _lastCheckedWorldEffectQuestId;
@@ -22,12 +23,18 @@ public class PlayerQuestAbility : PlayerAbility, ISaveableAbility
 
     public void MarkDailyQuestBoardChecked(int day)
     {
+        if (_lastCheckedDailyQuestDay == day) return;
+
         _lastCheckedDailyQuestDay = day;
+        OnQuestMarkCheckStateChanged?.Invoke();
     }
 
     public void MarkWorldEffectQuestChecked(string questId)
     {
+        if (_lastCheckedWorldEffectQuestId == questId) return;
+
         _lastCheckedWorldEffectQuestId = questId;
+        OnQuestMarkCheckStateChanged?.Invoke();
     }
 
     public bool HasCheckedDailyQuestBoardToday()

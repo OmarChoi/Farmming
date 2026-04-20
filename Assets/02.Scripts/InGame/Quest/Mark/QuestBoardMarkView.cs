@@ -10,6 +10,7 @@ public class QuestBoardMarkView : MonoBehaviour
     [SerializeField] private QuestBoard _questBoard;
     [SerializeField] private QuestBoardDataSO _boardData;
 
+
     private void Awake()
     {
         if (_worldMarkView == null)
@@ -41,6 +42,11 @@ public class QuestBoardMarkView : MonoBehaviour
         QuestManager.OnQuestDataLoaded += Refresh;
         TimeEvents.OnNetDayStarted += Refresh;
 
+        if (_questMarkService != null)
+        {
+            _questMarkService.OnMarkStateChanged += Refresh;
+        }
+
         Refresh();
     }
 
@@ -56,6 +62,11 @@ public class QuestBoardMarkView : MonoBehaviour
 
         QuestManager.OnQuestDataLoaded -= Refresh;
         TimeEvents.OnNetDayStarted -= Refresh;
+
+        if (_questMarkService != null)
+        {
+            _questMarkService.OnMarkStateChanged -= Refresh;
+        }
     }
 
     private void OnQuestChanged(QuestRuntimeData _)
