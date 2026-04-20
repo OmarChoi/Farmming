@@ -1,7 +1,8 @@
-using UnityEngine;
+using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public class CaveTroublemakerBehaviour : TroublemakerBehaviourBase
 {
@@ -10,8 +11,8 @@ public class CaveTroublemakerBehaviour : TroublemakerBehaviourBase
     [SerializeField] private int _overlapBufferSize = 8;
 
     [Header("방해 효과 연출")]
-    [SerializeField] private GameObject _troubleEffectPrefab;
-    [SerializeField] private Vector3 _effectOffset = Vector3.zero;
+    [SerializeField] private GameObject _troubleEffectObject;
+    [SerializeField] private ParticleSystem _troubleEffectParticle;
 
     private Collider[] _hits;
     private bool _isTroubling;
@@ -20,6 +21,16 @@ public class CaveTroublemakerBehaviour : TroublemakerBehaviourBase
     private void Awake()
     {
         _hits = new Collider[Mathf.Max(1, _overlapBufferSize)];
+    }
+
+    public void SpawnTroubleEffectLocal()
+    {
+        if (_troubleEffectObject == null || _troubleEffectParticle == null) return;
+
+        _troubleEffectObject.SetActive(true);
+        _troubleEffectParticle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        _troubleEffectParticle.Clear(true);
+        _troubleEffectParticle.Play(true);
     }
 
     public override void OnReachTarget(Transform target)
@@ -120,10 +131,10 @@ public class CaveTroublemakerBehaviour : TroublemakerBehaviourBase
 
     private void PlayTroubleEffect()
     {
-        if (_troubleEffectPrefab == null) return;
+        if (Controller == null || Controller.PhotonView == null) return;
+        if (_troubleEffectObject == null || _troubleEffectParticle == null) return;
 
-        Vector3 spawnPos = Controller.transform.position + _effectOffset;
-        Instantiate(_troubleEffectPrefab, spawnPos, Quaternion.identity);
+        Controller.PhotonView.RPC(nameof(TroublemakerController.RPC_PlayCaveTroubleEffect), RpcTarget.All);
     }
 
     private void ClearTargetAndReturnHome()
