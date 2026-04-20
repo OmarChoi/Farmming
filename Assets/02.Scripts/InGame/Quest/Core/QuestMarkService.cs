@@ -103,7 +103,19 @@ public class QuestMarkService : MonoBehaviour
             }
         }
 
-        // 2. 수락 가능
+        // 2. 진행 중
+        foreach (QuestRuntimeData quest in _questManager.GetActiveQuestList())
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+
+            if (IsQuestRelatedToNpc(quest.QuestData, npcId))
+            {
+                return EWorldMarkVisualType.InProgress;
+            }
+        }
+
+        // 3. 수락 가능
         NpcQuest provider = npc.GetComponent<NpcQuest>();
         if (provider != null && provider.Quests != null)
         {
@@ -116,18 +128,6 @@ public class QuestMarkService : MonoBehaviour
                 {
                     return EWorldMarkVisualType.Available;
                 }
-            }
-        }
-
-        // 3. 진행 중
-        foreach (QuestRuntimeData quest in _questManager.GetActiveQuestList())
-        {
-            if (quest == null || quest.QuestData == null) continue;
-            if (quest.Status != EQuestStatus.InProgress) continue;
-
-            if (IsQuestRelatedToNpc(quest.QuestData, npcId))
-            {
-                return EWorldMarkVisualType.InProgress;
             }
         }
 
