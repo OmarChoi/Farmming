@@ -19,6 +19,7 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
     [SerializeField] private GameObject _videoRoot;
 
     [SerializeField, Min(0f)] private float _fadeDuration = 0.5f;
+    [SerializeField, Min(0f)] private float _endHoldDuration = 1.5f;
     [SerializeField] private bool _playOnStart = true;
 
     private Coroutine _routine;
@@ -68,13 +69,30 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
 
             yield return PlayOne(clip);
 
-            // 마지막 영상이 끝나면 검정 상태 유지 후 종료 처리로 넘어간다
             yield return FadeTo(1f, _fadeDuration);
+
+            bool isLast = i == _videoClips.Length - 1;
+            if (isLast && _endHoldDuration > 0f)
+                yield return new WaitForSeconds(_endHoldDuration);
         }
 
         _videoPlayer.Stop();
+        ClearVideoTexture();
+        yield return FadeTo(0f, _fadeDuration);
         if (_videoRoot != null) _videoRoot.SetActive(false);
         _routine = null;
+    }
+
+    private void ClearVideoTexture()
+    {
+        // 마지막 프레임이 RenderTexture에 남아 페이드 아웃 중 잔상으로 보이는 것을 방지
+        RenderTexture rt = _videoPlayer != null ? _videoPlayer.targetTexture : null;
+        if (rt == null) return;
+
+        RenderTexture prev = RenderTexture.active;
+        RenderTexture.active = rt;
+        GL.Clear(true, true, Color.clear);
+        RenderTexture.active = prev;
     }
 
     private IEnumerator PlayOne(VideoClip clip)
