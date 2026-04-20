@@ -44,13 +44,12 @@ public class QuestBoard : MonoBehaviour, IWorldInteractable
 
         IReadOnlyList<QuestDataSO> todayQuests = DailyQuestManager.Instance.TodayDailyQuests;
 
-        if (todayQuests == null || todayQuests.Count == 0)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("오늘 표시할 일일 퀘스트가 없습니다.");
-#endif
-            return;
-        }
+        if (todayQuests == null || todayQuests.Count == 0) return;
+
+        // 퀘스트 보드에 접근한 시점의 날짜로 체크 표시한다.
+        // UI 열리는 도중 날짜가 바뀌더라도 일단 열려있는 UI에는 영향이 없도록 한다.
+        PlayerQuestAbility playerQuestAbility = _playerController?.GetAbility<PlayerQuestAbility>();
+        playerQuestAbility?.MarkDailyQuestBoardChecked(TimeEvents.CurrentDay);
 
         // UI 모드 전환은 OpenAsync 예외와 무관하게 반드시 복구돼야 하므로 try/catch로 감싼다.
         _isInteracting = true;

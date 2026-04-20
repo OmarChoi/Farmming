@@ -1693,7 +1693,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7778371300697517979}
-  - component: {fileID: 4373092063827434065}
   - component: {fileID: 606606606606606606}
   - component: {fileID: 606606606606606607}
   - component: {fileID: 7710961226404012833}
@@ -1724,30 +1723,9 @@ Transform:
   - {fileID: 7235063160482465971}
   - {fileID: 390154288436782590}
   - {fileID: 587421545599315141}
+  - {fileID: 3125528068919958136}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &4373092063827434065
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8505581659011346680}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 40d66aae74632074e81b61b2073c204c, type: 3}
-  m_Controller: {fileID: 9100000, guid: 3bdc14fe07bac6e47941ce1ed94907a4, type: 2}
-  m_CullingMode: 1
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &606606606606606606
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1866,3 +1844,65 @@ Transform:
   - {fileID: 8567135733305416841}
   m_Father: {fileID: 4141861269121658357}
   m_LocalEulerAnglesHint: {x: 7.519229, y: -101.92603, z: 4.928546}
+--- !u!1001 &1478123657614929327
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7778371300697517979}
+    m_Modifications:
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9037437447047831205, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+      propertyPath: m_Name
+      value: ShrineQuestMarkView
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+--- !u!4 &3125528068919958136 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4603596475732178903, guid: ef976a31d1e23f247904d74614c26b7b, type: 3}
+  m_PrefabInstance: {fileID: 1478123657614929327}
+  m_PrefabAsset: {fileID: 0}
