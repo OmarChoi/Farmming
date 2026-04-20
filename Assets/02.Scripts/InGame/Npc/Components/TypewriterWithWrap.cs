@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Text;
 using TMPro;
@@ -7,19 +8,20 @@ public class TypewriterWithWrap : MonoBehaviour
 {
     private TextMeshProUGUI _tmp;
 
-    [SerializeField] private float _typingSpeed = 0.05f;
+    [SerializeField] private float _typingSpeed = 0.07f;
 
     private bool _isTyping;
     private string _fullText;
 
     private Coroutine _typingCoroutine;
+    private Action<char> _onChar;
 
     void Awake()
     {
         _tmp = GetComponent<TextMeshProUGUI>();
     }
 
-    public void StartTyping(string input)
+    public void StartTyping(string input, Action<char> onChar = null)
     {
         if (_typingCoroutine != null)
         {
@@ -28,6 +30,7 @@ public class TypewriterWithWrap : MonoBehaviour
 
         string wrapped = WrapText(input);
         _fullText = wrapped;
+        _onChar = onChar;
         _typingCoroutine = StartCoroutine(TypingTextCoroutine(wrapped));
     }
 
@@ -39,7 +42,7 @@ public class TypewriterWithWrap : MonoBehaviour
 
         for (int i = 0; i < text.Length; i++)
         {
-            // 리치텍스트 태그는 통째로 추가
+            // 리치텍스트 태그는 통째로 추가 (음성 콜백 미발생)
             if (text[i] == '<')
             {
                 int closeIndex = text.IndexOf('>', i);
@@ -51,11 +54,14 @@ public class TypewriterWithWrap : MonoBehaviour
                 }
             }
 
-            _tmp.text += text[i];
+            char ch = text[i];
+            _tmp.text += ch;
+            _onChar?.Invoke(ch);
             yield return new WaitForSeconds(_typingSpeed);
         }
 
         _isTyping = false;
+        _onChar = null;
     }
 
     public string WrapText(string input)
@@ -102,6 +108,7 @@ public class TypewriterWithWrap : MonoBehaviour
         StopCoroutine(_typingCoroutine);
         _tmp.text = _fullText;
         _isTyping = false;
+        _onChar = null;
     }
 
     public bool IsTyping()

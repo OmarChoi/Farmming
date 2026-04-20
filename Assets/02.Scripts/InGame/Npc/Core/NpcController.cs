@@ -14,6 +14,7 @@ public class NpcController : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private NpcMovement _movement;
     [SerializeField] private NpcAnimatorController _anim;
+    [SerializeField] private NpcVoicePlayer _voice;
 
     [Header("Npc 데이터")]
     [SerializeField] private NpcScheduleSO _npcSchedule;
@@ -43,6 +44,7 @@ public class NpcController : MonoBehaviour
 
     public Animator Animator => _animator;
     public NpcAnimatorController Anim => _anim;
+    public NpcVoicePlayer Voice => _voice;
     public NpcDataSO Data => _npcData;
     public NpcQuest Quest => _npcQuest;
     public NpcScheduleSO Schedule => _npcSchedule;
@@ -69,6 +71,7 @@ public class NpcController : MonoBehaviour
         if (_animator == null) _animator = GetComponent<Animator>();
         if (_movement == null) _movement = GetComponent<NpcMovement>();
         if (_anim == null) _anim = GetComponent<NpcAnimatorController>();
+        if (_voice == null) _voice = GetComponent<NpcVoicePlayer>();
         if (_npcQuest == null) _npcQuest = GetComponent<NpcQuest>();
     }
 
