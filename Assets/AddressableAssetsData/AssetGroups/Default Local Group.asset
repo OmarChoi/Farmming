@@ -46,6 +46,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26609f7040e02184486b5f969db180f0
+    m_Address: UI_Setting
   - m_GUID: 0142ca2184b166d4e88f03cb46c6657d
     m_Address: SFXhelperequip
     m_ReadOnly: 0
@@ -81,8 +83,7 @@ MonoBehaviour:
   - m_GUID: 30ec1520558c9a045a7c274ce80f5be4
     m_Address: GamblingBuilding
     m_ReadOnly: 0
-    m_SerializedLabels:
-    - NetworkPrefab
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3a29f65e6280eb241932e034c68f5f03
     m_Address: House2
@@ -90,6 +91,14 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30ec1520558c9a045a7c274ce80f5be4
+    m_Address: GamblingBuilding
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3f18f96d1035ee548be0a0aa9ae3c637
+    m_Address: SFXstartscenebgm
   - m_GUID: 46f5e5cfad5f9954eb152d6ac8db3438
     m_Address: BGMStartScene
     m_ReadOnly: 0
@@ -111,6 +120,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5685c2ce5f13e424f8a8699b9fb0ae6f
+    m_Address: UI_Pause
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5dc103abe652e2b4b98c42bb9f1beaaf
     m_Address: UI_BuildingList
@@ -159,6 +173,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b4c138472d10d7f449102f371f8b9981
     m_Address: SFXharvestlegendary
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bddcd437c49071c4493bcd7650e3a69d
+    m_Address: UI_VillageInfoPopup
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
