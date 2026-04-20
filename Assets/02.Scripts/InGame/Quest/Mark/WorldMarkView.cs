@@ -1,5 +1,6 @@
-using UnityEngine;
 using DG.Tweening;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class WorldMarkView : MonoBehaviour
 {
@@ -17,6 +18,18 @@ public class WorldMarkView : MonoBehaviour
     [SerializeField] private float _pulseDuration = 1.0f;
 
     private Tween _pulseTween;
+
+    private readonly Dictionary<Transform, Vector3> _originalScales = new();
+
+
+    private void Awake()
+    {
+        CacheOriginalScale(_pulseTarget);
+        CacheOriginalScale(_availableMarkObject);
+        CacheOriginalScale(_inProgressMarkObject);
+        CacheOriginalScale(_canCompleteMarkObject);
+        CacheOriginalScale(_updatedMarkObject);
+    }
 
     private void OnDisable()
     {
@@ -53,7 +66,7 @@ public class WorldMarkView : MonoBehaviour
         StopPulse();
     }
 
-    private void SetActiveMarks(bool showAvailable, bool showInProgress, bool showComplete, bool showRefresh)
+    private void SetActiveMarks(bool showAvailable, bool showInProgress, bool showComplete, bool showUpdated)
     {
         if (_availableMarkObject != null)
         {
@@ -72,7 +85,7 @@ public class WorldMarkView : MonoBehaviour
 
         if (_updatedMarkObject != null)
         {
-            _updatedMarkObject.SetActive(showRefresh);
+            _updatedMarkObject.SetActive(showUpdated);
         }
     }
 
@@ -83,7 +96,8 @@ public class WorldMarkView : MonoBehaviour
         Transform target = _pulseTarget != null ? _pulseTarget : targetObject != null ? targetObject.transform : null;
         if (target == null) return;
 
-        target.localScale = Vector3.one;
+        Vector3 baseScale = GetOriginalScale(target);
+        target.localScale = baseScale;
 
         _pulseTween = target.DOScale(_pulseScale, _pulseDuration).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
     }
@@ -93,22 +107,53 @@ public class WorldMarkView : MonoBehaviour
         _pulseTween?.Kill();
         _pulseTween = null;
 
-        if (_pulseTarget != null)
-        {
-            _pulseTarget.localScale = Vector3.one;
-        }
-
+        ResetScale(_pulseTarget);
         ResetScale(_availableMarkObject);
         ResetScale(_inProgressMarkObject);
         ResetScale(_canCompleteMarkObject);
         ResetScale(_updatedMarkObject);
     }
 
+    private void CacheOriginalScale(GameObject targetObject)
+    {
+        if (targetObject != null)
+        {
+            CacheOriginalScale(targetObject.transform);
+        }
+    }
+
+    private void CacheOriginalScale(Transform target)
+    {
+        if (target == null) return;
+        if (_originalScales.ContainsKey(target)) return;
+
+        _originalScales[target] = target.localScale;
+    }
+
+    private Vector3 GetOriginalScale(Transform target)
+    {
+        if (target == null) return Vector3.one;
+
+        if (_originalScales.TryGetValue(target, out Vector3 scale))
+        {
+            return scale;
+        }
+
+        _originalScales[target] = target.localScale;
+        return target.localScale;
+    }
+
     private void ResetScale(GameObject targetObject)
     {
         if (targetObject != null)
         {
-            targetObject.transform.localScale = Vector3.one;
+            ResetScale(targetObject.transform);
         }
+    }
+
+    private void ResetScale(Transform target)
+    {
+        if (target == null) return;
+        target.localScale = GetOriginalScale(target);
     }
 }

@@ -9,6 +9,7 @@ public class QuestMarkService : MonoBehaviour
 
     private PlayerQuestAbility _localPlayerQuestAbility;
 
+
     private void Awake()
     {
         if (_questManager == null)
@@ -25,11 +26,13 @@ public class QuestMarkService : MonoBehaviour
     private void OnEnable()
     {
         GameSceneInit.OnLocalPlayerSceneReady += HandleLocalPlayerReady;
+        QuestManager.OnQuestManagerReady += HandleQuestManagerReady;
     }
 
     private void OnDisable()
     {
         GameSceneInit.OnLocalPlayerSceneReady -= HandleLocalPlayerReady;
+        QuestManager.OnQuestManagerReady -= HandleQuestManagerReady;
     }
 
     private void HandleLocalPlayerReady(PlayerController player)
@@ -41,6 +44,11 @@ public class QuestMarkService : MonoBehaviour
     private PlayerQuestAbility GetLocalPlayerQuestAbility()
     {
         return _localPlayerQuestAbility;
+    }
+
+    private void HandleQuestManagerReady()
+    {
+        _questManager = QuestManager.Instance;
     }
 
     public EWorldMarkVisualType GetNpcQuestMarkVisualType(NpcController npc)
@@ -146,7 +154,7 @@ public class QuestMarkService : MonoBehaviour
             return EWorldMarkVisualType.Updated;
         }
 
-        return hasNewQuest ? EWorldMarkVisualType.Updated : EWorldMarkVisualType.None;
+        return EWorldMarkVisualType.None;
     }
 
     public EWorldMarkVisualType GetShrineQuestMarkVisualType()
