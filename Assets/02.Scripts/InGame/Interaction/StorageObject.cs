@@ -2,6 +2,7 @@ using UnityEngine;
 
 /// 월드에 배치되는 창고 오브젝트. IWorldInteractable 구현.
 /// PUN2 동기화는 StorageSyncHandler에 위임한다.
+[RequireComponent(typeof(BaseBuilding))]
 public class StorageObject : MonoBehaviour, IWorldInteractable
 {
     [SerializeField] private int _slotCount = 24;
@@ -14,6 +15,7 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
     private string _buildingId;
     private Vector3Int _anchor;
     private bool _isBoundToBuilding;
+    private BaseBuilding _building;
 
     public string AnimationTrigger => _animationTrigger;
     public StorageDomain Storage => _storage;
@@ -42,6 +44,7 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
 
     public void Interact(PlayerController player)
     {
+        if (!_building.IsConstructionComplete) return;
         if (!EnsureController()) return;
 
         _syncHandler?.RequestFullSync();
