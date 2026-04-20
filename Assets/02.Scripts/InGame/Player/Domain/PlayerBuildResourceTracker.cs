@@ -146,7 +146,11 @@ public class PlayerBuildResourceTracker
 
     private bool EnsureInventoryAbility()
     {
-        if (_inventoryAbility != null) return true;
+        if (_inventoryAbility != null)
+        {
+            Bind();
+            return true;
+        }
 
         CacheInventoryAbility();
         if (_inventoryAbility == null) return false;

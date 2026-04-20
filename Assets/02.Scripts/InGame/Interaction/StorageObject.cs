@@ -3,6 +3,7 @@ using UnityEngine;
 /// 월드에 배치되는 창고 오브젝트. IWorldInteractable 구현.
 /// PUN2 동기화는 StorageSyncHandler에 위임한다.
 [RequireComponent(typeof(BaseBuilding))]
+[RequireComponent(typeof(StorageAnimator))]
 public class StorageObject : MonoBehaviour, IWorldInteractable
 {
     [SerializeField] private int _slotCount = 24;
@@ -11,6 +12,7 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
 
     private StorageDomain _storage;
     private StorageSyncHandler _syncHandler;
+    private StorageAnimator _animator;
     private StorageController _controller;
     private string _buildingId;
     private Vector3Int _anchor;
@@ -27,6 +29,8 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
         _storage = new StorageDomain(_slotCount);
         _syncHandler = GetComponent<StorageSyncHandler>();
         _syncHandler?.Init(_storage, _slotCount);
+        _animator = GetComponent<StorageAnimator>();
+        _building = GetComponent<BaseBuilding>();
     }
 
     private void OnEnable()
@@ -49,6 +53,7 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
 
         _syncHandler?.RequestFullSync();
         _controller?.OpenStorage(this);
+        _animator?.OnOpenAnimation();
     }
 
     private void OnDestroy()
@@ -180,5 +185,8 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
         return _controller != null;
     }
 
-    public void EndInteract() { }
+    public void EndInteract()
+    {
+        _animator?.OnCloseAnimation();
+    }
 }
