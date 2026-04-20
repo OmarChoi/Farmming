@@ -49,6 +49,11 @@ public class HelperFollowAbility : HelperAbility
     private void Update()
     {
         if (!_owner.IsMine) return;
+        if (_owner.IsDespawning)
+        {
+            StopFollowSoundTimer();
+            return;
+        }
         if (_owner.State != EHelperState.Summoned)
         {
             StopFollowSoundTimer();
