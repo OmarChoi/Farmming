@@ -1,3 +1,4 @@
+using System;
 using DG.Tweening;
 using UnityEngine;
 
@@ -58,7 +59,7 @@ public class HelperSummonVfxAbility : HelperAbility
             .SetEase(_scaleEase);
     }
 
-    public void PlayOnDespawn(System.Action onComplete)
+    public void PlayOnDespawn(Action onComplete)
     {
         _scaleTween?.Kill();
 
@@ -69,7 +70,7 @@ public class HelperSummonVfxAbility : HelperAbility
         }
 
         bool invoked = false;
-        System.Action safeInvoke = () =>
+        Action safeInvoke = () =>
         {
             if (invoked) return;
             invoked = true;

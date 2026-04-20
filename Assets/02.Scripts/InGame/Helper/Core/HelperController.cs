@@ -129,7 +129,9 @@ public class HelperController : MonoBehaviourPunCallbacks
         transform.position = FollowTarget.position + FollowTarget.right * SummonOffset;
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
-        GetAbility<HelperSummonVfxAbility>()?.PlayOnSummon();
+        var summonVfx = GetAbility<HelperSummonVfxAbility>();
+        if (summonVfx != null) summonVfx.PlayOnSummon();
+        else transform.localScale = _originalScale;
         PlayHelperSfx(AssetKey.SFX.HelperSummon, ESpatialMode.FollowTransform);
     }
 
@@ -307,7 +309,9 @@ public class HelperController : MonoBehaviourPunCallbacks
         transform.SetParent(null);
         gameObject.SetActive(true);
         GetAbility<HelperInteractionAbility>()?.Init();
-        GetAbility<HelperSummonVfxAbility>()?.PlayOnSummon();
+        var summonVfx = GetAbility<HelperSummonVfxAbility>();
+        if (summonVfx != null) summonVfx.PlayOnSummon();
+        else transform.localScale = _originalScale;
         PlayHelperSfx(AssetKey.SFX.HelperSummon, ESpatialMode.FollowTransform);
     }
 
