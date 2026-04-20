@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -10,11 +11,12 @@ public class PlayerInfoPanelAbility : PlayerAbility
     {
         if (_owner == null || !_owner.IsMine) return;
 
-        if (Input.GetKeyDown(_toggleKey) && !_isOpen)
+        if (Input.GetKey(_toggleKey))
         {
+            if (_isOpen) return;
             OpenInfoPanel();
         }
-        else if ((Input.GetKeyUp(_toggleKey) || !Input.GetKey(_toggleKey)) && _isOpen)
+        else if (_isOpen)
         {
             CloseInfoPanel();
         }
@@ -32,27 +34,25 @@ public class PlayerInfoPanelAbility : PlayerAbility
 
     private void OpenInfoPanel()
     {
-        _isOpen = true;
-        _owner.EnterUIMode();
         if (UIController.Instance != null)
         {
-            UIController.Instance.OpenAsync
+            UIController.Instance.OpenAsync<UI_VillageInfoPopup>
             (
-                new UILifecycleActions<UI_InfoPannel>
+                new UILifecycleActions<UI_VillageInfoPopup>
                 {
                     OnOpen = ui => ui.SetPlayerController(_owner)
                 }
             ).Forget();
         }
+        _isOpen = true;
     }
 
     private void CloseInfoPanel()
     {
-        _isOpen = false;
-        _owner.ExitUIMode();
         if (UIController.Instance != null)
         {
-            UIController.Instance.CloseAsync<UI_InfoPannel>().Forget();
+            UIController.Instance.CloseAsync<UI_VillageInfoPopup>().Forget();
         }
+        _isOpen = false;
     }
 }
