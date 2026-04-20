@@ -100,6 +100,7 @@ public class AiDialogueController : MonoBehaviour
         _currentProfile = await _memoryService.LoadProfileAsync(npcId, playerId);
 
         _uiDialogue.Open(context.NpcName);
+        _uiDialogue.SetVoice(context.Npc.Voice);
         _uiDialogue.ClearMessages();
         _uiDialogue.SetGenerating(false);
         _uiDialogue.AddSystemMessage("대화할 준비 중이에요.");

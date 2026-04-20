@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -45,8 +47,16 @@ public class NpcVoicePlayer : MonoBehaviour
     [SerializeField] private float _volume = 0.7f;
     [SerializeField] private bool _skipDuplicateConsonant = true;
 
+    [Header("스트리밍 옵션 (AI 대화용)")]
+    [Tooltip("LLM 토큰 버스트를 풀어낼 간격(초). UI 타자기 속도와 맞추면 자연스럽다.")]
+    [SerializeField] private float _streamInterval = 0.07f;
+
     private AudioSource _source;
     private int _lastChosungIndex = -1;
+
+    private readonly Queue<char> _streamQueue = new Queue<char>();
+    private Coroutine _streamCoroutine;
+    private string _lastStreamedText = string.Empty;
 
     private void Awake()
     {
@@ -88,11 +98,63 @@ public class NpcVoicePlayer : MonoBehaviour
 
     public void Stop()
     {
+        StopStreaming();
         if (_source != null)
         {
             _source.Stop();
         }
         _lastChosungIndex = -1;
+    }
+
+    // LLM 스트리밍용: partial은 지금까지 누적된 전체 텍스트(델타 아님).
+    // 이전에 전달된 텍스트와의 차분만 큐에 쌓아 고정 간격으로 재생한다.
+    public void PlayStreaming(string fullText)
+    {
+        if (string.IsNullOrEmpty(fullText)) return;
+
+        // 새 응답 시작 감지: 이전보다 짧거나 접두사가 달라진 경우
+        if (fullText.Length < _lastStreamedText.Length || !fullText.StartsWith(_lastStreamedText))
+        {
+            _lastStreamedText = string.Empty;
+        }
+
+        for (int i = _lastStreamedText.Length; i < fullText.Length; i++)
+        {
+            _streamQueue.Enqueue(fullText[i]);
+        }
+        _lastStreamedText = fullText;
+
+        if (_streamCoroutine == null && isActiveAndEnabled)
+        {
+            _streamCoroutine = StartCoroutine(DrainStreamQueue());
+        }
+    }
+
+    public void BeginStreaming()
+    {
+        StopStreaming();
+    }
+
+    public void StopStreaming()
+    {
+        if (_streamCoroutine != null)
+        {
+            StopCoroutine(_streamCoroutine);
+            _streamCoroutine = null;
+        }
+        _streamQueue.Clear();
+        _lastStreamedText = string.Empty;
+    }
+
+    private IEnumerator DrainStreamQueue()
+    {
+        WaitForSeconds wait = new WaitForSeconds(_streamInterval);
+        while (_streamQueue.Count > 0)
+        {
+            PlayChar(_streamQueue.Dequeue());
+            yield return wait;
+        }
+        _streamCoroutine = null;
     }
 
     public void SetVoiceType(ENpcVoiceType voiceType)
