@@ -18,7 +18,8 @@ public class TradeService
         int totalCost = item.BuyCost * amount;
         if (!CurrencyManager.Instance.TrySpendGold(totalCost)) return false;
 
-        QuestReportItemHelper.AddItemAndReportQuest(_playerInventory, item, amount);
+        _playerInventory.AddItem(item, amount);
+
         return true;
     }
 

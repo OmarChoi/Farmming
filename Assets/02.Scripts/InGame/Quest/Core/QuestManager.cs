@@ -193,6 +193,35 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
         _rewardService = new QuestRewardService(_playerInventory, _playerHelperInventory);
         _requirementService = new QuestRequirementService(_playerInventory);
+
+        RefreshInventoryBasedQuestProgresses();
+    }
+
+    private void RefreshInventoryBasedQuestProgresses()
+    {
+        if (_requirementService == null) return;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+
+            switch (quest.QuestData.ObjectiveType)
+            {
+                case EQuestObjectiveType.CollectItem:
+                    InitializeCollectItemProgress(quest);
+                    quest.Status = quest.IsObjectiveCompleted()
+                        ? EQuestStatus.CanComplete
+                        : EQuestStatus.InProgress;
+                    OnQuestUpdated?.Invoke(quest);
+                    break;
+
+                case EQuestObjectiveType.DeliverItem:
+                    InitializeDeliverItemProgress(quest);
+                    OnQuestUpdated?.Invoke(quest);
+                    break;
+            }
+        }
     }
 
     private void HandleGatheringCompleted(GatheringObject obj, PlayerController player)
@@ -205,6 +234,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
     private void HandleTileBecameDry(FarmTile tile)
     {
+        if (!CanProcessLocalQuest()) return;
         ReportFarmDried();
     }
 
@@ -216,6 +246,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
     private void HandleTileBecameWet(FarmTile tile)
     {
+        if (!CanProcessLocalQuest()) return;
         ReportFarmWatered();
     }
 
@@ -264,6 +295,7 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
     // 이미 같은 퀘스트를 수락 받았는 지 확인하는 메서드입니다.
     public bool AcceptQuest(QuestDataSO questData)
     {
+        if (!CanProcessLocalQuest()) return false;
         if (!CanAcceptQuest(questData)) return false;
 
         QuestRuntimeData runtimeData = new QuestRuntimeData(questData);
@@ -302,13 +334,16 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
     private void InitializeCollectItemProgress(QuestRuntimeData quest)
     {
-        if (quest == null || quest.QuestData == null) return;
+        if (quest == null || quest.QuestData == null || _requirementService == null) return;
 
         foreach (QuestItemRequirementEntry requirement in quest.QuestData.ItemRequirements)
         {
             if (requirement.Item == null) continue;
 
-            quest.SetItemProgress(requirement.ItemId, 0);
+            int ownedCount = _requirementService.GetOwnedItemCount(requirement.Item);
+            int progress = Mathf.Min(ownedCount, requirement.Amount);
+
+            quest.SetItemProgress(requirement.ItemId, progress);
         }
     }
 
@@ -335,12 +370,63 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
 
     public void ReportItemCollected(int itemId, int amount = 1)
     {
+        if (!CanProcessLocalQuest()) return;
         if (itemId < 0 || amount <= 0) return;
-        TryAddItemProgress(itemId, amount);
+
+        RefreshItemQuestProgress(itemId);
+    }
+
+    public void RefreshCollectItemProgress(int itemId)
+    {
+        if (!CanProcessLocalQuest()) return;
+        if (_requirementService == null) return;
+        if (itemId < 0) return;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.QuestData.ObjectiveType != EQuestObjectiveType.CollectItem) continue;
+            if (quest.Status != EQuestStatus.InProgress &&
+                quest.Status != EQuestStatus.CanComplete) continue;
+
+            if (!TryGetRequirementAmount(quest.QuestData, itemId, out int requiredAmount)) continue;
+            if (!TryGetRequirementEntry(quest.QuestData, itemId, out QuestItemRequirementEntry requirement)) continue;
+            if (requirement.Item == null) continue;
+
+            int ownedCount = _requirementService.GetOwnedItemCount(requirement.Item);
+            int progress = Mathf.Min(ownedCount, requiredAmount);
+
+            quest.SetItemProgress(itemId, progress);
+
+            quest.Status = quest.IsObjectiveCompleted()
+                ? EQuestStatus.CanComplete
+                : EQuestStatus.InProgress;
+
+            OnQuestUpdated?.Invoke(quest);
+        }
+    }
+
+    private bool TryGetRequirementEntry(QuestDataSO questData, int itemId, out QuestItemRequirementEntry requirementEntry)
+    {
+        requirementEntry = default;
+
+        if (!HasValidItemRequirements(questData) || itemId < 0) return false;
+
+        foreach (QuestItemRequirementEntry requirement in questData.ItemRequirements)
+        {
+            if (requirement.Item == null) continue;
+            if (requirement.ItemId != itemId) continue;
+
+            requirementEntry = requirement;
+            return true;
+        }
+
+        return false;
     }
 
     public void ReportNpcTalked(string npcId)
     {
+        if (!CanProcessLocalQuest()) return;
         if (string.IsNullOrEmpty(npcId)) return;
         TryAddSimpleProgress(EQuestObjectiveType.TalkToNpc, npcId, 1);
     }
@@ -376,17 +462,57 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         if (questData.TargetNpcId != npcId) return false;
         if (!HasValidItemRequirements(questData)) return false;
 
+        InitializeDeliverItemProgress(quest);
+
         if (!quest.AreAllItemRequirementsCompleted()) return false;
         if (!_requirementService.TryConsumeRequirements(questData.ItemRequirements)) return false;
 
+        InitializeDeliverItemProgress(quest);
         quest.Status = EQuestStatus.CanComplete;
 
         OnQuestUpdated?.Invoke(quest);
         return true;
     }
 
+    public void RefreshItemQuestProgress(int itemId)
+    {
+        if (!CanProcessLocalQuest()) return;
+        if (_requirementService == null) return;
+        if (itemId < 0) return;
+
+        RefreshCollectItemProgress(itemId);
+        RefreshDeliverItemProgress(itemId);
+    }
+
+    public void RefreshDeliverItemProgress(int itemId)
+    {
+        if (!CanProcessLocalQuest()) return;
+        if (_requirementService == null) return;
+        if (itemId < 0) return;
+
+        foreach (QuestRuntimeData quest in _activeQuests.Values)
+        {
+            if (quest == null || quest.QuestData == null) continue;
+            if (quest.QuestData.ObjectiveType != EQuestObjectiveType.DeliverItem) continue;
+            if (quest.Status != EQuestStatus.InProgress) continue;
+
+            if (!TryGetRequirementAmount(quest.QuestData, itemId, out int requiredAmount)) continue;
+            if (!TryGetRequirementEntry(quest.QuestData, itemId, out QuestItemRequirementEntry requirement)) continue;
+            if (requirement.Item == null) continue;
+
+            int ownedCount = _requirementService.GetOwnedItemCount(requirement.Item);
+            int progress = Mathf.Min(ownedCount, requiredAmount);
+
+            quest.SetItemProgress(itemId, progress);
+            quest.Status = EQuestStatus.InProgress;
+
+            OnQuestUpdated?.Invoke(quest);
+        }
+    }
+
     private void TryAddSimpleProgress(EQuestObjectiveType objectiveType, string targetId, int amount)
     {
+        if (!CanProcessLocalQuest()) return;
         if (_activeQuests.Count == 0 || amount <= 0 || string.IsNullOrEmpty(targetId)) return;
 
         foreach (QuestRuntimeData quest in _activeQuests.Values)
@@ -429,37 +555,6 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
             if (quest.CurrentAmount >= questData.RequiredAmount)
             {
                 quest.CurrentAmount = questData.RequiredAmount;
-                quest.Status = EQuestStatus.CanComplete;
-            }
-
-            OnQuestUpdated?.Invoke(quest);
-        }
-    }
-
-    private void TryAddItemProgress(int itemId, int amount)
-    {
-        if (_activeQuests.Count == 0) return;
-        if (itemId < 0 || amount <= 0) return;
-
-        foreach (QuestRuntimeData quest in _activeQuests.Values)
-        {
-            if (quest == null || quest.QuestData == null) continue;
-            if (quest.Status != EQuestStatus.InProgress) continue;
-
-            QuestDataSO questData = quest.QuestData;
-
-            if (questData.ObjectiveType != EQuestObjectiveType.CollectItem &&
-                questData.ObjectiveType != EQuestObjectiveType.DeliverItem)
-            {
-                continue;
-            }
-            if (!HasValidItemRequirements(questData)) continue;
-            if (!TryGetRequirementAmount(questData, itemId, out int requiredAmount)) continue;
-
-            quest.AddItemProgress(itemId, amount, requiredAmount);
-
-            if (quest.IsObjectiveCompleted() && questData.ObjectiveType == EQuestObjectiveType.CollectItem)
-            {
                 quest.Status = EQuestStatus.CanComplete;
             }
 
@@ -518,6 +613,8 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
     // 퀘스트가 완료되었는 지 확인하는 메서드입니다.
     public bool CompleteQuest(string questId)
     {
+        if (!CanProcessLocalQuest()) return false;
+
         QuestRuntimeData quest = GetQuest(questId);
         if (quest == null || quest.Status != EQuestStatus.CanComplete) return false;
 
@@ -673,4 +770,14 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
         return true;
     }
 
+    private bool CanProcessLocalQuest()
+    {
+        if (_playerInventory == null || _playerHelperInventory == null)
+        {
+            return false;
+        }
+
+        PlayerController player = _playerInventory.GetComponentInParent<PlayerController>();
+        return player != null && player.IsMine;
+    }
 }
