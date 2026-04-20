@@ -10,6 +10,14 @@ public interface IBgmPlayer
     // 크로스페이드 전환한다
     UniTask CrossfadeAsync(string clipKey, BgmTransitionConfig config, CancellationToken ct = default);
 
+    UniTask DuckMainAsync(float fadeDuration, CancellationToken ct = default);
+
+    UniTask RestoreMainAsync(float fadeDuration, CancellationToken ct = default);
+
+    UniTask PlayOverlayAsync(string clipKey, BgmTransitionConfig config, CancellationToken ct = default);
+
+    UniTask StopOverlayAsync(float fadeDuration, CancellationToken ct = default);
+
     // [확장] 인트로/루프 분리 재생이 필요하면 아래 시그니처 추가
     // UniTask CrossfadeWithIntroAsync(string introKey, string loopKey, BgmTransitionConfig config, CancellationToken ct = default);
 

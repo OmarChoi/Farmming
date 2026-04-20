@@ -31,8 +31,8 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 21651a147ded07e48ac3dd553bd41eae
-    m_Address: SFXvillagebgm
+  - m_GUID: 33f7b241af573944ab6a83a9395957e6
+    m_Address: BGMVillage
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -48,13 +48,48 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 26609f7040e02184486b5f969db180f0
     m_Address: UI_Setting
+  - m_GUID: 0142ca2184b166d4e88f03cb46c6657d
+    m_Address: SFXhelperequip
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 002da25d76d5e3a4a9d16c745a0250a7
+    m_Address: SFXhelperunequip
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60e3487e6ef02574790ea20bc99f8af7
+    m_Address: SFXhelperfollow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6ba1481c20cbf842b92dc12d87fc385
+    m_Address: HelperEvolution
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a25295cd1fea3b149a967d7f586a5584
+    m_Address: HelperEvolutionBGM
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0d96688f66106e4ea8444fbcb8d938d
+    m_Address: SFXhelpersummon
   - m_GUID: 2beab69326107ad48aa064e00293e0aa
     m_Address: UI_QuestBoard
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30ec1520558c9a045a7c274ce80f5be4
+    m_Address: GamblingBuilding
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a29f65e6280eb241932e034c68f5f03
+    m_Address: House2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 30ec1520558c9a045a7c274ce80f5be4
     m_Address: GamblingBuilding
@@ -64,8 +99,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3f18f96d1035ee548be0a0aa9ae3c637
     m_Address: SFXstartscenebgm
+  - m_GUID: 46f5e5cfad5f9954eb152d6ac8db3438
+    m_Address: BGMStartScene
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e3a858e7956af9488340c7832730125
+    m_Address: House4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4fff2b3205f16db4ba4706b5932cf9a6
     m_Address: UI_Shrine
@@ -94,6 +137,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8ea367cf331d96245ab0db5accedf3a9
+    m_Address: House1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 95ae0dc98ce7d794baf323a7f423424a
     m_Address: SFXwaternormal
     m_ReadOnly: 0
@@ -106,6 +155,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9c84f2ac133c7564f80531de0863f8bc
     m_Address: QuestBoard
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: acd592110672c4d469cb3cb23daec4d1
+    m_Address: House3
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab
@@ -131,8 +186,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c0cf8c17e962e3947870b0f54b18b4d8
-    m_Address: SFXdungeon2bgm
+  - m_GUID: 72602af694dd7f040b9c4b9fefa5b1ab
+    m_Address: Dungeon1Bgm
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

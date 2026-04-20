@@ -200,6 +200,7 @@ public abstract class BaseBuilding : MonoBehaviour
             NpcLocationAnchor anchor = anchors[i];
             if (anchor == null) continue;
 
+            anchor.SetRegisterOnEnable(false);
             anchor.Initialize(
                 spawner.NpcData,
                 runtimeNpcKey,

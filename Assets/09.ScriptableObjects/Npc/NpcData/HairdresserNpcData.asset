@@ -15,7 +15,7 @@ MonoBehaviour:
   NpcId: Hairdresser
   NpcName: "\uCEF7\uD305 C"
   CanUseAiDialogue: 1
-  NpcMbti: ESFP
+  NpcMbti: ENFJ
   NpcPersonality: "\uC790\uC2E0\uAC10\uC774 \uB118\uCE58\uACE0, \uD56D\uC0C1 \uC5F4\uC815\uC801\uC73C\uB85C
     \uC0C8\uB85C\uC6B4 \uAD00\uACC4\uB97C \uB9CC\uB4DC\uB294 \uC0AC\uB78C\uC774\uB2E4.
     \uC790\uC2E0\uC774 \uD558\uB294 \uC77C\uC5D0 \uC790\uBD80\uC2EC\uC774 \uAC15\uD558\uBA70,
@@ -40,6 +40,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 251fa3b6a3eb3994693872f967d1c09a, type: 2}
   - {fileID: 11400000, guid: d99a5f74d037d7c44b717a6da4aecea9, type: 2}
   - {fileID: 11400000, guid: 1af26985bd0656b49813387915754ff5, type: 2}
+  CuringAskDialogue: {fileID: 0}
+  CuringAcceptDialogue: {fileID: 0}
+  CuringDeclineDialogue: {fileID: 0}
+  CuringAlreadyDoneDialogue: {fileID: 0}
   UseRandomTimeOffset: 1
   MinTimeOffset: 0
   MaxTimeOffset: 10
+  AutoStartQuestOnInteract: 0

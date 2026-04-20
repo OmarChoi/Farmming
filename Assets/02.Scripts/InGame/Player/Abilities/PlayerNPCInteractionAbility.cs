@@ -1,10 +1,13 @@
 using UnityEngine;
 
+/// E키로 NPC와 상호작용.
+/// 범위 내 INpcInteraction이 있으면 E키를 선점하여 헬퍼 소환보다 우선 처리.
+[DefaultExecutionOrder(-5)] // PlayerHelperInventoryAbility보다 먼저 실행, PlayerObjectInteractionAbility보다 나중 실행
 public class PlayerNPCInteractionAbility : PlayerAbility
 {
     [SerializeField] private float _radius = 5f;
     [SerializeField] private LayerMask _interactionLayer;
-    [SerializeField] private KeyCode _interactKey = KeyCode.P;
+    [SerializeField] private KeyCode _interactKey = KeyCode.E;
     [SerializeField] private float _rotationSpeed = 10f;
     [SerializeField] private CameraPreset _cameraPreset;
 
@@ -39,6 +42,20 @@ public class PlayerNPCInteractionAbility : PlayerAbility
 
     private void TryInteract()
     {
+        IInteraction closest = GetClosestInteraction();
+        if (closest == null) return;
+
+        if (!_owner.TryConsumeInteract()) return;
+
+        _faceTarget = (closest as Component).transform;
+        _owner.LockAction();
+        _animation?.PlayGreet();
+        _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
+        closest.RequestInteract(_owner);
+    }
+
+    public IInteraction GetClosestInteraction()
+    {
         Collider[] hits = Physics.OverlapSphere(transform.position, _radius, _interactionLayer);
 
         IInteraction closest = null;
@@ -50,7 +67,6 @@ public class PlayerNPCInteractionAbility : PlayerAbility
             if (interactable == null) continue;
 
             float dist = Vector3.Distance(transform.position, hit.transform.position);
-
             if (dist < minDist)
             {
                 minDist = dist;
@@ -58,14 +74,7 @@ public class PlayerNPCInteractionAbility : PlayerAbility
             }
         }
 
-        if (closest != null)
-        {
-            _faceTarget = (closest as Component).transform;
-            _owner.LockAction();
-            _animation?.PlayGreet();
-            _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
-            closest.RequestInteract(_owner);
-        }
+        return closest;
     }
 
     public void EndInteraction()
@@ -83,7 +92,7 @@ public class PlayerNPCInteractionAbility : PlayerAbility
 
         Quaternion targetRotation = Quaternion.LookRotation(dir);
         _owner.transform.rotation = Quaternion.Slerp(
-            _owner.transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+        _owner.transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
     }
 
     public void BeginAutoInteraction(IInteraction target)

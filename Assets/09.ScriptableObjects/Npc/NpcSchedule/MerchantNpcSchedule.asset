@@ -28,7 +28,7 @@ MonoBehaviour:
     NpcLocationType: 2
     LocationKey: Merchant_Wandering1
     WanderingDirection: {x: 1, y: 0, z: -1}
-    WanderingDistance: 13
+    WanderingDistance: 16
     WanderingRadius: 8
     WanderSearchStep: 5
   - ScheduleTime:
@@ -46,8 +46,8 @@ MonoBehaviour:
     NpcLocationType: 2
     LocationKey: Merchant_Wandering2
     WanderingDirection: {x: 1, y: 0, z: -1}
-    WanderingDistance: 8
-    WanderingRadius: 6
+    WanderingDistance: 14
+    WanderingRadius: 8
     WanderSearchStep: 5
   - ScheduleTime:
       _hour: 19
@@ -55,7 +55,7 @@ MonoBehaviour:
     NpcLocationType: 2
     LocationKey: Merchant_Wandering3
     WanderingDirection: {x: 1, y: 0, z: 0}
-    WanderingDistance: 52
+    WanderingDistance: 22
     WanderingRadius: 16
     WanderSearchStep: 5
   - ScheduleTime:

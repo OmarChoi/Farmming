@@ -13,10 +13,13 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private TutorialProgressController _tutorialProgressController;
 
     private PlayerController _currentPlayer;
-    private Transform _playerTransform;
+    private PlayerQuestAbility _playerQuestAbility;
     private NpcController _tutorialNpcController;
-    private bool _isTutorialStarted;
-    private bool _isWaitingToStartTutorial;
+
+    private bool _sceneReady;
+    private bool _dialogueReady;
+    private bool _playerQuestReady;
+    private bool _tutorialStarted;
 
     private void Awake()
     {
@@ -33,57 +36,92 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    public void TryStartTutorial(PlayerController player)
+    private void OnEnable()
     {
-        if (_isTutorialStarted || _isWaitingToStartTutorial || player == null || _tutorialNpc == null) return;
+        GameSceneInit.OnLocalPlayerSceneReady += HandleLocalPlayerSceneReady;
+        NpcDialogueController.OnDialogueReady += HandleDialogueReady;
 
-        PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
-        if (questAbility == null) return;
-        if (questAbility.TutorialState == ETutorialState.Completed) return;
+        if (NpcDialogueController.Instance != null && NpcDialogueController.Instance.IsReady)
+        {
+            HandleDialogueReady();
+        }
+    }
+
+    private void OnDisable()
+    {
+        GameSceneInit.OnLocalPlayerSceneReady -= HandleLocalPlayerSceneReady;
+        NpcDialogueController.OnDialogueReady -= HandleDialogueReady;
+
+        UnbindPlayerQuestAbility();
+    }
+
+    private void HandleLocalPlayerSceneReady(PlayerController player)
+    {
+        if (player == null || !player.IsMine) return;
 
         _currentPlayer = player;
-        _playerTransform = player.transform;
+        _sceneReady = true;
 
-        bool saveLoaded = SaveManager.Instance == null || SaveManager.Instance.IsLoadCompleted;
-        bool questLoaded = QuestManager.Instance != null && QuestManager.Instance.IsLoaded;
+        BindPlayerQuestAbility(player);
+        EvaluateTutorialStart();
+    }
 
-        if (!saveLoaded || !questLoaded)
+    private void BindPlayerQuestAbility(PlayerController player)
+    {
+        UnbindPlayerQuestAbility();
+
+        _playerQuestAbility = player.GetAbility<PlayerQuestAbility>();
+        if (_playerQuestAbility == null) return;
+
+        _playerQuestAbility.OnInitialized += HandlePlayerQuestInitialized;
+        _playerQuestReady = _playerQuestAbility.IsInitialized;
+
+        if (_playerQuestReady)
         {
-            _isWaitingToStartTutorial = true;
-            WaitAndStartTutorialAsync().Forget();
-            return;
+            EvaluateTutorialStart();
         }
+    }
+
+    private void UnbindPlayerQuestAbility()
+    {
+        if (_playerQuestAbility != null)
+        {
+            _playerQuestAbility.OnInitialized -= HandlePlayerQuestInitialized;
+            _playerQuestAbility = null;
+        }
+
+        _playerQuestReady = false;
+    }
+
+    private void HandlePlayerQuestInitialized()
+    {
+        _playerQuestReady = true;
+        EvaluateTutorialStart();
+    }
+
+    private void HandleDialogueReady()
+    {
+        _dialogueReady = true;
+        EvaluateTutorialStart();
+    }
+
+    private void EvaluateTutorialStart()
+    {
+        if (_tutorialStarted) return;
+        if (_currentPlayer == null) return;
+        if (!_sceneReady || !_playerQuestReady || !_dialogueReady) return;
+        if (_tutorialNpc == null || _tutorialProgressController == null) return;
+        if (GameSceneInit.ReturningFromDungeon) return;
+
+        if (_playerQuestAbility == null) return;
+        if (_playerQuestAbility.TutorialState == ETutorialState.Completed) return;
 
         StartTutorial();
     }
 
-    private async UniTaskVoid WaitAndStartTutorialAsync()
-    {
-        try
-        {
-            await UniTask.WaitUntil(() =>
-            {
-                bool saveLoaded = SaveManager.Instance == null || SaveManager.Instance.IsLoadCompleted;
-                bool questLoaded = QuestManager.Instance != null && QuestManager.Instance.IsLoaded;
-                return saveLoaded && questLoaded;
-            }, cancellationToken: this.GetCancellationTokenOnDestroy());
-
-            if (_currentPlayer == null) return;
-
-            PlayerQuestAbility questAbility = _currentPlayer.GetAbility<PlayerQuestAbility>();
-            if (questAbility == null || questAbility.TutorialState == ETutorialState.Completed) return;
-
-            StartTutorial();
-        }
-        finally
-        {
-            _isWaitingToStartTutorial = false;
-        }
-    }
-
     private void StartTutorial()
     {
-        if (_playerTransform == null)
+        if (_currentPlayer == null)
         {
             ClearTutorial();
             return;
@@ -91,7 +129,15 @@ public class TutorialManager : MonoBehaviour
 
         DespawnTutorialNpc();
 
-        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(_tutorialNpc, _playerTransform);
+        bool isFirstTutorialQuestCompleted =
+            _tutorialProgressController != null &&
+            _tutorialProgressController.IsFirstTutorialQuestCompleted();
+
+        _tutorialNpcController = TutorialNpcSpawner.SpawnNearPlayer(
+            _tutorialNpc,
+            _currentPlayer,
+            isFirstTutorialQuestCompleted);
+
         if (_tutorialNpcController == null)
         {
             ClearTutorial();
@@ -109,7 +155,7 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        _isTutorialStarted = true;
+        _tutorialStarted = true;
         StartCoroutine(BeginTutorialInteraction());
     }
 
@@ -117,14 +163,14 @@ public class TutorialManager : MonoBehaviour
     {
         yield return null;
 
-        if (_tutorialNpcController == null || _playerTransform == null || _tutorialProgressController == null)
+        if (_tutorialNpcController == null || _currentPlayer == null || _tutorialProgressController == null)
         {
             ClearTutorial();
             yield break;
         }
 
         NpcInteractionComponent npcInteraction = _tutorialNpcController.GetComponent<NpcInteractionComponent>();
-        PlayerNPCInteractionAbility playerInteraction = _playerTransform.GetComponentInChildren<PlayerNPCInteractionAbility>();
+        PlayerNPCInteractionAbility playerInteraction = _currentPlayer.GetAbility<PlayerNPCInteractionAbility>();
 
         if (npcInteraction == null || playerInteraction == null)
         {
@@ -147,9 +193,8 @@ public class TutorialManager : MonoBehaviour
             }
         }
         _tutorialProgressController?.ResetRuntimeState();
-        _isTutorialStarted = false;
+        _tutorialStarted = false;
         _currentPlayer = null;
-        _playerTransform = null;
 
         if (SaveManager.Instance != null && RoomManager.Instance != null)
         {
@@ -162,12 +207,10 @@ public class TutorialManager : MonoBehaviour
     {
         DespawnTutorialNpc();
         _tutorialProgressController?.ResetRuntimeState();
-        _isTutorialStarted = false;
+        _tutorialStarted = false;
         _currentPlayer = null;
-        _playerTransform = null;
     }
 
-    // 기존에 존재하는 튜토리얼 NPC가 있다면 제거합니다.
     public void DespawnTutorialNpc()
     {
         if (_tutorialNpcController == null) return;

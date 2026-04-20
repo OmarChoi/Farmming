@@ -1,9 +1,13 @@
 using UnityEngine;
+using System;
 
 public class PlayerQuestAbility : PlayerAbility, ISaveableAbility
 {
     private ETutorialState _tutorialState = ETutorialState.None;
     public ETutorialState TutorialState => _tutorialState;
+
+    public bool IsInitialized { get; private set; }
+    public event Action OnInitialized;
 
     public void SetTutorialState(ETutorialState state)
     {
@@ -15,9 +19,7 @@ public class PlayerQuestAbility : PlayerAbility, ISaveableAbility
         if (saveData == null) return;
 
         saveData.TutorialState = _tutorialState;
-        saveData.Quest = QuestManager.Instance != null
-            ? QuestManager.Instance.ExportSaveData()
-            : new QuestSaveData();
+        saveData.Quest = QuestManager.Instance != null ? QuestManager.Instance.ExportSaveData() : new QuestSaveData();
     }
 
     public void ImportFrom(PlayerSaveData saveData)
@@ -37,6 +39,9 @@ public class PlayerQuestAbility : PlayerAbility, ISaveableAbility
         {
             QuestManager.Instance.InitializeEmpty();
         }
+
+        IsInitialized = true;
+        OnInitialized?.Invoke();
     }
 
     public void InitializeEmptyState()
@@ -47,5 +52,8 @@ public class PlayerQuestAbility : PlayerAbility, ISaveableAbility
         {
             QuestManager.Instance.InitializeEmpty();
         }
+
+        IsInitialized = true;
+        OnInitialized?.Invoke();
     }
 }

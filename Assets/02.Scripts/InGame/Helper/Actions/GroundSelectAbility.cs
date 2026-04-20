@@ -19,6 +19,7 @@ public class GroundSelectAbility : HelperAbility
     private readonly List<ItemDataSO> _availableGrounds = new();
     private ItemDataSO _selectedGround;
     private PlayerInventoryAbility _inventory;
+    private PlayerController _boundPlayerOwner;
     private GroundActionAbility _groundActionAbility;
     private HelperController _helperController;
     private Camera _mainCamera;
@@ -30,6 +31,7 @@ public class GroundSelectAbility : HelperAbility
 
     public int SelectedGroundCount => GetGroundCount(SelectedGround);
     public bool HasSelectedGroundAvailable => SelectedGround != null && SelectedGroundCount > 0;
+    public bool HasAnyGroundAvailable => FindFirstAvailableGround() != null;
 
     protected override void Awake()
     {
@@ -43,12 +45,7 @@ public class GroundSelectAbility : HelperAbility
 
     private void Start()
     {
-        _inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
-        if (_inventory != null)
-        {
-            _inventory.OnSlotChanged += OnInventoryChanged;
-        }
-
+        EnsureInventoryBinding();
         RefreshGrounds();
     }
 
@@ -62,6 +59,8 @@ public class GroundSelectAbility : HelperAbility
 
     private void LateUpdate()
     {
+        EnsureInventoryBinding();
+
         if (_helperController != null && _helperController.State != EHelperState.Equipped && _selectedGround != null)
         {
             ClearSelection();
@@ -122,13 +121,31 @@ public class GroundSelectAbility : HelperAbility
 
     public bool TrySelectGround(ItemDataSO groundItem)
     {
+        EnsureInventoryBinding();
+
         if (groundItem == null || _inventory == null)
             return false;
 
         if (!_availableGrounds.Contains(groundItem))
             return false;
 
+        if (GetGroundCount(groundItem) <= 0)
+            return false;
+
         _selectedGround = groundItem;
+        NotifySelectionChanged();
+        return true;
+    }
+
+    public bool TrySelectFirstAvailableGround(int minimumAmount = 1)
+    {
+        EnsureInventoryBinding();
+
+        ItemDataSO firstGround = FindFirstAvailableGround(minimumAmount);
+        if (firstGround == null)
+            return false;
+
+        _selectedGround = firstGround;
         NotifySelectionChanged();
         return true;
     }
@@ -144,6 +161,8 @@ public class GroundSelectAbility : HelperAbility
 
     private void RefreshGrounds()
     {
+        EnsureInventoryBinding();
+
         if (_inventory == null)
         {
             _selectedGround = null;
@@ -164,10 +183,33 @@ public class GroundSelectAbility : HelperAbility
             }
         }
 
-        if (_selectedGround != null && !CanUseGroundItem(_selectedGround))
-            _selectedGround = null;
+        if (_selectedGround != null && !IsGroundAvailable(_selectedGround))
+            _selectedGround = FindFirstAvailableGround();
 
         NotifySelectionChanged();
+    }
+
+    private void EnsureInventoryBinding()
+    {
+        PlayerController playerOwner = _owner.PlayerOwner;
+        if (_boundPlayerOwner == playerOwner && (_inventory != null || playerOwner == null))
+            return;
+
+        PlayerInventoryAbility currentInventory = playerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (currentInventory == _inventory)
+        {
+            _boundPlayerOwner = playerOwner;
+            return;
+        }
+
+        if (_inventory != null)
+            _inventory.OnSlotChanged -= OnInventoryChanged;
+
+        _boundPlayerOwner = playerOwner;
+        _inventory = currentInventory;
+
+        if (_inventory != null)
+            _inventory.OnSlotChanged += OnInventoryChanged;
     }
 
     private bool CanUseGroundItem(ItemDataSO item)
@@ -187,6 +229,32 @@ public class GroundSelectAbility : HelperAbility
             return 0;
 
         return _inventory.GetItemCount(groundItem);
+    }
+
+    private bool IsGroundAvailable(ItemDataSO groundItem, int minimumAmount = 1)
+    {
+        if (groundItem == null || _inventory == null || !CanUseGroundItem(groundItem))
+            return false;
+
+        return GetGroundCount(groundItem) >= minimumAmount;
+    }
+
+    private ItemDataSO FindFirstAvailableGround(int minimumAmount = 1)
+    {
+        if (_inventory == null)
+            return null;
+
+        for (int i = 0; i < _inventory.SlotCount; i++)
+        {
+            InventorySlot slot = _inventory.GetSlot(i);
+            if (slot == null || slot.IsEmpty)
+                continue;
+
+            if (CanUseGroundItem(slot.Item) && GetGroundCount(slot.Item) >= minimumAmount)
+                return slot.Item;
+        }
+
+        return null;
     }
 
     private int FindGroundSlotIndex(ItemDataSO groundItem)

@@ -11,12 +11,14 @@ public class HelperFollowAbility : HelperAbility
     [SerializeField] private float _smoothTime = 0.2f;
     [SerializeField] private float _teleportDelay = 1f;
     [SerializeField] private float _runSpeedThreshold = 0.5f;
-    [SerializeField] private float _unequipJumpForce = 5f;
-    [SerializeField] private float _unequipBackForce = 3f;
+    [SerializeField] private float _unequipJumpForce = 6f;
+    [SerializeField] private float _unequipBackForce = 4f;
     [SerializeField] private float _launchRotationSpeed = 10f;
     [SerializeField] private float _autoJumpForce = 8f;
     [SerializeField] private float _autoJumpCheckDist = 2f;
     [SerializeField] private float _autoJumpMaxHeight = 2.2f;
+    [SerializeField] private float _followSoundMinInterval = 10f;
+    [SerializeField] private float _followSoundMaxInterval = 35f;
     [SerializeField] private LayerMask _jumpCheckMask = ~0;
 
     private const float Gravity = 9.8f;
@@ -30,6 +32,9 @@ public class HelperFollowAbility : HelperAbility
     private float _currentSpeed;
     private float _speedSmoothVelocity;
     private float _teleportTimer;
+    private float _followSoundTimer;
+    private float _nextFollowSoundDelay;
+    private bool _isFollowSoundTimerActive;
     private Vector3 _launchVelocity;
     private Quaternion _launchTargetRotation;
 
@@ -38,12 +43,26 @@ public class HelperFollowAbility : HelperAbility
         base.Awake();
         _cc = _owner.GetComponent<CharacterController>();
         _animAbility = _owner.GetAbility<HelperAnimationAbility>();
+        ResetFollowSoundTimer();
     }
 
     private void Update()
     {
         if (!_owner.IsMine) return;
-        if (_owner.State != EHelperState.Summoned) return;
+        if (_owner.IsDespawning)
+        {
+            StopFollowSoundTimer();
+            return;
+        }
+        if (_owner.State != EHelperState.Summoned)
+        {
+            StopFollowSoundTimer();
+            return;
+        }
+
+        StartFollowSoundTimerIfNeeded();
+        UpdateFollowSoundTimer();
+
         if (_owner.FollowTarget == null) return;
 
         Vector3 diff = _owner.FollowTarget.position - _owner.transform.position;
@@ -142,6 +161,55 @@ public class HelperFollowAbility : HelperAbility
             if (_cc.isGrounded)
                 _animAbility.Play(EHelperAnim.Idle);
         }
+    }
+
+    private void UpdateFollowSoundTimer()
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        _followSoundTimer += Time.deltaTime;
+        if (_followSoundTimer < _nextFollowSoundDelay)
+            return;
+
+        _followSoundTimer = 0f;
+        _nextFollowSoundDelay = GetNextFollowSoundDelay();
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.HelperFollow,
+            spatialMode: ESpatialMode.FollowTransform,
+            followTarget: _owner.transform));
+    }
+
+    private void StartFollowSoundTimerIfNeeded()
+    {
+        if (_isFollowSoundTimerActive)
+            return;
+
+        _isFollowSoundTimerActive = true;
+        ResetFollowSoundTimer();
+    }
+
+    private void StopFollowSoundTimer()
+    {
+        if (!_isFollowSoundTimerActive)
+            return;
+
+        _isFollowSoundTimerActive = false;
+        ResetFollowSoundTimer();
+    }
+
+    private void ResetFollowSoundTimer()
+    {
+        _followSoundTimer = 0f;
+        _nextFollowSoundDelay = GetNextFollowSoundDelay();
+    }
+
+    private float GetNextFollowSoundDelay()
+    {
+        float min = Mathf.Max(0f, _followSoundMinInterval);
+        float max = Mathf.Max(min, _followSoundMaxInterval);
+        return Random.Range(min, max);
     }
 
     private float CalculateTargetSpeed(float horizontalDist)

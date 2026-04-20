@@ -53,6 +53,23 @@ public class HarvestNotificationManager : MonoBehaviour
         StartCoroutine(DecreaseCountAfter(_notificationDuration));
     }
 
+    public void ShowMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        HarvestNotification notification = Instantiate(_notificationPrefab, _notificationParent);
+
+        RectTransform rect = notification.GetComponent<RectTransform>();
+        rect.anchoredPosition = new Vector2(0f, _stackOffset * _activeCount);
+
+        notification.gameObject.SetActive(true);
+        notification.SetupMessage(message);
+        _activeCount++;
+
+        StartCoroutine(DecreaseCountAfter(_notificationDuration));
+    }
+
     private System.Collections.IEnumerator DecreaseCountAfter(float delay)
     {
         yield return new WaitForSeconds(delay);

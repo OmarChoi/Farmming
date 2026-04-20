@@ -5219,7 +5219,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1021484812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7178,8 +7178,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28053dd8bc9d04847acc3d422c67e441, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TutorialProgressController
-  _entryTutorialQuest: {fileID: 11400000, guid: 71b16020e4de22346aaf43d0672a8ddd, type: 2}
+  _entryTutorialQuest: {fileID: 11400000, guid: 697f8ca8a7130a440be8ba7d68840294, type: 2}
   _tutorialQuestSequence:
+  - {fileID: 11400000, guid: 697f8ca8a7130a440be8ba7d68840294, type: 2}
   - {fileID: 11400000, guid: 71b16020e4de22346aaf43d0672a8ddd, type: 2}
   - {fileID: 11400000, guid: 68ad8745b185b5c4c873555553366dcd, type: 2}
   - {fileID: 11400000, guid: 14acf40ff966f2340a14af3c3ddbdd7d, type: 2}
@@ -8069,6 +8070,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: EvolutionStudio
       objectReference: {fileID: 0}
+    - target: {fileID: 3270950351638537384, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
+      propertyPath: _baseCamera
+      value: 
+      objectReference: {fileID: 143565388}
+    - target: {fileID: 3270950351638537384, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
+      propertyPath: _galaxyOverlay
+      value: 
+      objectReference: {fileID: 2122867363}
     - target: {fileID: 5118190384479608389, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.08324
@@ -8108,22 +8117,6 @@ PrefabInstance:
     - target: {fileID: 5118190384479608389, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5123183178874242405, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
-      propertyPath: m_InitialState
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7126420391951538179, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -13.8742895
-      objectReference: {fileID: 0}
-    - target: {fileID: 7126420391951538179, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 205.02957
-      objectReference: {fileID: 0}
-    - target: {fileID: 7126420391951538179, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -1.319476
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8985,7 +8978,7 @@ MonoBehaviour:
   _dialogueController: {fileID: 2028739916}
   _questManager: {fileID: 1925945244}
   _npcFriendshipManager: {fileID: 158083902}
-  _tutorialProgressController: {fileID: 0}
+  _tutorialProgressController: {fileID: 1652054065}
 --- !u!4 &2058502417
 Transform:
   m_ObjectHideFlags: 0
@@ -9222,7 +9215,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6484994527658354286, guid: 7c01c85371302104d90823e10083d7e1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.60622
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6484994527658354286, guid: 7c01c85371302104d90823e10083d7e1, type: 3}
       propertyPath: m_LocalRotation.w
@@ -9242,11 +9235,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6484994527658354286, guid: 7c01c85371302104d90823e10083d7e1, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -960.08325
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6484994527658354286, guid: 7c01c85371302104d90823e10083d7e1, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -740.3298
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6484994527658354286, guid: 7c01c85371302104d90823e10083d7e1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -9274,6 +9267,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6484994527658354286, guid: 7c01c85371302104d90823e10083d7e1, type: 3}
   m_PrefabInstance: {fileID: 2122867361}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2122867363 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5701726689900603960, guid: 7c01c85371302104d90823e10083d7e1, type: 3}
+  m_PrefabInstance: {fileID: 2122867361}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0faa4069c219b3e46b6e6175b9d525f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GalaxyOverlay
 --- !u!1 &606606606606606610
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,5 +7,6 @@ public enum ENpcLocationType
     Smithy,
     HairShop,
     Dungeon,
-    Hospital
+    Hospital,
+    Gambling
 }

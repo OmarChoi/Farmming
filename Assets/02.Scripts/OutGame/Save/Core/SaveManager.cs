@@ -86,9 +86,13 @@ public class SaveManager : MonoBehaviourPun
         var save = _loadedData.Players.Find(p => p.PlayerId == playerId);
         if (save == null)
         {
-            if (player.IsMine && questAbility != null)
+            if (player.PhotonView == null || player.PhotonView.IsMine)
             {
-                questAbility.InitializeEmptyState();
+                questAbility?.InitializeEmptyState();
+            }
+            else
+            {
+                player.PhotonView.RPC(nameof(PlayerController.RPC_InitializeEmptyPlayerState), player.PhotonView.Owner);
             }
             return;
         }
