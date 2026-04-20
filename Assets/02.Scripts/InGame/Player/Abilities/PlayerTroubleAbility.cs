@@ -49,19 +49,25 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
 
     private async UniTaskVoid ApplyKnockbackAsync(TroubleContext context)
     {
+        if (_characterController == null) return;
+
         _isApplyingTrouble = true;
         _owner.LockAction();
 
-        if (_characterController != null)
+        Vector3 start = _owner.transform.position;
+
+        Vector3 flatDirection = context.Direction;
+        flatDirection.y = 0f;
+        if (flatDirection.sqrMagnitude < 0.001f)
         {
-            _characterController.enabled = false;
+            flatDirection = _owner.transform.forward;
         }
 
-        Vector3 start = _owner.transform.position;
-        Vector3 end = start + context.Direction * context.Power;
+        flatDirection.Normalize();
 
-        Vector3 lookDirection = -context.Direction;
-        lookDirection.y = 0f;
+        Vector3 end = start + flatDirection * context.Power;
+
+        Vector3 lookDirection = -flatDirection;
         if (lookDirection.sqrMagnitude > 0.001f)
         {
             _owner.transform.rotation = Quaternion.LookRotation(lookDirection);
@@ -77,22 +83,37 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
 
-            Vector3 position = Vector3.Lerp(start, end, t);
-            position.y += Mathf.Sin(t * Mathf.PI) * _knockbackJumpHeight;
+            Vector3 target = Vector3.Lerp(start, end, t);
+            target.y += Mathf.Sin(t * Mathf.PI) * _knockbackJumpHeight;
 
-            _owner.transform.position = position;
-            await UniTask.Yield();
+            Vector3 delta = target - _owner.transform.position;
+            _characterController.Move(delta);
+
+            await UniTask.Yield(PlayerLoopTiming.Update);
         }
 
-        _owner.transform.position = end;
-
-        if (_characterController != null)
-        {
-            _characterController.enabled = true;
-        }
+        SnapToGround();
 
         _owner.UnlockAction();
         _isApplyingTrouble = false;
+    }
+
+    private void SnapToGround()
+    {
+        if (_characterController == null) return;
+
+        Vector3 origin = _owner.transform.position + Vector3.up * 1.0f;
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 3f, ~0, QueryTriggerInteraction.Ignore))
+        {
+            float safeY = hit.point.y + _characterController.skinWidth;
+            Vector3 position = _owner.transform.position;
+
+            if (position.y < safeY)
+            {
+                Vector3 correction = new Vector3(0f, safeY - position.y, 0f);
+                _characterController.Move(correction);
+            }
+        }
     }
 
     private async UniTaskVoid ApplySlowAsync(TroubleContext context)
