@@ -579,7 +579,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         }
         if (finalAmount <= 0) return;
 
-        QuestReportItemHelper.AddItemAndReportQuest(inventory, rewardItem, finalAmount);
+        inventory.AddItem(rewardItem, finalAmount);
     }
 
     private void ConsumePlacedGroundItem(ETileType placedTileType, int amount)

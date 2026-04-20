@@ -272,7 +272,8 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         bool success = false;
         if (inventory != null && seed.HarvestItem != null)
         {
-            QuestReportItemHelper.AddItemAndReportQuest(inventory, seed.HarvestItem, harvestAmount);
+            inventory.AddItem(seed.HarvestItem, harvestAmount);
+            QuestManager.Instance?.RefreshItemQuestProgress(seed.HarvestItem.Id);
             success = true;
         }
 
