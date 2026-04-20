@@ -523,7 +523,6 @@ public class QuestManager : MonoBehaviour, IQuestProgressService
             QuestDataSO questData = quest.QuestData;
 
             if (questData.ObjectiveType != objectiveType) continue;
-            if (!IsSimpleTargetMatched(questData, objectiveType, targetId)) continue;
 
             quest.CurrentAmount += amount;
 

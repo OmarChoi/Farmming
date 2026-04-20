@@ -273,7 +273,6 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (inventory != null && seed.HarvestItem != null)
         {
             inventory.AddItem(seed.HarvestItem, harvestAmount);
-            QuestManager.Instance?.RefreshItemQuestProgress(seed.HarvestItem.Id);
             success = true;
         }
 

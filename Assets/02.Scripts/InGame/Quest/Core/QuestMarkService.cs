@@ -92,46 +92,45 @@ public class QuestMarkService : MonoBehaviour
             return EWorldMarkVisualType.None;
         }
 
-        // 1. 완료 가능 우선
+        EWorldMarkVisualType highestPriorityStatus = EWorldMarkVisualType.None;
+
+        // 1. 활성 퀘스트 목록을 한 번만 순회하여 상태를 확인합니다.
         foreach (QuestRuntimeData quest in _questManager.GetActiveQuestList())
         {
             if (quest == null || quest.QuestData == null) continue;
 
             if (IsQuestCompletableAtNpc(quest, npcId))
             {
-                return EWorldMarkVisualType.CanComplete;
+                return EWorldMarkVisualType.CanComplete; // 최고 우선순위
+            }
+
+            if (highestPriorityStatus < EWorldMarkVisualType.InProgress &&
+                quest.Status == EQuestStatus.InProgress &&
+                IsQuestRelatedToNpc(quest.QuestData, npcId))
+            {
+                highestPriorityStatus = EWorldMarkVisualType.InProgress;
             }
         }
 
-        // 2. 진행 중
-        foreach (QuestRuntimeData quest in _questManager.GetActiveQuestList())
+        // 2. 진행 중인 퀘스트가 없을 때만 수락 가능한 퀘스트를 확인합니다.
+        if (highestPriorityStatus == EWorldMarkVisualType.None)
         {
-            if (quest == null || quest.QuestData == null) continue;
-            if (quest.Status != EQuestStatus.InProgress) continue;
-
-            if (IsQuestRelatedToNpc(quest.QuestData, npcId))
+            NpcQuest provider = npc.GetComponent<NpcQuest>();
+            if (provider != null && provider.Quests != null)
             {
-                return EWorldMarkVisualType.InProgress;
-            }
-        }
-
-        // 3. 수락 가능
-        NpcQuest provider = npc.GetComponent<NpcQuest>();
-        if (provider != null && provider.Quests != null)
-        {
-            foreach (QuestDataSO questData in provider.Quests)
-            {
-                if (questData == null) continue;
-                if (questData.StartNpcId != npcId) continue;
-
-                if (CanOfferQuest(npcId, questData))
+                foreach (QuestDataSO questData in provider.Quests)
                 {
-                    return EWorldMarkVisualType.Available;
+                    if (questData == null || questData.StartNpcId != npcId) continue;
+
+                    if (CanOfferQuest(npcId, questData))
+                    {
+                        return EWorldMarkVisualType.Available;
+                    }
                 }
             }
         }
 
-        return EWorldMarkVisualType.None;
+        return highestPriorityStatus;
     }
 
     public EWorldMarkVisualType GetQuestBoardMarkVisualType(QuestBoardDataSO boardData)

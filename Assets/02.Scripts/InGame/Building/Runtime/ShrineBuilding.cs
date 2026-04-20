@@ -84,20 +84,6 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
         _ui = null;
     }
 
-    private void MarkShrineQuestChecked(PlayerController player)
-    {
-        if (player == null || !player.IsMine) return;
-        if (WorldEffectQuestService.Instance == null) return;
-
-        string activeQuestId = WorldEffectQuestService.Instance.ActiveQuestId;
-        if (string.IsNullOrEmpty(activeQuestId)) return;
-
-        PlayerQuestAbility questAbility = player.GetAbility<PlayerQuestAbility>();
-        if (questAbility == null) return;
-
-        questAbility.MarkWorldEffectQuestChecked(activeQuestId);
-    }
-
     protected override void OnDestroy()
     {
         EndInteraction(true);

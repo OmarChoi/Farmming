@@ -100,9 +100,7 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
 
     public void RemoveAt(int index, int amount = 1)
     {
-        InventorySlot slot = _inventory.GetSlot(index);
-        ItemDataSO item = slot != null && !slot.IsEmpty ? slot.Item : null;
-
+        ItemDataSO item = GetSlot(index)?.Item;
         _inventory.RemoveAt(index, amount);
         RefreshQuestProgressForItem(item);
     }

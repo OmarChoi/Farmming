@@ -24,11 +24,6 @@ public class NpcQuestMarkView : MonoBehaviour
         {
             _questMarkService = FindFirstObjectByType<QuestMarkService>();
         }
-
-        if (NpcFriendshipManager.Instance != null)
-        {
-            NpcFriendshipManager.Instance.OnFriendshipChanged += OnFriendshipChanged;
-        }
     }
 
     private void OnEnable()
