@@ -85,6 +85,7 @@ public class HelperInteractionAbility : HelperAbility
 
     private bool CanInteract()
     {
+        if (_owner.IsDespawning) return false;
         if (_owner.IsActing) return false;
         if (_action == null) return false;
         if (!_owner.Energy.HasEnough(_owner.Level.GetEnergyCost())) return false;

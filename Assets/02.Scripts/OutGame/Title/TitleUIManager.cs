@@ -10,6 +10,7 @@ public class TitleUIManager : MonoBehaviour
     [SerializeField] private GameObject _joinPanel;
     [SerializeField] private GameObject _roomPanel;
     [SerializeField] private GameObject _connectingPanel;
+    [SerializeField] private UI_Setting _settingPanel;
 
     [Header("로비 - 세이브 슬롯")]
     [SerializeField] private Transform _saveSlotParent;
@@ -27,6 +28,7 @@ public class TitleUIManager : MonoBehaviour
 
     private void Awake()
     {
+        
         _flowManager.OnPanelChanged += ShowPanel;
         _flowManager.OnRoomIdReady += roomId => _createdRoomIdText.text = roomId;
         _flowManager.OnJoinError += msg => { if (_joinErrorText != null) _joinErrorText.text = msg; };
@@ -34,6 +36,8 @@ public class TitleUIManager : MonoBehaviour
 
     private void Start()
     {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.Confined;
         ShowPanel(ETitlePanel.Title);
     }
 
@@ -65,7 +69,15 @@ public class TitleUIManager : MonoBehaviour
     public void OnClickJoinBack() => ShowPanel(ETitlePanel.Lobby);
     public void OnClickRoomBack() => _flowManager.OnClickRoomBack();
     public void OnClickLobbyBack() => ShowPanel(ETitlePanel.Title);
-
+    public void OnClickSetting() => _settingPanel.OpenAsync().Forget();
+    public void OnClickExitButton()
+    {
+        #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+        #else
+        Application.Quit();
+        #endif
+    }
     // === Slot UI ===
 
     private async UniTaskVoid RefreshSlotUI()
@@ -105,10 +117,5 @@ public class TitleUIManager : MonoBehaviour
         _joinPanel.SetActive(panel == ETitlePanel.Join);
         _roomPanel.SetActive(panel == ETitlePanel.Room);
         _connectingPanel.SetActive(panel == ETitlePanel.Connecting);
-    }
-
-    public void ExitGame()
-    {
-        Application.Quit();
     }
 }

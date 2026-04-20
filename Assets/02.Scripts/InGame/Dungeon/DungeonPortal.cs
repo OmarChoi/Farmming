@@ -5,6 +5,7 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(BaseBuilding))]
 public class DungeonPortal : MonoBehaviour, IWorldInteractable
 {
     [SerializeField] private UI_DungeonPortal _ui;
@@ -13,9 +14,11 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
 
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
-
+    private BaseBuilding _building;
+    
     private void Awake()
     {
+        _building = GetComponent<BaseBuilding>();
         ResolveUI();
     }
 
@@ -33,6 +36,7 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
 
     public void Interact(PlayerController player)
     {
+        if (!_building.IsConstructionComplete) return;
         if (!ResolveUI())
         {
             Debug.LogError("[DungeonPortal] UI_DungeonPortal not found.");
