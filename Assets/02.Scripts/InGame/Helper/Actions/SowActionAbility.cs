@@ -19,6 +19,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
     [SerializeField] private float _cultivateLegendarySpinFadeOutDuration = 0.05f;
     [SerializeField] private float _secondaryOpenFallbackDelay = 0.35f;
     [SerializeField] private float _secondaryCompleteFallbackDelay = 5f;
+    [SerializeField] private float _epicCultivateSfxMinInterval = 0.15f;
 
     [SerializeField] private int _cultivateExperience = 10;
     [SerializeField] private int _sowExperience = 10;
@@ -38,6 +39,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
     private Coroutine _secondaryOpenFallbackCoroutine;
     private Coroutine _secondaryCompleteFallbackCoroutine;
     private bool _secondaryOpened;
+    private float _lastEpicCultivateSfxTime = -999f;
 
     protected override void Awake()
     {
@@ -259,9 +261,16 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
     private IEnumerator ReplayEpicSowAndWait()
     {
+        yield return ReplayEpicSowAndWait(true);
+    }
+
+    private IEnumerator ReplayEpicSowAndWait(bool playSfx)
+    {
         if (_secondaryPresentation == null)
             yield break;
 
+        if (playSfx)
+            PlayEpicCultivateSfx();
         yield return StartCoroutine(_secondaryPresentation.ReplayEpicSowAndWait());
     }
 
@@ -274,6 +283,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             {
                 OnCultivate = () =>
                 {
+                    PlayNormalCultivateSfx();
                     if (cell.TryConvertToFarm())
                     {
                         _owner.Experience.Add(_cultivateExperience);
@@ -295,12 +305,19 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         {
             _cultivateAbility.JumpAndCultivate(cell, new CultivateAbility.CultivationParams
             {
-                OnCultivate = () => ConvertLateralFarmTiles(cell)
+                OnCultivate = () =>
+                {
+                    PlayNormalCultivateSfx();
+                    ConvertLateralFarmTiles(cell);
+                }
             });
             return;
         }
 
-        _cultivateAbility.JumpAndCultivate(cell, null);
+        _cultivateAbility.JumpAndCultivate(cell, new CultivateAbility.CultivationParams
+        {
+            OnCultivate = PlayNormalCultivateSfx
+        });
     }
 
     private void HandleEpicCultivation(TerrainCell cell)
@@ -343,12 +360,13 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             {
                 OnCultivate = () =>
                 {
+                    PlayEpicCultivateSfx();
                     if (TryConvertToFarmWithCultivateEffect(leftCell, true))
                     {
                         _owner.Experience.Add(_cultivateExperience);
                         BroadcastTerrainCellStateFromMaster(leftCell);
                     }
-                    ReplayEpicSow();
+                    ReplayEpicSow(false);
                 },
                 EpicLook = true,
                 EpicLookLeft = false,
@@ -372,10 +390,11 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             {
                 OnCultivate = () =>
                 {
+                    PlayEpicCultivateSfx();
                     if (TryConvertToFarmWithCultivateEffect(cell, true))
                         _owner.Experience.Add(_cultivateExperience);
                     BroadcastTerrainCellStateFromMaster(cell);
-                    ReplayEpicSow();
+                    ReplayEpicSow(false);
                 },
                 EpicLook = true,
                 OnEpicLookLeft = onEpicLeft,
@@ -391,6 +410,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         _owner.BeginAction();
         _cultivateAbility.JumpAndCultivate(cell, new CultivateAbility.CultivationParams
         {
+            OnCultivate = PlayEpicCultivateSfx,
             EpicLook = true,
             OnEpicLookLeft = onEpicLeft,
             OnEpicLookRight = onEpicRight,
@@ -454,16 +474,19 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         {
             OnCultivate = () =>
             {
+                PlayEpicCultivateSfx();
                 if (TryConvertToFarmWithCultivateEffect(cell, true))
                     _owner.Experience.Add(_cultivateExperience);
                 BroadcastTerrainCellStateFromMaster(cell);
-                ReplayEpicSow();
+                ReplayEpicSow(false);
             }
         });
     }
 
-    private void ReplayEpicSow()
+    private void ReplayEpicSow(bool playSfx = true)
     {
+        if (playSfx)
+            PlayEpicCultivateSfx();
         _secondaryPresentation?.ReplayEpicSow();
     }
 
@@ -635,6 +658,8 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
     private void PlayCultivateLegendarySpinEffect()
     {
+        PlayLegendaryCultivateSfx();
+
         if (_cultivateLegendarySpinEffect == null)
             return;
 
@@ -876,6 +901,36 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             return false;
 
         return inventory.RemoveItem(seed, 1);
+    }
+
+    private void PlayNormalCultivateSfx()
+    {
+        PlayCultivateSfx(AssetKey.SFX.SowNormalCultivate);
+    }
+
+    private void PlayEpicCultivateSfx()
+    {
+        if (Time.time - _lastEpicCultivateSfxTime < Mathf.Max(0f, _epicCultivateSfxMinInterval))
+            return;
+
+        _lastEpicCultivateSfxTime = Time.time;
+        PlayCultivateSfx(AssetKey.SFX.SowEpicCultivate);
+    }
+
+    private void PlayLegendaryCultivateSfx()
+    {
+        PlayCultivateSfx(AssetKey.SFX.SowLegendaryCultivate);
+    }
+
+    private void PlayCultivateSfx(string clipKey)
+    {
+        if (_owner == null || SoundManager.Instance == null || string.IsNullOrEmpty(clipKey))
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: clipKey,
+            spatialMode: ESpatialMode.Positional3D,
+            position: _owner.transform.position));
     }
 
     private static void PlaySowNormalImpactSfx(FarmTile farmTile)

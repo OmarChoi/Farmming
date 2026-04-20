@@ -1321,6 +1321,8 @@ MonoBehaviour:
   _autoJumpForce: 8
   _autoJumpCheckDist: 2
   _autoJumpMaxHeight: 2.2
+  _followSoundMinInterval: 10
+  _followSoundMaxInterval: 35
   _jumpCheckMask:
     serializedVersion: 2
     m_Bits: 183
@@ -1401,6 +1403,7 @@ MonoBehaviour:
   _cultivateLegendarySpinFadeOutDuration: 0.05
   _secondaryOpenFallbackDelay: 0.35
   _secondaryCompleteFallbackDelay: 5
+  _epicCultivateSfxMinInterval: 0.15
   _cultivateExperience: 10
   _sowExperience: 10
 --- !u!114 &9182746351204875634

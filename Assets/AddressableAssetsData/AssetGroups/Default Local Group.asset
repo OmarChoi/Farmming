@@ -15,6 +15,18 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: 81272044bdd6f314abafcf21d99a3e24
   m_SerializeEntries:
+  - m_GUID: 002da25d76d5e3a4a9d16c745a0250a7
+    m_Address: SFXhelperunequip
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0142ca2184b166d4e88f03cb46c6657d
+    m_Address: SFXhelperequip
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 02d30b51d16efbc46b643b03a0f4ff3f
     m_Address: UI_Inventory
     m_ReadOnly: 0
@@ -31,48 +43,18 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 33f7b241af573944ab6a83a9395957e6
-    m_Address: BGMVillage
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 224cc6453d521b64dbe96b7f24c22251
     m_Address: SFXsowlegendary
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 242389a83ec69364da5e7eb6cce8f715
     m_Address: SFXsownormal
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0142ca2184b166d4e88f03cb46c6657d
-    m_Address: SFXhelperequip
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 002da25d76d5e3a4a9d16c745a0250a7
-    m_Address: SFXhelperunequip
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 60e3487e6ef02574790ea20bc99f8af7
-    m_Address: SFXhelperfollow
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a6ba1481c20cbf842b92dc12d87fc385
-    m_Address: HelperEvolution
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a25295cd1fea3b149a967d7f586a5584
-    m_Address: HelperEvolutionBGM
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b0d96688f66106e4ea8444fbcb8d938d
-    m_Address: SFXhelpersummon
   - m_GUID: 2beab69326107ad48aa064e00293e0aa
     m_Address: UI_QuestBoard
     m_ReadOnly: 0
@@ -84,16 +66,39 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 33f7b241af573944ab6a83a9395957e6
+    m_Address: BGMVillage
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3a29f65e6280eb241932e034c68f5f03
     m_Address: House2
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3cbdc948a1c2f0d4a9f97b1f1e533ad9
+    m_Address: SFXsownormalcultivate
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3d815225e2c985443ba3a8ac186a36c8
+    m_Address: SFXwaterlegendary
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 46f5e5cfad5f9954eb152d6ac8db3438
     m_Address: BGMStartScene
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4db51690a5929214ebd566995a431dcc
+    m_Address: SFXsowlegendarycultivate
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4e3a858e7956af9488340c7832730125
     m_Address: House4
@@ -117,6 +122,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60e3487e6ef02574790ea20bc99f8af7
+    m_Address: SFXhelperfollow
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 68a913d4aa437d440a3c89817c3dd1ea
+    m_Address: SFXsowepiccultivate
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 72602af694dd7f040b9c4b9fefa5b1ab
+    m_Address: Dungeon1Bgm
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 867ed38f7606b2b47b03845b97e12417
     m_Address: Storage
     m_ReadOnly: 0
@@ -132,12 +154,14 @@ MonoBehaviour:
   - m_GUID: 95ae0dc98ce7d794baf323a7f423424a
     m_Address: SFXwaternormal
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9aca710c9689fce4a8442d081d44a194
     m_Address: SFXwaterepic
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9c84f2ac133c7564f80531de0863f8bc
     m_Address: QuestBoard
@@ -145,11 +169,27 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a25295cd1fea3b149a967d7f586a5584
+    m_Address: HelperEvolutionBGM
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6ba1481c20cbf842b92dc12d87fc385
+    m_Address: HelperEvolution
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: acd592110672c4d469cb3cb23daec4d1
     m_Address: House3
     m_ReadOnly: 0
     m_SerializedLabels:
     - NetworkPrefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0d96688f66106e4ea8444fbcb8d938d
+    m_Address: SFXhelpersummon
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b450f9c71a9fe54488a93537e752188e
     m_Address: MarketStall
@@ -160,17 +200,14 @@ MonoBehaviour:
   - m_GUID: b4c138472d10d7f449102f371f8b9981
     m_Address: SFXharvestlegendary
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bfe67b56fd9887140bce54e08522fb4b
     m_Address: SFXwoodleaf
     m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 72602af694dd7f040b9c4b9fefa5b1ab
-    m_Address: Dungeon1Bgm
-    m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c2a662cd160683c41838739982aa92fb
     m_Address: UI_VillageLevelUp
@@ -180,12 +217,14 @@ MonoBehaviour:
   - m_GUID: dfd06c2f4ff6813478efe2dec7100261
     m_Address: SFXharvestepic
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e2cd546e2e4dc0843a048698f3da9a2c
     m_Address: SFXharvestnormal
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0a514a06acb9fc4ca31a8d008b98ec0
     m_Address: UI_BuildInfo
@@ -201,7 +240,8 @@ MonoBehaviour:
   - m_GUID: fb2522591b051ce49b9016bc2ba3a0ca
     m_Address: SFX_Move
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fe8689bf9c353ca40badeceddc663213
     m_Address: UnlockedItem

@@ -182,6 +182,9 @@ public static class AssetKey
         public const string HarvestLegendary = "SFXharvestlegendary";
         public const string SowNormal = "SFXsownormal";
         public const string SowLegendary = "SFXsowlegendary";
+        public const string SowNormalCultivate = "SFXsownormalcultivate";
+        public const string SowEpicCultivate = "SFXsowepiccultivate";
+        public const string SowLegendaryCultivate = "SFXsowlegendarycultivate";
         public const string WaterNormalSplash = "SFXwaternormal";
         public const string WaterEpicSplash = "SFXwaterepic";
         public const string WaterLegendarySplash = "SFXwaterlegendary";
