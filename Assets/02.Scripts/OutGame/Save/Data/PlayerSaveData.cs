@@ -18,4 +18,7 @@ public class PlayerSaveData
 
     public ETutorialState TutorialState = ETutorialState.None;
     public QuestSaveData Quest = new();
+
+    public int LastCheckedDailyQuestDay = -1;     // 일일 퀘스트 초기화 확인용
+    public string LastCheckedWorldEffectQuestId;  // 월드 이펙트 퀘스트(신전) 초기화 확인용
 }

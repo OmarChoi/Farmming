@@ -118,7 +118,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
         foreach (DropEntry entry in _gatheringData.Drops)
         {
             int qty = WorldEffectManager.ApplyMultiplier(entry.GetRandomQuantity(), yieldMultiplier);
-            QuestReportItemHelper.AddItemAndReportQuest(inventory, entry.Item, qty);
+            inventory.AddItem(entry.Item, qty);
         }
 
         info.HelperExperience?.Add(_gatherExperience);
