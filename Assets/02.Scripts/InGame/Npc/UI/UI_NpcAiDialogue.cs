@@ -22,6 +22,7 @@ public class UI_NpcAiDialogue : MonoBehaviour
     [SerializeField] private GameObject _playerAiChatRoot;
 
     private string _currentNpcStreamingRaw = string.Empty;
+    private NpcVoicePlayer _voice;
 
     public event Action<string> OnSendRequested;
     public event Action OnStopRequested;
@@ -59,8 +60,18 @@ public class UI_NpcAiDialogue : MonoBehaviour
 
     public void Close()
     {
+        _voice?.Stop();
         _closeButton.gameObject.SetActive(false);
         _playerAiChatRoot.SetActive(false);
+    }
+
+    public void SetVoice(NpcVoicePlayer voice)
+    {
+        if (_voice != null && _voice != voice)
+        {
+            _voice.Stop();
+        }
+        _voice = voice;
     }
 
     public void ClearMessages()
@@ -108,6 +119,7 @@ public class UI_NpcAiDialogue : MonoBehaviour
         if (_npcChatText == null) return;
         _currentNpcStreamingRaw = string.Empty;
         _npcChatText.text = "...\n";
+        _voice?.BeginStreaming();
     }
 
     public void UpdateNpcStreaming(string partial)
@@ -123,6 +135,7 @@ public class UI_NpcAiDialogue : MonoBehaviour
         }
 
         _npcChatText.text = _wrapper.WrapText(_currentNpcStreamingRaw, _npcChatText);
+        _voice?.PlayStreaming(_currentNpcStreamingRaw);
     }
 
     public void CompleteNpcStreaming(string reply)
@@ -139,6 +152,9 @@ public class UI_NpcAiDialogue : MonoBehaviour
         {
             _npcChatText.text += "\n";
         }
+
+        // 잔여 큐는 그대로 드레인되도록 두고, 여기선 중지하지 않는다.
+        // 대화창이 닫히거나 다음 발화가 시작되면 Stop이 호출된다.
     }
 
     public void MarkStreamingStopped()
@@ -149,6 +165,7 @@ public class UI_NpcAiDialogue : MonoBehaviour
         {
             _npcChatText.text += "\n";
         }
+        _voice?.Stop();
     }
 
     public void ClearInputField()
