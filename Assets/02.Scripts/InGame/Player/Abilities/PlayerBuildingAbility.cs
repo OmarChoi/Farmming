@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerBuildingAbility : PlayerAbility
 {
@@ -11,6 +12,7 @@ public class PlayerBuildingAbility : PlayerAbility
     private PlayerTerrainAbility _terrainAbility;
     private PlayerBuildSession _session;
     private PlayerBuildResourceTracker _resourceHandler;
+    private BuildingManager _boundBuildingManager;
     private bool _hasStarted;
 
     private bool IsLocalPlayer => _owner != null && _owner.IsMine;
@@ -21,15 +23,32 @@ public class PlayerBuildingAbility : PlayerAbility
         _terrainAbility = _owner?.GetAbility<PlayerTerrainAbility>();
         
         GameSceneInit.OnCompleteInitialize += BindToBuildingManager;
+        SceneManager.sceneLoaded += OnSceneLoaded;
         BindToBuildingManager();
     }
 
     private void BindToBuildingManager()
     {
         BuildingManager buildingManager = BuildingManager.Instance;
+        if (buildingManager == null)
+            return;
+
+        if (_boundBuildingManager == buildingManager
+            && _resourceHandler != null
+            && _session != null)
+        {
+            return;
+        }
+
+        ReleaseBuildBindings();
+
+        _boundBuildingManager = buildingManager;
         _resourceHandler = new PlayerBuildResourceTracker(buildingManager, _owner);
         GhostConfig ghostConfig = buildingManager.GhostConfig;
         _session = new PlayerBuildSession(buildingManager, _owner, _resourceHandler, ghostConfig);
+
+        if (_hasStarted && isActiveAndEnabled && IsLocalPlayer)
+            _resourceHandler.Bind();
     }
     
     private void Start()
@@ -41,6 +60,7 @@ public class PlayerBuildingAbility : PlayerAbility
     private void OnEnable()
     {
         if (!_hasStarted) return;
+        BindToBuildingManager();
         if (IsLocalPlayer) _resourceHandler?.Bind();
     }
 
@@ -51,16 +71,20 @@ public class PlayerBuildingAbility : PlayerAbility
         if (IsLocalPlayer)
         {
             _session?.Dispose();
+            _session = null;
         }
     }
 
     private void OnDestroy()
     {
-        _resourceHandler?.Dispose();
+        ReleaseBuildBindings();
+        GameSceneInit.OnCompleteInitialize -= BindToBuildingManager;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void Update()
     {
+        BindToBuildingManager();
         if (_session == null) return;
         if (!IsLocalPlayer || !_owner.CanMove) return;
 
@@ -97,4 +121,19 @@ public class PlayerBuildingAbility : PlayerAbility
     }
 
     private TerrainCell GetFrontCell() => _terrainAbility?.GetFrontCell();
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ReleaseBuildBindings();
+    }
+
+    private void ReleaseBuildBindings()
+    {
+        _session?.Dispose();
+        _session = null;
+
+        _resourceHandler?.Dispose();
+        _resourceHandler = null;
+        _boundBuildingManager = null;
+    }
 }

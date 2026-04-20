@@ -115,6 +115,18 @@ public class PlayerBuildSession
     public void Dispose()
     {
         _resourceHandler.OnResourceChanged -= OnResourceChanged;
+
+        UI_BuildingList buildingList = UIController.Instance?.GetInstance<UI_BuildingList>();
+        bool wasBuildingListOpen = buildingList != null && buildingList.IsOpen;
+        if (buildingList != null)
+        {
+            buildingList.OnClosed -= OnBuildingListClosed;
+        }
+
+        if (wasBuildingListOpen && _owner != null && _owner.IsMine)
+            _owner.ExitUIMode();
+
+        UIController.Instance?.CloseAsync<UI_BuildingList>().Forget();
         DestroyGhost();
     }
 
