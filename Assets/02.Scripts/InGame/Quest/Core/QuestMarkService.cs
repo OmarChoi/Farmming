@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 public class QuestMarkService : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class QuestMarkService : MonoBehaviour
 
     private PlayerQuestAbility _localPlayerQuestAbility;
 
+    public event Action OnMarkStateChanged;
 
     private void Awake()
     {
@@ -49,6 +51,32 @@ public class QuestMarkService : MonoBehaviour
     private void HandleQuestManagerReady()
     {
         _questManager = QuestManager.Instance;
+    }
+
+    public void MarkQuestBoardChecked()
+    {
+        PlayerQuestAbility playerQuestAbility = GetLocalPlayerQuestAbility();
+        if (playerQuestAbility == null) return;
+
+        int currentDay = TimeEvents.CurrentDay;
+        if (playerQuestAbility.LastCheckedDailyQuestDay == currentDay) return;
+
+        playerQuestAbility.MarkDailyQuestBoardChecked(currentDay);
+        OnMarkStateChanged?.Invoke();
+    }
+
+    public void MarkShrineChecked()
+    {
+        PlayerQuestAbility playerQuestAbility = GetLocalPlayerQuestAbility();
+        if (playerQuestAbility == null) return;
+        if (WorldEffectQuestService.Instance == null) return;
+
+        string activeQuestId = WorldEffectQuestService.Instance.ActiveQuestId;
+        if (string.IsNullOrEmpty(activeQuestId)) return;
+        if (playerQuestAbility.LastCheckedWorldEffectQuestId == activeQuestId) return;
+
+        playerQuestAbility.MarkWorldEffectQuestChecked(activeQuestId);
+        OnMarkStateChanged?.Invoke();
     }
 
     public EWorldMarkVisualType GetNpcQuestMarkVisualType(NpcController npc)
@@ -187,10 +215,7 @@ public class QuestMarkService : MonoBehaviour
     {
         if (quest == null || quest.QuestData == null) return false;
 
-        if (quest.Status == EQuestStatus.CanComplete && quest.QuestData.CompleteNpcId == npcId)
-        {
-            return true;
-        }
+        if (quest.Status == EQuestStatus.CanComplete && quest.QuestData.CompleteNpcId == npcId) return true;
 
         bool canDeliverHere =
             quest.Status == EQuestStatus.InProgress &&
