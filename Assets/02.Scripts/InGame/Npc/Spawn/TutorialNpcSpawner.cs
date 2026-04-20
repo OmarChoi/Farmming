@@ -5,10 +5,15 @@ public static class TutorialNpcSpawner
     private const float SpawnRadius = 4.4f;
     private const float FirstTutorialSpawnRadius = 28.4f;
 
-    private const int MaxSpawnTryCount = 6;
+    private const int MaxSpawnTryCount = 8;
     private const float GroundCheckStartHeight = 20f;
     private const float GroundCheckDistance = 40f;
     private const float GroundOffsetY = 0.05f;
+
+    private static readonly int GroundLayerMask = LayerMask.GetMask("Default");
+
+    private const float FullCircle = Mathf.PI * 2f;
+    private const float MinSpawnRadiusRatio = 0.8f;
 
     public static NpcController SpawnNearPlayer(NpcDataSO data, PlayerController player, bool isFirstTutorialQuestCompleted)
     {
@@ -54,8 +59,13 @@ public static class TutorialNpcSpawner
 
     private static Vector3 GetRandomOffset(float radius)
     {
-        Vector2 circle = Random.insideUnitCircle * radius;
-        return new Vector3(circle.x, 0f, circle.y);
+        float angle = Random.Range(0f, FullCircle);
+
+        float t = Random.value;
+        t = t * t; // 바깥쪽에 더 많이 퍼지게 합니다.
+
+        float finalRadius = Mathf.Lerp(radius * MinSpawnRadiusRatio, radius, t);
+        return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * finalRadius;
     }
 
     private static bool TryResolveGroundPosition(Vector3 position, out Vector3 groundedPosition)
@@ -67,7 +77,7 @@ public static class TutorialNpcSpawner
             Vector3.down,
             out RaycastHit hit,
             GroundCheckDistance,
-            ~0,
+            GroundLayerMask,
             QueryTriggerInteraction.Ignore))
         {
             groundedPosition = new Vector3(position.x, hit.point.y + GroundOffsetY, position.z);

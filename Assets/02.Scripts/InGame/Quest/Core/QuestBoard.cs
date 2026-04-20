@@ -9,6 +9,7 @@ public class QuestBoard : MonoBehaviour, IWorldInteractable
 {
     [Header("퀘스트 보드 컴포넌트")]
     [SerializeField] private QuestBoardDataSO _boardQuest;
+    [SerializeField] private QuestMarkService _questMarkService;
 
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
@@ -26,6 +27,11 @@ public class QuestBoard : MonoBehaviour, IWorldInteractable
         {
             DailyQuestManager.Instance.SetDailyQuestBoardData(_boardQuest);
         }
+
+        if (_questMarkService == null)
+        {
+            _questMarkService = FindFirstObjectByType<QuestMarkService>();
+        }
         _building = GetComponent<BaseBuilding>();
     }
 
@@ -38,6 +44,8 @@ public class QuestBoard : MonoBehaviour, IWorldInteractable
         _playerController = player;
         _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
 
+        _questMarkService?.MarkQuestBoardChecked();
+
         OpenQuestBoard().Forget();
     }
 
@@ -47,14 +55,7 @@ public class QuestBoard : MonoBehaviour, IWorldInteractable
         if (UIController.Instance == null) return;
 
         IReadOnlyList<QuestDataSO> todayQuests = DailyQuestManager.Instance.TodayDailyQuests;
-
-        if (todayQuests == null || todayQuests.Count == 0)
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("오늘 표시할 일일 퀘스트가 없습니다.");
-#endif
-            return;
-        }
+        if (todayQuests == null || todayQuests.Count == 0) return;
 
         // UI 모드 전환은 OpenAsync 예외와 무관하게 반드시 복구돼야 하므로 try/catch로 감싼다.
         _isInteracting = true;

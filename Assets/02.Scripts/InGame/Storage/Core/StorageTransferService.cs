@@ -27,6 +27,7 @@ public class StorageTransferService
         var item = slot.Item;
 
         _inventory.RemoveAt(inventorySlotIndex, toMove);
+        QuestManager.Instance?.RefreshItemQuestProgress(item.Id);
         _storage.AddItem(item, toMove);
         return true;
     }
@@ -42,6 +43,7 @@ public class StorageTransferService
 
         _storage.RemoveAt(storageSlotIndex, desired);
         _inventory.AddItem(item, desired);
+        QuestManager.Instance?.RefreshItemQuestProgress(item.Id);
         return true;
     }
 
@@ -49,11 +51,23 @@ public class StorageTransferService
     {
         if (item == null || amount <= 0) return false;
 
+        bool changed;
         if (inventorySlotIndex >= 0)
-            _inventory.AddItemToSlot(item, inventorySlotIndex, amount);
+        {
+            changed = _inventory.AddItemToSlot(item, inventorySlotIndex, amount);
+        }
         else
+        {
             _inventory.AddItem(item, amount);
-        return true;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            QuestManager.Instance?.RefreshItemQuestProgress(item.Id);
+        }
+
+        return changed;
     }
 
     /// 인벤토리 슬롯과 창고 슬롯 간 스왑. preferInventory=true면 드롭 대상이 인벤토리이므로 인벤토리 쪽으로 스택 합치기.
@@ -62,6 +76,9 @@ public class StorageTransferService
         var invSlot = _inventory.GetSlot(inventorySlotIndex);
         var stoSlot = _storage.GetSlot(storageSlotIndex);
         if (invSlot == null || stoSlot == null) return;
+
+        ItemDataSO beforeInvItem = invSlot.IsEmpty ? null : invSlot.Item;
+        ItemDataSO beforeStoItem = stoSlot.IsEmpty ? null : stoSlot.Item;
 
         // 같은 아이템이면 드롭 대상 쪽으로 스택 합치기
         if (!invSlot.IsEmpty && !stoSlot.IsEmpty && invSlot.Item == stoSlot.Item)
@@ -89,6 +106,16 @@ public class StorageTransferService
         // 직접 슬롯을 조작했으므로 양쪽 도메인에 변경 알림
         _inventory.NotifySlotChanged(inventorySlotIndex);
         _storage.NotifySlotChanged(storageSlotIndex);
+
+        if (beforeInvItem != null)
+        {
+            QuestManager.Instance?.RefreshItemQuestProgress(beforeInvItem.Id);
+        }
+
+        if (beforeStoItem != null && beforeStoItem != beforeInvItem)
+        {
+            QuestManager.Instance?.RefreshItemQuestProgress(beforeStoItem.Id);
+        }
     }
 
     // === 창고 내부 조작 (드래그/스왑/분할) ===

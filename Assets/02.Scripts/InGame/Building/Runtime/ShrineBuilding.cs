@@ -3,13 +3,26 @@ using UnityEngine;
 
 public class ShrineBuilding : DefaultBuilding, IInteraction
 {
+    [Header("참조 컴포넌트")]
+    [SerializeField] private QuestMarkService _questMarkService;
+
     private UI_Shrine _ui;
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
 
+    private void Awake()
+    {
+        if (_questMarkService == null)
+        {
+            _questMarkService = FindFirstObjectByType<QuestMarkService>();
+        }
+    }
+
     public void RequestInteract(PlayerController player)
     {
         if (player == null) return;
+
+        _questMarkService?.MarkShrineChecked();
 
         _playerController = player;
         _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
@@ -46,7 +59,7 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
             },
         });
         
-        if (_ui == null)
+        if (ui == null)
         {
             EndInteraction(false);
         }

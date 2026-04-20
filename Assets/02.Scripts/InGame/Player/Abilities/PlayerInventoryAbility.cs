@@ -80,17 +80,50 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
         OnToggle?.Invoke(false);
     }
 
-    public InventorySlot GetSlot(int index) => _inventory.GetSlot(index);
-    public void AddItem(ItemDataSO item, int amount = 1) => _inventory.AddItem(item, amount);
+    public void AddItem(ItemDataSO item, int amount = 1)
+    {
+        _inventory.AddItem(item, amount);
+        RefreshQuestProgressForItem(item);
+    }
+
     public bool AddItemToSlot(ItemDataSO item, int slotIndex, int amount = 1, bool fallbackToAuto = true)
-        => _inventory.AddItemToSlot(item, slotIndex, amount, fallbackToAuto);
+    {
+        bool added = _inventory.AddItemToSlot(item, slotIndex, amount, fallbackToAuto);
+
+        if (added)
+        {
+            RefreshQuestProgressForItem(item);
+        }
+
+        return added;
+    }
+
+    public void RemoveAt(int index, int amount = 1)
+    {
+        ItemDataSO item = GetSlot(index)?.Item;
+        _inventory.RemoveAt(index, amount);
+        RefreshQuestProgressForItem(item);
+    }
+
+    public bool RemoveItem(ItemDataSO item, int amount)
+    {
+        bool removed = _inventory.RemoveItem(item, amount);
+
+        if (removed)
+        {
+            RefreshQuestProgressForItem(item);
+        }
+
+        return removed;
+    }
+
+    public InventorySlot GetSlot(int index) => _inventory.GetSlot(index);
     public void SwapSlots(int from, int to) => _inventory.SwapSlots(from, to);
     public int SplitHalf(int index) => _inventory.SplitHalf(index);
     public void PlaceSplit(int sourceIndex, int targetIndex, ItemDataSO item, int amount)
         => _inventory.PlaceSplit(sourceIndex, targetIndex, item, amount);
-    public void RemoveAt(int index, int amount = 1) => _inventory.RemoveAt(index, amount);
     public int GetItemCount(ItemDataSO item) => _inventory.GetItemCount(item);
-    public bool RemoveItem(ItemDataSO item, int amount) => _inventory.RemoveItem(item, amount);
+
 
     public void ExportTo(PlayerSaveData saveData)
     {
@@ -125,5 +158,13 @@ public class PlayerInventoryAbility : PlayerAbility, ISaveableAbility
         }
 
         _inventory.ReplaceAll(totalSlots, filled);
+    }
+
+    private void RefreshQuestProgressForItem(ItemDataSO item)
+    {
+        if (!_owner.IsMine) return;
+        if (item == null) return;
+
+        QuestManager.Instance?.RefreshItemQuestProgress(item.Id);
     }
 }
