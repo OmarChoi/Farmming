@@ -140,7 +140,7 @@ public class PlayerMoveAbility : PlayerAbility
 
         if (isGrounded)
         {
-            if (Input.GetKeyDown(_jumpKey))
+            if (Input.GetKeyDown(_jumpKey) && _owner.CanMove)
             {
                 _yVelocity = _owner.StatSo.JumpPower;
                 _animation.SetGrounded(false);

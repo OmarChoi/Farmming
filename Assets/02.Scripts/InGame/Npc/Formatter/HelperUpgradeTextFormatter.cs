@@ -58,7 +58,12 @@ public class HelperUpgradeTextFormatter
 
     public static Sprite GetHelperIcon(HelperDataSO data)
     {
-        return data == null ? null : data.HelperIcon;
+        return GetHelperIcon(data, EHelperGrade.Normal);
+    }
+
+    public static Sprite GetHelperIcon(HelperDataSO data, EHelperGrade grade)
+    {
+        return data == null ? null : data.GetIconForGrade(grade);
     }
 
     public static string GetHelperName(HelperDataSO data)

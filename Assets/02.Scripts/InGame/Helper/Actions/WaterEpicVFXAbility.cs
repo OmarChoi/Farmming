@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -83,11 +83,11 @@ public class WaterEpicVFXAbility : HelperAbility, IWaterGradeVFX
 
         GameObject landVfx = Instantiate(_landVfxPrefab, position, Quaternion.identity);
         EpicWaterLandEffect landEffect = landVfx.GetComponentInChildren<EpicWaterLandEffect>();
-        landEffect?.Initialize(cell, isCenter, (landedCell, landedIsCenter) =>
-        {
-            PlayWaterImpactSfx(position);
-            onCellLand?.Invoke(landedCell, landedIsCenter);
-        });
+        landEffect?.Initialize(
+            cell,
+            isCenter,
+            (_, _) => PlayWaterImpactSfx(position),
+            (landedCell, landedIsCenter) => onCellLand?.Invoke(landedCell, landedIsCenter));
         Destroy(landVfx, _landVfxDuration);
     }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -15,6 +15,7 @@ public class WaterLegendaryVFXAbility : HelperAbility, IWaterGradeVFX
 
     private HelperAnimationAbility _animAbility;
     private Coroutine _rotationCoroutine;
+    private bool _landImpactSfxPlayed;
 
     private void Start()
     {
@@ -23,6 +24,7 @@ public class WaterLegendaryVFXAbility : HelperAbility, IWaterGradeVFX
 
     public void BeginAction(Action onWaterOpen, Action onComplete)
     {
+        _landImpactSfxPlayed = false;
         _animAbility?.Play(EHelperAnim.Happy);
         _animAbility?.Play(EHelperAnim.Jump);
 
@@ -59,7 +61,6 @@ public class WaterLegendaryVFXAbility : HelperAbility, IWaterGradeVFX
     {
         if (_helperVfxPrefab == null) return;
 
-        PlayWaterSpawnSfx();
         GameObject vfx = Instantiate(_helperVfxPrefab, _owner.transform.position, Quaternion.identity);
         vfx.transform.SetParent(_owner.transform);
         Destroy(vfx, _helperVfxDuration);
@@ -83,6 +84,7 @@ public class WaterLegendaryVFXAbility : HelperAbility, IWaterGradeVFX
     {
         if (_landVfxPrefab == null) return;
 
+        PlayWaterImpactSfx(position);
         GameObject landVfx = Instantiate(_landVfxPrefab, position, Quaternion.identity);
         Destroy(landVfx, _landVfxDuration);
     }
@@ -96,14 +98,15 @@ public class WaterLegendaryVFXAbility : HelperAbility, IWaterGradeVFX
         }
     }
 
-    private void PlayWaterSpawnSfx()
+    private void PlayWaterImpactSfx(Vector3 targetPos)
     {
-        if (SoundManager.Instance == null)
+        if (_landImpactSfxPlayed || SoundManager.Instance == null)
             return;
 
+        _landImpactSfxPlayed = true;
         SoundManager.Instance.PlaySfx(new SfxPlayRequest(
             clipKey: AssetKey.SFX.WaterLegendarySplash,
-            spatialMode: ESpatialMode.FollowTransform,
-            followTarget: _owner.transform));
+            spatialMode: ESpatialMode.Positional3D,
+            position: targetPos));
     }
 }
