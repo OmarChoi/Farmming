@@ -69,11 +69,16 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
 
             yield return PlayOne(clip);
 
-            yield return FadeTo(1f, _fadeDuration);
-
             bool isLast = i == _videoClips.Length - 1;
-            if (isLast && _endHoldDuration > 0f)
-                yield return new WaitForSeconds(_endHoldDuration);
+
+            if (isLast)
+            {
+                // 마지막 영상 종료 후에만 검정으로 페이드 인
+                yield return FadeTo(1f, _fadeDuration);
+                if (_endHoldDuration > 0f)
+                    yield return new WaitForSeconds(_endHoldDuration);
+            }
+            // 영상 사이에는 페이드를 주지 않는다 — 끊김 없이 바로 다음 영상으로 이어짐
         }
 
         _videoPlayer.Stop();
