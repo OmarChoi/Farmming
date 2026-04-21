@@ -59,6 +59,7 @@ public class DungeonChest : MonoBehaviour
         {
             if (entry.Item == null) continue;
             inventory.AddItem(entry.Item, entry.Amount);
+            HarvestNotificationManager.Instance?.Show(entry.Item.Icon, entry.Item.DisplayName, entry.Amount);
         }
     }
 }
