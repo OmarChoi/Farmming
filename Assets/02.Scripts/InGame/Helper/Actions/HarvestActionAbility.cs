@@ -9,7 +9,6 @@ public class HarvestActionAbility : HelperAbility, IHelperAction, ISecondaryInte
 {
     private const string NoFertilizerItemMessage = "비료 아이템이 없습니다";
 
-    [SerializeField] private HarvestItemSO _harvestItem;
     [SerializeField] private int _harvestExperience = 10;
     [SerializeField] private GameObject _normalVfxPrefab;
     [SerializeField] private float _normalVfxSpawnHeight = 2.1f;
@@ -300,7 +299,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction, ISecondaryInte
         if (_owner.IsMine && harvestItem != null)
         {
             Sprite notificationIcon = harvestItem.Icon != null ? harvestItem.Icon : seed.Icon;
-            _harvestItem?.Raise(notificationIcon, harvestItem.DisplayName, harvestAmount);
+            HarvestNotificationEvents.RaiseHarvested(notificationIcon, harvestItem.DisplayName, harvestAmount);
         }
 
         return success;

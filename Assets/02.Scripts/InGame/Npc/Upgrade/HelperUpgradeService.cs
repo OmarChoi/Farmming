@@ -37,7 +37,11 @@ public class HelperUpgradeService : MonoBehaviour
         }
         if (_evolutionManager == null)
         {
-            _evolutionManager = FindFirstObjectByType<EvolutionManager>();
+            _evolutionManager = FindFirstObjectByType<EvolutionManager>(FindObjectsInactive.Include);
+            if (_evolutionManager == null)
+            {
+                Debug.LogError("[HelperUpgradeService] EvolutionManager is not assigned and could not be found in the loaded scene. Helper evolution cutscene will be skipped.");
+            }
         }
     }
 
@@ -238,7 +242,19 @@ public class HelperUpgradeService : MonoBehaviour
 
     private bool TryPlayEvolutionCutscene(HelperDataSO data, EHelperGrade currentGrade)
     {
-        if (_evolutionManager == null || data == null || currentGrade >= EHelperGrade.Legendary) return false;
+        if (data == null)
+        {
+            Debug.LogError("[HelperUpgradeService] Cannot play evolution cutscene because HelperDataSO is null.");
+            return false;
+        }
+
+        if (currentGrade >= EHelperGrade.Legendary) return false;
+
+        if (_evolutionManager == null)
+        {
+            Debug.LogError($"[HelperUpgradeService] EvolutionManager is missing. Evolution cutscene skipped. HelperId: {data.HelperId}, HelperName: {data.HelperName}, CurrentGrade: {currentGrade}");
+            return false;
+        }
 
         HelperController liveHelper = FindLiveHelperForEvolution(data);
         bool upgradeFinalized = false;
@@ -268,7 +284,11 @@ public class HelperUpgradeService : MonoBehaviour
                 upgradeFailed = !upgradeFinalized;
             });
 
-        if (!started) return false;
+        if (!started)
+        {
+            Debug.LogError($"[HelperUpgradeService] EvolutionManager failed to start cutscene. Upgrade will continue without cutscene. HelperId: {data.HelperId}, HelperName: {data.HelperName}, CurrentGrade: {currentGrade}");
+            return false;
+        }
 
         CloseUpgradeUi();
         return true;
