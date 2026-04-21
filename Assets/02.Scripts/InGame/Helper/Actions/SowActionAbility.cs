@@ -6,6 +6,13 @@ using UnityEngine;
 
 public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteractBlockNotifier
 {
+    private sealed class SowPlantPlan
+    {
+        public TerrainCell Cell;
+        public FarmTile Tile;
+        public SeedItemDataSO Seed;
+    }
+
     private const string NoSeedItemMessage = "씨앗 아이템이 없습니다";
 
     [SerializeField] private Transform _mouthPoint;
@@ -34,11 +41,11 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
     private bool _isSecondaryActing;
     private bool _anySeedPlanted;
-    private List<FarmTile> _currentFarmTiles;
-    private SeedItemDataSO _currentSeed;
+    private List<SowPlantPlan> _currentPlantPlan;
     private Coroutine _secondaryOpenFallbackCoroutine;
     private Coroutine _secondaryCompleteFallbackCoroutine;
     private bool _secondaryOpened;
+    private bool _showNoSeedMessageOnSecondaryComplete;
     private float _lastEpicCultivateSfxTime = float.MinValue;
 
     protected override void Awake()
@@ -96,20 +103,23 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         if (_owner.IsMine && _isSecondaryActing)
             return;
 
-        SeedItemDataSO selectedSeed = _seedSelector?.SelectedSeed;
-        if (selectedSeed == null || !HasAvailableSelectedSeed())
+        if (!EnsureSeedReadyForInteraction(showNoSeedMessage: true))
             return;
 
-        List<FarmTile> farmTiles = GetSowableFarmTiles(cell);
-        if (farmTiles.Count == 0)
+        EHelperGrade grade = _owner.Grade.CurrentGrade;
+        List<SowPlantPlan> targets = GetSowPlantTargets(cell, grade);
+        if (targets.Count == 0)
             return;
 
-        StartSecondaryAction(cell, selectedSeed, _owner.Grade.CurrentGrade);
+        List<SowPlantPlan> plantPlan = BuildLocalSowPlantPlan(targets, out bool hasUnplannedTargets);
+        if (plantPlan.Count == 0)
+        {
+            ShowNoSeedItemMessage();
+            return;
+        }
 
-        Vector3Int pos = cell.GridPosition;
-        _owner.PhotonView.RpcSafe(
-            nameof(RPC_PlantSeed), RpcTarget.Others,
-            pos.x, pos.y, pos.z, selectedSeed.Id, (int)_owner.Grade.CurrentGrade);
+        StartSecondaryAction(plantPlan, grade, hasUnplannedTargets);
+        SendPlantPlanRpc(plantPlan, grade);
     }
 
     public void SowOpen()
@@ -120,14 +130,15 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         _secondaryOpened = true;
         StopSecondaryOpenFallback();
 
-        if (_currentFarmTiles == null || _currentFarmTiles.Count == 0 || _currentSeed == null || !_seedVfxSpawner.HasMouthPoint)
+        if (_currentPlantPlan == null || _currentPlantPlan.Count == 0 || !_seedVfxSpawner.HasMouthPoint)
             return;
 
-        foreach (FarmTile tile in _currentFarmTiles)
+        foreach (SowPlantPlan plan in _currentPlantPlan)
         {
-            FarmTile capturedTile = tile;
+            FarmTile capturedTile = plan.Tile;
+            SeedItemDataSO capturedSeed = plan.Seed;
             _seedVfxSpawner.SpawnTo(capturedTile, () => PlaySowNormalImpactSfx(capturedTile));
-            StartCoroutine(PlantAfterDelay(capturedTile, _currentSeed));
+            StartCoroutine(PlantAfterDelay(capturedTile, capturedSeed));
         }
     }
 
@@ -147,70 +158,92 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         if (seed == null)
             return;
 
-        StartSecondaryAction(centerCell, seed, (EHelperGrade)grade);
+        List<SowPlantPlan> targets = GetSowPlantTargets(centerCell, (EHelperGrade)grade);
+        foreach (SowPlantPlan target in targets)
+            target.Seed = seed;
+
+        StartSecondaryAction(targets, (EHelperGrade)grade);
     }
 
-    private void StartSecondaryAction(TerrainCell centerCell, SeedItemDataSO seed, EHelperGrade grade)
+    [PunRPC]
+    internal void RPC_PlantSeedPlan(int grade, int[] gridXs, int[] gridYs, int[] gridZs, int[] seedIds)
     {
+        List<SowPlantPlan> plantPlan = BuildRemoteSowPlantPlan(gridXs, gridYs, gridZs, seedIds);
+        if (plantPlan.Count == 0)
+            return;
+
+        StartSecondaryAction(plantPlan, (EHelperGrade)grade);
+    }
+
+    private void StartSecondaryAction(List<SowPlantPlan> plantPlan, EHelperGrade grade, bool showNoSeedMessageOnComplete = false)
+    {
+        if (plantPlan == null || plantPlan.Count == 0)
+            return;
+
         switch (grade)
         {
             case EHelperGrade.Epic:
             case EHelperGrade.Legendary:
-                StartGradeSecondary(centerCell, seed, grade);
+                StartGradeSecondary(plantPlan, grade, showNoSeedMessageOnComplete);
                 break;
             default:
-                StartNormalSecondary(GetSowableFarmTiles(centerCell), seed);
+                StartNormalSecondary(plantPlan, showNoSeedMessageOnComplete);
                 break;
         }
     }
 
-    private void StartNormalSecondary(List<FarmTile> farmTiles, SeedItemDataSO seed)
+    private void StartNormalSecondary(List<SowPlantPlan> plantPlan, bool showNoSeedMessageOnComplete = false)
     {
-        if (farmTiles == null || farmTiles.Count == 0 || seed == null)
+        if (plantPlan == null || plantPlan.Count == 0)
             return;
 
         _isSecondaryActing = true;
         _anySeedPlanted = false;
-        _currentFarmTiles = farmTiles;
-        _currentSeed = seed;
+        _currentPlantPlan = plantPlan;
         _secondaryOpened = false;
+        _showNoSeedMessageOnSecondaryComplete = showNoSeedMessageOnComplete;
 
         _owner.BeginAction();
         StartSecondaryFallbacks(requireOpenFallback: true);
         _animAbility?.Play(EHelperAnim.Sow);
     }
 
-    private void StartGradeSecondary(TerrainCell centerCell, SeedItemDataSO seed, EHelperGrade grade)
+    private void StartGradeSecondary(List<SowPlantPlan> plantPlan, EHelperGrade grade, bool showNoSeedMessageOnComplete = false)
     {
+        if (plantPlan == null || plantPlan.Count == 0)
+            return;
+
         _isSecondaryActing = true;
         _anySeedPlanted = false;
-        _currentFarmTiles = null;
-        _currentSeed = null;
+        _currentPlantPlan = null;
         _secondaryOpened = false;
+        _showNoSeedMessageOnSecondaryComplete = showNoSeedMessageOnComplete;
 
         _owner.BeginAction();
         StartSecondaryFallbacks(requireOpenFallback: false);
 
         if (_secondaryPresentation == null)
         {
-            PlantCells(GetTargetCells(centerCell), seed);
+            PlantPlan(plantPlan);
             CompleteSecondaryAction();
             return;
         }
+
+        List<TerrainCell> orderedCells = GetCellsFromPlantPlan(plantPlan);
 
         switch (grade)
         {
             case EHelperGrade.Epic:
                 _secondaryPresentation.PlayEpic(
                     _seedVfxSpawner.MouthPoint,
-                    GetEpicOrderedTargetCells(centerCell),
+                    orderedCells,
                     cell =>
                     {
-                        FarmTile tile = GetFarmTile(cell);
-                        if (tile != null && tile.IsReadyToSow)
+                        SowPlantPlan plan = FindPlantPlanForCell(plantPlan, cell);
+                        if (plan != null && plan.Tile != null && plan.Tile.IsReadyToSow)
                         {
-                            PlaySowNormalImpactSfx(tile);
-                            PlantSeed(tile, seed);
+                            PlaySowNormalImpactSfx(plan.Tile);
+                            PlantSeed(plan.Tile, plan.Seed);
                         }
                     },
                     CompleteSecondaryAction);
@@ -219,18 +252,18 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
                 bool playedLegendaryImpactSfx = false;
                 _secondaryPresentation.PlayLegendary(
                     _seedVfxSpawner.MouthPoint,
-                    GetOrderedTargetCells(centerCell),
+                    orderedCells,
                     cell =>
                     {
-                        FarmTile tile = GetFarmTile(cell);
-                        if (tile != null && tile.IsReadyToSow)
+                        SowPlantPlan plan = FindPlantPlanForCell(plantPlan, cell);
+                        if (plan != null && plan.Tile != null && plan.Tile.IsReadyToSow)
                         {
                             if (!playedLegendaryImpactSfx)
                             {
-                                PlaySowLegendaryImpactSfx(tile);
+                                PlaySowLegendaryImpactSfx(plan.Tile);
                                 playedLegendaryImpactSfx = true;
                             }
-                            PlantSeed(tile, seed);
+                            PlantSeed(plan.Tile, plan.Seed);
                         }
                     },
                     CompleteSecondaryAction);
@@ -322,14 +355,24 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
     private void HandleEpicCultivation(TerrainCell cell)
     {
+        bool grantedCultivateExperience = false;
+        void GrantCultivateExperienceOnce(bool converted)
+        {
+            if (!converted || grantedCultivateExperience)
+                return;
+
+            grantedCultivateExperience = true;
+            _owner.Experience.Add(_cultivateExperience);
+        }
+
         System.Action onEpicLeft = () =>
         {
-            TryConvertLateralCell(cell, -1);
+            GrantCultivateExperienceOnce(TryConvertLateralCell(cell, -1));
             ReplayEpicSow();
         };
         System.Action onEpicRight = () =>
         {
-            TryConvertLateralCell(cell, +1);
+            GrantCultivateExperienceOnce(TryConvertLateralCell(cell, +1));
         };
 
         if (cell.CurrentObject != null)
@@ -361,11 +404,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
                 OnCultivate = () =>
                 {
                     PlayEpicCultivateSfx();
-                    if (TryConvertToFarmWithCultivateEffect(leftCell, true))
-                    {
-                        _owner.Experience.Add(_cultivateExperience);
+                    bool convertedLeft = TryConvertToFarmWithCultivateEffect(leftCell, true);
+                    GrantCultivateExperienceOnce(convertedLeft);
+                    if (convertedLeft)
                         BroadcastTerrainCellStateFromMaster(leftCell);
-                    }
                     ReplayEpicSow(false);
                 },
                 EpicLook = true,
@@ -374,10 +416,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
                 EpicRightLookDuration = _epicThreeTileLookDuration,
                 OnEpicLookRightMid = () =>
                 {
-                    TryConvertLateralCell(leftCell, +1);
+                    GrantCultivateExperienceOnce(TryConvertLateralCell(leftCell, +1));
                     ReplayEpicSow();
                 },
-                OnEpicLookRight = () => TryConvertLateralCell(leftCell, +2),
+                OnEpicLookRight = () => GrantCultivateExperienceOnce(TryConvertLateralCell(leftCell, +2)),
                 OnEpicLookRightRoutine = ReplayEpicSowAndWait
             });
             return;
@@ -391,9 +433,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
                 OnCultivate = () =>
                 {
                     PlayEpicCultivateSfx();
-                    if (TryConvertToFarmWithCultivateEffect(cell, true))
-                        _owner.Experience.Add(_cultivateExperience);
-                    BroadcastTerrainCellStateFromMaster(cell);
+                    bool convertedCenter = TryConvertToFarmWithCultivateEffect(cell, true);
+                    GrantCultivateExperienceOnce(convertedCenter);
+                    if (convertedCenter)
+                        BroadcastTerrainCellStateFromMaster(cell);
                     ReplayEpicSow(false);
                 },
                 EpicLook = true,
@@ -476,8 +519,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             {
                 PlayEpicCultivateSfx();
                 if (TryConvertToFarmWithCultivateEffect(cell, true))
+                {
                     _owner.Experience.Add(_cultivateExperience);
-                BroadcastTerrainCellStateFromMaster(cell);
+                    BroadcastTerrainCellStateFromMaster(cell);
+                }
                 ReplayEpicSow(false);
             }
         });
@@ -610,20 +655,228 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         return tiles;
     }
 
+    private List<SowPlantPlan> GetSowPlantTargets(TerrainCell centerCell, EHelperGrade grade)
+    {
+        List<TerrainCell> cells = grade switch
+        {
+            EHelperGrade.Epic => GetEpicOrderedTargetCells(centerCell),
+            EHelperGrade.Legendary => GetOrderedTargetCells(centerCell),
+            _ => GetTargetCells(centerCell)
+        };
+
+        var targets = new List<SowPlantPlan>();
+        foreach (TerrainCell cell in cells)
+        {
+            FarmTile tile = GetFarmTile(cell);
+            if (tile != null && tile.IsReadyToSow)
+            {
+                targets.Add(new SowPlantPlan
+                {
+                    Cell = cell,
+                    Tile = tile
+                });
+            }
+        }
+
+        return targets;
+    }
+
+    private List<SowPlantPlan> BuildLocalSowPlantPlan(List<SowPlantPlan> targets, out bool hasUnplannedTargets)
+    {
+        hasUnplannedTargets = false;
+        var plantPlan = new List<SowPlantPlan>();
+        if (targets == null || targets.Count == 0)
+            return plantPlan;
+
+        PlayerInventoryAbility inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (inventory == null)
+        {
+            hasUnplannedTargets = true;
+            return plantPlan;
+        }
+
+        Dictionary<SeedItemDataSO, int> availableCounts = BuildSeedCountSnapshot(inventory);
+        SeedItemDataSO seed = HasAvailableSelectedSeed()
+            ? _seedSelector.SelectedSeed
+            : FindFirstAvailableSeedInSnapshot(inventory, availableCounts);
+
+        if (seed != null)
+            _seedSelector?.TrySelectSeed(seed);
+
+        foreach (SowPlantPlan target in targets)
+        {
+            if (!HasSeedCountInSnapshot(seed, availableCounts))
+            {
+                seed = FindFirstAvailableSeedInSnapshot(inventory, availableCounts);
+                if (seed != null)
+                    _seedSelector?.TrySelectSeed(seed);
+            }
+
+            if (!HasSeedCountInSnapshot(seed, availableCounts))
+            {
+                hasUnplannedTargets = true;
+                break;
+            }
+
+            availableCounts[seed]--;
+            plantPlan.Add(new SowPlantPlan
+            {
+                Cell = target.Cell,
+                Tile = target.Tile,
+                Seed = seed
+            });
+        }
+
+        hasUnplannedTargets |= plantPlan.Count < targets.Count;
+        return plantPlan;
+    }
+
+    private List<SowPlantPlan> BuildRemoteSowPlantPlan(int[] gridXs, int[] gridYs, int[] gridZs, int[] seedIds)
+    {
+        var plantPlan = new List<SowPlantPlan>();
+        if (gridXs == null || gridYs == null || gridZs == null || seedIds == null)
+            return plantPlan;
+
+        int count = Mathf.Min(gridXs.Length, gridYs.Length, gridZs.Length, seedIds.Length);
+        for (int i = 0; i < count; i++)
+        {
+            TerrainCell cell = TerrainGridManager.Instance?.GetCell(new Vector3Int(gridXs[i], gridYs[i], gridZs[i]));
+            if (cell == null)
+                continue;
+
+            SeedItemDataSO seed = TerrainGridManager.Instance.SeedDatabase?.GetById(seedIds[i]);
+            FarmTile tile = GetFarmTile(cell);
+            if (seed == null || tile == null || !tile.IsReadyToSow)
+                continue;
+
+            plantPlan.Add(new SowPlantPlan
+            {
+                Cell = cell,
+                Tile = tile,
+                Seed = seed
+            });
+        }
+
+        return plantPlan;
+    }
+
+    private Dictionary<SeedItemDataSO, int> BuildSeedCountSnapshot(PlayerInventoryAbility inventory)
+    {
+        var counts = new Dictionary<SeedItemDataSO, int>();
+        if (inventory == null)
+            return counts;
+
+        for (int i = 0; i < inventory.SlotCount; i++)
+        {
+            InventorySlot slot = inventory.GetSlot(i);
+            if (slot == null || slot.IsEmpty || !SeedSelectAbility.IsSeedItem(slot.Item))
+                continue;
+
+            SeedItemDataSO seed = (SeedItemDataSO)slot.Item;
+            counts.TryGetValue(seed, out int count);
+            counts[seed] = count + slot.Count;
+        }
+
+        return counts;
+    }
+
+    private static bool HasSeedCountInSnapshot(SeedItemDataSO seed, Dictionary<SeedItemDataSO, int> counts)
+    {
+        return seed != null && counts != null && counts.TryGetValue(seed, out int count) && count > 0;
+    }
+
+    private SeedItemDataSO FindFirstAvailableSeedInSnapshot(PlayerInventoryAbility inventory, Dictionary<SeedItemDataSO, int> counts)
+    {
+        if (inventory == null || counts == null)
+            return null;
+
+        for (int i = 0; i < inventory.SlotCount; i++)
+        {
+            InventorySlot slot = inventory.GetSlot(i);
+            if (slot == null || slot.IsEmpty || !SeedSelectAbility.IsSeedItem(slot.Item))
+                continue;
+
+            SeedItemDataSO seed = (SeedItemDataSO)slot.Item;
+            if (HasSeedCountInSnapshot(seed, counts))
+                return seed;
+        }
+
+        return null;
+    }
+
+    private static List<TerrainCell> GetCellsFromPlantPlan(List<SowPlantPlan> plantPlan)
+    {
+        var cells = new List<TerrainCell>();
+        if (plantPlan == null)
+            return cells;
+
+        foreach (SowPlantPlan plan in plantPlan)
+        {
+            if (plan?.Cell != null)
+                cells.Add(plan.Cell);
+        }
+
+        return cells;
+    }
+
+    private static SowPlantPlan FindPlantPlanForCell(List<SowPlantPlan> plantPlan, TerrainCell cell)
+    {
+        if (plantPlan == null || cell == null)
+            return null;
+
+        foreach (SowPlantPlan plan in plantPlan)
+        {
+            if (plan != null && plan.Cell == cell)
+                return plan;
+        }
+
+        return null;
+    }
+
+    private void SendPlantPlanRpc(List<SowPlantPlan> plantPlan, EHelperGrade grade)
+    {
+        if (plantPlan == null || plantPlan.Count == 0)
+            return;
+
+        int count = plantPlan.Count;
+        int[] gridXs = new int[count];
+        int[] gridYs = new int[count];
+        int[] gridZs = new int[count];
+        int[] seedIds = new int[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            Vector3Int gridPosition = plantPlan[i].Cell.GridPosition;
+            gridXs[i] = gridPosition.x;
+            gridYs[i] = gridPosition.y;
+            gridZs[i] = gridPosition.z;
+            seedIds[i] = plantPlan[i].Seed.Id;
+        }
+
+        _owner.PhotonView.RpcSafe(
+            nameof(RPC_PlantSeedPlan), RpcTarget.Others,
+            (int)grade, gridXs, gridYs, gridZs, seedIds);
+    }
+
     private TerrainCell GetLateralCell(TerrainCell centerCell, int directionSign)
     {
         Vector3Int rightOffset = GetGridRightOffset();
         return GetGridInteractableCell(centerCell.GridPosition + rightOffset * directionSign);
     }
 
-    private void TryConvertLateralCell(TerrainCell centerCell, int directionSign)
+    private bool TryConvertLateralCell(TerrainCell centerCell, int directionSign)
     {
         TerrainCell lateralCell = GetLateralCell(centerCell, directionSign);
         if (lateralCell != null && NeedsFarmConversion(lateralCell))
         {
-            TryConvertToFarmWithCultivateEffect(lateralCell, true);
-            BroadcastTerrainCellStateFromMaster(lateralCell);
+            bool converted = TryConvertToFarmWithCultivateEffect(lateralCell, true);
+            if (converted)
+                BroadcastTerrainCellStateFromMaster(lateralCell);
+
+            return converted;
         }
+
+        return false;
     }
 
     private bool TryConvertToFarmWithCultivateEffect(TerrainCell cell, bool spawnCultivateEffect)
@@ -765,13 +1018,15 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         return new Vector3Int(Mathf.RoundToInt(right.x), 0, Mathf.RoundToInt(right.z));
     }
 
-    private void PlantCells(List<TerrainCell> cells, SeedItemDataSO seed)
+    private void PlantPlan(List<SowPlantPlan> plantPlan)
     {
-        foreach (TerrainCell cell in cells)
+        if (plantPlan == null)
+            return;
+
+        foreach (SowPlantPlan plan in plantPlan)
         {
-            FarmTile tile = GetFarmTile(cell);
-            if (tile != null && tile.IsReadyToSow)
-                PlantSeed(tile, seed);
+            if (plan?.Tile != null && plan.Tile.IsReadyToSow)
+                PlantSeed(plan.Tile, plan.Seed);
         }
     }
 
@@ -788,14 +1043,35 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
     {
         if (farmTile == null || seed == null)
             return;
-        if (_owner.IsMine && !ConsumeSeed(seed))
+
+        if (_owner.IsMine && !TryConsumeSeedForPlanting(ref seed))
             return;
+
         if (_owner.IsMine)
             _seedSelector?.TrySwitchNextSeed();
 
         farmTile.PlantSeed(seed);
         _anySeedPlanted = true;
         BroadcastFarmTileStateFromMaster(farmTile);
+    }
+
+    private bool TryConsumeSeedForPlanting(ref SeedItemDataSO seed)
+    {
+        if (seed == null)
+            return false;
+
+        if (ConsumeSeed(seed))
+            return true;
+
+        if (!EnsureSeedReadyForInteraction(showNoSeedMessage: false))
+            return false;
+
+        SeedItemDataSO fallbackSeed = _seedSelector?.SelectedSeed;
+        if (fallbackSeed == null || !ConsumeSeed(fallbackSeed))
+            return false;
+
+        seed = fallbackSeed;
+        return true;
     }
 
     private void StartSecondaryFallbacks(bool requireOpenFallback)
@@ -974,12 +1250,15 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         if (_anySeedPlanted)
             _owner.Experience.Add(_sowExperience);
 
+        if (_owner.IsMine && _showNoSeedMessageOnSecondaryComplete)
+            ShowNoSeedItemMessage();
+
         _animAbility?.Play(EHelperAnim.Idle);
-        _currentFarmTiles = null;
-        _currentSeed = null;
+        _currentPlantPlan = null;
         _isSecondaryActing = false;
         _anySeedPlanted = false;
         _secondaryOpened = false;
+        _showNoSeedMessageOnSecondaryComplete = false;
         _owner.EndAction();
     }
 
@@ -988,11 +1267,11 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         CancelSecondaryFallbacks();
         _secondaryPresentation?.CancelPresentation();
 
-        _currentFarmTiles = null;
-        _currentSeed = null;
+        _currentPlantPlan = null;
         _isSecondaryActing = false;
         _anySeedPlanted = false;
         _secondaryOpened = false;
+        _showNoSeedMessageOnSecondaryComplete = false;
     }
 
     private void OnDisable()

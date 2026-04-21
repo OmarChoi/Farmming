@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8878384281332022994}
   - component: {fileID: 2530748974780246824}
   - component: {fileID: 4895439045516049122}
+  - component: {fileID: 4297339802766948498}
   m_Layer: 0
   m_Name: house1
   m_TagString: Untagged
@@ -27,8 +28,8 @@ Transform:
   m_GameObject: {fileID: 373061020026756288}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 2.5, z: 0}
+  m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 550958246160809277}
@@ -92,6 +93,27 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &4297339802766948498
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 373061020026756288}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.902863, y: 2.1765897, z: 1.3379902}
+  m_Center: {x: -0.0044784555, y: 0.035194993, z: 0.052463066}
 --- !u!1 &2541458800009277457
 GameObject:
   m_ObjectHideFlags: 0
@@ -456,7 +478,7 @@ Transform:
   m_GameObject: {fileID: 9160937878029293510}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.6, y: 0, z: 0}
+  m_LocalPosition: {x: -3, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

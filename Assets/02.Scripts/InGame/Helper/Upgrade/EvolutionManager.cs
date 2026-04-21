@@ -153,14 +153,40 @@ public class EvolutionManager : MonoBehaviour
         Action<bool> onFinished = null,
         Action onEvolvedModelShown = null)
     {
-        if (IsPlaying || data == null ||
-            _studioAnchor == null || _beforeModelRoot == null ||
-            _afterModelRoot == null || _orbitPivot == null)
+        if (IsPlaying)
+        {
+            LogBeginEvolutionFailure(data, currentGrade, "another evolution cutscene is already playing");
             return false;
+        }
+
+        if (data == null)
+        {
+            LogBeginEvolutionFailure(null, currentGrade, "HelperDataSO is null");
+            return false;
+        }
+
+        if (_studioAnchor == null || _beforeModelRoot == null ||
+            _afterModelRoot == null || _orbitPivot == null)
+        {
+            LogBeginEvolutionFailure(data, currentGrade,
+                $"required studio reference is missing. StudioAnchor:{_studioAnchor != null}, BeforeRoot:{_beforeModelRoot != null}, AfterRoot:{_afterModelRoot != null}, OrbitPivot:{_orbitPivot != null}");
+            return false;
+        }
 
         GameObject beforePrefab = GetEvolutionPreviewSource(data, currentGrade);
         GameObject afterPrefab = GetEvolutionPreviewSource(data, GetNextGrade(currentGrade));
-        if (beforePrefab == null || afterPrefab == null) return false;
+        if (beforePrefab == null || afterPrefab == null)
+        {
+            LogBeginEvolutionFailure(data, currentGrade,
+                $"preview prefab is missing. BeforePrefab:{beforePrefab != null}, AfterPrefab:{afterPrefab != null}");
+            return false;
+        }
+
+        if (FocusLayer < 0)
+        {
+            LogBeginEvolutionFailure(data, currentGrade, $"focus layer '{_focusLayerName}' does not exist");
+            return false;
+        }
 
         _currentData = data;
         _currentProfile = data.EvolutionProfile;
@@ -184,6 +210,15 @@ public class EvolutionManager : MonoBehaviour
        // StartEvolutionCutscene 하나만 실행 (내부에서 카메라/스핀/연출 처리)
         StartCoroutine(StartEvolutionCutscene());
         return true;
+    }
+
+    private void LogBeginEvolutionFailure(HelperDataSO data, EHelperGrade currentGrade, string reason)
+    {
+        string helperInfo = data == null
+            ? "Helper:null"
+            : $"HelperId:{data.HelperId}, HelperName:{data.HelperName}";
+
+        Debug.LogError($"[EvolutionManager] Failed to begin evolution cutscene. {helperInfo}, CurrentGrade:{currentGrade}, Reason:{reason}");
     }
 
     public void CancelEvolution()
@@ -442,7 +477,11 @@ public class EvolutionManager : MonoBehaviour
     private void EnableEvolutionCamera()
     {
         if (_baseCamera == null) _baseCamera = Camera.main;
-        if (_evolutionOverlayCamera == null) return;
+        if (_evolutionOverlayCamera == null)
+        {
+            Debug.LogError("[EvolutionManager] Evolution overlay camera is missing. Evolution cutscene can play but will not be visible.");
+            return;
+        }
 
         _wasOverlayEnabled = _evolutionOverlayCamera.enabled;
         _evolutionOverlayCamera.enabled = true;
@@ -459,6 +498,10 @@ public class EvolutionManager : MonoBehaviour
                 _wasStacked = baseData.cameraStack.Contains(_evolutionOverlayCamera);
                 if (!_wasStacked) baseData.cameraStack.Add(_evolutionOverlayCamera);
             }
+        }
+        else
+        {
+            Debug.LogError("[EvolutionManager] Base camera is missing and Camera.main could not be found. Evolution overlay camera cannot be added to the URP camera stack.");
         }
 
         if (_evolutionCinemachine != null)
