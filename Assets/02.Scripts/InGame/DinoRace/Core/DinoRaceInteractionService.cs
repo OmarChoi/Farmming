@@ -1,24 +1,16 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class DinoRaceInteractionService : MonoBehaviour
 {
-    [SerializeField] private NpcDialogueController _dialogueController;
     [SerializeField] private UI_DinoRace _ui;
 
     private NpcInteractionContext _currentContext;
     private DinoRaceHost _currentHost;
 
-    private void Awake()
-    {
-        if (_dialogueController == null)
-            _dialogueController = FindFirstObjectByType<NpcDialogueController>();
-        if (_ui == null)
-            _ui = FindFirstObjectByType<UI_DinoRace>(FindObjectsInactive.Include);
-    }
-
     public void BeginInteraction(NpcInteractionContext context)
     {
-        if (context == null || context.Npc == null || _ui == null)
+        if (context == null || context.Npc == null || _ui != null)
             return;
 
         DinoRaceNpcFeature feature = context.Npc.GetComponent<DinoRaceNpcFeature>();
@@ -33,21 +25,32 @@ public class DinoRaceInteractionService : MonoBehaviour
         _currentContext = context;
         _currentHost = feature.Host;
 
-        _dialogueController?.Close();
+        NpcDialogueController.Instance?.Close();
 
+        DinoRaceSettings settings = _currentHost.Settings ?? new DinoRaceSettings();
+        OpenUI(settings).Forget();
+    }
+
+    private async UniTaskVoid OpenUI(DinoRaceSettings settings)
+    {
         int currentGold = CurrencyManager.Instance != null
             ? (int)CurrencyManager.Instance.GetGold()
             : 0;
-
-        DinoRaceSettings settings = _currentHost.Settings ?? new DinoRaceSettings();
-        _ui.OpenSelection(
-            _currentHost.GetRunnerDisplayNames(),
-            currentGold,
-            settings.DefaultBetAmount,
-            settings.BetStepAmount,
-            settings.MinBetAmount,
-            HandleSelectionConfirmed,
-            HandleSelectionCancelled);
+        
+        _ui = await UIController.Instance.OpenAsync
+        (
+            new UILifecycleActions<UI_DinoRace>
+            {
+                OnOpen = ui => ui.OpenSelection(
+                    _currentHost.GetRunnerDisplayNames(),
+                    currentGold,
+                    settings.DefaultBetAmount,
+                    settings.BetStepAmount,
+                    settings.MinBetAmount,
+                    HandleSelectionConfirmed,
+                    HandleSelectionCancelled)
+            }
+        );
     }
 
     private void HandleSelectionConfirmed(int selectedRunnerIndex, int betAmount)
@@ -72,9 +75,7 @@ public class DinoRaceInteractionService : MonoBehaviour
     {
         if (resetRace && _currentHost != null)
             _currentHost.ResetRace();
-
-        _ui?.Close();
-
+        
         NpcInteractionComponent interactionComponent = _currentContext?.InteractionComponent;
         ClearCurrentBinding(true);
         interactionComponent?.EndInteraction();
@@ -83,8 +84,11 @@ public class DinoRaceInteractionService : MonoBehaviour
     private void ClearCurrentBinding(bool clearUi)
     {
         if (clearUi)
-            _ui?.Close();
-
+        {
+            UIController.Instance.CloseAsync<UI_DinoRace>().Forget();
+            _ui = null;
+        }
+        
         _currentHost = null;
         _currentContext = null;
     }
