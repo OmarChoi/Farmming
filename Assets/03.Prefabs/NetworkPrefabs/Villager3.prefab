@@ -1137,6 +1137,8 @@ GameObject:
   - component: {fileID: 325983607960154699}
   - component: {fileID: -358332252232013503}
   - component: {fileID: 6033431573448809155}
+  - component: {fileID: 4620445754155953895}
+  - component: {fileID: 4314709796190920435}
   m_Layer: 7
   m_Name: Villager3
   m_TagString: Untagged
@@ -1293,6 +1295,7 @@ MonoBehaviour:
   _animator: {fileID: 526476110738173426}
   _movement: {fileID: 5316030158967195761}
   _anim: {fileID: 6185204389369995894}
+  _voice: {fileID: 0}
   _npcSchedule: {fileID: 11400000, guid: 8b75e8555c011314dbfda7123e634849, type: 2}
   _interactionOptions:
   - _type: 0
@@ -1449,6 +1452,142 @@ MonoBehaviour:
   m_SynchronizeLayers:
   - SynchronizeType: 1
     LayerIndex: 0
+--- !u!82 &4620445754155953895
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7840605641264675590}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &4314709796190920435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7840605641264675590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 055e426137ef80742a78fb0afef6bcee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcVoicePlayer
+  _chosungClips:
+  - {fileID: 8300000, guid: c1dd4a25dde12df4a9bae9f5ec6b61ad, type: 3}
+  - {fileID: 8300000, guid: d617a63af1b57354684f66bb8173f370, type: 3}
+  - {fileID: 8300000, guid: 79526c4f19c44b546b3b9ba2f5db3a6d, type: 3}
+  - {fileID: 8300000, guid: 9ba8d3f18410dae4b8729cf58f72ac72, type: 3}
+  - {fileID: 8300000, guid: eec2125e052527542bb0376614c32aeb, type: 3}
+  - {fileID: 8300000, guid: 083153e6b170b014091b6e2ab78f25d0, type: 3}
+  - {fileID: 8300000, guid: a659a66dcb0a87c4ebbbeebe11770678, type: 3}
+  - {fileID: 8300000, guid: 3b6e1c1416f137441a1ec064a23a5794, type: 3}
+  - {fileID: 8300000, guid: eb246e2e65077fe439adf0713518214d, type: 3}
+  - {fileID: 8300000, guid: 5a3f5782871ceca4cab781565fca2299, type: 3}
+  - {fileID: 8300000, guid: 552d0ced6762fb145b5cb269c1d4e032, type: 3}
+  - {fileID: 8300000, guid: 4538af7250ce75b42bed691a331570fc, type: 3}
+  - {fileID: 8300000, guid: 6a2473efe1bfe504caf711c12853c26e, type: 3}
+  - {fileID: 8300000, guid: 975e36c73b34bc7458fd6b4ef9a6f480, type: 3}
+  - {fileID: 8300000, guid: 587f403675bda8e4ca65188194dae4bb, type: 3}
+  - {fileID: 8300000, guid: eae7fcccec9d6f54988b01cfbdc5c613, type: 3}
+  - {fileID: 8300000, guid: d4943c4733e626b4a9266afa55b6d556, type: 3}
+  - {fileID: 8300000, guid: 80ad9ee9c2014c646bea99439f336fb9, type: 3}
+  - {fileID: 8300000, guid: abff86a336c885148b892bd21279bd4d, type: 3}
+  _voiceType: 1
+  _customOctaves: 1
+  _outputMixerGroup: {fileID: -5485947719160798890, guid: 0c4ec56d16a734a4e9d8f28e3b4a8c8a, type: 2}
+  _volume: 0.7
+  _skipDuplicateConsonant: 1
+  _maxCharDuration: 0.12
+  _streamInterval: 0.07
 --- !u!1 &8256968125650387757
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,7 +3,7 @@ using UnityEngine;
 public static class TutorialNpcSpawner
 {
     private const float SpawnRadius = 4.4f;
-    private const float FirstTutorialSpawnRadius = 28.4f;
+    private const float FirstTutorialSpawnRadius = 28.6f;
 
     private const int MaxSpawnTryCount = 8;
     private const float GroundCheckStartHeight = 20f;
@@ -18,9 +18,16 @@ public static class TutorialNpcSpawner
     public static NpcController SpawnNearPlayer(NpcDataSO data, PlayerController player, bool isFirstTutorialQuestCompleted)
     {
         if (data == null || player == null || NpcSpawnManager.Instance == null) return null;
+
         float radius = isFirstTutorialQuestCompleted ? SpawnRadius : FirstTutorialSpawnRadius;
 
-        Vector3 spawnPosition = FindSpawnPosition(player.transform.position, radius);
+        Vector3 basePosition = player.transform.position;
+        if (TryResolveGroundPosition(basePosition, out Vector3 groundedBasePosition))
+        {
+            basePosition = groundedBasePosition;
+        }
+
+        Vector3 spawnPosition = FindSpawnPosition(basePosition, radius);
 
         var request = new NpcSpawnRequest(
             data,
@@ -34,11 +41,12 @@ public static class TutorialNpcSpawner
         return NpcSpawnManager.Instance.GetOrSpawn(request);
     }
 
-    private static Vector3 FindSpawnPosition(Vector3 playerPosition, float radius)
+    private static Vector3 FindSpawnPosition(Vector3 basePosition, float radius)
     {
+        // 반경 내에서 랜덤한 위치를 시도하여 지면에 닿는지 확인합니다.
         for (int i = 0; i < MaxSpawnTryCount; i++)
         {
-            Vector3 candidate = playerPosition + GetRandomOffset(radius);
+            Vector3 candidate = basePosition + GetRandomOffset(radius);
 
             if (TryResolveGroundPosition(candidate, out Vector3 groundedPosition))
             {
@@ -46,15 +54,14 @@ public static class TutorialNpcSpawner
             }
         }
 
-        // 모든 시도가 실패하면 플레이어 위치에서 수직으로 raycast하여 fallback합니다.
-        if (TryResolveGroundPosition(playerPosition, out Vector3 fallbackGroundedPosition))
+        // 모든 시도가 실패하면 basePosition에서 수직으로 raycast하여 fallback합니다.
+        if (TryResolveGroundPosition(basePosition, out Vector3 fallbackGroundedPosition))
         {
             return fallbackGroundedPosition;
         }
 
-
-        // 그래도 실패 시 플레이어 높이를 기준으로 fallback합니다.
-        return playerPosition;
+        // 그래도 실패하면 basePosition을 그대로 반환합니다.
+        return basePosition;
     }
 
     private static Vector3 GetRandomOffset(float radius)

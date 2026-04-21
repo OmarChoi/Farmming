@@ -62,6 +62,7 @@ GameObject:
   - component: {fileID: 676377919193482508}
   - component: {fileID: 9219670498808211090}
   - component: {fileID: 3495842702480786803}
+  - component: {fileID: 2318045460613472177}
   m_Layer: 8
   m_Name: Ability
   m_TagString: Untagged
@@ -415,7 +416,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractionPromptAbility
   _npcPromptOffset: {x: 0, y: 3, z: -2}
-  _objectPromptOffset: {x: 0, y: 4, z: -2}
+  _objectPromptOffset: {x: 0, y: 2, z: -2}
+--- !u!114 &2318045460613472177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597716759267161692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63ff699f4e6cec640a331c41f7aefbe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCurrencyAbility
 --- !u!1 &2101610759984280812
 GameObject:
   m_ObjectHideFlags: 0

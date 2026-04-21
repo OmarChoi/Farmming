@@ -107,7 +107,7 @@ public class NpcSpawnManager : MonoBehaviour
                 return null;
             }
 
-            npcObject = PhotonNetwork.Instantiate(prefabKey, finalPosition, request.Rotation);
+            npcObject = PhotonNetwork.Instantiate(prefabKey, finalPosition, request.Rotation, 0, request.InstantiationData);
             if (npcObject == null) return null;
         }
         else

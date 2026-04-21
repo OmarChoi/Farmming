@@ -38,7 +38,6 @@ public class WorldEffectManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     private void OnEnable()

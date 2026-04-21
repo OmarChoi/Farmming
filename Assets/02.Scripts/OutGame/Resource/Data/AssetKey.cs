@@ -165,6 +165,7 @@ public static class AssetKey
             {typeof(UI_Pause), Pause},
             {typeof(UI_VillageInfoPopup), VillageInfoPopup},
             {typeof(UI_Setting), Setting},
+            {typeof(UI_NpcDialogue), NpcDialogue}
         };
 
         public static string GetKey<T>() where T : UIBase

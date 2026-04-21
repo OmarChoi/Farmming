@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NpcManager : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class NpcManager : MonoBehaviour
             return;
         }
         Instance = this;
+        DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDestroy()
@@ -18,6 +22,16 @@ public class NpcManager : MonoBehaviour
         if (Instance == this)
         {
             Instance = null;
+        }
+        
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == SceneName.Title)
+        {
+            Destroy(gameObject);
         }
     }
 }
