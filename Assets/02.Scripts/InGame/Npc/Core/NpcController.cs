@@ -100,6 +100,25 @@ public class NpcController : MonoBehaviour
     {
         NpcScheduleManager.Instance.Register(this);
         _isInteracting = false;
+        TryRegisterWithBuilding();
+    }
+
+    /// 마스터가 PhotonNetwork.Instantiate 시 건물의 ViewID를 InstantiationData[0]로 실어 보낸다.
+    /// 양쪽 클라이언트 모두 이걸 읽어 BaseBuilding.SetNpc(this)를 호출 — 비마스터가
+    /// 건물-NPC 바인딩을 유지할 수 있게 해 주는 유일 경로. 마스터도 호출하지만 SetNpc가 멱등.
+    private void TryRegisterWithBuilding()
+    {
+        if (PhotonView == null) return;
+        object[] data = PhotonView.InstantiationData;
+        if (data == null || data.Length == 0) return;
+        if (data[0] is not int buildingViewId || buildingViewId == 0) return;
+
+        PhotonView buildingView = PhotonView.Find(buildingViewId);
+        if (buildingView == null) return;
+
+        BaseBuilding building = buildingView.GetComponent<BaseBuilding>();
+        if (building != null)
+            building.SetNpc(this);
     }
 
     private void OnDestroy()

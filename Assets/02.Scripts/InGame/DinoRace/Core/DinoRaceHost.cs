@@ -54,6 +54,13 @@ public class DinoRaceHost : MonoBehaviour
         _trackForwardLocal = _trackForwardLocal.normalized;
         _eventPolicy = new DinoRaceEventPolicy(_settings);
         _betService = new DinoRaceBetService(new DinoRacePayoutPolicy(_settings.Payout));
+
+        if (_building != null)
+        {
+            _building.BuildingNpcAssigned += HandleBuildingNpcAssigned;
+            if (_building.BuildingNpc != null)
+                HandleBuildingNpcAssigned(_building.BuildingNpc);
+        }
     }
 
     private void Start()
@@ -61,10 +68,14 @@ public class DinoRaceHost : MonoBehaviour
         ResetRace(false);
     }
 
+    private void OnDestroy()
+    {
+        if (_building != null)
+            _building.BuildingNpcAssigned -= HandleBuildingNpcAssigned;
+    }
+
     private void Update()
     {
-        BindNpcIfNeeded();
-
         switch (_state)
         {
             case EDinoRaceState.Countdown:
@@ -334,14 +345,9 @@ public class DinoRaceHost : MonoBehaviour
         CountdownTicked?.Invoke(countdownValue);
     }
 
-    private void BindNpcIfNeeded()
+    private void HandleBuildingNpcAssigned(NpcController npc)
     {
-        if (_npcBound || _building == null || !_building.IsConstructionComplete)
-            return;
-
-        NpcController npc = _building.BuildingNpc;
-        if (npc == null)
-            return;
+        if (_npcBound || npc == null) return;
 
         DinoRaceNpcFeature feature = npc.GetComponent<DinoRaceNpcFeature>();
         if (feature == null)

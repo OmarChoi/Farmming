@@ -42,7 +42,10 @@ public class StorageController : MonoBehaviour
     private void OnDestroy()
     {
         if (Instance == this)
+        {
+            ClearCurrentSession(notifyUi: true);
             Instance = null;
+        }
     }
 
     private void OnPlayerReady(PlayerInventoryAbility ability)
@@ -89,8 +92,16 @@ public class StorageController : MonoBehaviour
     {
         if (!IsOpen) return;
 
-        OnStorageClosed?.Invoke();
+        ClearCurrentSession(notifyUi: true);
         _playerInventory?.Close();
+    }
+
+    private void ClearCurrentSession(bool notifyUi)
+    {
+        if (!IsOpen) return;
+
+        if (notifyUi)
+            OnStorageClosed?.Invoke();
 
         _currentStorageObject?.EndInteract();
         _currentStorageObject = null;

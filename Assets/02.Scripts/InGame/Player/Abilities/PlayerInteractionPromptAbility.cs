@@ -9,7 +9,7 @@ public class PlayerInteractionPromptAbility : PlayerAbility
 
     [Header("프롬프트 UI 오프셋")]
     [SerializeField] private Vector3 _npcPromptOffset = new Vector3(0f, 3f, -2f);
-    [SerializeField] private Vector3 _objectPromptOffset = new Vector3(0f, 4f, -2f);
+    [SerializeField] private Vector3 _objectPromptOffset = new Vector3(0f, 2f, -2f);
 
     private Transform _cachedPromptTarget;
     private Vector3 _cachedPromptOffset;

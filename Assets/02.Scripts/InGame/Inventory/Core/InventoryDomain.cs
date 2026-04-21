@@ -40,7 +40,7 @@ public class InventoryDomain : SlotContainerDomain
         for (int i = 0; i < _slots.Count && remaining > 0; i++)
         {
             var slot = _slots[i];
-            if (slot.IsEmpty || slot.Item != item) continue;
+            if (slot.IsEmpty || !IsSameItem(slot.Item, item)) continue;
 
             int toRemove = Math.Min(remaining, slot.Count);
             slot.Remove(toRemove);
