@@ -154,6 +154,7 @@ public static class AssetKey
         public const string VillageInfoPopup = "UI_VillageInfoPopup";
         public const string Setting = "UI_Setting";
         public const string TradeAmountPopup = "UI_TradeAmountPopup";
+        public const string DinoRace = "UI_DinoRace";
 
         private static readonly Dictionary<Type, string> _registered = new Dictionary<Type, string>
         {
@@ -165,7 +166,8 @@ public static class AssetKey
             {typeof(UI_Pause), Pause},
             {typeof(UI_VillageInfoPopup), VillageInfoPopup},
             {typeof(UI_Setting), Setting},
-            {typeof(UI_NpcDialogue), NpcDialogue}
+            {typeof(UI_NpcDialogue), NpcDialogue},
+            {typeof(UI_DinoRace), DinoRace},
         };
 
         public static string GetKey<T>() where T : UIBase

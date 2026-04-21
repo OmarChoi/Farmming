@@ -1,14 +1,9 @@
 using System;
 using UnityEngine;
 
-public class UI_DinoRace : MonoBehaviour
+public class UI_DinoRace : UIBase
 {
     [SerializeField] private UI_DinoRaceSelectionPanel _selectionPanel;
-
-    private void Awake()
-    {
-        Close();
-    }
 
     public void OpenSelection(
         string[] runnerNames,
@@ -19,7 +14,6 @@ public class UI_DinoRace : MonoBehaviour
         Action<int, int> onConfirm,
         Action onClose)
     {
-        gameObject.SetActive(true);
         _selectionPanel?.Show(
             runnerNames,
             currentGold,
@@ -35,9 +29,8 @@ public class UI_DinoRace : MonoBehaviour
         _selectionPanel?.SetMessage(message);
     }
 
-    public void Close()
+    protected override void OnClose()
     {
         _selectionPanel?.Hide();
-        gameObject.SetActive(false);
     }
 }
