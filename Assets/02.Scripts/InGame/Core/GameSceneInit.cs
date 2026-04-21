@@ -271,6 +271,9 @@ public class GameSceneInit : MonoBehaviour
 
         OnLocalPlayerSceneReady?.Invoke(existing);
         OnCompleteInitialize?.Invoke();
+
+        if (VillageCache.HasCache)
+            await SaveReturnedVillageAsync();
     }
 
     private async UniTaskVoid LoadAndSpawnMaster()
@@ -351,6 +354,9 @@ public class GameSceneInit : MonoBehaviour
         await WaitForAllTerrainReady();
         OnLocalPlayerSceneReady?.Invoke(localPlayer);
         OnCompleteInitialize?.Invoke();
+
+        if (returning)
+            await SaveReturnedVillageAsync();
     }
 
     private async UniTask WaitForAllTerrainReady()
@@ -521,5 +527,14 @@ public class GameSceneInit : MonoBehaviour
         SaveManager.Instance?.EnsureBaseLoadedData();
         SaveManager.Instance?.MarkLoadCompleted();
         QuestManager.Instance?.MarkLoaded();
+    }
+
+    private async UniTask SaveReturnedVillageAsync()
+    {
+        if (SaveManager.Instance == null) return;
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+
+        int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+        await SaveManager.Instance.SaveAsync(slot);
     }
 }
