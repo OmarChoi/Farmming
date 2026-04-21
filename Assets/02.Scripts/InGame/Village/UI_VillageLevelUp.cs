@@ -13,8 +13,13 @@ public class UI_VillageLevelUp : UIBase
     [SerializeField] private float _dropDistance = 800f;
     [SerializeField] private float _duration = 0.6f;
 
+    private CursorLockMode _prevLockState;
+    private bool _cursorVisible = true;
+    
     protected override void OnOpen()
     {
+        _prevLockState = Cursor.lockState;
+        _cursorVisible = Cursor.visible;
         Cursor.lockState = CursorLockMode.Confined;
         Cursor.visible = true;
         _closeButton.onClick.AddListener(CloseUI);
@@ -22,8 +27,8 @@ public class UI_VillageLevelUp : UIBase
 
     protected override void OnClose()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        Cursor.lockState = _prevLockState;
+        Cursor.visible = _cursorVisible;
         _closeButton.onClick.RemoveListener(CloseUI);
     }
 
