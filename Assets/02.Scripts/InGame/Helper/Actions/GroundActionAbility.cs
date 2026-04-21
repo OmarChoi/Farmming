@@ -43,6 +43,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
     [SerializeField] private GameObject _lavaMeltSmokePrefab;
     [SerializeField] private float _lavaMeltDuration = 2f;
     [SerializeField] private float _lavaMeltSmokeLifetime = 2.2f;
+    [SerializeField] private float _lavaMeltStartDelayAfterPlacement = 0.2f;
+    [SerializeField] private float _lavaMeltSfxFadeOutDuration = 0.25f;
 
     private HelperAnimationAbility _animAbility;
     private GroundSelectAbility _groundSelector;
@@ -181,15 +183,15 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         _animAbility?.Play(EHelperAnim.EatGround);
 
         TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
-        if (meltsOnLava)
-        {
-            StartLavaMeltSequence(targetGridPos);
-            _animAbility?.Play(EHelperAnim.Idle);
-        }
-        else if (newCell != null && _mouthPoint != null)
+        if (newCell != null && _mouthPoint != null)
         {
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
-            StartPlaceCellAnimation(newCell, targetWorldPos);
+            StartPlaceCellAnimation(newCell, targetWorldPos, meltsOnLava);
+        }
+        else if (meltsOnLava)
+        {
+            DOVirtual.DelayedCall(GetRemotePlaceAnimationDuration(), () => StartLavaMeltSequence(targetGridPos))
+                     .SetTarget(gameObject);
         }
 
         _owner.PhotonView.RpcSafe(
@@ -572,17 +574,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         if (inventory == null || rewardItem == null || amount <= 0)
             return;
 
-        int finalAmount = amount;
-        if (WorldEffectManager.Instance != null)
-        {
-            finalAmount = WorldEffectManager.ApplyMultiplier
-            (
-                finalAmount, WorldEffectManager.Instance.GetAcquireMultiplier()
-            );
-        }
-        if (finalAmount <= 0) return;
-
-        inventory.AddItem(rewardItem, finalAmount);
+        inventory.AddItem(rewardItem, amount);
     }
 
     private void ConsumePlacedGroundItem(ETileType placedTileType, int amount)
@@ -626,15 +618,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         DOVirtual.DelayedCall(_digAnimDelay, () => _animAbility?.Play(EHelperAnim.EatGround));
     }
 
-    private void StartPlaceCellAnimation(TerrainCell cell, Vector3 targetWorldPos)
+    private void StartPlaceCellAnimation(TerrainCell cell, Vector3 targetWorldPos, bool meltAfterPlacement = false)
     {
         cell.transform.position = _mouthPoint.position;
         cell.transform.localScale = Vector3.zero;
 
-        DOVirtual.DelayedCall(_placeAnimLeadTime, () => AnimatePlaceCell(cell, targetWorldPos));
+        DOVirtual.DelayedCall(_placeAnimLeadTime, () => AnimatePlaceCell(cell, targetWorldPos, meltAfterPlacement))
+                 .SetTarget(cell.gameObject);
     }
 
-    private void AnimatePlaceCell(TerrainCell cell, Vector3 targetWorldPos)
+    private void AnimatePlaceCell(TerrainCell cell, Vector3 targetWorldPos, bool meltAfterPlacement)
     {
         if (_mouthPoint == null) return;
 
@@ -650,6 +643,10 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
                {
                    cell.transform.DOPunchScale(Vector3.one * 0.2f, 0.2f, 5, 0.5f);
                    _animAbility?.Play(EHelperAnim.Idle);
+
+                   if (meltAfterPlacement)
+                       DOVirtual.DelayedCall(GetLavaMeltStartDelayAfterPlacement(), () => StartLavaMeltSequence(cell.GridPosition))
+                                .SetTarget(cell.gameObject);
                });
     }
 
@@ -729,10 +726,10 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
             return;
         }
 
-        cell.transform.DOKill();
         cell.transform.localScale = Vector3.one;
 
         SpawnLavaMeltSmoke(cell.transform.position);
+        PlayLavaMeltSfx(cell.transform.position);
 
         float duration = Mathf.Max(0.01f, _lavaMeltDuration);
         cell.transform
@@ -761,9 +758,31 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         Destroy(smoke, Mathf.Max(_lavaMeltSmokeLifetime, _lavaMeltDuration));
     }
 
+    private void PlayLavaMeltSfx(Vector3 position)
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfxForDuration(
+            new SfxPlayRequest(
+                AssetKey.SFX.DirtSizzleLava,
+                ESpatialMode.Positional3D,
+                position),
+            Mathf.Max(0.01f, _lavaMeltDuration),
+            Mathf.Max(0f, _lavaMeltSfxFadeOutDuration));
+    }
+
     private float GetLavaMeltStateSyncDelay()
     {
-        return Mathf.Max(0.01f, _lavaMeltDuration) + Mathf.Max(0f, _remotePlaceStateSyncDelay);
+        return GetRemotePlaceAnimationDuration()
+               + GetLavaMeltStartDelayAfterPlacement()
+               + Mathf.Max(0.01f, _lavaMeltDuration)
+               + Mathf.Max(0f, _remotePlaceStateSyncDelay);
+    }
+
+    private float GetLavaMeltStartDelayAfterPlacement()
+    {
+        return Mathf.Max(0f, _lavaMeltStartDelayAfterPlacement);
     }
 
     private void OnDisable()
@@ -861,18 +880,16 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
 
         _animAbility?.Play(EHelperAnim.EatGround);
 
-        if (ShouldMeltPlacedGroundOnLava(placedTileType, targetGridPos))
-        {
-            StartLavaMeltSequence(targetGridPos);
-            _animAbility?.Play(EHelperAnim.Idle);
-            return;
-        }
-
         TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
         if (newCell != null && _mouthPoint != null)
         {
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
-            StartPlaceCellAnimation(newCell, targetWorldPos);
+            StartPlaceCellAnimation(newCell, targetWorldPos, ShouldMeltPlacedGroundOnLava(placedTileType, targetGridPos));
+        }
+        else if (ShouldMeltPlacedGroundOnLava(placedTileType, targetGridPos))
+        {
+            DOVirtual.DelayedCall(GetRemotePlaceAnimationDuration(), () => StartLavaMeltSequence(targetGridPos))
+                     .SetTarget(gameObject);
         }
     }
 

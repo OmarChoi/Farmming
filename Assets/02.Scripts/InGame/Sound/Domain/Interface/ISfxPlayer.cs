@@ -5,4 +5,5 @@
 public interface ISfxPlayer
 {
     void Play(SfxPlayRequest request);
+    void PlayForDuration(SfxPlayRequest request, float duration, float fadeOutDuration);
 }

@@ -193,6 +193,7 @@ public static class AssetKey
         public const string WaterEpicSplash = "SFXwaterepic";
         public const string WaterLegendarySplash = "SFXwaterlegendary";
         public const string WoodLeaf = "SFXwoodleaf";
+        public const string DirtSizzleLava = "DirtSizzle-Lava";
         public const string HelperSummon = "SFXhelpersummon";
         public const string HelperEquip = "SFXhelperequip";
         public const string HelperUnequip = "SFXhelperunequip";
