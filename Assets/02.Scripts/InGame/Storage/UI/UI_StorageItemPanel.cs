@@ -130,7 +130,16 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
 
     public void BeginDrag(UI_Slot source, bool shift)
     {
+        if (source == null) return;
+
+        if (!IsBoundToCurrentSession())
+        {
+            RebindToCurrentSession();
+            return;
+        }
+
         if (source.CurrentItem == null) return;
+        if (_transferService == null) return;
 
         if (shift)
         {
@@ -169,9 +178,19 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
     {
         if (!_isDragging) return;
 
+        if (!IsBoundToCurrentSession())
+        {
+            RestoreHeldItemToSource();
+            ClearDragState();
+            RebindToCurrentSession();
+            return;
+        }
+
+        EnsureCurrentInventoryLink();
+
         if (_linkedInventory != null)
         {
-            var crossTarget = _linkedInventory.HoveredSlot;
+            UI_Slot crossTarget = _linkedInventory.GetSlotUnderPointer() ?? _linkedInventory.HoveredSlot;
             if (crossTarget != null)
             {
                 if (_isSplitDrag)
@@ -205,8 +224,9 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
 
         {
             int sourceIndex = _dragSourceSlot.SlotIndex;
-            int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
-                ? _hoveredSlot.SlotIndex
+            UI_Slot targetSlot = GetSlotUnderPointer() ?? _hoveredSlot;
+            int targetIndex = targetSlot != null && targetSlot != _dragSourceSlot
+                ? targetSlot.SlotIndex
                 : sourceIndex;
 
             if (_isSplitDrag)
@@ -308,9 +328,61 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
         _transferService?.MoveToInventory(clicked.SlotIndex, 1);
     }
 
+    public UI_Slot GetSlotUnderPointer()
+    {
+        return SlotPointerResolver.FindSlotAtScreenPosition(_slotUIs, Input.mousePosition);
+    }
+
     private void OnSyncReceived()
     {
         if (_suppressRefresh) return;
         RefreshAll();
+    }
+
+    private bool IsBoundToCurrentSession()
+    {
+        StorageController controller = StorageController.Instance;
+        if (controller == null || !controller.IsOpen || controller.CurrentSession == null)
+            return _storage != null && _transferService != null;
+
+        StorageSession session = controller.CurrentSession;
+        return _storage == session.Storage && _transferService == session.TransferService;
+    }
+
+    private bool RebindToCurrentSession()
+    {
+        StorageController controller = StorageController.Instance;
+        if (controller == null || !controller.IsOpen || controller.CurrentSession == null)
+            return _storage != null && _transferService != null;
+
+        StorageSession session = controller.CurrentSession;
+        if (_storage != session.Storage || _transferService != session.TransferService)
+            Init(session.Storage, session.TransferService);
+
+        return true;
+    }
+
+    private void RestoreHeldItemToSource()
+    {
+        if (_transferService == null || _dragItem == null || _dragCount <= 0)
+            return;
+
+        int sourceIndex = _dragSourceSlot != null ? _dragSourceSlot.SlotIndex : -1;
+        if (sourceIndex < 0)
+            return;
+
+        if (_isSplitDrag)
+            _transferService.PlaceSplitInStorage(sourceIndex, sourceIndex, _dragItem, _dragCount);
+        else
+            _transferService.PutDownInStorage(sourceIndex, _dragItem, _dragCount);
+    }
+
+    private void EnsureCurrentInventoryLink()
+    {
+        if (_linkedInventory == null && StorageUiRegistry.CurrentInventory != null)
+            _linkedInventory = StorageUiRegistry.CurrentInventory;
+
+        if (_linkedInventory == null)
+            _linkedInventory = FindFirstObjectByType<UI_Inventory>(FindObjectsInactive.Include);
     }
 }
