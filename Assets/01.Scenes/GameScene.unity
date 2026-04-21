@@ -267,13 +267,14 @@ GameObject:
   - component: {fileID: 37425366}
   - component: {fileID: 37425368}
   - component: {fileID: 37425367}
+  - component: {fileID: 37425369}
   m_Layer: 5
   m_Name: UnableActionText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &37425366
 RectTransform:
   m_ObjectHideFlags: 0
@@ -385,6 +386,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &37425369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 37425365}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e23767b4b4e4c7344a3d2e426d7ea027, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _text: {fileID: 37425367}
 --- !u!222 &37425368
 CanvasRenderer:
   m_ObjectHideFlags: 0

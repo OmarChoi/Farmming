@@ -25,12 +25,12 @@ public class HarvestNotificationManager : MonoBehaviour
 
     private void OnEnable()
     {
-        HarvestNotificationEvents.Harvested += Show;
+        HarvestNotificationEvents.OnHarvested += Show;
     }
 
     private void OnDisable()
     {
-        HarvestNotificationEvents.Harvested -= Show;
+        HarvestNotificationEvents.OnHarvested -= Show;
     }
 
     private void OnDestroy()

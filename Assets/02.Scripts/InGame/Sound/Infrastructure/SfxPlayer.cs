@@ -76,7 +76,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
         AudioClip clip = await ResourceManager.Instance.LoadAsync<AudioClip>(request.ClipKey);
         if (clip == null)
         {
-            Debug.LogWarning($"[SfxPlayer] SFX ?대┰ 濡쒕뱶 ?ㅽ뙣: {request.ClipKey}");
+            Debug.LogWarning($"[SfxPlayer] SFX 클립 로드 실패: {request.ClipKey}");
             return;
         }
 
@@ -125,7 +125,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
 
     private async UniTask WaitAndReturnAsync(AudioSource source, Transform followTarget)
     {
-        bool isFollowing = !ReferenceEquals(followTarget, null);
+        bool isFollowing = followTarget != null;
 
         while (source != null && source.isPlaying)
         {
@@ -146,7 +146,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
 
     private async UniTask WaitTimedAndReturnAsync(AudioSource source, Transform followTarget, float duration, float fadeOutDuration)
     {
-        bool isFollowing = !ReferenceEquals(followTarget, null);
+        bool isFollowing = followTarget != null;
         float safeFadeOutDuration = Mathf.Clamp(fadeOutDuration, 0f, duration);
         float fadeStartTime = duration - safeFadeOutDuration;
         float elapsed = 0f;

@@ -2,16 +2,52 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-public static class UI_UnableActionText
+public class UI_UnableActionText : MonoBehaviour
 {
-    private const string TextObjectName = "UnableActionText";
+    public static UI_UnableActionText Instance { get; private set; }
 
-    private static TextMeshProUGUI _text;
-    private static Tween _fadeTween;
+    [SerializeField] private TextMeshProUGUI _text;
+
+    private Tween _fadeTween;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("[UI_UnableActionText] Multiple instances found. Using the latest scene instance.");
+        }
+
+        Instance = this;
+
+        if (_text == null)
+            _text = GetComponent<TextMeshProUGUI>();
+
+        if (_text != null)
+            _text.gameObject.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        _fadeTween?.Kill();
+
+        if (Instance == this)
+            Instance = null;
+    }
 
     public static void Show(string message, float fadeDuration = 1.5f)
     {
-        if (!TryResolveText())
+        if (Instance == null)
+        {
+            Debug.Log(message);
+            return;
+        }
+
+        Instance.ShowInternal(message, fadeDuration);
+    }
+
+    private void ShowInternal(string message, float fadeDuration)
+    {
+        if (_text == null)
         {
             Debug.Log(message);
             return;
@@ -39,22 +75,9 @@ public static class UI_UnableActionText
             });
     }
 
-    private static bool TryResolveText()
+    private void OnValidate()
     {
-        if (_text != null)
-            return true;
-
-        TextMeshProUGUI[] texts = Resources.FindObjectsOfTypeAll<TextMeshProUGUI>();
-        foreach (TextMeshProUGUI text in texts)
-        {
-            if (text == null) continue;
-            if (!text.gameObject.scene.IsValid()) continue;
-            if (text.gameObject.name != TextObjectName) continue;
-
-            _text = text;
-            return true;
-        }
-
-        return false;
+        if (_text == null)
+            _text = GetComponent<TextMeshProUGUI>();
     }
 }
