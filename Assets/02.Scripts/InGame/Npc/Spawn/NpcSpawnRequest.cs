@@ -10,6 +10,7 @@ public readonly struct NpcSpawnRequest
     public readonly string Reason;  // 스폰 사유 간단히 적는 용도입니다.
     public bool IsLocalOnly { get; }
     public string RuntimeNpcKey { get; }
+    public object[] InstantiationData { get; }
 
     public string NpcId => Data?.NpcId;
 
@@ -24,7 +25,8 @@ public readonly struct NpcSpawnRequest
         bool forceRespawn = false,
         string reason = null,
         bool isLocalOnly = false,
-        string runtimeNpcKey = null)
+        string runtimeNpcKey = null,
+        object[] instantiationData = null)
     {
         Data = data;
         RequestedPosition = requestedPosition;
@@ -34,5 +36,6 @@ public readonly struct NpcSpawnRequest
         Reason = reason;
         IsLocalOnly = isLocalOnly;
         RuntimeNpcKey = runtimeNpcKey;
+        InstantiationData = instantiationData;
     }
 }
