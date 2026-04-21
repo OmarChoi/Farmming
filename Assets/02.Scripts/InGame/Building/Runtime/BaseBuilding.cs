@@ -5,6 +5,7 @@ using UnityEngine;
 public abstract class BaseBuilding : MonoBehaviour
 {
     public event Action<BaseBuilding> ConstructionCompleted;
+    public event Action<NpcController> BuildingNpcAssigned;
 
     public BuildingDataSO BuildingData { get; private set; }
     public BuildingSaveData SaveData { get; private set; }
@@ -138,7 +139,10 @@ public abstract class BaseBuilding : MonoBehaviour
 
     public void SetNpc(NpcController npc)
     {
+        if (_buildingNpc == npc) return;
+
         _buildingNpc = npc;
+        BuildingNpcAssigned?.Invoke(npc);
     }
     
     public void HandleConstructionCompleted()
@@ -155,7 +159,7 @@ public abstract class BaseBuilding : MonoBehaviour
                 NpcController npc = spawner.SpawnNpc(SaveData);
                 if (npc != null)
                 {
-                    _buildingNpc = npc;
+                    SetNpc(npc);
                 }
             }
         }
