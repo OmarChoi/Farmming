@@ -30,7 +30,8 @@ MonoBehaviour:
     _amount: 2
   TargetNpcId: TutorialNpc
   RequiredAmount: 1
-  PrerequisiteQuests: []
+  PrerequisiteQuests:
+  - {fileID: 11400000, guid: 697f8ca8a7130a440be8ba7d68840294, type: 2}
   RequiredFriendship: 0
   Reward:
     Rewards:
