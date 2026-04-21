@@ -130,7 +130,10 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
 
     public void BeginDrag(UI_Slot source, bool shift)
     {
+        EnsureCurrentSession();
+
         if (source.CurrentItem == null) return;
+        if (_transferService == null) return;
 
         if (shift)
         {
@@ -169,9 +172,12 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
     {
         if (!_isDragging) return;
 
+        EnsureCurrentSession();
+        EnsureCurrentInventoryLink();
+
         if (_linkedInventory != null)
         {
-            var crossTarget = _linkedInventory.HoveredSlot;
+            UI_Slot crossTarget = _linkedInventory.GetSlotUnderPointer() ?? _linkedInventory.HoveredSlot;
             if (crossTarget != null)
             {
                 if (_isSplitDrag)
@@ -205,8 +211,9 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
 
         {
             int sourceIndex = _dragSourceSlot.SlotIndex;
-            int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
-                ? _hoveredSlot.SlotIndex
+            UI_Slot targetSlot = GetSlotUnderPointer() ?? _hoveredSlot;
+            int targetIndex = targetSlot != null && targetSlot != _dragSourceSlot
+                ? targetSlot.SlotIndex
                 : sourceIndex;
 
             if (_isSplitDrag)
@@ -308,9 +315,38 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
         _transferService?.MoveToInventory(clicked.SlotIndex, 1);
     }
 
+    public UI_Slot GetSlotUnderPointer()
+    {
+        return SlotPointerResolver.FindSlotAtScreenPosition(_slotUIs, Input.mousePosition);
+    }
+
     private void OnSyncReceived()
     {
         if (_suppressRefresh) return;
         RefreshAll();
+    }
+
+    private bool EnsureCurrentSession()
+    {
+        StorageController controller = StorageController.Instance;
+        if (controller == null || !controller.IsOpen || controller.CurrentSession == null)
+            return _storage != null && _transferService != null;
+
+        StorageSession session = controller.CurrentSession;
+        if (_storage != session.Storage || _transferService != session.TransferService)
+        {
+            Init(session.Storage, session.TransferService);
+        }
+
+        return true;
+    }
+
+    private void EnsureCurrentInventoryLink()
+    {
+        if (_linkedInventory == null && StorageUiRegistry.CurrentInventory != null)
+            _linkedInventory = StorageUiRegistry.CurrentInventory;
+
+        if (_linkedInventory == null)
+            _linkedInventory = FindFirstObjectByType<UI_Inventory>(FindObjectsInactive.Include);
     }
 }

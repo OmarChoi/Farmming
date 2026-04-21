@@ -88,6 +88,8 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
     {
         if (!_isDragging) return;
 
+        EnsureCurrentStorageLink();
+
         _dragIcon.transform.position = Input.mousePosition;
 
         if (!Input.GetMouseButton(0))
@@ -272,10 +274,12 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
     {
         if (!_isDragging) return;
 
+        EnsureCurrentStorageLink();
+
         // 크로스 드래그: 인벤토리 → 창고
         if (_clickMode == EInventoryClickMode.Storage && _linkedStorage != null)
         {
-            var crossTarget = _linkedStorage.HoveredSlot;
+            UI_Slot crossTarget = _linkedStorage.GetSlotUnderPointer() ?? _linkedStorage.HoveredSlot;
             if (crossTarget != null)
             {
                 if (_isSplitDrag)
@@ -301,18 +305,20 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
         }
 
         // 일반 드래그: 인벤토리 내부
+        UI_Slot targetSlot = GetSlotUnderPointer() ?? _hoveredSlot;
+
         if (_isSplitDrag)
         {
-            int targetIndex = _hoveredSlot != null && _hoveredSlot != _dragSourceSlot
-                ? _hoveredSlot.SlotIndex
+            int targetIndex = targetSlot != null && targetSlot != _dragSourceSlot
+                ? targetSlot.SlotIndex
                 : _dragSourceSlot.SlotIndex;
 
             _inventoryAbility.PlaceSplit(_dragSourceSlot.SlotIndex, targetIndex, _splitItem, _splitAmount);
         }
         else
         {
-            if (_hoveredSlot != null && _hoveredSlot != _dragSourceSlot)
-                _inventoryAbility.SwapSlots(_dragSourceSlot.SlotIndex, _hoveredSlot.SlotIndex);
+            if (targetSlot != null && targetSlot != _dragSourceSlot)
+                _inventoryAbility.SwapSlots(_dragSourceSlot.SlotIndex, targetSlot.SlotIndex);
             else
                 RefreshSlot(_dragSourceSlot.SlotIndex);
         }
@@ -465,6 +471,11 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
         _storageTransferService = service;
     }
 
+    public UI_Slot GetSlotUnderPointer()
+    {
+        return SlotPointerResolver.FindSlotAtScreenPosition(_slotUIs, Input.mousePosition);
+    }
+
     private void HandleStorageControllerReady(StorageController controller)
     {
         BindStorageController(controller);
@@ -549,5 +560,26 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
     private void HandleStorageUnregistered()
     {
         SetLinkedStorage(null, _storageTransferService);
+    }
+
+    private void EnsureCurrentStorageLink()
+    {
+        if (_boundStorageController == null && StorageController.Instance != null)
+            BindStorageController(StorageController.Instance);
+
+        if (_linkedStorage == null && StorageUiRegistry.CurrentStorage != null)
+            _linkedStorage = StorageUiRegistry.CurrentStorage;
+
+        if (_linkedStorage == null)
+            _linkedStorage = FindFirstObjectByType<UI_Storage>(FindObjectsInactive.Include);
+
+        if (_linkedStorage != null)
+            _linkedStorage.EnsureBoundToCurrentSession();
+
+        if (_boundStorageController != null &&
+            _boundStorageController.CurrentSession != null)
+        {
+            _storageTransferService = _boundStorageController.CurrentSession.TransferService;
+        }
     }
 }

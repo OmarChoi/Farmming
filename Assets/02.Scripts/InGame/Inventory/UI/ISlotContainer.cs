@@ -2,6 +2,7 @@
 public interface ISlotContainer
 {
     void BeginDrag(UI_Slot source, bool shift);
+    void EndDrag();
     void OnSlotHoverEnter(UI_Slot slot);
     void OnSlotHoverExit();
     void OnSlotClicked(UI_Slot clicked);
