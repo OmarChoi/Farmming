@@ -55,6 +55,12 @@ public class AiDialogueController : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        UnsubscribeUIEvent();
+        _uiDialogue = null;
+    }
+
     private void SubscribeUIEvent()
     {
         if (_uiDialogue == null) return;
