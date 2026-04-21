@@ -349,4 +349,11 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     {
         _movement?.PlayRemoteJump(startPos, endPos, duration);
     }
+
+    [PunRPC]
+    public void RPC_PlayCaveTroubleEffect()
+    {
+        var cave = GetComponent<CaveTroublemakerBehaviour>();
+        cave?.SpawnTroubleEffectLocal();
+    }
 }
