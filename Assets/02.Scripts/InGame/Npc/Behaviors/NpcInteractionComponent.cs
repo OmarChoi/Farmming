@@ -29,7 +29,7 @@ public class NpcInteractionComponent : MonoBehaviour, IInteraction
 
         _playerController?.SetCursorLock(false);
         _npcController.StartInteraction(player);
-        _dialogueController.Open(_npcController, player);
+        _dialogueController.Open(_npcController, player).Forget();
     }
 
     public void EndInteraction()

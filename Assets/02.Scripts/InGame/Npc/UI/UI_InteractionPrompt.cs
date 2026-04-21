@@ -8,15 +8,9 @@ public class UI_InteractionPrompt : MonoBehaviour
 
     [Header("루트")]
     [SerializeField] private GameObject _root;
-    
-    [Header("UI 요소")]
-    [SerializeField] private TextMeshProUGUI _text;
-    [SerializeField] private Image _displayIcon;
 
     [Header("UI 위치")]
     [SerializeField] private RectTransform _panel;
-
-    private static readonly string _interactionText = "상호작용";
 
     private Transform _target;
     private Vector3 _offset;
@@ -71,11 +65,6 @@ public class UI_InteractionPrompt : MonoBehaviour
     {
         _target = target;
         _offset = offset;
-
-        if (_text != null)
-        {
-            _text.text = _interactionText;
-        }
 
         if (_root != null && !_root.activeSelf)
         {

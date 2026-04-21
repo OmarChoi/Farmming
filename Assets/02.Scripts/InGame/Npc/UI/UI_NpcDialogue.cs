@@ -4,10 +4,8 @@ using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
 
-public class UI_NpcDialogue : MonoBehaviour
+public class UI_NpcDialogue : UIBase
 {
-    public static UI_NpcDialogue Instance { get; private set; }
-
     [Header("컴포넌트 참조")]
     [SerializeField] private Transform _interactionButtonRoot;
     [SerializeField] private RectTransform _interactionButtonRect;
@@ -17,28 +15,18 @@ public class UI_NpcDialogue : MonoBehaviour
     [SerializeField] private Button _dialoguePanelButton;
     [SerializeField] private TypewriterWithWrap _typewriter;
 
+    [Header("Reference")]
+    [SerializeField] private UI_FriendshipBar _friendshipBar;
+    public UI_FriendshipBar FriendshipBar => _friendshipBar;
+    
     public bool IsReady => _dialoguePanelButton != null && _typewriter != null;
 
     private Action _onClickDialoguePanel;
+    private NpcVoicePlayer _activeVoice;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
         gameObject.SetActive(false);
-    }
-
-    private void OnDestroy()
-    { 
-        if (Instance == this)
-        {
-            Instance = null;
-        }
     }
 
     private void Start()
@@ -57,13 +45,14 @@ public class UI_NpcDialogue : MonoBehaviour
         _onClickDialoguePanel = onClick;
     }
 
-    public void Open()
+    protected override void OnOpen()
     {
         gameObject.SetActive(true);
     }
 
-    public void Close()
+    protected override void OnClose()
     {
+        StopActiveVoice();
         gameObject.SetActive(false);
         ClearButtons();
         ClearDialogueText();
@@ -76,18 +65,44 @@ public class UI_NpcDialogue : MonoBehaviour
 
     public void ShowLine(string text)
     {
-        gameObject.SetActive(true);
-        _typewriter.StartTyping(text);
+        ShowLine(text, null);
     }
 
-    public bool IsTyping()
+    public void ShowLine(string text, NpcVoicePlayer voice)
     {
-        return _typewriter.IsTyping();
+        gameObject.SetActive(true);
+        StopActiveVoice();
+        _activeVoice = voice;
+
+        if (voice != null)
+        {
+            voice.ResetRepeatFilter();
+            _typewriter.StartTyping(text, voice.PlayChar);
+        }
+        else
+        {
+            _typewriter.StartTyping(text);
+        }
     }
 
     public void CompleteTyping()
     {
         _typewriter.CompleteTyping();
+        StopActiveVoice();
+    }
+
+    private void StopActiveVoice()
+    {
+        if (_activeVoice != null)
+        {
+            _activeVoice.Stop();
+            _activeVoice = null;
+        }
+    }
+
+    public bool IsTyping()
+    {
+        return _typewriter.IsTyping();
     }
 
     // NPC가 가진 상호작용에 관한 버튼을 생성하는 메서드입니다.

@@ -177,7 +177,7 @@ public class SlotContainerDomain
         int total = 0;
         foreach (var slot in _slots)
         {
-            if (!slot.IsEmpty && slot.Item == item)
+            if (!slot.IsEmpty && IsSameItem(slot.Item, item))
                 total += slot.Count;
         }
         return total;
@@ -207,4 +207,11 @@ public class SlotContainerDomain
 
     public void NotifySlotChanged(int index) => OnSlotChanged?.Invoke(index);
     protected void NotifySlotCountChanged() => OnSlotCountChanged?.Invoke();
+
+    protected bool IsSameItem(ItemDataSO a, ItemDataSO b)
+    {
+        if (a == null || b == null) return false;
+        if (ReferenceEquals(a, b)) return true;
+        return a.Id == b.Id;
+    }
 }

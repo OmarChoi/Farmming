@@ -45,6 +45,11 @@ public class UI_Storage : MonoBehaviour
     // UI_Inventory의 크로스드래그가 참조하는 호버 슬롯 pass-through
     public UI_Slot HoveredSlot => _itemPanel != null ? _itemPanel.HoveredSlot : null;
     public bool IsDragging => _itemPanel != null && _itemPanel.IsDragging;
+    public UI_Slot GetSlotUnderPointer()
+    {
+        EnsureBoundToCurrentSession();
+        return _itemPanel != null ? _itemPanel.GetSlotUnderPointer() : null;
+    }
 
     private void Awake()
     {
@@ -226,9 +231,30 @@ public class UI_Storage : MonoBehaviour
         _transferService = session.TransferService;
 
         _itemPanel?.Init(_storage, _transferService);
-        _itemPanel?.SetLinkedInventory(StorageUiRegistry.CurrentInventory);
+        _itemPanel?.SetLinkedInventory(ResolveCurrentInventory());
 
         Open();
+    }
+
+    public bool EnsureBoundToCurrentSession()
+    {
+        StorageController controller = StorageController.Instance;
+        if (controller == null || !controller.IsOpen || controller.CurrentSession == null)
+            return false;
+
+        BindController(controller);
+
+        StorageSession session = controller.CurrentSession;
+        if (_storage != session.Storage || _transferService != session.TransferService)
+        {
+            HandleStorageOpened(session);
+        }
+        else
+        {
+            _itemPanel?.SetLinkedInventory(ResolveCurrentInventory());
+        }
+
+        return true;
     }
 
     private void HandleStorageClosed()
@@ -256,5 +282,12 @@ public class UI_Storage : MonoBehaviour
     private void HandleInventoryUnregistered()
     {
         _itemPanel?.SetLinkedInventory(null);
+    }
+
+    private static UI_Inventory ResolveCurrentInventory()
+    {
+        return StorageUiRegistry.CurrentInventory != null
+            ? StorageUiRegistry.CurrentInventory
+            : FindFirstObjectByType<UI_Inventory>(FindObjectsInactive.Include);
     }
 }
