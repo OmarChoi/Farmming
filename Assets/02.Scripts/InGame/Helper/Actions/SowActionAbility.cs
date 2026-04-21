@@ -322,14 +322,24 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
     private void HandleEpicCultivation(TerrainCell cell)
     {
+        bool grantedCultivateExperience = false;
+        void GrantCultivateExperienceOnce(bool converted)
+        {
+            if (!converted || grantedCultivateExperience)
+                return;
+
+            grantedCultivateExperience = true;
+            _owner.Experience.Add(_cultivateExperience);
+        }
+
         System.Action onEpicLeft = () =>
         {
-            TryConvertLateralCell(cell, -1);
+            GrantCultivateExperienceOnce(TryConvertLateralCell(cell, -1));
             ReplayEpicSow();
         };
         System.Action onEpicRight = () =>
         {
-            TryConvertLateralCell(cell, +1);
+            GrantCultivateExperienceOnce(TryConvertLateralCell(cell, +1));
         };
 
         if (cell.CurrentObject != null)
@@ -361,11 +371,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
                 OnCultivate = () =>
                 {
                     PlayEpicCultivateSfx();
-                    if (TryConvertToFarmWithCultivateEffect(leftCell, true))
-                    {
-                        _owner.Experience.Add(_cultivateExperience);
+                    bool convertedLeft = TryConvertToFarmWithCultivateEffect(leftCell, true);
+                    GrantCultivateExperienceOnce(convertedLeft);
+                    if (convertedLeft)
                         BroadcastTerrainCellStateFromMaster(leftCell);
-                    }
                     ReplayEpicSow(false);
                 },
                 EpicLook = true,
@@ -374,10 +383,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
                 EpicRightLookDuration = _epicThreeTileLookDuration,
                 OnEpicLookRightMid = () =>
                 {
-                    TryConvertLateralCell(leftCell, +1);
+                    GrantCultivateExperienceOnce(TryConvertLateralCell(leftCell, +1));
                     ReplayEpicSow();
                 },
-                OnEpicLookRight = () => TryConvertLateralCell(leftCell, +2),
+                OnEpicLookRight = () => GrantCultivateExperienceOnce(TryConvertLateralCell(leftCell, +2)),
                 OnEpicLookRightRoutine = ReplayEpicSowAndWait
             });
             return;
@@ -391,9 +400,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
                 OnCultivate = () =>
                 {
                     PlayEpicCultivateSfx();
-                    if (TryConvertToFarmWithCultivateEffect(cell, true))
-                        _owner.Experience.Add(_cultivateExperience);
-                    BroadcastTerrainCellStateFromMaster(cell);
+                    bool convertedCenter = TryConvertToFarmWithCultivateEffect(cell, true);
+                    GrantCultivateExperienceOnce(convertedCenter);
+                    if (convertedCenter)
+                        BroadcastTerrainCellStateFromMaster(cell);
                     ReplayEpicSow(false);
                 },
                 EpicLook = true,
@@ -476,8 +486,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             {
                 PlayEpicCultivateSfx();
                 if (TryConvertToFarmWithCultivateEffect(cell, true))
+                {
                     _owner.Experience.Add(_cultivateExperience);
-                BroadcastTerrainCellStateFromMaster(cell);
+                    BroadcastTerrainCellStateFromMaster(cell);
+                }
                 ReplayEpicSow(false);
             }
         });
@@ -616,14 +628,19 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         return GetGridInteractableCell(centerCell.GridPosition + rightOffset * directionSign);
     }
 
-    private void TryConvertLateralCell(TerrainCell centerCell, int directionSign)
+    private bool TryConvertLateralCell(TerrainCell centerCell, int directionSign)
     {
         TerrainCell lateralCell = GetLateralCell(centerCell, directionSign);
         if (lateralCell != null && NeedsFarmConversion(lateralCell))
         {
-            TryConvertToFarmWithCultivateEffect(lateralCell, true);
-            BroadcastTerrainCellStateFromMaster(lateralCell);
+            bool converted = TryConvertToFarmWithCultivateEffect(lateralCell, true);
+            if (converted)
+                BroadcastTerrainCellStateFromMaster(lateralCell);
+
+            return converted;
         }
+
+        return false;
     }
 
     private bool TryConvertToFarmWithCultivateEffect(TerrainCell cell, bool spawnCultivateEffect)

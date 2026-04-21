@@ -5766,7 +5766,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HelperUpgradeService
   _uiHelperUpgrade: {fileID: 987751509}
   _dialogueController: {fileID: 2028739916}
-  _evolutionManager: {fileID: 0}
+  _evolutionManager: {fileID: 1805747058}
 --- !u!1 &1197303842
 GameObject:
   m_ObjectHideFlags: 0
@@ -8370,11 +8370,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
+  m_RemovedComponents: []
+  m_RemovedGameObjects: []
+  m_AddedGameObjects: []
+  m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
+--- !u!114 &1805747058 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3270950351638537384, guid: 9ed751301be468b4aade52a90ec0f1b9, type: 3}
+  m_PrefabInstance: {fileID: 1805747057}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7afa6a39adfab6846b1871095446ca0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EvolutionManager
 --- !u!1 &1811070269
 GameObject:
   m_ObjectHideFlags: 0

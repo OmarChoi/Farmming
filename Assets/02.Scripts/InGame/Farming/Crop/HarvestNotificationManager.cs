@@ -1,6 +1,4 @@
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class HarvestNotificationManager : MonoBehaviour
 {
@@ -9,8 +7,6 @@ public class HarvestNotificationManager : MonoBehaviour
     [SerializeField] private HarvestNotification _notificationPrefab;
     [SerializeField] private Transform _notificationParent;
     [SerializeField] private float _notificationDuration = 1.8f;
-    [SerializeField] private HarvestItemSO _harvestItemSO;
-
     [Header("여러 개 동시 표시 시 세로 간격")]
     [SerializeField] private float _stackOffset = 60f;
 
@@ -29,16 +25,25 @@ public class HarvestNotificationManager : MonoBehaviour
 
     private void OnEnable()
     {
-        _harvestItemSO.OnHarvested += Show;
+        HarvestNotificationEvents.Harvested += Show;
     }
 
     private void OnDisable()
     {
-        _harvestItemSO.OnHarvested -= Show;
+        HarvestNotificationEvents.Harvested -= Show;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     public void Show(Sprite icon, string seedName, int amount)
     {
+        if (_notificationPrefab == null || _notificationParent == null)
+            return;
+
         HarvestNotification notification = Instantiate(_notificationPrefab, _notificationParent);
 
         // 여러 개 동시에 뜰 때 위로 쌓임
@@ -56,6 +61,9 @@ public class HarvestNotificationManager : MonoBehaviour
     public void ShowMessage(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        if (_notificationPrefab == null || _notificationParent == null)
             return;
 
         HarvestNotification notification = Instantiate(_notificationPrefab, _notificationParent);
