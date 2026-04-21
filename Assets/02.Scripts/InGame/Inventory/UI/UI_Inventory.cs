@@ -88,8 +88,6 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
     {
         if (!_isDragging) return;
 
-        EnsureCurrentStorageLink();
-
         _dragIcon.transform.position = Input.mousePosition;
 
         if (!Input.GetMouseButton(0))
@@ -230,6 +228,8 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
 
     public void BeginDrag(UI_Slot source, bool shift = false)
     {
+        EnsureCurrentStorageLink();
+
         if (_clickMode == EInventoryClickMode.Trading) return;
         if (source.CurrentItem == null) return;
 
