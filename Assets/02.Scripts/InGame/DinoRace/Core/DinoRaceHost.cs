@@ -341,7 +341,23 @@ public class DinoRaceHost : MonoBehaviour
 
         NpcController npc = _building.BuildingNpc;
         if (npc == null)
-            return;
+        {
+            // 비마스터 클라는 BaseBuilding이 _buildingNpc를 세팅하지 않으므로
+            // PhotonNetwork.Instantiate로 자동 복제된 NPC를 NpcData로 직접 찾아 바인딩한다.
+            BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
+            if (spawner == null || spawner.NpcData == null) return;
+
+            NpcController[] allNpcs = FindObjectsByType<NpcController>(FindObjectsSortMode.None);
+            for (int i = 0; i < allNpcs.Length; i++)
+            {
+                if (allNpcs[i] != null && allNpcs[i].Data == spawner.NpcData)
+                {
+                    npc = allNpcs[i];
+                    break;
+                }
+            }
+            if (npc == null) return;
+        }
 
         DinoRaceNpcFeature feature = npc.GetComponent<DinoRaceNpcFeature>();
         if (feature == null)
