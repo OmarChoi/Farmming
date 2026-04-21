@@ -54,6 +54,13 @@ public class DinoRaceHost : MonoBehaviour
         _trackForwardLocal = _trackForwardLocal.normalized;
         _eventPolicy = new DinoRaceEventPolicy(_settings);
         _betService = new DinoRaceBetService(new DinoRacePayoutPolicy(_settings.Payout));
+
+        if (_building != null)
+        {
+            _building.BuildingNpcAssigned += HandleBuildingNpcAssigned;
+            if (_building.BuildingNpc != null)
+                HandleBuildingNpcAssigned(_building.BuildingNpc);
+        }
     }
 
     private void Start()
@@ -61,10 +68,14 @@ public class DinoRaceHost : MonoBehaviour
         ResetRace(false);
     }
 
+    private void OnDestroy()
+    {
+        if (_building != null)
+            _building.BuildingNpcAssigned -= HandleBuildingNpcAssigned;
+    }
+
     private void Update()
     {
-        BindNpcIfNeeded();
-
         switch (_state)
         {
             case EDinoRaceState.Countdown:
@@ -334,30 +345,9 @@ public class DinoRaceHost : MonoBehaviour
         CountdownTicked?.Invoke(countdownValue);
     }
 
-    private void BindNpcIfNeeded()
+    private void HandleBuildingNpcAssigned(NpcController npc)
     {
-        if (_npcBound || _building == null || !_building.IsConstructionComplete)
-            return;
-
-        NpcController npc = _building.BuildingNpc;
-        if (npc == null)
-        {
-            // 비마스터 클라는 BaseBuilding이 _buildingNpc를 세팅하지 않으므로
-            // PhotonNetwork.Instantiate로 자동 복제된 NPC를 NpcData로 직접 찾아 바인딩한다.
-            BuildingNpcSpawner spawner = GetComponent<BuildingNpcSpawner>();
-            if (spawner == null || spawner.NpcData == null) return;
-
-            NpcController[] allNpcs = FindObjectsByType<NpcController>(FindObjectsSortMode.None);
-            for (int i = 0; i < allNpcs.Length; i++)
-            {
-                if (allNpcs[i] != null && allNpcs[i].Data == spawner.NpcData)
-                {
-                    npc = allNpcs[i];
-                    break;
-                }
-            }
-            if (npc == null) return;
-        }
+        if (_npcBound || npc == null) return;
 
         DinoRaceNpcFeature feature = npc.GetComponent<DinoRaceNpcFeature>();
         if (feature == null)
