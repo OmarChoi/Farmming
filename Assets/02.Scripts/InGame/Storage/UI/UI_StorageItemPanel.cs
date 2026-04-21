@@ -130,7 +130,13 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
 
     public void BeginDrag(UI_Slot source, bool shift)
     {
-        EnsureCurrentSession();
+        if (source == null) return;
+
+        if (!IsBoundToCurrentSession())
+        {
+            RebindToCurrentSession();
+            return;
+        }
 
         if (source.CurrentItem == null) return;
         if (_transferService == null) return;
@@ -172,7 +178,14 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
     {
         if (!_isDragging) return;
 
-        EnsureCurrentSession();
+        if (!IsBoundToCurrentSession())
+        {
+            RestoreHeldItemToSource();
+            ClearDragState();
+            RebindToCurrentSession();
+            return;
+        }
+
         EnsureCurrentInventoryLink();
 
         if (_linkedInventory != null)
@@ -326,7 +339,17 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
         RefreshAll();
     }
 
-    private bool EnsureCurrentSession()
+    private bool IsBoundToCurrentSession()
+    {
+        StorageController controller = StorageController.Instance;
+        if (controller == null || !controller.IsOpen || controller.CurrentSession == null)
+            return _storage != null && _transferService != null;
+
+        StorageSession session = controller.CurrentSession;
+        return _storage == session.Storage && _transferService == session.TransferService;
+    }
+
+    private bool RebindToCurrentSession()
     {
         StorageController controller = StorageController.Instance;
         if (controller == null || !controller.IsOpen || controller.CurrentSession == null)
@@ -334,11 +357,24 @@ public class UI_StorageItemPanel : MonoBehaviour, ISlotContainer
 
         StorageSession session = controller.CurrentSession;
         if (_storage != session.Storage || _transferService != session.TransferService)
-        {
             Init(session.Storage, session.TransferService);
-        }
 
         return true;
+    }
+
+    private void RestoreHeldItemToSource()
+    {
+        if (_transferService == null || _dragItem == null || _dragCount <= 0)
+            return;
+
+        int sourceIndex = _dragSourceSlot != null ? _dragSourceSlot.SlotIndex : -1;
+        if (sourceIndex < 0)
+            return;
+
+        if (_isSplitDrag)
+            _transferService.PlaceSplitInStorage(sourceIndex, sourceIndex, _dragItem, _dragCount);
+        else
+            _transferService.PutDownInStorage(sourceIndex, _dragItem, _dragCount);
     }
 
     private void EnsureCurrentInventoryLink()
