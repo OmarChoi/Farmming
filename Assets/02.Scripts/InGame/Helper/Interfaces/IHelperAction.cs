@@ -11,3 +11,8 @@ public interface ISecondaryInteractBlockNotifier
 {
     void NotifySecondaryInteractBlocked(TerrainCell cell);
 }
+
+public interface IPrimaryInteractBlockNotifier
+{
+    void NotifyPrimaryInteractBlocked(TerrainCell cell);
+}
