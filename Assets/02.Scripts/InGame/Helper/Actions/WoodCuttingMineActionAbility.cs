@@ -59,6 +59,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
     private Quaternion _embeddedLegendaryWoodEffectLocalRotation;
     private Vector3 _embeddedLegendaryWoodEffectLocalScale;
     private Tween _embeddedLegendaryWoodEffectResetTween;
+    private readonly Dictionary<ItemDataSO, int> _pendingGatherNotificationAmounts = new Dictionary<ItemDataSO, int>();
+    private Coroutine _gatherNotificationFlushCoroutine;
 
     protected override void Awake()
     {
@@ -71,8 +73,17 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
         CacheEmbeddedLegendaryWoodEffect();
     }
 
+    private void OnEnable()
+    {
+        GatheringObject.OnGatheringItemAdded += HandleGatheringItemAdded;
+    }
+
     private void OnDisable()
     {
+        GatheringObject.OnGatheringItemAdded -= HandleGatheringItemAdded;
+        _pendingGatherNotificationAmounts.Clear();
+        _gatherNotificationFlushCoroutine = null;
+
         StopAllCoroutines();
         ResetEmbeddedNormalWoodEffectTransform(false);
         ResetEmbeddedEpicWoodEffectTransform(false);
@@ -340,6 +351,51 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
         GameObject effect = Instantiate(_effectWoodPrefab, spawnPos, rotation);
         WoodCuttingVFX cuttingVfx = effect.GetComponent<WoodCuttingVFX>();
         cuttingVfx.Initiate(info, EGatherType.Wood);
+    }
+
+    private void HandleGatheringItemAdded(GatheringObject gatheringObject, PlayerController player, ItemDataSO item, int amount)
+    {
+        if (_owner == null || !_owner.IsMine) return;
+        if (player == null || player != _owner.PlayerOwner) return;
+        if (!_owner.IsActing) return;
+        if (item == null || amount <= 0) return;
+        if (gatheringObject is not Wood && gatheringObject is not Stone) return;
+
+        if (_pendingGatherNotificationAmounts.TryGetValue(item, out int currentAmount))
+            _pendingGatherNotificationAmounts[item] = currentAmount + amount;
+        else
+            _pendingGatherNotificationAmounts.Add(item, amount);
+
+        if (_gatherNotificationFlushCoroutine != null)
+            StopCoroutine(_gatherNotificationFlushCoroutine);
+
+        _gatherNotificationFlushCoroutine = StartCoroutine(FlushGatherNotificationsAfterFrame());
+    }
+
+    private IEnumerator FlushGatherNotificationsAfterFrame()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (_pendingGatherNotificationAmounts.Count <= 0)
+        {
+            _gatherNotificationFlushCoroutine = null;
+            yield break;
+        }
+
+        if (HarvestNotificationManager.Instance != null)
+        {
+            foreach (KeyValuePair<ItemDataSO, int> pair in _pendingGatherNotificationAmounts)
+            {
+                ItemDataSO item = pair.Key;
+                int amount = pair.Value;
+                if (item == null || amount <= 0) continue;
+
+                HarvestNotificationManager.Instance.Show(item.Icon, item.DisplayName, amount);
+            }
+        }
+
+        _pendingGatherNotificationAmounts.Clear();
+        _gatherNotificationFlushCoroutine = null;
     }
 
     private void SpawnSlashMagic(TerrainCell cell)
