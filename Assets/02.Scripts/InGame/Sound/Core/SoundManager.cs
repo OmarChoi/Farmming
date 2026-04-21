@@ -148,4 +148,7 @@ public class SoundManager : MonoBehaviour
 
     // SFX를 재생한다
     public void PlaySfx(SfxPlayRequest request) => _sfxPlayer.Play(request);
+
+    public void PlaySfxForDuration(SfxPlayRequest request, float duration, float fadeOutDuration = 0.2f)
+        => _sfxPlayer.PlayForDuration(request, duration, fadeOutDuration);
 }
