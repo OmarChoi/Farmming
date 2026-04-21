@@ -34,6 +34,6 @@ public class ScriptedDialogueHandler : IDialogueHandler
             return;
         }
 
-        _dialogueController.StartDialogue(selectedDialogue);
+        _dialogueController.StartDialogue(selectedDialogue).Forget();
     }
 }
