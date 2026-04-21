@@ -273,13 +273,7 @@ public class NpcController : MonoBehaviour
         }
 
         _movement.MoveTo(targetPosition, 0f);
-
-        // Wandering이 아닌 경우 목적지를 Wander 기준점으로 저장합니다.
-        // Wandering인 경우는 현재 실제 위치를 기준점으로 유지합니다.
-        if (entry.NpcLocationType != ENpcLocationType.Wandering)
-        {
-            _wanderBasePosition = targetPosition;
-        }
+        _wanderBasePosition = targetPosition;
 
 #if UNITY_EDITOR
         Debug.Log($"{_npcData.NpcName}가 이동합니다: {entry.NpcLocationType} / {entry.LocationKey} -> {targetPosition}");
@@ -330,6 +324,14 @@ public class NpcController : MonoBehaviour
                 targetPosition = hit.position;
                 return true;
             }
+        }
+
+        // _wanderBasePosition 탐색 실패 시 현재 실제 위치 기준으로 재시도합니다. (예: 외부 요인으로 위치가 밀렸을 때)
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit fallbackHit, entry.WanderingRadius, NavMesh.AllAreas))
+        {
+            _wanderBasePosition = fallbackHit.position;  // 기준점도 보정합니다.
+            targetPosition = fallbackHit.position;
+            return true;
         }
 
         return false;
@@ -415,11 +417,7 @@ public class NpcController : MonoBehaviour
         }
 
         _movement.MoveTo(targetPosition, 0f);
-
-        if (latestValidEntry.NpcLocationType != ENpcLocationType.Wandering)
-        {
-            _wanderBasePosition = targetPosition;
-        }
+        _wanderBasePosition = targetPosition;
 
 #if UNITY_EDITOR
         Debug.Log($"{_npcData.NpcName} 스케줄 재개: {latestValidEntry.NpcLocationType} / {latestValidEntry.LocationKey}");
