@@ -213,11 +213,21 @@ public class PlayerHelperInteractionAbility : PlayerAbility
             }
             else
             {
+                if (IsLightHelper(_backHelper) && _backHelper.State == EHelperState.Summoned)
+                    return;
+
                 _backHelper.Equip(slot, true);
                 _backHelper.PhotonView.RpcSafe(
                     nameof(HelperController.RPC_Equip), RpcTarget.Others, _owner.PhotonView.ViewID, true);
             }
         }
+    }
+
+    private bool IsLightHelper(HelperController helper)
+    {
+        return helper != null
+            && (helper.Data != null && helper.Data.IsLightHelper
+                || helper.GetAbility<LightActionAbility>() != null);
     }
 
     private void TryInteractPrimary()

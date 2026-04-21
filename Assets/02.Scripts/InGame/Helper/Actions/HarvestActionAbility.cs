@@ -5,9 +5,10 @@ using Photon.Pun;
 using UnityEngine;
 
 // 수확 공룡: IsHarvestable -> 수확
-public class HarvestActionAbility : HelperAbility, IHelperAction
+public class HarvestActionAbility : HelperAbility, IHelperAction, ISecondaryInteractBlockNotifier
 {
-    [SerializeField] private HarvestItemSO _harvestItem;
+    private const string NoFertilizerItemMessage = "비료 아이템이 없습니다";
+
     [SerializeField] private int _harvestExperience = 10;
     [SerializeField] private GameObject _normalVfxPrefab;
     [SerializeField] private float _normalVfxSpawnHeight = 2.1f;
@@ -53,7 +54,10 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     public bool CanInteractSecondary(TerrainCell cell)
     {
         FarmTile farmTile = GetSingleTargetFarmTile(cell);
-        return CanApplyFastFertilizerToTile(farmTile) && _fertilizerSelectAbility != null && _fertilizerSelectAbility.HasSelectedFertilizerAvailable;
+        return CanApplyFastFertilizerToTile(farmTile)
+            && _fertilizerSelectAbility != null
+            && (_fertilizerSelectAbility.HasSelectedFertilizerAvailable
+                || _fertilizerSelectAbility.HasAnyFertilizerAvailable);
     }
 
     public void InteractPrimary(TerrainCell cell)
@@ -80,15 +84,18 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     public void InteractSecondary(TerrainCell cell)
     {
-        ItemDataSO fertilizerItem = _fertilizerSelectAbility != null ? _fertilizerSelectAbility.SelectedFertilizer : null;
         FarmTile farmTile = GetSingleTargetFarmTile(cell);
         if (farmTile == null)
             return;
 
-        if (fertilizerItem == null || !_fertilizerSelectAbility.HasSelectedFertilizerAvailable)
+        if (!CanApplyFastFertilizerToTile(farmTile))
             return;
 
-        if (!CanApplyFastFertilizerToTile(farmTile))
+        if (!EnsureFertilizerReadyForInteraction(showNoFertilizerMessage: true))
+            return;
+
+        ItemDataSO fertilizerItem = _fertilizerSelectAbility.SelectedFertilizer;
+        if (fertilizerItem == null)
             return;
 
         StartFertilizerSecondaryAction(farmTile, fertilizerItem, _owner.Grade.CurrentGrade, true);
@@ -98,6 +105,18 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
             nameof(RPC_PlayFastFertilizer),
             RpcTarget.Others,
             pos.x, pos.y, pos.z, (int)_owner.Grade.CurrentGrade);
+    }
+
+    public void NotifySecondaryInteractBlocked(TerrainCell cell)
+    {
+        if (PhotonNetwork.IsConnected && !_owner.IsMine)
+            return;
+
+        FarmTile farmTile = GetSingleTargetFarmTile(cell);
+        if (!CanApplyFastFertilizerToTile(farmTile))
+            return;
+
+        EnsureFertilizerReadyForInteraction(showNoFertilizerMessage: true);
     }
 
     [PunRPC]
@@ -280,7 +299,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         if (_owner.IsMine && harvestItem != null)
         {
             Sprite notificationIcon = harvestItem.Icon != null ? harvestItem.Icon : seed.Icon;
-            _harvestItem?.Raise(notificationIcon, harvestItem.DisplayName, harvestAmount);
+            HarvestNotificationEvents.RaiseHarvested(notificationIcon, harvestItem.DisplayName, harvestAmount);
         }
 
         return success;
@@ -320,6 +339,36 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         return farmTile != null && farmTile.CanApplyFastFertilizer();
     }
 
+    private bool HasAvailableSelectedFertilizer()
+    {
+        return _fertilizerSelectAbility != null && _fertilizerSelectAbility.HasSelectedFertilizerAvailable;
+    }
+
+    private bool EnsureFertilizerReadyForInteraction(bool showNoFertilizerMessage)
+    {
+        if (HasAvailableSelectedFertilizer())
+            return true;
+
+        if (PhotonNetwork.IsConnected && !_owner.IsMine)
+            return false;
+
+        bool selected = false;
+        if (_fertilizerSelectAbility != null)
+        {
+            selected = _fertilizerSelectAbility.SelectedFertilizer == null
+                ? _fertilizerSelectAbility.TryAutoSelectFertilizer()
+                : _fertilizerSelectAbility.TrySwitchNextFertilizer();
+        }
+
+        if (selected)
+            return true;
+
+        if (showNoFertilizerMessage)
+            ShowNoFertilizerItemMessage();
+
+        return false;
+    }
+
     private void StartFertilizerSecondaryAction(FarmTile farmTile, ItemDataSO fertilizerItem, EHelperGrade grade, bool applyOnImpact)
     {
         if (farmTile == null)
@@ -345,41 +394,46 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
         yield return new WaitForSeconds(_fertilizerLaunchDelay);
 
         bool launched = false;
+        bool appliedFastFertilizer = false;
         if (farmTile != null && _fertilizerVfxSpawner != null && _fertilizerVfxSpawner.HasMouthPoint && _fertilizerSeedVfxPrefab != null)
         {
             launched = true;
             System.Action onImpact = applyOnImpact
-                ? () => TryApplyFastFertilizer(farmTile, fertilizerItem)
+                ? () => appliedFastFertilizer |= TryApplyFastFertilizer(farmTile, fertilizerItem)
                 : null;
             _fertilizerVfxSpawner.SpawnTo(farmTile, onImpact);
         }
 
         if (!launched && applyOnImpact)
-            TryApplyFastFertilizer(farmTile, fertilizerItem);
+            appliedFastFertilizer |= TryApplyFastFertilizer(farmTile, fertilizerItem);
 
         yield return new WaitForSeconds(_fertilizerActionDuration);
+        if (_owner.IsMine && appliedFastFertilizer)
+            _owner.Experience.Add(_harvestExperience);
+
         FinishSecondaryAction();
     }
 
-    private void TryApplyFastFertilizer(FarmTile farmTile, ItemDataSO fertilizerItem)
+    private bool TryApplyFastFertilizer(FarmTile farmTile, ItemDataSO fertilizerItem)
     {
         if (farmTile == null)
-            return;
+            return false;
 
         if (!farmTile.CanApplyFastFertilizer())
-            return;
+            return false;
 
         bool consumed = TryConsumeFastFertilizerItem(fertilizerItem);
         if (_owner.IsMine && !consumed)
-            return;
+            return false;
 
         if (!TryApplyFastFertilizerToTile(farmTile))
         {
             RollbackConsumedFastFertilizer(fertilizerItem, consumed);
-            return;
+            return false;
         }
 
         SyncFastFertilizerState(farmTile);
+        return true;
     }
 
     private bool TryConsumeFastFertilizerItem(ItemDataSO fertilizerItem)
@@ -396,7 +450,11 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
 
     private static bool TryApplyFastFertilizerToTile(FarmTile farmTile)
     {
-        return farmTile != null && farmTile.ApplyFastFertilizer();
+        if (farmTile == null)
+            return false;
+
+        bool hadFastFertilizer = farmTile.HasFastFertilizer;
+        return farmTile.ApplyFastFertilizer() && !hadFastFertilizer && farmTile.HasFastFertilizer;
     }
 
     private void RollbackConsumedFastFertilizer(ItemDataSO fertilizerItem, bool consumed)
@@ -410,6 +468,17 @@ public class HarvestActionAbility : HelperAbility, IHelperAction
     private static void SyncFastFertilizerState(FarmTile farmTile)
     {
         BroadcastFarmTileStateFromMaster(farmTile);
+    }
+
+    private static void ShowNoFertilizerItemMessage()
+    {
+        if (HarvestNotificationManager.Instance != null)
+        {
+            HarvestNotificationManager.Instance.ShowMessage(NoFertilizerItemMessage);
+            return;
+        }
+
+        Debug.Log(NoFertilizerItemMessage);
     }
 
     private static void PlayHarvestNormalStartSfx(TerrainCell cell)

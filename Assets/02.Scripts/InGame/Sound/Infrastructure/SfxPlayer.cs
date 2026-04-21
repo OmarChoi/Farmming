@@ -40,6 +40,12 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
         PlayInternalAsync(request).Forget();
     }
 
+    public void PlayForDuration(SfxPlayRequest request, float duration, float fadeOutDuration)
+    {
+        if (string.IsNullOrEmpty(request.ClipKey)) return;
+        PlayForDurationInternalAsync(request, duration, fadeOutDuration).Forget();
+    }
+
     private async UniTaskVoid PlayInternalAsync(SfxPlayRequest request)
     {
         // 클립 로드
@@ -56,11 +62,40 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
 
         // 클립 설정 및 공간 모드 적용
         source.clip = clip;
+        source.loop = false;
+        source.volume = 1f;
         ConfigureSpatial(source, request);
         source.Play();
 
         // 재생 완료 대기 후 풀 반환
         await WaitAndReturnAsync(source, request.ESpatialMode == ESpatialMode.FollowTransform ? request.FollowTarget : null);
+    }
+
+    private async UniTaskVoid PlayForDurationInternalAsync(SfxPlayRequest request, float duration, float fadeOutDuration)
+    {
+        AudioClip clip = await ResourceManager.Instance.LoadAsync<AudioClip>(request.ClipKey);
+        if (clip == null)
+        {
+            Debug.LogWarning($"[SfxPlayer] SFX 클립 로드 실패: {request.ClipKey}");
+            return;
+        }
+
+        AudioSource source = _pool.Get();
+        if (source == null) return;
+
+        float safeDuration = Mathf.Max(0.01f, duration);
+
+        source.clip = clip;
+        source.loop = clip.length < safeDuration;
+        source.volume = 1f;
+        ConfigureSpatial(source, request);
+        source.Play();
+
+        await WaitTimedAndReturnAsync(
+            source,
+            request.ESpatialMode == ESpatialMode.FollowTransform ? request.FollowTarget : null,
+            safeDuration,
+            fadeOutDuration);
     }
 
     private void ConfigureSpatial(AudioSource source, SfxPlayRequest request)
@@ -90,7 +125,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
 
     private async UniTask WaitAndReturnAsync(AudioSource source, Transform followTarget)
     {
-        bool isFollowing = !ReferenceEquals(followTarget, null);
+        bool isFollowing = followTarget != null;
 
         while (source != null && source.isPlaying)
         {
@@ -104,6 +139,40 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
 
         if (source == null) return;
 
+        source.clip = null;
+        source.transform.SetParent(_poolRoot);
+        _pool.Release(source);
+    }
+
+    private async UniTask WaitTimedAndReturnAsync(AudioSource source, Transform followTarget, float duration, float fadeOutDuration)
+    {
+        bool isFollowing = followTarget != null;
+        float safeFadeOutDuration = Mathf.Clamp(fadeOutDuration, 0f, duration);
+        float fadeStartTime = duration - safeFadeOutDuration;
+        float elapsed = 0f;
+
+        while (source != null && source.isPlaying && elapsed < duration)
+        {
+            if (isFollowing && followTarget != null)
+            {
+                source.transform.position = followTarget.position;
+            }
+
+            if (safeFadeOutDuration > 0f && elapsed >= fadeStartTime)
+            {
+                float fadeProgress = Mathf.Clamp01((elapsed - fadeStartTime) / safeFadeOutDuration);
+                source.volume = Mathf.Lerp(1f, 0f, fadeProgress);
+            }
+
+            elapsed += Time.deltaTime;
+            await UniTask.Yield();
+        }
+
+        if (source == null) return;
+
+        source.Stop();
+        source.loop = false;
+        source.volume = 1f;
         source.clip = null;
         source.transform.SetParent(_poolRoot);
         _pool.Release(source);
@@ -123,11 +192,15 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
     private void OnGetSource(AudioSource source)
     {
         source.gameObject.SetActive(true);
+        source.loop = false;
+        source.volume = 1f;
     }
 
     private void OnReleaseSource(AudioSource source)
     {
         source.Stop();
+        source.loop = false;
+        source.volume = 1f;
         source.clip = null;
         source.gameObject.SetActive(false);
     }

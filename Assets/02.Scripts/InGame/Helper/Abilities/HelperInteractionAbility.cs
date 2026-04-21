@@ -22,7 +22,13 @@ public class HelperInteractionAbility : HelperAbility
     public bool InteractPrimary(TerrainCell cell)
     {
         if (!CanInteract()) return false;
-        if (!_action.CanInteractPrimary(cell)) return false;
+        if (!_action.CanInteractPrimary(cell))
+        {
+            if (_action is IPrimaryInteractBlockNotifier notifier)
+                notifier.NotifyPrimaryInteractBlocked(cell);
+
+            return false;
+        }
 
         ConsumeResources();
 
