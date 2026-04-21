@@ -9,7 +9,9 @@ public class UI_Pause : UIBase
 {
     private UI_PopupDoTween _popupDoTween;
     private PlayerController _player;
-
+    private bool _prevLockMode;
+    private CursorLockMode _prevLockState;
+    
     [Header("Buttons")]
     [SerializeField] private Button _continueButton;
     [SerializeField] private Button _settingButton;
@@ -39,7 +41,7 @@ public class UI_Pause : UIBase
         _toLobbyButton.onClick.RemoveListener(ChangeSceneToLobby);
         _exitGameButton.onClick.RemoveListener(ExitGame);
     }
-
+    
     public void SetOwnerPlayer(PlayerController player)
     {
         _player = player;
@@ -52,9 +54,14 @@ public class UI_Pause : UIBase
             UIController.Instance.CloseAsync<UI_Pause>().Forget();
             return;
         }
-        
-        _player?.EnterUIMode();
 
+        _prevLockMode = _player.IsActionLocked;
+        _player?.LockAction();
+
+        _prevLockState = Cursor.lockState;
+        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.visible = true;
+        
         if (SceneManager.GetActiveScene().name == SceneName.Title)
         {
             // 메인 화면으로, 방 코드 표시 X
@@ -71,13 +78,19 @@ public class UI_Pause : UIBase
 
     protected override void OnClose()
     {
-        _player?.ExitUIMode();
+        if (!_prevLockMode)
+        {
+            _player.UnlockAction();
+        }
+        Cursor.lockState = _prevLockState;
+        Cursor.visible = _prevLockState != CursorLockMode.Locked;
     }
 
     protected override async UniTask OnOpenAnimation()
     {
         await _popupDoTween.PlayOpenAsync();
     }
+    
     protected override async UniTask OnCloseAnimation()
     {
         await _popupDoTween.PlayCloseAsync();

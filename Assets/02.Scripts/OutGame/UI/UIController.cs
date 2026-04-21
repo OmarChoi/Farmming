@@ -135,7 +135,7 @@ public class UIController : MonoBehaviour
     {
         PlayerController localPlayer = PlayerController.Local;
 
-        return OpenAsync<UI_Pause>
+        return OpenAsync
         (
             new UILifecycleActions<UI_Pause>
             {
