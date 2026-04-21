@@ -15,7 +15,7 @@ public class InteractService : MonoBehaviour
     private IDialogueHandler _scriptedHandler;
     private IDialogueHandler _aiHandler;
 
-    private void Awake()
+    private void OnEnable()
     {
         if (_dialogueController == null)
         {
