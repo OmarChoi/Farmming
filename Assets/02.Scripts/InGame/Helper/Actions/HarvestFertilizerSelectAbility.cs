@@ -9,11 +9,27 @@ public class HarvestFertilizerSelectAbility : HelperAbility
     private readonly HashSet<ItemDataSO> _availableFertilizers = new();
     private ItemDataSO _selectedFertilizer;
     private PlayerInventoryAbility _inventory;
+    private PlayerController _boundPlayerOwner;
     private HelperController _helperController;
 
     public ItemDataSO SelectedFertilizer => _selectedFertilizer;
-    public int SelectedFertilizerCount => GetFertilizerCount(_selectedFertilizer);
-    public bool HasSelectedFertilizerAvailable => _selectedFertilizer != null && SelectedFertilizerCount > 0;
+    public int SelectedFertilizerCount
+    {
+        get
+        {
+            EnsureInventoryBinding();
+            return GetFertilizerCount(_selectedFertilizer);
+        }
+    }
+    public bool HasSelectedFertilizerAvailable => HasValidFertilizer();
+    public bool HasAnyFertilizerAvailable
+    {
+        get
+        {
+            EnsureInventoryBinding();
+            return FindFirstAvailableFertilizer() != null;
+        }
+    }
 
     protected override void Awake()
     {
@@ -23,10 +39,7 @@ public class HarvestFertilizerSelectAbility : HelperAbility
 
     private void Start()
     {
-        _inventory = _owner.PlayerOwner?.GetAbility<PlayerInventoryAbility>();
-        if (_inventory != null)
-            _inventory.OnSlotChanged += OnInventoryChanged;
-
+        EnsureInventoryBinding();
         RefreshFertilizers();
     }
 
@@ -53,18 +66,49 @@ public class HarvestFertilizerSelectAbility : HelperAbility
 
     public bool TrySelectFertilizer(ItemDataSO fertilizerItem)
     {
+        EnsureInventoryBinding();
+
         if (fertilizerItem == null || _inventory == null)
             return false;
 
-        if (!_availableFertilizers.Contains(fertilizerItem))
+        if (!IsFertilizerAvailable(fertilizerItem))
             return false;
 
-        if (GetFertilizerCount(fertilizerItem) <= 0)
-            return false;
-
-        _selectedFertilizer = fertilizerItem;
-        NotifySelectionChanged();
+        SetSelectedFertilizer(fertilizerItem);
         return true;
+    }
+
+    public bool TryAutoSelectFertilizer()
+    {
+        EnsureInventoryBinding();
+
+        if (HasValidFertilizer())
+            return true;
+        if (_selectedFertilizer != null)
+            return false;
+
+        return TrySelectFirstAvailableFertilizer();
+    }
+
+    public bool TrySwitchNextFertilizer()
+    {
+        EnsureInventoryBinding();
+
+        if (HasValidFertilizer())
+        {
+            NotifySelectionChanged();
+            return true;
+        }
+
+        ItemDataSO fertilizerItem = FindFirstAvailableFertilizer();
+        SetSelectedFertilizer(fertilizerItem);
+        return fertilizerItem != null;
+    }
+
+    public bool HasValidFertilizer()
+    {
+        EnsureInventoryBinding();
+        return IsFertilizerAvailable(_selectedFertilizer);
     }
 
     public void ClearSelection()
@@ -72,16 +116,16 @@ public class HarvestFertilizerSelectAbility : HelperAbility
         if (_selectedFertilizer == null)
             return;
 
-        _selectedFertilizer = null;
-        NotifySelectionChanged();
+        SetSelectedFertilizer(null);
     }
 
     private void RefreshFertilizers()
     {
+        EnsureInventoryBinding();
+
         if (_inventory == null)
         {
-            _selectedFertilizer = null;
-            NotifySelectionChanged();
+            SetSelectedFertilizer(null);
             return;
         }
 
@@ -92,13 +136,14 @@ public class HarvestFertilizerSelectAbility : HelperAbility
             if (slot == null || slot.IsEmpty || !IsFertilizer(slot.Item))
                 continue;
 
-            _availableFertilizers.Add(slot.Item);
+            if (GetFertilizerCount(slot.Item) > 0)
+                _availableFertilizers.Add(slot.Item);
         }
 
-        if (_selectedFertilizer != null
-            && (!_availableFertilizers.Contains(_selectedFertilizer) || GetFertilizerCount(_selectedFertilizer) <= 0))
+        if (_selectedFertilizer != null && !IsFertilizerAvailable(_selectedFertilizer))
         {
-            _selectedFertilizer = null;
+            TrySwitchNextFertilizer();
+            return;
         }
 
         NotifySelectionChanged();
@@ -112,9 +157,80 @@ public class HarvestFertilizerSelectAbility : HelperAbility
         return _inventory.GetItemCount(fertilizerItem);
     }
 
+    private bool TrySelectFirstAvailableFertilizer(int minimumAmount = 1)
+    {
+        ItemDataSO fertilizerItem = FindFirstAvailableFertilizer(minimumAmount);
+        if (fertilizerItem == null)
+            return false;
+
+        SetSelectedFertilizer(fertilizerItem);
+        return true;
+    }
+
+    private bool IsFertilizerAvailable(ItemDataSO fertilizerItem, int minimumAmount = 1)
+    {
+        if (fertilizerItem == null || _inventory == null || !IsFertilizer(fertilizerItem))
+            return false;
+
+        return GetFertilizerCount(fertilizerItem) >= minimumAmount;
+    }
+
+    private ItemDataSO FindFirstAvailableFertilizer(int minimumAmount = 1)
+    {
+        if (_inventory == null)
+            return null;
+
+        for (int i = 0; i < _inventory.SlotCount; i++)
+        {
+            InventorySlot slot = _inventory.GetSlot(i);
+            if (slot == null || slot.IsEmpty)
+                continue;
+
+            if (IsFertilizer(slot.Item) && GetFertilizerCount(slot.Item) >= minimumAmount)
+                return slot.Item;
+        }
+
+        return null;
+    }
+
     private static bool IsFertilizer(ItemDataSO item)
     {
         return item != null && item.Type == EItemType.Fertilizer;
+    }
+
+    private void SetSelectedFertilizer(ItemDataSO fertilizerItem)
+    {
+        if (_selectedFertilizer == fertilizerItem)
+        {
+            NotifySelectionChanged();
+            return;
+        }
+
+        _selectedFertilizer = fertilizerItem;
+        NotifySelectionChanged();
+    }
+
+    private void EnsureInventoryBinding()
+    {
+        PlayerController playerOwner = _owner.PlayerOwner;
+        if (_boundPlayerOwner == playerOwner && (_inventory != null || playerOwner == null))
+            return;
+
+        PlayerInventoryAbility inventory = playerOwner?.GetAbility<PlayerInventoryAbility>();
+        if (_inventory == inventory)
+        {
+            _boundPlayerOwner = playerOwner;
+            return;
+        }
+
+        if (_inventory != null)
+            _inventory.OnSlotChanged -= OnInventoryChanged;
+
+        _boundPlayerOwner = playerOwner;
+        _inventory = inventory;
+
+        if (_inventory != null)
+            _inventory.OnSlotChanged += OnInventoryChanged;
     }
 
     private void NotifySelectionChanged()
