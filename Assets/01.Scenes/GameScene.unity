@@ -4885,9 +4885,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 977065571}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 631631db7255a7c4b92c102d36cfbe73, type: 3}
+  m_Script: {fileID: 11500000, guid: d5c05979a90aa8448be1cc617cf593dc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnLoad
+  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnGameScene
 --- !u!1 &980905883
 GameObject:
   m_ObjectHideFlags: 0
@@ -6076,6 +6076,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1246812565}
   - component: {fileID: 1246812564}
+  - component: {fileID: 1246812566}
   m_Layer: 0
   m_Name: WorldEffectQuestService
   m_TagString: Untagged
@@ -6111,6 +6112,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1246812566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1246812563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5c05979a90aa8448be1cc617cf593dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnGameScene
 --- !u!1 &1285300502
 GameObject:
   m_ObjectHideFlags: 0
@@ -7088,9 +7101,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1564398908}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 631631db7255a7c4b92c102d36cfbe73, type: 3}
+  m_Script: {fileID: 11500000, guid: d5c05979a90aa8448be1cc617cf593dc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnLoad
+  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnGameScene
 --- !u!1 &1600211004
 GameObject:
   m_ObjectHideFlags: 0
@@ -8118,8 +8131,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1925945246}
-  - component: {fileID: 1925945245}
   - component: {fileID: 1925945244}
+  - component: {fileID: 1925945247}
   m_Layer: 0
   m_Name: QuestManager
   m_TagString: Untagged
@@ -8140,18 +8153,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestManager
   _questDatabase: {fileID: 1407652392}
---- !u!114 &1925945245
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1925945241}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 631631db7255a7c4b92c102d36cfbe73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnLoad
 --- !u!4 &1925945246
 Transform:
   m_ObjectHideFlags: 0
@@ -8171,6 +8172,18 @@ Transform:
   - {fileID: 1725755995}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1925945247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1925945241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5c05979a90aa8448be1cc617cf593dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnGameScene
 --- !u!1 &1975549614
 GameObject:
   m_ObjectHideFlags: 0
@@ -8331,6 +8344,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2016740553}
+  - component: {fileID: 2016740554}
   m_Layer: 0
   m_Name: NpcManager
   m_TagString: Untagged
@@ -8362,6 +8376,18 @@ Transform:
   - {fileID: 730240383}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2016740554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016740552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8002ecc9553fb9c478ecbfa32932abf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcManager
 --- !u!1001 &2019153956
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9067,6 +9093,7 @@ GameObject:
   m_Component:
   - component: {fileID: 606606606606606611}
   - component: {fileID: 606606606606606612}
+  - component: {fileID: 606606606606606613}
   m_Layer: 0
   m_Name: WorldEffectManager
   m_TagString: Untagged
@@ -9102,6 +9129,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldEffectManager
   _database: {fileID: 11400000, guid: 8df4ca01f446e8443a6ea43766489ad4, type: 2}
+--- !u!114 &606606606606606613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606606606606606610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5c05979a90aa8448be1cc617cf593dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnGameScene
 --- !u!1 &606606606606606620
 GameObject:
   m_ObjectHideFlags: 0
