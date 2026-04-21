@@ -29,7 +29,6 @@ public class CaveTroublemakerBehaviour : TroublemakerBehaviourBase
 
         _troubleEffectObject.SetActive(true);
         _troubleEffectParticle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        _troubleEffectParticle.Clear(true);
         _troubleEffectParticle.Play(true);
     }
 
