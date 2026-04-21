@@ -5460,6 +5460,7 @@ RectTransform:
   - {fileID: 1293124384}
   - {fileID: 1322951126}
   - {fileID: 1745982335}
+  - {fileID: 1678978433}
   m_Father: {fileID: 1564398910}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -8030,39 +8031,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
---- !u!114 &1678978433 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1938558472770447550, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
+--- !u!224 &1678978433 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5582783803246075422, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
   m_PrefabInstance: {fileID: 1678978432}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4029f05fe65dc5f4c8f6d75b332c549e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UI_FriendshipBar
---- !u!114 &1678978434 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6507505435011545005, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
-  m_PrefabInstance: {fileID: 1678978432}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f92f6978368a44408bb5b1e28c28748, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UI_NpcAiDialogue
---- !u!114 &1678978435 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1815893298679195429, guid: 618da5a94e3aa52438997acaa65ba970, type: 3}
-  m_PrefabInstance: {fileID: 1678978432}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14eb7f03e91fcc7428d7bc23298e9171, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractService
 --- !u!1 &1705460679
 GameObject:
   m_ObjectHideFlags: 0
@@ -9287,9 +9260,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2016740552}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8002ecc9553fb9c478ecbfa32932abf1, type: 3}
+  m_Script: {fileID: 11500000, guid: d5c05979a90aa8448be1cc617cf593dc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NpcManager
+  m_EditorClassIdentifier: Assembly-CSharp::DontDestroyOnGameScene
 --- !u!1001 &2019153956
 PrefabInstance:
   m_ObjectHideFlags: 0
