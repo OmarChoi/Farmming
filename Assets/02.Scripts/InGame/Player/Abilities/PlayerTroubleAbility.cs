@@ -17,6 +17,9 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
 
     private int _slowRequestId;
 
+    private const float GroundCheckStartOffset = 1.0f;
+    private const float GroundCheckDistance = 3.0f;
+
     private void Start()
     {
         _characterController = _owner.GetComponent<CharacterController>();
@@ -102,8 +105,8 @@ public class PlayerTroubleAbility : PlayerAbility, ITroubleReceiver
     {
         if (_characterController == null) return;
 
-        Vector3 origin = _owner.transform.position + Vector3.up * 1.0f;
-        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 3f, ~0, QueryTriggerInteraction.Ignore))
+        Vector3 origin = _owner.transform.position + Vector3.up * GroundCheckStartOffset;
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, GroundCheckDistance, ~0, QueryTriggerInteraction.Ignore))
         {
             float safeY = hit.point.y + _characterController.skinWidth;
             Vector3 position = _owner.transform.position;
