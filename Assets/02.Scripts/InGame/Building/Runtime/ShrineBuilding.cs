@@ -1,11 +1,12 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class ShrineBuilding : DefaultBuilding, IInteraction
+public class ShrineBuilding : DefaultBuilding, IWorldInteractable
 {
     [Header("참조 컴포넌트")]
     [SerializeField] private QuestMarkService _questMarkService;
 
+    private bool _closeUi;
     private UI_Shrine _ui;
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
@@ -18,7 +19,7 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
         }
     }
 
-    public void RequestInteract(PlayerController player)
+    public void Interact(PlayerController player)
     {
         if (player == null) return;
 
@@ -30,7 +31,7 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
 
         OpenShrineUiAsync().Forget();
     }
-
+    
     // 완료 버튼에서 호출. 실제 권한 검사는 WorldEffectQuestService가 마스터에서 처리합니다.
     public void RequestCompletion()
     {
@@ -47,7 +48,8 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
         if (UIController.Instance == null)
         {
             Debug.LogError($"{nameof(ShrineBuilding)} could not open Shrine UI because {nameof(UIController)} is missing.", this);
-            EndInteraction(false);
+            _closeUi = false;
+            EndInteract();
             return;
         }
 
@@ -61,18 +63,21 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
         
         if (ui == null)
         {
-            EndInteraction(false);
+            _closeUi = false;
+            EndInteract();
         }
+        _closeUi = true;
     }
 
     private void EndInteractionFromUI()
     {
-        EndInteraction(false);
+        _closeUi = false;
+        EndInteract();
     }
 
-    private void EndInteraction(bool closeUi)
+    public void EndInteract()
     {
-        if (closeUi)
+        if (_closeUi)
         {
             _ui?.CloseFromOwner();
         }
@@ -86,7 +91,10 @@ public class ShrineBuilding : DefaultBuilding, IInteraction
 
     protected override void OnDestroy()
     {
-        EndInteraction(true);
+        _closeUi = true;
+        EndInteract();
         base.OnDestroy();
     }
+
+    public string AnimationTrigger { get; }
 }
