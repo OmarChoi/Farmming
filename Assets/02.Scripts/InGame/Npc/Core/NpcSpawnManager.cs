@@ -136,7 +136,7 @@ public class NpcSpawnManager : MonoBehaviour
         }
 
         identity.Initialize(runtimeNpcKey, controller);
-        UniTask.NextFrame().ContinueWith(() => controller.SyncScheduleToCurrentTime()).Forget();
+        UniTask.NextFrame().ContinueWith(() => { if (controller != null) controller.SyncScheduleToCurrentTime(); }).Forget();
 
         return controller;
     }
