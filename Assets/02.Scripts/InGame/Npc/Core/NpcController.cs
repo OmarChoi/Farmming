@@ -214,7 +214,10 @@ public class NpcController : MonoBehaviour
             return;
         }
 
-        ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
+        if (_npcSchedule != null && _currentScheduleIndex < _npcSchedule.ScheduleEntries.Count)
+        {
+            ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
+        }
     }
 
     [PunRPC]
@@ -222,7 +225,11 @@ public class NpcController : MonoBehaviour
     {
         _isInteracting = false;
         _currentInteractor = null;
-        ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
+
+        if (_npcSchedule != null && _currentScheduleIndex < _npcSchedule.ScheduleEntries.Count)
+        {
+            ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
+        }
     }
 
     // 시간이 되면 Npc가 다음 일정대로 움직이는 것을 시도합니다.
@@ -235,9 +242,9 @@ public class NpcController : MonoBehaviour
         if (_isInteracting) return false;
 
         NpcScheduleEntry nextEntry = _npcSchedule.ScheduleEntries[_currentScheduleIndex];
-        GameTime scheduleTime = nextEntry.ScheduleTime + _timeOffset;
+        int scheduleMinutes = nextEntry.ScheduleTime.TotalMinutes + _timeOffset;
 
-        if (time >= scheduleTime)
+        if (time.TotalMinutes >= scheduleMinutes)
         {
             entry = nextEntry;
             return true;
@@ -381,9 +388,9 @@ public class NpcController : MonoBehaviour
         for (int i = 0; i < _npcSchedule.ScheduleEntries.Count; i++)
         {
             var entry = _npcSchedule.ScheduleEntries[i];
-            GameTime scheduleTime = entry.ScheduleTime + _timeOffset;
+            int scheduleMinutes = entry.ScheduleTime.TotalMinutes + _timeOffset;
 
-            if (currentTime >= scheduleTime)
+            if (currentTime.TotalMinutes >= scheduleMinutes)
             {
                 latestValidEntry = entry;
                 latestIndex = i + 1;
@@ -396,8 +403,8 @@ public class NpcController : MonoBehaviour
 
         if (latestValidEntry == null) return;
 
-        // 인덱스만 맞춰두고 ExecuteSchedule은 호출하지 않습니다.
-        _currentScheduleIndex = latestIndex;
+        // Index가 Count를 넘지 않도록 클램프합니다. 넘는 경우는 현재 시간이 마지막 일정 이후인 경우입니다.
+        _currentScheduleIndex = Mathf.Min(latestIndex, _npcSchedule.ScheduleEntries.Count);
 
         if (!TryGetScheduleTargetPosition(latestValidEntry, out Vector3 targetPosition))
         {

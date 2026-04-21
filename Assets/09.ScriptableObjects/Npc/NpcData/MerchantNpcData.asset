@@ -37,7 +37,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: bddaa6d460175fc45a3ccd6de560b28f, type: 2}
   - {fileID: 11400000, guid: 3ff1c310eb1e35c47940826590775409, type: 2}
   - {fileID: 11400000, guid: e87f74dc434f0a64d8199f048924e6f2, type: 2}
-  UseRandomTimeOffset: 1
-  MinTimeOffset: -10
+  CuringAskDialogue: {fileID: 0}
+  CuringAcceptDialogue: {fileID: 0}
+  CuringDeclineDialogue: {fileID: 0}
+  CuringAlreadyDoneDialogue: {fileID: 0}
+  UseRandomTimeOffset: 0
+  MinTimeOffset: 0
   MaxTimeOffset: 10
   AutoStartQuestOnInteract: 0
