@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
@@ -135,7 +136,7 @@ public class NpcSpawnManager : MonoBehaviour
         }
 
         identity.Initialize(runtimeNpcKey, controller);
-        controller.SyncScheduleToCurrentTime();
+        UniTask.NextFrame().ContinueWith(() => { if (controller != null) controller.SyncScheduleToCurrentTime(); }).Forget();
 
         return controller;
     }
