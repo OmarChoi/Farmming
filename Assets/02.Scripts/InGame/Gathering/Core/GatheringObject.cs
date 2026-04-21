@@ -13,6 +13,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
     private GameObject _modelInstance;
 
     public static event Action<GatheringObject, PlayerController> OnGatheringCompleted;
+    public static event Action<GatheringObject, PlayerController, ItemDataSO, int> OnGatheringItemAdded;
     public GatheringObjectSO GatheringData => _gatheringData;
 
     protected virtual void Awake()
@@ -118,7 +119,11 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
         foreach (DropEntry entry in _gatheringData.Drops)
         {
             int qty = WorldEffectManager.ApplyMultiplier(entry.GetRandomQuantity(), yieldMultiplier);
+            if (entry.Item == null || qty <= 0)
+                continue;
+
             inventory.AddItem(entry.Item, qty);
+            OnGatheringItemAdded?.Invoke(this, info.Player, entry.Item, qty);
         }
 
         info.HelperExperience?.Add(_gatherExperience);

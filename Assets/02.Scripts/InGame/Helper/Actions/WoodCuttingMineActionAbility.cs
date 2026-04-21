@@ -10,8 +10,12 @@ public enum EGatherType
     Stone,
 }
 
-public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
+public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrimaryInteractBlockNotifier, ISecondaryInteractBlockNotifier
 {
+    private const string UnableTreeGatherMessage = "\uC544\uC9C1 \uCC44\uC9D1\uD560 \uC218 \uC5C6\uB294 \uB098\uBB34\uC785\uB2C8\uB2E4.";
+    private const string UnableStoneGatherMessage = "\uC544\uC9C1 \uCC44\uC9D1\uD560 \uC218 \uC5C6\uB294 \uB3CC\uC785\uB2C8\uB2E4.";
+    private const float UnableTreeGatherFadeDuration = 1.5f;
+
     [SerializeField] protected GameObject _effectWoodPrefab;
     [SerializeField] private GameObject _woodNormalEffect;
     [SerializeField] private GameObject _woodNormalRangeEffect;
@@ -55,6 +59,10 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     private Quaternion _embeddedLegendaryWoodEffectLocalRotation;
     private Vector3 _embeddedLegendaryWoodEffectLocalScale;
     private Tween _embeddedLegendaryWoodEffectResetTween;
+    private readonly Dictionary<ItemDataSO, int> _pendingGatherNotificationAmounts = new Dictionary<ItemDataSO, int>();
+    private Coroutine _gatherNotificationFlushCoroutine;
+    private bool _woodPrimarySfxPlayed;
+    private bool _woodRangeBoostSfxPlayed;
 
     protected override void Awake()
     {
@@ -67,8 +75,17 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         CacheEmbeddedLegendaryWoodEffect();
     }
 
+    private void OnEnable()
+    {
+        GatheringObject.OnGatheringItemAdded += HandleGatheringItemAdded;
+    }
+
     private void OnDisable()
     {
+        GatheringObject.OnGatheringItemAdded -= HandleGatheringItemAdded;
+        _pendingGatherNotificationAmounts.Clear();
+        _gatherNotificationFlushCoroutine = null;
+
         StopAllCoroutines();
         ResetEmbeddedNormalWoodEffectTransform(false);
         ResetEmbeddedEpicWoodEffectTransform(false);
@@ -80,20 +97,52 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return false;
-        return cell.Data.ObjectType == EGridObjectType.Tree;
+        if (cell.Data.ObjectType != EGridObjectType.Tree) return false;
+        if (IsTreeGradeBlocked(cell)) return false;
+        return true;
+    }
+
+    public void NotifyPrimaryInteractBlocked(TerrainCell cell)
+    {
+        if (_owner != null && !_owner.IsMine)
+            return;
+
+        cell = GetInteractableCell(cell);
+        if (!IsTreeGradeBlocked(cell))
+            return;
+
+        UI_UnableActionText.Show(UnableTreeGatherMessage, UnableTreeGatherFadeDuration);
     }
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return false;
-        return cell.Data.ObjectType == EGridObjectType.Rock;
+        if (cell.Data.ObjectType != EGridObjectType.Rock) return false;
+        if (IsStoneGradeBlocked(cell)) return false;
+        return true;
+    }
+
+    public void NotifySecondaryInteractBlocked(TerrainCell cell)
+    {
+        if (_owner != null && !_owner.IsMine)
+            return;
+
+        cell = GetInteractableCell(cell);
+        if (!IsStoneGradeBlocked(cell))
+            return;
+
+        UI_UnableActionText.Show(UnableStoneGatherMessage, UnableTreeGatherFadeDuration);
     }
 
     public void InteractPrimary(TerrainCell cell)
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return;
+        if (IsTreeGradeBlocked(cell)) return;
+
+        _woodPrimarySfxPlayed = false;
+        _woodRangeBoostSfxPlayed = false;
 
         _owner.BeginAction();
         EHelperAnim cuttingAnim = _owner.Grade.CurrentGrade switch
@@ -132,7 +181,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
                 {
                     if (_owner.Grade.CurrentGrade != EHelperGrade.Normal)
                     {
-                        SpawnSlashMagicAndGather(wideCell, info);
+                        if (SpawnSlashMagicAndGather(wideCell, info))
+                            PlayWoodRangeBoostSfxOnce(wideCell);
                     }
                 }
             }
@@ -163,8 +213,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         {
             Vector3 playerRight = _owner.PlayerOwner.transform.right;
             SpawnWoodVFX(info, Vector3.zero);                         
-            SpawnWoodVFX(info, playerRight * _wideGatherOffset);  
-            SpawnWoodVFX(info, -playerRight * _wideGatherOffset);   
+            SpawnWoodVFX(info, playerRight * _wideGatherOffset, true);  
+            SpawnWoodVFX(info, -playerRight * _wideGatherOffset, true);   
         }
         else
         {
@@ -212,6 +262,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
             if (effect == null)
                 return;
 
+            PlayWoodPrimarySfxOnce(cell);
+
             if (_slashMagicLifetime > 0f)
                 Destroy(effect, _slashMagicLifetime);
             else
@@ -224,10 +276,14 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         });
     }
 
-    private void SpawnSlashMagicAndGather(TerrainCell cell, GatheringInfo info)
+    private bool SpawnSlashMagicAndGather(TerrainCell cell, GatheringInfo info)
     {
-        SpawnSlashMagic(cell);
+        bool spawnedEffect = SpawnSlashMagic(cell);
+        if (spawnedEffect)
+            PlayWoodPrimarySfxOnce(cell);
+
         TryGatherWoodCell(cell, info);
+        return spawnedEffect;
     }
 
     private void TryGatherWoodCell(TerrainCell cell, GatheringInfo info)
@@ -243,7 +299,153 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         }
     }
 
-    private void SpawnWoodVFX(GatheringInfo info, Vector3 worldOffset)
+    private void PlayWoodPrimarySfxOnce(TerrainCell cell)
+    {
+        if (_woodPrimarySfxPlayed)
+            return;
+
+        PlayWoodPrimarySfxOnce(GetWoodSfxPosition(cell));
+    }
+
+    private void PlayWoodPrimarySfxOnce(Vector3 position)
+    {
+        if (_woodPrimarySfxPlayed)
+            return;
+
+        string clipKey = GetWoodPrimarySfxKey();
+        if (string.IsNullOrEmpty(clipKey))
+            return;
+
+        _woodPrimarySfxPlayed = TryPlayLocalWoodSfx(clipKey, position);
+    }
+
+    private void PlayWoodRangeBoostSfxOnce(TerrainCell cell)
+    {
+        if (_woodRangeBoostSfxPlayed)
+            return;
+
+        PlayWoodRangeBoostSfxOnce(GetWoodSfxPosition(cell));
+    }
+
+    private void PlayWoodRangeBoostSfxOnce(Vector3 position)
+    {
+        if (_woodRangeBoostSfxPlayed)
+            return;
+
+        string clipKey = GetWoodRangeBoostSfxKey();
+        if (string.IsNullOrEmpty(clipKey))
+            return;
+
+        _woodRangeBoostSfxPlayed = TryPlayLocalWoodSfx(clipKey, position);
+    }
+
+    private bool TryPlayLocalWoodSfx(string clipKey, Vector3 position)
+    {
+        if (_owner == null || !_owner.IsMine)
+            return false;
+
+        if (SoundManager.Instance == null)
+            return false;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: clipKey,
+            spatialMode: ESpatialMode.Positional3D,
+            position: position));
+
+        return true;
+    }
+
+    private string GetWoodPrimarySfxKey()
+    {
+        if (_owner == null)
+            return null;
+
+        return _owner.Grade.CurrentGrade switch
+        {
+            EHelperGrade.Epic => AssetKey.SFX.WoodEpicHelper,
+            EHelperGrade.Legendary => AssetKey.SFX.WoodLegendaryHelper,
+            _ => AssetKey.SFX.WoodNormalHelper
+        };
+    }
+
+    private string GetWoodRangeBoostSfxKey()
+    {
+        if (_owner == null)
+            return null;
+
+        return _owner.Grade.CurrentGrade switch
+        {
+            EHelperGrade.Epic => AssetKey.SFX.WoodRangeEpicHelper,
+            EHelperGrade.Legendary => AssetKey.SFX.WoodRangeLegendaryHelper,
+            _ => AssetKey.SFX.WoodRangeNormalHelper
+        };
+    }
+
+    private Vector3 GetWoodSfxPosition(TerrainCell cell)
+    {
+        cell = GetInteractableCell(cell);
+        if (cell != null)
+        {
+            if (cell.CurrentObject != null)
+                return cell.CurrentObject.transform.position;
+
+            return cell.transform.position;
+        }
+
+        return _owner != null ? _owner.transform.position : Vector3.zero;
+    }
+
+    private bool IsTreeGradeBlocked(TerrainCell cell)
+    {
+        if (_owner == null) return false;
+        if (!TryGetWood(cell, out Wood wood)) return false;
+
+        GatheringObjectSO gatheringData = wood.GatheringData;
+        if (gatheringData == null) return false;
+
+        return _owner.Grade.CurrentGrade < gatheringData.RequiredLevel;
+    }
+
+    private bool IsStoneGradeBlocked(TerrainCell cell)
+    {
+        if (_owner == null) return false;
+        if (!TryGetStone(cell, out Stone stone)) return false;
+
+        GatheringObjectSO gatheringData = stone.GatheringData;
+        if (gatheringData == null) return false;
+
+        return _owner.Grade.CurrentGrade < gatheringData.RequiredLevel;
+    }
+
+    private static bool TryGetWood(TerrainCell cell, out Wood wood)
+    {
+        wood = null;
+        if (cell == null) return false;
+        if (cell.CurrentObject == null) return false;
+        if (cell.Data.ObjectType != EGridObjectType.Tree) return false;
+
+        if (cell.CurrentObject.TryGetComponent(out wood))
+            return true;
+
+        wood = cell.CurrentObject.GetComponentInChildren<Wood>(true);
+        return wood != null;
+    }
+
+    private static bool TryGetStone(TerrainCell cell, out Stone stone)
+    {
+        stone = null;
+        if (cell == null) return false;
+        if (cell.CurrentObject == null) return false;
+        if (cell.Data.ObjectType != EGridObjectType.Rock) return false;
+
+        if (cell.CurrentObject.TryGetComponent(out stone))
+            return true;
+
+        stone = cell.CurrentObject.GetComponentInChildren<Stone>(true);
+        return stone != null;
+    }
+
+    private void SpawnWoodVFX(GatheringInfo info, Vector3 worldOffset, bool isRangeBoostAdditionalEffect = false)
     {
         Vector3 origin = GetWoodEffectSpawnPosition();
         if (origin == Vector3.positiveInfinity)
@@ -257,11 +459,60 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         GameObject effect = Instantiate(_effectWoodPrefab, spawnPos, rotation);
         WoodCuttingVFX cuttingVfx = effect.GetComponent<WoodCuttingVFX>();
         cuttingVfx.Initiate(info, EGatherType.Wood);
+
+        PlayWoodPrimarySfxOnce(spawnPos);
+        if (isRangeBoostAdditionalEffect)
+            PlayWoodRangeBoostSfxOnce(spawnPos);
     }
 
-    private void SpawnSlashMagic(TerrainCell cell)
+    private void HandleGatheringItemAdded(GatheringObject gatheringObject, PlayerController player, ItemDataSO item, int amount)
     {
-        if (_woodNormalEffect == null || cell == null) return;
+        if (_owner == null || !_owner.IsMine) return;
+        if (player == null || player != _owner.PlayerOwner) return;
+        if (!_owner.IsActing) return;
+        if (item == null || amount <= 0) return;
+        if (gatheringObject is not Wood && gatheringObject is not Stone) return;
+
+        if (_pendingGatherNotificationAmounts.TryGetValue(item, out int currentAmount))
+            _pendingGatherNotificationAmounts[item] = currentAmount + amount;
+        else
+            _pendingGatherNotificationAmounts.Add(item, amount);
+
+        if (_gatherNotificationFlushCoroutine != null)
+            StopCoroutine(_gatherNotificationFlushCoroutine);
+
+        _gatherNotificationFlushCoroutine = StartCoroutine(FlushGatherNotificationsAfterFrame());
+    }
+
+    private IEnumerator FlushGatherNotificationsAfterFrame()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (_pendingGatherNotificationAmounts.Count <= 0)
+        {
+            _gatherNotificationFlushCoroutine = null;
+            yield break;
+        }
+
+        if (HarvestNotificationManager.Instance != null)
+        {
+            foreach (KeyValuePair<ItemDataSO, int> pair in _pendingGatherNotificationAmounts)
+            {
+                ItemDataSO item = pair.Key;
+                int amount = pair.Value;
+                if (item == null || amount <= 0) continue;
+
+                HarvestNotificationManager.Instance.Show(item.Icon, item.DisplayName, amount);
+            }
+        }
+
+        _pendingGatherNotificationAmounts.Clear();
+        _gatherNotificationFlushCoroutine = null;
+    }
+
+    private bool SpawnSlashMagic(TerrainCell cell)
+    {
+        if (_woodNormalEffect == null || cell == null) return false;
 
         Vector3 spawnPosition = GetSlashMagicSpawnPosition(cell);
         Quaternion spawnRotation = GetSlashMagicRotation();
@@ -271,6 +522,8 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         {
             Destroy(effect, _slashMagicLifetime);
         }
+
+        return true;
     }
 
     private Vector3 GetSlashMagicSpawnPosition(TerrainCell cell)
@@ -322,6 +575,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         Vector3 impactPosition = GetNormalWoodImpactPosition(cell, originPosition);
         Quaternion impactRotation = GetWoodNormalEffectRotation(originPosition, impactPosition);
         GameObject effect = Instantiate(_woodNormalRangeEffect, impactPosition, impactRotation);
+        PlayWoodRangeBoostSfxOnce(cell);
 
         float destroyDelay = Mathf.Max(_slashMagicLifetime, 2f);
         Destroy(effect, destroyDelay);
@@ -519,12 +773,14 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         if (preferEmbeddedEffect && _embeddedEpicWoodEffect != null)
         {
             PlayEmbeddedEpicWoodEffect(startPosition, targetPosition);
+            PlayWoodPrimarySfxOnce(cell);
         }
         else
         {
             GameObject effect = SpawnDetachedEpicWoodEffect(startPosition, spawnRotation);
             if (effect != null)
             {
+                PlayWoodPrimarySfxOnce(cell);
                 Destroy(effect, GetEpicWoodEffectLifetime());
             }
         }
@@ -558,12 +814,14 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         if (preferEmbeddedEffect && _embeddedLegendaryWoodEffect != null)
         {
             PlayEmbeddedLegendaryWoodEffect(startPosition, targetPosition);
+            PlayWoodPrimarySfxOnce(cell);
         }
         else
         {
             GameObject effect = SpawnDetachedLegendaryWoodEffect(startPosition, spawnRotation);
             if (effect != null)
             {
+                PlayWoodPrimarySfxOnce(cell);
                 Destroy(effect, GetLegendaryWoodEffectLifetime());
             }
         }
@@ -590,6 +848,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
         Vector3 impactPosition = GetNormalWoodImpactPosition(cell, originPosition);
         Quaternion impactRotation = GetEpicWoodEffectSpawnRotation(originPosition, impactPosition);
         GameObject effect = Instantiate(_woodEpicRangeEffect, impactPosition, impactRotation);
+        PlayWoodRangeBoostSfxOnce(cell);
 
         float destroyDelay = Mathf.Max(GetEpicWoodEffectLifetime(), 2f);
         Destroy(effect, destroyDelay);
@@ -604,12 +863,14 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
         float destroyDelay = Mathf.Max(GetLegendaryWoodEffectLifetime(), 2f);
 
+        bool spawnedEffect = false;
         if (_woodLegendaryRangeEffect != null)
         {
             Vector3 impactPosition = GetNormalWoodImpactPosition(cell, originPosition);
             Quaternion impactRotation = GetLegendaryWoodEffectSpawnRotation(originPosition, impactPosition);
             GameObject impactEffect = Instantiate(_woodLegendaryRangeEffect, impactPosition, impactRotation);
             Destroy(impactEffect, destroyDelay);
+            spawnedEffect = true;
         }
 
         if (_woodLegendaryRangeEffectGround != null)
@@ -618,7 +879,11 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
             Quaternion groundRotation = GetLegendaryWoodEffectSpawnRotation(originPosition, groundPosition);
             GameObject groundEffect = Instantiate(_woodLegendaryRangeEffectGround, groundPosition, groundRotation);
             Destroy(groundEffect, destroyDelay);
+            spawnedEffect = true;
         }
+
+        if (spawnedEffect)
+            PlayWoodRangeBoostSfxOnce(cell);
     }
 
     private void LaunchEmbeddedNormalWoodEffect(TerrainCell cell, GatheringInfo info, Vector3 originPosition, bool spawnRangeImpactEffect)
@@ -645,6 +910,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
 
             _embeddedNormalWoodEffect.gameObject.SetActive(true);
             RestartEmbeddedNormalWoodEffectParticles();
+            PlayWoodPrimarySfxOnce(cell);
         });
 
         float impactDelay = GetNormalWoodImpactDelay();
@@ -913,6 +1179,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return;
+        if (IsStoneGradeBlocked(cell)) return;
 
         if (cell != null && cell.CurrentObject != null && cell.Data.ObjectType == EGridObjectType.Tree)
             return;

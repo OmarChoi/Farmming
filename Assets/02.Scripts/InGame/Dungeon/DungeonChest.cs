@@ -3,6 +3,7 @@ using UnityEngine;
 public class DungeonChest : MonoBehaviour
 {
     [SerializeField] private Animator _animator;
+    [SerializeField] private GameObject _openParticleRoot;
 
     private ChestLootTable _lootTable;
     private bool _opened;
@@ -26,7 +27,25 @@ public class DungeonChest : MonoBehaviour
         if (_animator != null)
             _animator.SetTrigger(OpenHash);
 
+        PlayOpenEffects();
         GiveLoot(player);
+    }
+
+    private void PlayOpenEffects()
+    {
+        if (_openParticleRoot != null)
+        {
+            _openParticleRoot.SetActive(false);
+            _openParticleRoot.SetActive(true);
+        }
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+                clipKey: AssetKey.SFX.ChestOpen,
+                spatialMode: ESpatialMode.Positional3D,
+                position: transform.position));
+        }
     }
 
     private void GiveLoot(PlayerController player)
@@ -40,6 +59,7 @@ public class DungeonChest : MonoBehaviour
         {
             if (entry.Item == null) continue;
             inventory.AddItem(entry.Item, entry.Amount);
+            HarvestNotificationManager.Instance?.Show(entry.Item.Icon, entry.Item.DisplayName, entry.Amount);
         }
     }
 }
