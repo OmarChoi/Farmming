@@ -201,5 +201,10 @@ public static class AssetKey
         public const string HelperEvolution = "HelperEvolution";
 
         #endregion
+
+        #region Dungeon
+        public const string ChestOpen = "SFXchestopen";
+
+        #endregion
     }
 }
