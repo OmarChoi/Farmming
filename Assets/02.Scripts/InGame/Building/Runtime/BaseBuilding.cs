@@ -142,8 +142,7 @@ public abstract class BaseBuilding : MonoBehaviour
         if (_buildingNpc == npc) return;
 
         _buildingNpc = npc;
-        if (npc != null)
-            BuildingNpcAssigned?.Invoke(npc);
+        BuildingNpcAssigned?.Invoke(npc);
     }
     
     public void HandleConstructionCompleted()
