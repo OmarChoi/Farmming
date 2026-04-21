@@ -3,16 +3,16 @@ using UnityEngine;
 
 public class DinoRaceInteractionService : MonoBehaviour
 {
-    [SerializeField] private UI_DinoRace _ui;
-
+    private UI_DinoRace _ui;
     private NpcInteractionContext _currentContext;
     private DinoRaceHost _currentHost;
 
     public void BeginInteraction(NpcInteractionContext context)
     {
-        if (context == null || context.Npc == null || _ui != null)
-            return;
-
+        if (context == null || context.Npc == null) return;
+        UI_DinoRace ui = UIController.Instance.GetInstance<UI_DinoRace>();
+        if (ui.IsOpen) return;
+        
         DinoRaceNpcFeature feature = context.Npc.GetComponent<DinoRaceNpcFeature>();
         if (feature == null || feature.Host == null)
         {
