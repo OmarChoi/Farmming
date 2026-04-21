@@ -5,37 +5,15 @@ using System.Collections.Generic;
 
 public class NpcQuestService : MonoBehaviour
 {
-    [SerializeField] private NpcDialogueController _dialogueController;
-    [SerializeField] private QuestManager _questManager;
-    [SerializeField] private NpcFriendshipManager _npcFriendshipManager;
     [SerializeField] private TutorialProgressController _tutorialProgressController;
 
     private InfoPageController _infoPageController;
-
-    private IQuestProgressService _questProgressService;
-    private IFriendshipService _friendshipService;
-
-    private void Awake()
+    private void Start()
     {
-        if (_dialogueController == null)
-        {
-            _dialogueController = FindFirstObjectByType<NpcDialogueController>();
-        }
-        if (_questManager == null)
-        {
-            _questManager = FindFirstObjectByType<QuestManager>();
-        }
-        if (_npcFriendshipManager == null)
-        {
-            _npcFriendshipManager = FindFirstObjectByType<NpcFriendshipManager>();
-        }
         if (_tutorialProgressController == null)
         {
             _tutorialProgressController = FindFirstObjectByType<TutorialProgressController>();
         }
-
-        _questProgressService = _questManager;
-        _friendshipService = _npcFriendshipManager;
     }
 
     private void OnEnable()
@@ -55,7 +33,8 @@ public class NpcQuestService : MonoBehaviour
 
     public void ExecuteQuestInteraction(NpcInteractionContext context)
     {
-        if (context == null || context.Npc == null || _questProgressService == null) return;
+        IQuestProgressService questProgressService = QuestManager.Instance;
+        if (context == null || context.Npc == null || questProgressService == null) return;
 
         List<NpcQuestEntry> entries = FindQuestEntries(context);
 
@@ -70,16 +49,17 @@ public class NpcQuestService : MonoBehaviour
 
     private List<NpcQuestEntry> FindQuestEntries(NpcInteractionContext context)
     {
+        IQuestProgressService questProgressService = QuestManager.Instance;
         List<NpcQuestEntry> result = new();
         HashSet<string> addedQuestIds = new();
 
-        if (context == null || context.Npc == null || _questProgressService == null)
+        if (context == null || context.Npc == null || questProgressService == null)
         {
             return result;
         }
 
         string npcId = context.NpcId;
-        List<QuestRuntimeData> activeQuests = _questProgressService.GetActiveQuestList();
+        List<QuestRuntimeData> activeQuests = questProgressService.GetActiveQuestList();
 
         // 1. 완료 가능한 퀘스트를 먼저 넣습니다.
         foreach (QuestRuntimeData quest in activeQuests)
@@ -191,10 +171,11 @@ public class NpcQuestService : MonoBehaviour
     private bool CanOfferQuest(NpcInteractionContext context, QuestDataSO questData)
     {
         if (context == null || context.Npc == null || questData == null) return false;
-        if (_questProgressService == null) return false;
+        IQuestProgressService questProgressService = QuestManager.Instance;
+        if (questProgressService == null) return false;
 
         // 1. 수락 가능한 퀘스트인지 확인합니다.
-        if (!_questProgressService.CanAcceptQuest(questData))
+        if (!questProgressService.CanAcceptQuest(questData))
         {
             return false;
         }
@@ -216,14 +197,15 @@ public class NpcQuestService : MonoBehaviour
 
     private bool ArePrerequisiteQuestsSatisfied(QuestDataSO questData)
     {
-        if (questData == null || _questProgressService == null) return false;
+        IQuestProgressService questProgressService = QuestManager.Instance;
+        if (questData == null || questProgressService == null) return false;
         if (questData.PrerequisiteQuests == null || questData.PrerequisiteQuests.Count == 0) return true;
 
         foreach (QuestDataSO prerequisite in questData.PrerequisiteQuests)
         {
             if (prerequisite == null || string.IsNullOrEmpty(prerequisite.QuestId)) continue;
 
-            if (!_questProgressService.IsQuestCompleted(prerequisite.QuestId))
+            if (!questProgressService.IsQuestCompleted(prerequisite.QuestId))
             {
                 return false;
             }
@@ -233,16 +215,17 @@ public class NpcQuestService : MonoBehaviour
 
     private bool IsFriendshipSatisfied(string npcId, int requiredFriendship)
     {
+        IFriendshipService friendshipService = NpcFriendshipManager.Instance;
         if (requiredFriendship <= 0) return true;
-        if (string.IsNullOrEmpty(npcId) || _friendshipService == null) return false;
+        if (string.IsNullOrEmpty(npcId) || friendshipService == null) return false;
 
-        int currentFriendship = _friendshipService.GetFriendship(npcId);
+        int currentFriendship = friendshipService.GetFriendship(npcId);
         return currentFriendship >= requiredFriendship;
     }
 
     private void ShowQuestEntries(NpcInteractionContext context, List<NpcQuestEntry> entries)
     {
-        if (_dialogueController == null) return;
+        if (NpcDialogueController.Instance == null) return;
 
         List<NpcDialogueChoiceData> choices = new();
 
@@ -258,8 +241,8 @@ public class NpcQuestService : MonoBehaviour
                 choices.Add(new NpcDialogueChoiceData(buttonText, () => OnClickQuestEntry(context, capturedEntry)));
             }
         }
-        choices.Add(new NpcDialogueChoiceData("돌아가기", () => _dialogueController.ShowDefaultChoices()));
-        _dialogueController.ShowCustomChoices(choices);
+        choices.Add(new NpcDialogueChoiceData("돌아가기", () => NpcDialogueController.Instance.ShowDefaultChoices()));
+        NpcDialogueController.Instance.ShowCustomChoices(choices);
     }
 
     private string BuildQuestEntryButtonText(NpcQuestEntry entry)
@@ -285,6 +268,7 @@ public class NpcQuestService : MonoBehaviour
     private void OnClickQuestEntry(NpcInteractionContext context, NpcQuestEntry entry)
     {
         if (entry == null || entry.QuestData == null) return;
+        IQuestProgressService questProgressService = QuestManager.Instance;
 
         switch (entry.EntryType)
         {
@@ -303,7 +287,7 @@ public class NpcQuestService : MonoBehaviour
                         runtimeQuest.QuestData.ObjectiveType == EQuestObjectiveType.DeliverItem &&
                         runtimeQuest.QuestData.TargetNpcId == context.NpcId)
                     {
-                        bool delivered = _questProgressService.TryDeliverItemToNpc(runtimeQuest.QuestData.QuestId, context.NpcId);
+                        bool delivered = questProgressService.TryDeliverItemToNpc(runtimeQuest.QuestData.QuestId, context.NpcId);
                         if (!delivered) return;
                     }
 
@@ -319,7 +303,7 @@ public class NpcQuestService : MonoBehaviour
 
     private void HandleAcceptQuestEntry(NpcInteractionContext context, QuestDataSO questData)
     {
-        if (questData == null || _dialogueController == null) return;
+        if (questData == null || NpcDialogueController.Instance == null) return;
 
         if (questData.IsForcedAccept)
         {
@@ -328,7 +312,7 @@ public class NpcQuestService : MonoBehaviour
         }
         if (questData.AcceptDialogue != null)
         {
-            _dialogueController.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest,
+            NpcDialogueController.Instance.StartDialogue(questData.AcceptDialogue, EDialogueUiState.Quest,
             () =>
             {
                 ShowAcceptConfirmChoices(context, questData);
@@ -343,7 +327,7 @@ public class NpcQuestService : MonoBehaviour
 
     private void ShowAcceptConfirmChoices(NpcInteractionContext context, QuestDataSO questData)
     {
-        if (_dialogueController == null || questData == null) return;
+        if (NpcDialogueController.Instance == null || questData == null) return;
 
         List<NpcDialogueChoiceData> choices = new()
         {
@@ -351,20 +335,21 @@ public class NpcQuestService : MonoBehaviour
             new NpcDialogueChoiceData("아니요", () => DeclineQuestWithDialogue(context, questData))
         };
 
-        _dialogueController.ShowCustomChoices(choices, false);
+        NpcDialogueController.Instance.ShowCustomChoices(choices, false);
     }
 
     private void AcceptQuestWithResultDialogue(NpcInteractionContext context, QuestDataSO questData)
     {
-        if (questData == null || _questProgressService == null) return;
+        IQuestProgressService questProgressService = QuestManager.Instance;
+        if (questData == null || questProgressService == null) return;
 
-        bool accepted = _questProgressService.AcceptQuest(questData);
+        bool accepted = questProgressService.AcceptQuest(questData);
         if (!accepted) return;
 
-        if (_dialogueController != null && questData.AcceptResultDialogue != null)
+        if (NpcDialogueController.Instance != null && questData.AcceptResultDialogue != null)
         {
             bool hasInfoPages = HasAcceptInfoPages(questData) && CanShowInfoPage();
-            bool hasDialogue = _dialogueController != null && questData.AcceptResultDialogue != null;
+            bool hasDialogue = NpcDialogueController.Instance != null && questData.AcceptResultDialogue != null;
 
             if (hasDialogue)
             {
@@ -377,7 +362,7 @@ public class NpcQuestService : MonoBehaviour
                         return true; // 기본 다이얼로그 종료 동작을 방지합니다.
                     };
                 }
-                _dialogueController.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest, onDialogueEnded);
+                NpcDialogueController.Instance.StartDialogue(questData.AcceptResultDialogue, EDialogueUiState.Quest, onDialogueEnded);
             }
             else if (hasInfoPages)
             {
@@ -392,11 +377,11 @@ public class NpcQuestService : MonoBehaviour
 
     private void DeclineQuestWithDialogue(NpcInteractionContext context, QuestDataSO questData)
     {
-        if (questData == null || _dialogueController == null) return;
+        if (questData == null || NpcDialogueController.Instance == null) return;
 
         if (questData.DeclineDialogue != null)
         {
-            _dialogueController.StartDialogue(questData.DeclineDialogue, EDialogueUiState.Quest);
+            NpcDialogueController.Instance.StartDialogue(questData.DeclineDialogue, EDialogueUiState.Quest);
         }
         else
         {
@@ -407,12 +392,13 @@ public class NpcQuestService : MonoBehaviour
     private void HandleCompleteQuest(NpcInteractionContext context, QuestRuntimeData quest)
     {
         if (quest?.QuestData == null) return;
-
         QuestDataSO questData = quest.QuestData;
-        if (!_questProgressService.CompleteQuest(questData.QuestId)) return;
+        
+        IQuestProgressService questProgressService = QuestManager.Instance;
+        if (!questProgressService.CompleteQuest(questData.QuestId)) return;
 
         bool hasInfoPages = HasCompleteInfoPages(questData) && CanShowInfoPage();
-        bool hasDialogue = _dialogueController != null && questData.CompleteDialogue != null;
+        bool hasDialogue = NpcDialogueController.Instance != null && questData.CompleteDialogue != null;
 
         if (hasDialogue)
         {
@@ -429,7 +415,7 @@ public class NpcQuestService : MonoBehaviour
             {
                 onDialogueEnded = () => _tutorialProgressController.HandleTutorialQuestDialogueEnded();
             }
-            _dialogueController.StartDialogue(questData.CompleteDialogue, EDialogueUiState.Quest, onDialogueEnded);
+            NpcDialogueController.Instance.StartDialogue(questData.CompleteDialogue, EDialogueUiState.Quest, onDialogueEnded);
         }
         else if (hasInfoPages)
         {
@@ -461,11 +447,12 @@ public class NpcQuestService : MonoBehaviour
     private void HandleInProgressQuest(NpcInteractionContext context, QuestRuntimeData quest)
     {
         if (quest == null || quest.QuestData == null) return;
+        IQuestProgressService questProgressService = QuestManager.Instance;
 
         // 배달 퀘스트라면, 이 NPC에게 아이템 전달을 시도합니다.
         if (quest.QuestData.ObjectiveType == EQuestObjectiveType.DeliverItem && quest.QuestData.TargetNpcId == context.NpcId)
         {
-            bool delivered = _questProgressService.TryDeliverItemToNpc(quest.QuestData.QuestId, context.NpcId);
+            bool delivered = questProgressService.TryDeliverItemToNpc(quest.QuestData.QuestId, context.NpcId);
             if (delivered)
             {
                 HandleCompleteQuest(context, quest);
@@ -473,9 +460,9 @@ public class NpcQuestService : MonoBehaviour
             }
         }
 
-        if (_dialogueController != null && quest.QuestData.InProgressDialogue != null)
+        if (NpcDialogueController.Instance != null && quest.QuestData.InProgressDialogue != null)
         {
-            _dialogueController.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
+            NpcDialogueController.Instance.StartDialogue(quest.QuestData.InProgressDialogue, EDialogueUiState.Quest);
         }
     }
 
@@ -489,9 +476,9 @@ public class NpcQuestService : MonoBehaviour
         if (provider != null && provider.Quests != null && provider.Quests.Count > 0)
         {
             QuestDataSO firstQuest = provider.Quests[0];
-            if (firstQuest != null && firstQuest.NoQuestDialogue != null && _dialogueController != null)
+            if (firstQuest != null && firstQuest.NoQuestDialogue != null && NpcDialogueController.Instance != null)
             {
-                _dialogueController.StartDialogue(firstQuest.NoQuestDialogue, EDialogueUiState.Quest);
+                NpcDialogueController.Instance.StartDialogue(firstQuest.NoQuestDialogue, EDialogueUiState.Quest);
                 return;
             }
         }
@@ -499,7 +486,7 @@ public class NpcQuestService : MonoBehaviour
 
     public void ExecuteTutorialQuestInteraction(NpcInteractionContext context, QuestDataSO questData)
     {
-        if (context == null || context.Npc == null || questData == null || _questProgressService == null) return;
+        if (context == null || context.Npc == null || questData == null) return;
 
         if (!CanOfferQuest(context, questData))
         {
@@ -512,7 +499,7 @@ public class NpcQuestService : MonoBehaviour
 
     public void ExecuteAutoQuestInteraction(NpcInteractionContext context)
     {
-        if (context == null || context.Npc == null || _questProgressService == null) return;
+        if (context == null || context.Npc == null) return;
 
         if (TryExecuteTutorialInteraction(context))
         {
@@ -577,9 +564,10 @@ public class NpcQuestService : MonoBehaviour
 
     private QuestRuntimeData FindActiveQuestRuntime(string questId)
     {
-        if (string.IsNullOrEmpty(questId) || _questProgressService == null) return null;
+        IQuestProgressService questProgressService = QuestManager.Instance;
+        if (string.IsNullOrEmpty(questId) || questProgressService == null) return null;
 
-        _questProgressService.TryGetActiveQuest(questId, out QuestRuntimeData quest);
+        questProgressService.TryGetActiveQuest(questId, out QuestRuntimeData quest);
         return quest;
     }
 
@@ -603,7 +591,7 @@ public class NpcQuestService : MonoBehaviour
             return;
         }
 
-        _dialogueController?.HideDialogueUiOnly();
+        NpcDialogueController.Instance?.HideDialogueUiOnly();
 
         _infoPageController.ShowAsync(questData.AcceptInfoPageSet,
             () => context?.InteractionComponent?.EndInteraction()).Forget();
@@ -617,7 +605,7 @@ public class NpcQuestService : MonoBehaviour
             return;
         }
 
-        _dialogueController?.HideDialogueUiOnly();
+        NpcDialogueController.Instance?.HideDialogueUiOnly();
 
         _infoPageController.ShowAsync(questData.CompleteInfoPageSet,
             () => HandleQuestPostProcess(context, questData)).Forget();
