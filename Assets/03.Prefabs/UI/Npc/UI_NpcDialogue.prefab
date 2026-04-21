@@ -576,6 +576,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a65b4c1d3b4f31e4eb61d67793639767, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_NpcDialogue
+  _config:
+    Layer: 0
   _interactionButtonRoot: {fileID: 8838275208074697692}
   _interactionButtonRect: {fileID: 8838275208074697692}
   _interactionButtonPrefab: {fileID: 4707046919893198704, guid: 0ffe2260e1dcc404f9e88061e3749d18, type: 3}
@@ -583,6 +585,7 @@ MonoBehaviour:
   _npcDialogueText: {fileID: 3685133607933124924}
   _dialoguePanelButton: {fileID: 8988822048505437031}
   _typewriter: {fileID: 5487203162635113631}
+  _friendshipBar: {fileID: 0}
 --- !u!114 &6507505435011545005
 MonoBehaviour:
   m_ObjectHideFlags: 0

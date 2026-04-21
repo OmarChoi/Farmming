@@ -36,13 +36,15 @@ public class UIController : MonoBehaviour
         _canvases.Add(EUILayer.HUD, _hudCanvas);
         _canvases.Add(EUILayer.Popup, _popupCanvas);
         _canvases.Add(EUILayer.Overlay, _overlayCanvas);
-
-        SceneManager.sceneLoaded += OnSceneLoaded;
     }
     
     private void OnDestroy()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (Instance == this)
+        {
+            ClearAll();
+            Instance = null;
+        }
     }
 
     private void Update()
@@ -225,17 +227,5 @@ public class UIController : MonoBehaviour
 
         _instances.Clear();
     }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // 타이틀 씬으로 돌아가면 UI 전체 정리 후 자신도 파괴
-        if (scene.name == SceneName.Title)
-        {
-            ClearAll();
-            Instance = null;
-            Destroy(gameObject);
-        }
-    }
-
     #endregion
 }

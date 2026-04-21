@@ -32,10 +32,6 @@ public class AiDialogueController : MonoBehaviour
 
     private void Awake()
     {
-        if (_uiDialogue == null)
-        {
-            _uiDialogue = FindFirstObjectByType<UI_NpcAiDialogue>();
-        }
         if (_llmAgent == null)
         {
             _llmAgent = FindFirstObjectByType<LLMAgent>();
@@ -59,7 +55,13 @@ public class AiDialogueController : MonoBehaviour
         }
     }
 
-    private void OnEnable()
+    private void OnDestroy()
+    {
+        UnsubscribeUIEvent();
+        _uiDialogue = null;
+    }
+
+    private void SubscribeUIEvent()
     {
         if (_uiDialogue == null) return;
 
@@ -68,7 +70,7 @@ public class AiDialogueController : MonoBehaviour
         _uiDialogue.OnCloseRequested += HandleCloseRequested;
     }
 
-    private void OnDisable()
+    private void UnsubscribeUIEvent()
     {
         if (_uiDialogue == null) return;
 
@@ -81,7 +83,6 @@ public class AiDialogueController : MonoBehaviour
     {
         if (context == null) throw new ArgumentNullException(nameof(context));
         if (context.Npc == null) throw new ArgumentNullException(nameof(context.Npc));
-        if (_uiDialogue == null) throw new InvalidOperationException("UIDialogue가 없습니다.");
         if (_llmAgent == null) throw new InvalidOperationException("LLMAgent가 없습니다.");
 
         if (_isSessionOpen)
@@ -99,6 +100,10 @@ public class AiDialogueController : MonoBehaviour
 
         _currentProfile = await _memoryService.LoadProfileAsync(npcId, playerId);
 
+        var ui = await UIController.Instance.OpenAsync<UI_NpcDialogue>();
+        _uiDialogue = ui.GetComponent<UI_NpcAiDialogue>();
+        if (_uiDialogue == null) throw new InvalidOperationException("UI AI Dialogue 없습니다.");
+        SubscribeUIEvent();
         _uiDialogue.Open(context.NpcName);
         _uiDialogue.SetVoice(context.Npc.Voice);
         _uiDialogue.ClearMessages();
@@ -275,7 +280,9 @@ public class AiDialogueController : MonoBehaviour
         if (_uiDialogue != null)
         {
             _uiDialogue.SetGenerating(false);
+            UnsubscribeUIEvent();
             _uiDialogue.Close();
+            UIController.Instance.CloseAsync<UI_NpcDialogue>();
         }
 
         if (endInteraction)

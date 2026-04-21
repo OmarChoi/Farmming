@@ -23,6 +23,12 @@ public class CurrencyManager : MonoBehaviour
         _gold = new Currency(0);
     }
 
+    private void OnDestroy()
+    {
+        if(Instance == this) Instance = null;
+    }
+    
+
     public Currency GetGold()
     {
         return _gold;

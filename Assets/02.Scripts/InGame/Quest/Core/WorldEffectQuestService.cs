@@ -27,7 +27,6 @@ public class WorldEffectQuestService : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     private void OnEnable()

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class NpcDialogueController : MonoBehaviour
 {
@@ -44,19 +45,6 @@ public class NpcDialogueController : MonoBehaviour
             _friendshipManager = FindFirstObjectByType<NpcFriendshipManager>();
         }
         _friendshipService = _friendshipManager;
-
-        if (_uiDialogue == null)
-        {
-            _uiDialogue = FindFirstObjectByType<UI_NpcDialogue>();
-        }
-        if (_uiFriendshipBar == null)
-        {
-            _uiFriendshipBar = FindFirstObjectByType<UI_FriendshipBar>();
-        }
-        if (_interactionService == null)
-        {
-            _interactionService = FindFirstObjectByType<InteractService>();
-        }
     }
 
     private void OnDestroy()
@@ -87,8 +75,6 @@ public class NpcDialogueController : MonoBehaviour
 
     private void Start()
     {
-        _uiDialogue.BindDialoguePanel(OnClickDialoguePanel);
-
         TryRaiseReadyEvent();
     }
 
@@ -100,7 +86,7 @@ public class NpcDialogueController : MonoBehaviour
         OnDialogueReady?.Invoke();
     }
 
-    public void Open(NpcController npc, PlayerController player)
+    public async UniTaskVoid Open(NpcController npc, PlayerController player)
     {
         if (player == null || !player.IsMine) return;
 
@@ -111,11 +97,16 @@ public class NpcDialogueController : MonoBehaviour
         _currentInteractionComponent = npc.GetComponent<NpcInteractionComponent>();
         _anim = npc.Anim;
 
-        _uiDialogue.Open();
-        _uiDialogue.SetNpcNameText(npc.Data.NpcName);
-        _uiDialogue.HideButtons();
-        _uiDialogue.ClearDialogueText();
-
+        _uiDialogue = await UIController.Instance.OpenAsync(
+            new UILifecycleActions<UI_NpcDialogue>
+            {
+                OnOpen = ui => SetUIInfo(ui, npc)
+            }
+        );
+        if (_uiDialogue == null) return;
+        _uiFriendshipBar = _uiDialogue.FriendshipBar;
+        _interactionService = _uiDialogue.gameObject.GetComponent<InteractService>();
+        
         if (_uiFriendshipBar != null)
         {
             _uiFriendshipBar.BindNpc(npc.Data.NpcId, true);
@@ -137,6 +128,14 @@ public class NpcDialogueController : MonoBehaviour
         StartGreeting();
     }
 
+    private void SetUIInfo(UI_NpcDialogue ui, NpcController npc)
+    {
+        ui.BindDialoguePanel(OnClickDialoguePanel);
+        ui.SetNpcNameText(npc.Data.NpcName);
+        ui.HideButtons();
+        ui.ClearDialogueText();
+    }
+
     public void Close()
     {
         _currentNpc = null;
@@ -152,7 +151,10 @@ public class NpcDialogueController : MonoBehaviour
             _uiFriendshipBar.Clear();
         }
 
-        _uiDialogue.Close();
+        UIController.Instance.CloseAsync<UI_NpcDialogue>();
+        _uiDialogue = null;
+        _uiFriendshipBar = null;
+        _interactionService = null;
     }
 
     private void HandleFriendshipChanged(string npcId, int oldValue, int newValue, ENpcFriendshipReason reason)
@@ -186,17 +188,17 @@ public class NpcDialogueController : MonoBehaviour
     public void StartDialogue(NpcDialogueSO dialogueSO, EDialogueUiState dialogueState)
     {
         _dialogueState = dialogueState;
-        StartDialogue(dialogueSO);
+        StartDialogue(dialogueSO).Forget();
     }
 
     public void StartDialogue(NpcDialogueSO dialogueSO, EDialogueUiState dialogueState, Func<bool> onEnded)
     {
         _dialogueState = dialogueState;
         _onDialogueEnded = onEnded;
-        StartDialogue(dialogueSO);
+        StartDialogue(dialogueSO).Forget();
     }
 
-    public void StartDialogue(NpcDialogueSO dialogueSO)
+    public async UniTaskVoid StartDialogue(NpcDialogueSO dialogueSO)
     {
         if (dialogueSO == null || dialogueSO.Lines == null || dialogueSO.Lines.Length == 0)
         {
@@ -207,9 +209,13 @@ public class NpcDialogueController : MonoBehaviour
         _currentDialogue = dialogueSO;
         _currentLineIndex = 0;
 
-        _uiDialogue.Open();
-        _uiDialogue.HideButtons();
-
+        _uiDialogue = await UIController.Instance.OpenAsync(
+            new UILifecycleActions<UI_NpcDialogue>
+            {
+                OnOpen = ui => ui.HideButtons()
+            }
+        );
+        
         ShowCurrentLine();
     }
 
@@ -245,7 +251,7 @@ public class NpcDialogueController : MonoBehaviour
             var lastLine = _currentDialogue.Lines[_currentDialogue.Lines.Length - 1];
             if (lastLine.NextDialogue != null)
             {
-                StartDialogue(lastLine.NextDialogue);
+                StartDialogue(lastLine.NextDialogue).Forget();
                 return;
             }
         }
@@ -392,7 +398,8 @@ public class NpcDialogueController : MonoBehaviour
 
         if (_uiDialogue != null)
         {
-            _uiDialogue.Close();
+            UIController.Instance.CloseAsync<UI_NpcDialogue>().Forget();
+            _uiDialogue = null;
         }
     }
 }

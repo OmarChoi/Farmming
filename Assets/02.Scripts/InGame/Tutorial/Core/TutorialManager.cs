@@ -109,7 +109,7 @@ public class TutorialManager : MonoBehaviour
     {
         if (_tutorialStarted) return;
         if (_currentPlayer == null) return;
-        if (!_sceneReady || !_playerQuestReady || !_dialogueReady) return;
+        if (!_sceneReady || !_playerQuestReady) return;
         if (_tutorialNpc == null || _tutorialProgressController == null) return;
         if (GameSceneInit.ReturningFromDungeon) return;
 
