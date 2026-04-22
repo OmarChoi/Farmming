@@ -116,17 +116,27 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
         float yieldMultiplier = WorldEffectManager.Instance != null
             ? WorldEffectManager.Instance.GetAcquireMultiplier()
             : 1f;
-        foreach (DropEntry entry in _gatheringData.Drops)
+
+        AddDrops(inventory, info.Player, _gatheringData.Drops, yieldMultiplier);
+        AddDrops(inventory, info.Player, _gatheringData.GetModelOverrideDropsForIndex(_selectedModelIndex), yieldMultiplier);
+
+        info.HelperExperience?.Add(_gatherExperience);
+        _rootCell.DestroyObject();
+    }
+
+    private void AddDrops(PlayerInventoryAbility inventory, PlayerController player, DropEntry[] drops, float yieldMultiplier)
+    {
+        if (drops == null || drops.Length == 0)
+            return;
+
+        foreach (DropEntry entry in drops)
         {
             int qty = WorldEffectManager.ApplyMultiplier(entry.GetRandomQuantity(), yieldMultiplier);
             if (entry.Item == null || qty <= 0)
                 continue;
 
             inventory.AddItem(entry.Item, qty);
-            OnGatheringItemAdded?.Invoke(this, info.Player, entry.Item, qty);
+            OnGatheringItemAdded?.Invoke(this, player, entry.Item, qty);
         }
-
-        info.HelperExperience?.Add(_gatherExperience);
-        _rootCell.DestroyObject();
     }
 }
