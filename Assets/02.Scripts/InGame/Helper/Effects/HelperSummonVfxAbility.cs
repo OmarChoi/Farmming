@@ -22,6 +22,12 @@ public class HelperSummonVfxAbility : HelperAbility
         PlayScaleTween();
     }
 
+    public void StopScaleTween()
+    {
+        _scaleTween?.Kill();
+        _scaleTween = null;
+    }
+
     private void EnsureEffectCreated()
     {
         if (_effectInstance != null) return;
@@ -61,7 +67,7 @@ public class HelperSummonVfxAbility : HelperAbility
 
     public void PlayOnDespawn(Action onComplete)
     {
-        _scaleTween?.Kill();
+        StopScaleTween();
 
         if (_owner == null)
         {
@@ -86,7 +92,7 @@ public class HelperSummonVfxAbility : HelperAbility
 
     private void OnDestroy()
     {
-        _scaleTween?.Kill();
+        StopScaleTween();
         if (_effectInstance != null)
             Destroy(_effectInstance);
     }
