@@ -11,7 +11,7 @@ public class DinoRaceInteractionService : MonoBehaviour
     {
         if (context == null || context.Npc == null) return;
         UI_DinoRace ui = UIController.Instance.GetInstance<UI_DinoRace>();
-        if (ui.IsOpen) return;
+        if (ui != null && ui.IsOpen) return;
         
         DinoRaceNpcFeature feature = context.Npc.GetComponent<DinoRaceNpcFeature>();
         if (feature == null || feature.Host == null)

@@ -19,6 +19,10 @@ public class DinoRaceHost : MonoBehaviour
     [SerializeField] private Vector3 _markerHeadOffset = new Vector3(0f, 2f, 0f);
     [SerializeField] private float _markerScaleDuration = 0.3f;
 
+    [Header("Selected Runner Marker")]
+    [SerializeField] private GameObject _selectedRunnerMarker;
+    [SerializeField] private Vector3 _selectedMarkerHeadOffset = new Vector3(0f, 2f, 0f);
+
     private BaseBuilding _building;
     private DinoRaceEventPolicy _eventPolicy;
     private DinoRaceBetService _betService;
@@ -31,6 +35,8 @@ public class DinoRaceHost : MonoBehaviour
     private Sequence _returnSequence;
     private Tween _firstMarkerTween;
     private Tween _lastMarkerTween;
+    private Tween _selectedMarkerTween;
+    private DinoRaceRunner _selectedMarkerTarget;
 
     public event Action<int> CountdownTicked;
     public event Action RaceStarted;
@@ -86,6 +92,8 @@ public class DinoRaceHost : MonoBehaviour
                 UpdateRace();
                 break;
         }
+
+        UpdateSelectedRunnerMarkerPosition();
     }
 
     public string[] GetRunnerDisplayNames()
@@ -152,6 +160,8 @@ public class DinoRaceHost : MonoBehaviour
         _lastCountdownSecond = int.MinValue;
         _state = EDinoRaceState.Countdown;
 
+        ShowSelectedRunnerMarker(_runners[selectedRunnerIndex]);
+
         if (_countdownSignal != null)
         {
             _countdownRemaining = _countdownSignal.TotalDuration;
@@ -197,6 +207,7 @@ public class DinoRaceHost : MonoBehaviour
             _winParticle.SetActive(false);
         HideMarker(_firstPlaceMarker, ref _firstMarkerTween);
         HideMarker(_lastPlaceMarker, ref _lastMarkerTween);
+        HideSelectedRunnerMarker();
 
         float now = Time.time;
         if (_runners != null)
@@ -246,6 +257,9 @@ public class DinoRaceHost : MonoBehaviour
             {
                 _finishCount++;
                 runner.Finish(_finishCount);
+
+                if (_selectedMarkerTarget == runner)
+                    HideSelectedRunnerMarker();
 
                 if (_finishCount == 1)
                     ShowMarker(_firstPlaceMarker, runner.transform, ref _firstMarkerTween);
@@ -394,6 +408,38 @@ public class DinoRaceHost : MonoBehaviour
         scaleTween?.Kill();
         scaleTween = null;
         marker.SetActive(false);
+    }
+
+    private void ShowSelectedRunnerMarker(DinoRaceRunner runner)
+    {
+        if (_selectedRunnerMarker == null || runner == null) return;
+
+        _selectedMarkerTarget = runner;
+        _selectedMarkerTween?.Kill();
+        _selectedRunnerMarker.transform.position = runner.transform.position + _selectedMarkerHeadOffset;
+        _selectedRunnerMarker.SetActive(true);
+        _selectedRunnerMarker.transform.localScale = Vector3.zero;
+        _selectedMarkerTween = _selectedRunnerMarker.transform
+            .DOScale(Vector3.one, _markerScaleDuration)
+            .SetEase(Ease.OutBack);
+    }
+
+    private void HideSelectedRunnerMarker()
+    {
+        _selectedMarkerTarget = null;
+        _selectedMarkerTween?.Kill();
+        _selectedMarkerTween = null;
+        if (_selectedRunnerMarker != null)
+            _selectedRunnerMarker.SetActive(false);
+    }
+
+    private void UpdateSelectedRunnerMarkerPosition()
+    {
+        if (_selectedRunnerMarker == null || _selectedMarkerTarget == null) return;
+        if (!_selectedRunnerMarker.activeSelf) return;
+
+        _selectedRunnerMarker.transform.position =
+            _selectedMarkerTarget.transform.position + _selectedMarkerHeadOffset;
     }
 
     private float GetSpeedUpBias(int runnerIndex)
