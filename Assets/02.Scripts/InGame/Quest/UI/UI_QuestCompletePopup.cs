@@ -11,7 +11,8 @@ public class UI_QuestCompletePopup : MonoBehaviour
     [Header("퀘스트 완료 팝업")]
     [SerializeField] private GameObject _completePopup;
     [SerializeField] private TextMeshProUGUI _completeRewardText;
-
+    [SerializeField] private GameObject _blockPanel;
+    
     [Header("팝업 트윈")]
     [SerializeField] private UI_PopupDoTween _popupDoTween;
 
@@ -60,6 +61,7 @@ public class UI_QuestCompletePopup : MonoBehaviour
         string rewardText = QuestRewardTextFormatter.BuildQuestReward(quest.QuestData.Reward);
         _completeRewardText.text = rewardText;
 
+        transform.SetAsLastSibling();
         if (_popupDoTween != null)
         {
             await _popupDoTween.PlayOpenAsync();
@@ -67,6 +69,8 @@ public class UI_QuestCompletePopup : MonoBehaviour
         else if (_completePopup != null)
         {
             _completePopup.SetActive(true);
+            if (_blockPanel == null) return;
+            _blockPanel.SetActive(true);
         }
     }
 
@@ -84,6 +88,8 @@ public class UI_QuestCompletePopup : MonoBehaviour
         else if (_completePopup != null)
         {
             _completePopup.SetActive(false);
+            if (_blockPanel == null) return;
+            _blockPanel.SetActive(false);
         }
     }
 }
