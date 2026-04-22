@@ -12,12 +12,14 @@ public class GalaxyOverlay : MonoBehaviour
     [SerializeField] private float _fadeInDuration = 0.6f;
     [SerializeField] private float _fadeOutDuration = 0.6f;
 
-    private Coroutine _fadeRoutine;
-
     private void Awake()
     {
-        _canvasGroup.alpha = 0f;
-        _canvasGroup.blocksRaycasts = false;
+        if (_canvasGroup != null)
+        {
+            _canvasGroup.alpha = 0f;
+            _canvasGroup.blocksRaycasts = false;
+        }
+
         gameObject.SetActive(false);
     }
 
@@ -35,11 +37,19 @@ public class GalaxyOverlay : MonoBehaviour
 
     private IEnumerator Fade(float from, float to, float duration)
     {
-        if (_fadeRoutine != null) StopCoroutine(_fadeRoutine);
+        if (_canvasGroup == null)
+            yield break;
+
+        if (duration <= 0f)
+        {
+            _canvasGroup.alpha = to;
+            yield break;
+        }
+
         float t = 0f;
         while (t < duration)
         {
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             _canvasGroup.alpha = Mathf.Lerp(from, to,
                 Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / duration)));
             yield return null;
