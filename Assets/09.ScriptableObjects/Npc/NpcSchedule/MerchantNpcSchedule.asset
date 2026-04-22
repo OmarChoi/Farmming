@@ -18,6 +18,7 @@ MonoBehaviour:
       _minute: 0
     NpcLocationType: 0
     LocationKey: 
+    InteractionRule: 2
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -27,6 +28,7 @@ MonoBehaviour:
       _minute: 30
     NpcLocationType: 2
     LocationKey: Merchant_Wandering1
+    InteractionRule: 1
     WanderingDirection: {x: 1, y: 0, z: -1}
     WanderingDistance: 16
     WanderingRadius: 8
@@ -36,6 +38,7 @@ MonoBehaviour:
       _minute: 40
     NpcLocationType: 1
     LocationKey: 
+    InteractionRule: 1
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -45,6 +48,7 @@ MonoBehaviour:
       _minute: 40
     NpcLocationType: 2
     LocationKey: Merchant_Wandering2
+    InteractionRule: 0
     WanderingDirection: {x: 1, y: 0, z: -1}
     WanderingDistance: 14
     WanderingRadius: 8
@@ -54,6 +58,7 @@ MonoBehaviour:
       _minute: 10
     NpcLocationType: 2
     LocationKey: Merchant_Wandering3
+    InteractionRule: 1
     WanderingDirection: {x: 1, y: 0, z: 0}
     WanderingDistance: 22
     WanderingRadius: 16
@@ -63,6 +68,7 @@ MonoBehaviour:
       _minute: 20
     NpcLocationType: 0
     LocationKey: 
+    InteractionRule: 2
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0

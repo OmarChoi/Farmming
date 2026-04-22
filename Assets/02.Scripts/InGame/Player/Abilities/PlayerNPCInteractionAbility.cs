@@ -15,6 +15,8 @@ public class PlayerNPCInteractionAbility : PlayerAbility
     private PlayerAnimationAbility _animation;
     private Transform _faceTarget;
 
+    private NpcInteractionComponent _currentNpcInteraction;
+
     protected override void Awake()
     {
         base.Awake();
@@ -51,6 +53,8 @@ public class PlayerNPCInteractionAbility : PlayerAbility
         _owner.LockAction();
         _animation?.PlayGreet();
         _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
+
+        _currentNpcInteraction = closest as NpcInteractionComponent;
         closest.RequestInteract(_owner);
     }
 
@@ -66,6 +70,11 @@ public class PlayerNPCInteractionAbility : PlayerAbility
             IInteraction interactable = hit.GetComponentInParent<IInteraction>();
             if (interactable == null) continue;
 
+            if (interactable is NpcInteractionComponent npcInteraction)
+            {
+                if (!npcInteraction.CanShowPrompt()) continue;
+            }
+
             float dist = Vector3.Distance(transform.position, hit.transform.position);
             if (dist < minDist)
             {
@@ -79,9 +88,32 @@ public class PlayerNPCInteractionAbility : PlayerAbility
 
     public void EndInteraction()
     {
+        _currentNpcInteraction = null;
         _faceTarget = null;
         _cameraAbility?.ClearPreset();
         _owner.UnlockAction();
+    }
+
+    public void ForceCancelCurrentInteraction()
+    {
+        if (!_owner.IsMine) return;
+
+        NpcInteractionComponent active = _currentNpcInteraction;
+        if (active != null)
+        {
+            active.ForceEndInteraction();
+            return;
+        }
+
+        // 만약에 참조가 끊겼는데 상태만 남은 경우를 대비합니다.
+        _faceTarget = null;
+        _cameraAbility?.ClearPreset();
+        _owner.UnlockAction();
+
+        if (NpcDialogueController.Instance != null)
+        {
+            NpcDialogueController.Instance.ForceCloseInteraction();
+        }
     }
 
     private void RotateTowardTarget()
@@ -106,6 +138,7 @@ public class PlayerNPCInteractionAbility : PlayerAbility
         _owner.LockAction();
         _cameraAbility?.SetPreset(_cameraPreset, _faceTarget);
 
+        _currentNpcInteraction = target as NpcInteractionComponent;
         target.RequestInteract(_owner);
     }
 }

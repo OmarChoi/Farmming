@@ -39,6 +39,11 @@ public class NpcDataSO : ScriptableObject
     public int MinTimeOffset = 0;
     public int MaxTimeOffset = 10;
 
+    [Header("기본 상호작용 가능 시간")]
+    public bool UseInteractionTimeRange = false;
+    public GameTime InteractionStartTime = new GameTime(4, 0);
+    public GameTime InteractionEndTime = new GameTime(23, 0);
+
     [Header("자동 퀘스트 상호작용 여부")]
     public bool AutoStartQuestOnInteract = false;
 }

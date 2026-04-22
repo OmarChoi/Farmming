@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(BaseBuilding))]
+[RequireComponent(typeof(PhotonView))]
 public class DungeonPortal : MonoBehaviour, IWorldInteractable
 {
     [SerializeField] private UI_DungeonPortal _ui;
@@ -15,10 +16,12 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
     private BaseBuilding _building;
-    
+    private PhotonView _photonView;
+
     private void Awake()
     {
         _building = GetComponent<BaseBuilding>();
+        _photonView = GetComponent<PhotonView>();
         ResolveUI();
     }
 
@@ -81,6 +84,8 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
             return;
         }
 
+        ForceCancelLocalInteractions();
+
         var config = _dungeonConfigs[floor - 1];
         var inventory = _playerController.GetAbility<PlayerInventoryAbility>();
         Action backToSelection = () => _ui.ShowDungeonSelection(_dungeonConfigs, OnSelectDungeon, EndInteract);
@@ -140,6 +145,9 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
         if (TerrainGridManager.Instance != null)
             VillageCache.Capture(TerrainGridManager.Instance);
 
+        // 모든 로컬 상호작용을 한 번 정리합니다.
+        ForceCancelAllLocalInteractionsForTransition();
+
         if (SaveManager.Instance != null)
         {
             int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
@@ -165,6 +173,17 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
     private async UniTaskVoid MasterEnterDungeon(int floor)
     {
         DungeonSceneInit.FloorOverride = floor;
+
+        // 모든 클라이언트에게 "지금 던전 전환 준비, 로컬 상호작용 종료"를 알립니다.
+        if (_photonView != null)
+        {
+            _photonView.RPC(nameof(RPC_PrepareForDungeonTransition), RpcTarget.All);
+        }
+
+        // 각 클라이언트가 UI / 카메라 / 액션락 / 대화 상태를 정리할 시간을 조금 줍니다.
+        // 정리를 넉넉하게 수행할 틈을 주기 위해 2번 넣었습니다.
+        await UniTask.Yield();
+        await UniTask.Yield();
 
         if (TerrainGridManager.Instance != null)
             VillageCache.Capture(TerrainGridManager.Instance);
@@ -194,6 +213,12 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
         PhotonNetwork.LoadLevel(SceneName.Loading);
     }
 
+    [PunRPC]
+    private void RPC_PrepareForDungeonTransition()
+    {
+        ForceCancelAllLocalInteractionsForTransition();
+    }
+
     private bool AreAllPlayersNearby()
     {
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
@@ -210,7 +235,10 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
 
     public void EndInteract()
     {
-        _ui?.Close();
+        if (_ui != null)
+        {
+            _ui.Close();
+        }
         _playerController?.ExitUIMode();
         _playerInteraction?.EndInteraction();
         _playerInteraction = null;
@@ -225,6 +253,42 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
         _ui = FindFirstObjectByType<UI_DungeonPortal>(FindObjectsInactive.Include);
         return _ui != null;
     }
-    
+
+    private void ForceCancelAllLocalInteractionsForTransition()
+    {
+        PlayerController localPlayer = FindLocalPlayer();
+        if (localPlayer == null) return;
+
+        // 플레이어가 UI 모드에 들어가 있었다면 먼저 해제합니다.
+        localPlayer.ExitUIMode();
+
+        // NPC 대화/카메라/행동락을 강제 종료합니다.
+        var npcInteraction = localPlayer.GetAbility<PlayerNPCInteractionAbility>();
+        npcInteraction?.ForceCancelCurrentInteraction();
+
+        // 혹시 포탈 UI가 열려 있다면 닫아 줍니다.
+        _ui?.Close();
+    }
+
+    private void ForceCancelLocalInteractions()
+    {
+        var localPlayer = _playerController;
+        if (localPlayer == null) return;
+
+        var npcInteraction = localPlayer.GetAbility<PlayerNPCInteractionAbility>();
+        npcInteraction?.ForceCancelCurrentInteraction();
+    }
+
+    private PlayerController FindLocalPlayer()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (player != null && player.IsMine) return player;
+        }
+
+        return null;
+    }
+
     public string AnimationTrigger => string.Empty;
 }

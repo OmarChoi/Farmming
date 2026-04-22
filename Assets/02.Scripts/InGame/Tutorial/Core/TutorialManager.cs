@@ -178,6 +178,8 @@ public class TutorialManager : MonoBehaviour
             yield break;
         }
 
+        if (TutorialAutoInteractGate.ConsumeSuppressFlag()) yield break;
+
         // 자동으로 상호작용을 시작합니다.
         playerInteraction.BeginAutoInteraction(npcInteraction);
     }
@@ -225,5 +227,19 @@ public class TutorialManager : MonoBehaviour
         }
 
         _tutorialNpcController = null;
+    }
+
+    // 던전 복귀 등 튜토리얼 자동 대화 여부를 확인할 때 사용합니다.
+    public static class TutorialAutoInteractGate
+    {
+        public static bool SuppressOnceAfterDungeonReturn { get; set; }
+
+        public static bool ConsumeSuppressFlag()
+        {
+            if (!SuppressOnceAfterDungeonReturn) return false;
+
+            SuppressOnceAfterDungeonReturn = false;
+            return true;
+        }
     }
 }

@@ -157,6 +157,12 @@ public class NpcDialogueController : MonoBehaviour
         _interactionService = null;
     }
 
+    public void ForceCloseInteraction()
+    {
+        _onDialogueEnded = null;
+        Close();
+    }
+
     private void HandleFriendshipChanged(string npcId, int oldValue, int newValue, ENpcFriendshipReason reason)
     {
         if (_currentNpc?.Data?.NpcId != npcId || _uiFriendshipBar == null)
