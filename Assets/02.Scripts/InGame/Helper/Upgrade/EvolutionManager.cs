@@ -50,6 +50,7 @@ public class EvolutionManager : MonoBehaviour
     [Header("White Flash")]
     [SerializeField] private CanvasGroup _whiteFlashCanvasGroup;
     [SerializeField] private Color _whiteFlashColor = Color.white;
+    [SerializeField] private float _whiteFlashLeadTime = 0.2f;
     [SerializeField] private float _whiteFlashFadeIn = 0.06f;
     [SerializeField] private float _whiteFlashHold = 0.03f;
     [SerializeField] private float _whiteFlashFadeOut = 0.18f;
