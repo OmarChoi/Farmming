@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,6 +13,12 @@ public class HelperUpgradeService : MonoBehaviour
     private PlayerInventoryAbility _inventoryAbility;
     private PlayerHelperInventoryAbility _helperInventoryAbility;
     private NpcInteractionContext _currentContext;
+    private bool _isUpgradeInProgress;
+    private HelperDataSO _upgradeInProgressData;
+    private Coroutine _upgradeCutsceneRetryCoroutine;
+
+    private const int CutsceneStartMaxAttempts = 8;
+    private const float CutsceneStartRetryDelay = 0.1f;
 
     public event Action<HelperDataSO> OnHelperUpgraded;
     public event Action<HelperDataSO> OnUpgradeSucceeded;
@@ -211,6 +218,11 @@ public class HelperUpgradeService : MonoBehaviour
 
     public void TryUpgrade(HelperDataSO data)
     {
+        if (_isUpgradeInProgress)
+        {
+            return;
+        }
+
         if (data == null)
         {
 #if UNITY_EDITOR
@@ -235,16 +247,41 @@ public class HelperUpgradeService : MonoBehaviour
         }
 
         EHelperGrade currentGrade = _helperInventoryAbility.GetHelperGrade(data);
+        _isUpgradeInProgress = true;
+        _upgradeInProgressData = data;
+
         if (TryPlayEvolutionCutscene(data, currentGrade)) return;
 
-        TryFinalizeUpgrade(data);
+        _upgradeCutsceneRetryCoroutine = StartCoroutine(RetryPlayEvolutionCutscene(data, currentGrade));
     }
 
-    private bool TryPlayEvolutionCutscene(HelperDataSO data, EHelperGrade currentGrade)
+    private IEnumerator RetryPlayEvolutionCutscene(HelperDataSO data, EHelperGrade currentGrade)
+    {
+        for (int attempt = 1; attempt <= CutsceneStartMaxAttempts; attempt++)
+        {
+            yield return new WaitForSecondsRealtime(CutsceneStartRetryDelay);
+
+            if (!_isUpgradeInProgress || _upgradeInProgressData != data)
+            {
+                _upgradeCutsceneRetryCoroutine = null;
+                yield break;
+            }
+
+            if (TryPlayEvolutionCutscene(data, currentGrade, logStartFailure: false))
+            {
+                _upgradeCutsceneRetryCoroutine = null;
+                yield break;
+            }
+        }
+        _upgradeCutsceneRetryCoroutine = null;
+        ClearUpgradeInProgress(data);
+        OnUpgradeFailed?.Invoke(data);
+    }
+
+    private bool TryPlayEvolutionCutscene(HelperDataSO data, EHelperGrade currentGrade, bool logStartFailure = true)
     {
         if (data == null)
         {
-            Debug.LogError("[HelperUpgradeService] Cannot play evolution cutscene because HelperDataSO is null.");
             return false;
         }
 
@@ -252,7 +289,15 @@ public class HelperUpgradeService : MonoBehaviour
 
         if (_evolutionManager == null)
         {
-            Debug.LogError($"[HelperUpgradeService] EvolutionManager is missing. Evolution cutscene skipped. HelperId: {data.HelperId}, HelperName: {data.HelperName}, CurrentGrade: {currentGrade}");
+            ResolveEvolutionManager();
+            if (_evolutionManager == null)
+            {
+                return false;
+            }
+        }
+
+        if (_evolutionManager.IsPlaying)
+        {
             return false;
         }
 
@@ -266,6 +311,7 @@ public class HelperUpgradeService : MonoBehaviour
                 {
                     if (!upgradeFinalized && !upgradeFailed)
                         OnUpgradeFailed?.Invoke(data);
+                    ClearUpgradeInProgress(data);
                     return;
                 }
 
@@ -274,6 +320,7 @@ public class HelperUpgradeService : MonoBehaviour
                     upgradeFinalized = TryFinalizeUpgrade(data);
                     upgradeFailed = !upgradeFinalized;
                 }
+                ClearUpgradeInProgress(data);
             },
             onEvolvedModelShown: () =>
             {
@@ -286,12 +333,34 @@ public class HelperUpgradeService : MonoBehaviour
 
         if (!started)
         {
-            Debug.LogError($"[HelperUpgradeService] EvolutionManager failed to start cutscene. Upgrade will continue without cutscene. HelperId: {data.HelperId}, HelperName: {data.HelperName}, CurrentGrade: {currentGrade}");
             return false;
         }
 
         CloseUpgradeUi();
         return true;
+    }
+
+    private void ResolveEvolutionManager()
+    {
+        if (_evolutionManager != null)
+            return;
+
+        _evolutionManager = FindFirstObjectByType<EvolutionManager>(FindObjectsInactive.Include);
+    }
+
+    private void ClearUpgradeInProgress(HelperDataSO data)
+    {
+        if (_upgradeCutsceneRetryCoroutine != null)
+        {
+            StopCoroutine(_upgradeCutsceneRetryCoroutine);
+            _upgradeCutsceneRetryCoroutine = null;
+        }
+
+        if (_upgradeInProgressData != null && data != null && _upgradeInProgressData != data)
+            return;
+
+        _isUpgradeInProgress = false;
+        _upgradeInProgressData = null;
     }
 
     private HelperController FindLiveHelperForEvolution(HelperDataSO data)
