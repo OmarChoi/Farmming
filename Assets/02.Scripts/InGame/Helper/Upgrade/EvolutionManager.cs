@@ -113,10 +113,6 @@ public class EvolutionManager : MonoBehaviour
     private float _cachedFogDensity;
     private Material _cachedSkybox;
     private Material _runtimePreviewFallbackMaterial;
-    private bool _hasTimelineVisibilityState;
-    private bool _timelineAfterVisible;
-    private bool _hasDirectorUpdateModeCache;
-    private DirectorUpdateMode _cachedDirectorUpdateMode;
 
     private int FocusLayer => LayerMask.NameToLayer(_focusLayerName);
 
@@ -148,7 +144,6 @@ public class EvolutionManager : MonoBehaviour
             _director.stopped -= OnDirectorStopped;
 
         DisableEvolutionLighting();
-        RestoreDirectorUpdateMode();
     }
 
     private void OnDestroy()
@@ -159,9 +154,6 @@ public class EvolutionManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (IsPlaying)
-            DriveTimelineModelVisibility();
-
         if (IsPlaying && _isolateLighting && _hasRenderSettingsCache)
             ApplyCutsceneRenderSettings();
     }
@@ -213,8 +205,6 @@ public class EvolutionManager : MonoBehaviour
         _onFinished = onFinished;
         _onEvolvedModelShown = onEvolvedModelShown;
         _evolvedModelShownNotified = false;
-        _hasTimelineVisibilityState = false;
-        _timelineAfterVisible = false;
 
         ApplyProfile(_currentProfile);
 
@@ -228,7 +218,6 @@ public class EvolutionManager : MonoBehaviour
         PreparePreview(_afterInstance, _afterModelRoot, _afterLocalEuler, false);
         SetLayerRecursively(_beforeInstance, FocusLayer);
         SetLayerRecursively(_afterInstance, FocusLayer);
-        SetCutsceneModelVisibility(false, true);
         LogEvolutionPreviewRenderState("Before", _beforeInstance);
         LogEvolutionPreviewRenderState("After", _afterInstance);
 
@@ -274,7 +263,11 @@ public class EvolutionManager : MonoBehaviour
     public void Timeline_SwapToEvolvedModel()
     {
         if (_afterInstance == null) return;
-        SetCutsceneModelVisibility(true, true);
+        SetRoot(_beforeModelRoot, false);
+        SetRoot(_afterModelRoot, true);
+        _afterInstance.SetActive(true);
+        PlayIdle(_afterInstance);
+        NotifyEvolvedModelShown();
     }
 
     public void Timeline_PlayEvolvedIdle() => PlayIdle(_afterInstance);
@@ -301,10 +294,8 @@ public class EvolutionManager : MonoBehaviour
             StartTimelineEnergyRiseController();
             _director.stopped -= OnDirectorStopped;
             _director.stopped += OnDirectorStopped;
-            CacheAndSetDirectorUnscaled();
             _director.time = 0d;
             _director.Evaluate();
-            SetCutsceneModelVisibility(false, true);
             _director.Play();
             StartEvolutionSfxTrigger();
             StartEvolvedModelShownFallbackTrigger();
@@ -349,7 +340,6 @@ public class EvolutionManager : MonoBehaviour
         // 2. 카메라 복귀 + 정리 (가려진 순간 조용히 복귀)
         DisableEvolutionCamera();
         CleanupInstances();
-        RestoreDirectorUpdateMode();
 
         // 3. 은하수 페이드 아웃 (게임 화면 드러남)
         if (_galaxyOverlay != null)
@@ -365,8 +355,6 @@ public class EvolutionManager : MonoBehaviour
         _onFinished = null;
         _onEvolvedModelShown = null;
         _evolvedModelShownNotified = false;
-        _hasTimelineVisibilityState = false;
-        _timelineAfterVisible = false;
 
         callback?.Invoke(completed);
         if (finished != null) OnEvolutionFinished?.Invoke(finished);
@@ -463,7 +451,7 @@ public class EvolutionManager : MonoBehaviour
     private IEnumerator PlayEvolutionSfxAfterDelay(float delay)
     {
         if (delay > 0f)
-            yield return new WaitForSecondsRealtime(delay);
+            yield return new WaitForSeconds(delay);
 
         PlayEvolutionSfx();
         _evolutionSfxRoutine = null;
@@ -558,66 +546,6 @@ public class EvolutionManager : MonoBehaviour
             _evolutionCinemachine.Priority = _cutsceneCameraPriority;
             _evolutionCinemachine.Follow = _orbitPivot;
             _evolutionCinemachine.LookAt = _orbitPivot;
-        }
-    }
-
-    private void CacheAndSetDirectorUnscaled()
-    {
-        if (_director == null)
-            return;
-
-        if (!_hasDirectorUpdateModeCache)
-        {
-            _cachedDirectorUpdateMode = _director.timeUpdateMode;
-            _hasDirectorUpdateModeCache = true;
-        }
-
-        _director.timeUpdateMode = DirectorUpdateMode.UnscaledGameTime;
-    }
-
-    private void RestoreDirectorUpdateMode()
-    {
-        if (_director == null || !_hasDirectorUpdateModeCache)
-            return;
-
-        _director.timeUpdateMode = _cachedDirectorUpdateMode;
-        _hasDirectorUpdateModeCache = false;
-    }
-
-    private void DriveTimelineModelVisibility()
-    {
-        if (_director == null || _director.playableAsset == null)
-            return;
-
-        SetCutsceneModelVisibility(_director.time >= GetModelSwapTime());
-    }
-
-    private void SetCutsceneModelVisibility(bool showAfter, bool force = false)
-    {
-        bool changed = force || !_hasTimelineVisibilityState || _timelineAfterVisible != showAfter;
-
-        _hasTimelineVisibilityState = true;
-        _timelineAfterVisible = showAfter;
-
-        SetRoot(_beforeModelRoot, !showAfter);
-        SetRoot(_afterModelRoot, showAfter);
-
-        if (_beforeInstance != null)
-            _beforeInstance.SetActive(!showAfter);
-        if (_afterInstance != null)
-            _afterInstance.SetActive(showAfter);
-
-        if (!changed)
-            return;
-
-        if (showAfter)
-        {
-            PlayIdle(_afterInstance);
-            NotifyEvolvedModelShown();
-        }
-        else
-        {
-            PlayIdle(_beforeInstance);
         }
     }
 
@@ -822,14 +750,14 @@ public class EvolutionManager : MonoBehaviour
         // Intro: 카메라 고정 (스핀은 StartEvolutionCutscene에서 이미 시작됨)
         cam.localPosition = intro;
         float t = 0f;
-        while (t < introDur) { t += Time.unscaledDeltaTime; LookAtPivot(cam); yield return null; }
+        while (t < introDur) { t += Time.deltaTime; LookAtPivot(cam); yield return null; }
 
         // Zoom: 카메라 줌인
         yield return MoveCamera(cam, intro, zoom, zoomDur);
 
         // Flash + 모델 교체
         Timeline_PlayWhiteFlash();
-        yield return new WaitForSecondsRealtime(Mathf.Max(_whiteFlashFadeIn * 0.75f, 0.03f));
+        yield return new WaitForSeconds(Mathf.Max(_whiteFlashFadeIn * 0.75f, 0.03f));
         Timeline_SwapToEvolvedModel();
 
         // AfterActive: close -> small pullback -> foot to head scan
@@ -850,17 +778,17 @@ public class EvolutionManager : MonoBehaviour
         // duration 동안 점점 빨라짐
         while (t < duration)
         {
-            t += Time.unscaledDeltaTime;
+            t += Time.deltaTime;
             float eased = Mathf.SmoothStep(0f, 1f, t / duration);
             _currentSpinSpeed = spinSpeed * eased;
-            RotateVisibleModel(_currentSpinSpeed * Time.unscaledDeltaTime);
+            RotateVisibleModel(_currentSpinSpeed * Time.deltaTime);
             yield return null;
         }
         // 이후 최대 속도로 계속 회전
         while (true)
         {
             _currentSpinSpeed = spinSpeed;
-            RotateVisibleModel(spinSpeed * Time.unscaledDeltaTime);
+            RotateVisibleModel(spinSpeed * Time.deltaTime);
             yield return null;
         }
     }
@@ -885,7 +813,7 @@ public class EvolutionManager : MonoBehaviour
         float t = 0f;
         while (t < duration)
         {
-            t += Time.unscaledDeltaTime;
+            t += Time.deltaTime;
             float progress = Mathf.Clamp01(t / duration);
             float currentSpeed = Mathf.Lerp(startSpeed, 0f, Mathf.SmoothStep(0f, 1f, progress));
             _currentSpinSpeed = currentSpeed;
@@ -906,7 +834,7 @@ public class EvolutionManager : MonoBehaviour
         float t = 0f;
         while (t < duration)
         {
-            t += Time.unscaledDeltaTime;
+            t += Time.deltaTime;
             cam.localPosition = Vector3.Lerp(
                 from, to,
                 Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / duration)));
@@ -941,7 +869,7 @@ public class EvolutionManager : MonoBehaviour
         if (image != null) image.color = _whiteFlashColor;
         root.SetActive(true);
         yield return FadeFlash(0f, 1f, _whiteFlashFadeIn);
-        if (_whiteFlashHold > 0f) yield return new WaitForSecondsRealtime(_whiteFlashHold);
+        if (_whiteFlashHold > 0f) yield return new WaitForSeconds(_whiteFlashHold);
         yield return FadeFlash(1f, 0f, _whiteFlashFadeOut);
         root.SetActive(false);
         _whiteFlashRoutine = null;
@@ -952,7 +880,7 @@ public class EvolutionManager : MonoBehaviour
         float t = 0f;
         while (t < duration)
         {
-            t += Time.unscaledDeltaTime;
+            t += Time.deltaTime;
             _whiteFlashCanvasGroup.alpha = Mathf.Lerp(from, to, Mathf.Clamp01(t / duration));
             yield return null;
         }
