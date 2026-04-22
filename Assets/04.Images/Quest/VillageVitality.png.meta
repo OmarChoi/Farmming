@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f17511135de3b1c4ca0463740b510d40
+guid: 9476f35b444eeb54fbb4f594cbaf2a97
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -106,30 +106,17 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: MoonIcon_0
+      name: VillageVitality_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 147
-        width: 1350
-        height: 935
+        x: 70
+        y: 104
+        width: 1141
+        height: 1092
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,8 +125,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 122a63ee1d8f63545b3555dbb532d501
-      internalID: -951350018
+      spriteID: cccd525c847ff8d48ac218ab8ef34b8c
+      internalID: 1456287572
       vertices: []
       indices: 
       edges: []
@@ -148,7 +135,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 48a14643f787db14db904d346a219f74
     internalID: 0
     vertices: []
     indices: 
@@ -160,7 +147,9 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      MoonIcon_0: -951350018
+      VillageVitality_0: 1456287572
+      VillageVitality_1: -2132519835
+      VillageVitality_2: -347280751
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
