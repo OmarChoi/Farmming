@@ -66,6 +66,11 @@ public class PlayerNPCInteractionAbility : PlayerAbility
             IInteraction interactable = hit.GetComponentInParent<IInteraction>();
             if (interactable == null) continue;
 
+            if (interactable is NpcInteractionComponent npcInteraction)
+            {
+                if (!npcInteraction.CanShowPrompt()) continue;
+            }
+
             float dist = Vector3.Distance(transform.position, hit.transform.position);
             if (dist < minDist)
             {

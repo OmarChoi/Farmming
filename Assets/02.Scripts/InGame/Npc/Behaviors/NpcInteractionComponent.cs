@@ -42,4 +42,9 @@ public class NpcInteractionComponent : MonoBehaviour, IInteraction
         _playerInteraction = null;
         _playerController = null;
     }
+
+    public bool CanShowPrompt()
+    {
+        return _npcController != null && _npcController.IsInteractionAvailableNow();
+    }
 }
