@@ -77,6 +77,11 @@ public class EvolutionManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float _cutsceneFogDensity;
     [SerializeField] private Material _cutsceneSkybox;
 
+    [Header("Preview Render Safety")]
+    [SerializeField] private bool _logPreviewRenderDiagnostics = true;
+    [SerializeField] private bool _replaceInvalidPreviewMaterials = true;
+    [SerializeField] private Material _previewFallbackMaterial;
+
     public event Action<HelperDataSO> OnEvolutionFinished;
     public bool IsPlaying => _currentData != null;
 
@@ -107,6 +112,7 @@ public class EvolutionManager : MonoBehaviour
     private Color _cachedFogColor;
     private float _cachedFogDensity;
     private Material _cachedSkybox;
+    private Material _runtimePreviewFallbackMaterial;
 
     private int FocusLayer => LayerMask.NameToLayer(_focusLayerName);
 
@@ -138,6 +144,12 @@ public class EvolutionManager : MonoBehaviour
             _director.stopped -= OnDirectorStopped;
 
         DisableEvolutionLighting();
+    }
+
+    private void OnDestroy()
+    {
+        if (_runtimePreviewFallbackMaterial != null)
+            Destroy(_runtimePreviewFallbackMaterial);
     }
 
     private void LateUpdate()
@@ -206,6 +218,8 @@ public class EvolutionManager : MonoBehaviour
         PreparePreview(_afterInstance, _afterModelRoot, _afterLocalEuler, false);
         SetLayerRecursively(_beforeInstance, FocusLayer);
         SetLayerRecursively(_afterInstance, FocusLayer);
+        LogEvolutionPreviewRenderState("Before", _beforeInstance);
+        LogEvolutionPreviewRenderState("After", _afterInstance);
 
        // StartEvolutionCutscene 하나만 실행 (내부에서 카메라/스핀/연출 처리)
         StartCoroutine(StartEvolutionCutscene());
@@ -492,11 +506,33 @@ public class EvolutionManager : MonoBehaviour
         {
             UniversalAdditionalCameraData baseData = _baseCamera.GetUniversalAdditionalCameraData();
             UniversalAdditionalCameraData overlayData = _evolutionOverlayCamera.GetUniversalAdditionalCameraData();
-            if (overlayData != null) overlayData.renderType = CameraRenderType.Overlay;
+            if (overlayData != null)
+            {
+                overlayData.renderType = CameraRenderType.Overlay;
+            }
+            else
+            {
+                Debug.LogError("[EvolutionManager] Evolution overlay camera has no UniversalAdditionalCameraData. URP camera stack may not render the evolution models.");
+            }
+
             if (baseData != null)
             {
                 _wasStacked = baseData.cameraStack.Contains(_evolutionOverlayCamera);
                 if (!_wasStacked) baseData.cameraStack.Add(_evolutionOverlayCamera);
+
+                if (_logPreviewRenderDiagnostics)
+                {
+                    Debug.Log(
+                        $"[EvolutionManager] Evolution camera stack state. " +
+                        $"BaseCamera:{_baseCamera.name}, OverlayCamera:{_evolutionOverlayCamera.name}, " +
+                        $"OverlayType:{(overlayData != null ? overlayData.renderType.ToString() : "MissingURPData")}, " +
+                        $"StackContains:{baseData.cameraStack.Contains(_evolutionOverlayCamera)}, " +
+                        $"OverlayCullingMask:{_evolutionOverlayCamera.cullingMask}, FocusLayer:{FocusLayer}");
+                }
+            }
+            else
+            {
+                Debug.LogError("[EvolutionManager] Base camera has no UniversalAdditionalCameraData. Evolution overlay camera cannot be stacked in URP.");
             }
         }
         else
@@ -931,6 +967,8 @@ public class EvolutionManager : MonoBehaviour
         foreach (SkinnedMeshRenderer renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             renderer.updateWhenOffscreen = true;
 
+        EnsurePreviewRenderersVisible(root);
+
         foreach (Collider col in root.GetComponentsInChildren<Collider>(true))
             col.enabled = false;
 
@@ -967,6 +1005,181 @@ public class EvolutionManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    private void EnsurePreviewRenderersVisible(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
+        {
+            if (renderer == null || IsCutsceneHiddenTransform(renderer.transform))
+                continue;
+
+            renderer.enabled = true;
+            renderer.forceRenderingOff = false;
+            renderer.shadowCastingMode = ShadowCastingMode.On;
+
+            if (renderer is SkinnedMeshRenderer skinnedRenderer)
+                skinnedRenderer.updateWhenOffscreen = true;
+
+            if (_replaceInvalidPreviewMaterials)
+                ReplaceInvalidPreviewMaterials(renderer);
+        }
+    }
+
+    private void ReplaceInvalidPreviewMaterials(Renderer renderer)
+    {
+        if (renderer == null)
+            return;
+
+        Material[] materials = renderer.sharedMaterials;
+        if (materials == null || materials.Length == 0)
+            return;
+
+        bool changed = false;
+        for (int i = 0; i < materials.Length; i++)
+        {
+            if (!IsInvalidPreviewMaterial(materials[i]))
+                continue;
+
+            Material fallback = GetPreviewFallbackMaterial(materials[i]);
+            if (fallback == null)
+                continue;
+
+            materials[i] = fallback;
+            changed = true;
+        }
+
+        if (changed)
+            renderer.sharedMaterials = materials;
+    }
+
+    private static bool IsInvalidPreviewMaterial(Material material)
+    {
+        if (material == null)
+            return true;
+
+        Shader shader = material.shader;
+        if (shader == null || !shader.isSupported)
+            return true;
+
+        return string.Equals(shader.name, "Hidden/InternalErrorShader", StringComparison.Ordinal);
+    }
+
+    private Material GetPreviewFallbackMaterial(Material source)
+    {
+        if (_previewFallbackMaterial != null)
+            return _previewFallbackMaterial;
+
+        if (_runtimePreviewFallbackMaterial != null)
+            return _runtimePreviewFallbackMaterial;
+
+        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null)
+            shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (shader == null)
+            shader = Shader.Find("Standard");
+
+        if (shader == null)
+            return null;
+
+        _runtimePreviewFallbackMaterial = new Material(shader)
+        {
+            name = "Runtime_EvolutionPreviewFallback"
+        };
+
+        CopyPreviewMaterialVisuals(source, _runtimePreviewFallbackMaterial);
+        return _runtimePreviewFallbackMaterial;
+    }
+
+    private static void CopyPreviewMaterialVisuals(Material source, Material target)
+    {
+        if (source == null || target == null)
+            return;
+
+        if (source.HasProperty("_BaseColor") && target.HasProperty("_BaseColor"))
+            target.SetColor("_BaseColor", source.GetColor("_BaseColor"));
+        else if (source.HasProperty("_Color"))
+        {
+            if (target.HasProperty("_BaseColor"))
+                target.SetColor("_BaseColor", source.GetColor("_Color"));
+            if (target.HasProperty("_Color"))
+                target.SetColor("_Color", source.GetColor("_Color"));
+        }
+
+        Texture texture = null;
+        if (source.HasProperty("_BaseMap"))
+            texture = source.GetTexture("_BaseMap");
+        if (texture == null && source.HasProperty("_MainTex"))
+            texture = source.GetTexture("_MainTex");
+
+        if (texture == null)
+            return;
+
+        if (target.HasProperty("_BaseMap"))
+            target.SetTexture("_BaseMap", texture);
+        if (target.HasProperty("_MainTex"))
+            target.SetTexture("_MainTex", texture);
+    }
+
+    private void LogEvolutionPreviewRenderState(string label, GameObject instance)
+    {
+        if (!_logPreviewRenderDiagnostics)
+            return;
+
+        if (instance == null)
+        {
+            Debug.LogError($"[EvolutionManager] {label} preview instance is null.");
+            return;
+        }
+
+        Renderer[] renderers = instance.GetComponentsInChildren<Renderer>(true);
+        int enabledCount = 0;
+        int focusLayerCount = 0;
+        int invalidMaterialCount = 0;
+        int focusLayer = FocusLayer;
+        int focusMask = focusLayer >= 0 ? 1 << focusLayer : 0;
+
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null || IsCutsceneHiddenTransform(renderer.transform))
+                continue;
+
+            if (renderer.enabled && !renderer.forceRenderingOff)
+                enabledCount++;
+
+            if (focusLayer >= 0 && renderer.gameObject.layer == focusLayer)
+                focusLayerCount++;
+
+            Material[] materials = renderer.sharedMaterials;
+            if (materials == null)
+                continue;
+
+            for (int i = 0; i < materials.Length; i++)
+            {
+                if (IsInvalidPreviewMaterial(materials[i]))
+                    invalidMaterialCount++;
+            }
+        }
+
+        string cameraInfo = _evolutionOverlayCamera == null
+            ? "OverlayCamera:null"
+            : $"OverlayCamera:{_evolutionOverlayCamera.name}, Enabled:{_evolutionOverlayCamera.enabled}, CullingMask:{_evolutionOverlayCamera.cullingMask}, SeesFocus:{(_evolutionOverlayCamera.cullingMask & focusMask) != 0}";
+
+        Debug.Log(
+            $"[EvolutionManager] {label} preview render state. " +
+            $"Instance:{instance.name}, Active:{instance.activeInHierarchy}, " +
+            $"RendererTotal:{renderers.Length}, EnabledRenderable:{enabledCount}, FocusLayerRenderable:{focusLayerCount}, " +
+            $"InvalidMaterials:{invalidMaterialCount}, FocusLayer:{focusLayer}, {cameraInfo}");
+
+        if (renderers.Length == 0 || enabledCount == 0 || focusLayerCount == 0 || invalidMaterialCount > 0)
+        {
+            Debug.LogWarning(
+                $"[EvolutionManager] {label} preview may not render correctly in build. " +
+                $"RendererTotal:{renderers.Length}, EnabledRenderable:{enabledCount}, FocusLayerRenderable:{focusLayerCount}, InvalidMaterials:{invalidMaterialCount}");
+        }
     }
 
     private void CleanupInstances()
