@@ -102,11 +102,13 @@ public class EvolutionManager : MonoBehaviour
     private float _currentSpinSpeed;
     private Coroutine _spinRoutine;
     private Coroutine _whiteFlashRoutine;
+    private Coroutine _whiteFlashFallbackRoutine;
     private Coroutine _fallbackRoutine;
     private Coroutine _evolutionSfxRoutine;
     private Coroutine _evolvedModelShownRoutine;
     private float _evolutionSfxEndRealtime;
     private bool _evolutionSfxPlayed;
+    private bool _whiteFlashPlayed;
     private bool _evolvedModelShownNotified;
     private bool _hasRenderSettingsCache;
     private AmbientMode _cachedAmbientMode;
@@ -209,6 +211,7 @@ public class EvolutionManager : MonoBehaviour
         _onFinished = onFinished;
         _onEvolvedModelShown = onEvolvedModelShown;
         _evolvedModelShownNotified = false;
+        _whiteFlashPlayed = false;
 
         ApplyProfile(_currentProfile);
 
@@ -246,12 +249,14 @@ public class EvolutionManager : MonoBehaviour
         if (_spinRoutine != null) StopCoroutine(_spinRoutine);
         if (_evolutionSfxRoutine != null) StopCoroutine(_evolutionSfxRoutine);
         if (_evolvedModelShownRoutine != null) StopCoroutine(_evolvedModelShownRoutine);
+        if (_whiteFlashFallbackRoutine != null) StopCoroutine(_whiteFlashFallbackRoutine);
         if (_timelineCameraController != null) _timelineCameraController.Stop();
         if (_timelineRotationController != null) _timelineRotationController.Stop();
         if (_timelineEnergyRiseController != null) _timelineEnergyRiseController.Stop();
         _spinRoutine = null;
         _evolutionSfxRoutine = null;
         _evolvedModelShownRoutine = null;
+        _whiteFlashFallbackRoutine = null;
         if (_director != null) { _director.stopped -= OnDirectorStopped; _director.Stop(); }
         FinishEvolution(false);
     }
@@ -259,6 +264,10 @@ public class EvolutionManager : MonoBehaviour
     // Timeline Signal에서 호출
     public void Timeline_PlayWhiteFlash()
     {
+        if (_whiteFlashPlayed)
+            return;
+
+        _whiteFlashPlayed = true;
         if (_whiteFlashRoutine != null) StopCoroutine(_whiteFlashRoutine);
         _whiteFlashRoutine = StartCoroutine(WhiteFlash());
     }
@@ -318,6 +327,7 @@ public class EvolutionManager : MonoBehaviour
             EnsureInitialTimelineModelVisibility();
             _director.Play();
             StartEvolutionSfxTrigger();
+            StartWhiteFlashFallbackTrigger();
             StartEvolvedModelShownFallbackTrigger();
         }
         else
@@ -340,6 +350,7 @@ public class EvolutionManager : MonoBehaviour
         if (_timelineRotationController != null) _timelineRotationController.Stop();
         if (_timelineEnergyRiseController != null) _timelineEnergyRiseController.Stop();
         if (_whiteFlashRoutine != null) { StopCoroutine(_whiteFlashRoutine); _whiteFlashRoutine = null; }
+        if (_whiteFlashFallbackRoutine != null) { StopCoroutine(_whiteFlashFallbackRoutine); _whiteFlashFallbackRoutine = null; }
         if (_evolutionSfxRoutine != null) { StopCoroutine(_evolutionSfxRoutine); _evolutionSfxRoutine = null; }
         if (_evolvedModelShownRoutine != null) { StopCoroutine(_evolvedModelShownRoutine); _evolvedModelShownRoutine = null; }
         if (_whiteFlashCanvasGroup != null)
@@ -430,15 +441,39 @@ public class EvolutionManager : MonoBehaviour
         _evolvedModelShownRoutine = StartCoroutine(NotifyEvolvedModelShownAtTimelineTime(GetModelSwapTime()));
     }
 
+    private void StartWhiteFlashFallbackTrigger()
+    {
+        if (_whiteFlashFallbackRoutine != null)
+            StopCoroutine(_whiteFlashFallbackRoutine);
+
+        _whiteFlashFallbackRoutine = StartCoroutine(PlayWhiteFlashAtTimelineTime(GetWhiteFlashTriggerTime()));
+    }
+
     private float GetModelSwapTime()
     {
         return _currentProfile != null ? Mathf.Max(0f, _currentProfile.ModelSwapTime) : 0f;
+    }
+
+    private float GetWhiteFlashTriggerTime()
+    {
+        return Mathf.Max(0f, GetModelSwapTime() - Mathf.Max(0f, _whiteFlashLeadTime));
     }
 
     private float GetEvolutionSfxTriggerTime()
     {
         float swapTime = _currentProfile != null ? _currentProfile.ModelSwapTime : 0f;
         return Mathf.Max(0f, swapTime - _evolutionSfxLeadTime);
+    }
+
+    private IEnumerator PlayWhiteFlashAtTimelineTime(float triggerTime)
+    {
+        while (IsPlaying && !_whiteFlashPlayed && _director != null && _director.playableAsset != null && _director.time < triggerTime)
+            yield return null;
+
+        if (IsPlaying && !_whiteFlashPlayed)
+            Timeline_PlayWhiteFlash();
+
+        _whiteFlashFallbackRoutine = null;
     }
 
     private IEnumerator NotifyEvolvedModelShownAtTimelineTime(float triggerTime)
