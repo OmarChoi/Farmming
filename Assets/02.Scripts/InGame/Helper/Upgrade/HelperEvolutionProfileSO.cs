@@ -52,6 +52,11 @@ public class HelperEvolutionProfileSO : ScriptableObject
     public float FinalFrontYawOffset = 0f;
     public float FinalRotationExtraTurns;
 
+    [Header("Energy Rise Textures")]
+    public Cubemap EnergyRiseGalaxyTexture;
+    public Cubemap EnergyRiseStarsTexture;
+    public Cubemap EnergyRiseStarsNoiseTexture;
+
     [Header("Before Energy Rise")]
     public Material BeforeEnergyRiseSourceMaterial;
     public float BeforeEnergyRiseStartDelay = 1f;

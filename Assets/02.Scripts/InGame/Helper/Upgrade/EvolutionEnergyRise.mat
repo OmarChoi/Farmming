@@ -22,20 +22,51 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _GalaxyTexture:
+        m_Texture: {fileID: 8900000, guid: b8dd52c568b8d7c4185c2d99211aeb3c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _StarsNoiseTexture:
+        m_Texture: {fileID: 8900000, guid: f2bbac601853a524a995b66c86206431, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _StarsTexture:
+        m_Texture: {fileID: 8900000, guid: 1988517c124b9b840a906ef03cca20d0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _MinY: 0
-    - _MaxY: 1
-    - _Progress: 0
     - _BandWidth: 0.35
+    - _EffectStrength: 1
     - _FillAlpha: 0.45
+    - _FresnelBias: 0
+    - _FresnelEmissionIntensity: 0.1
+    - _FresnelPower: 0.1
+    - _FresnelScale: 1
+    - _GalaxyBaseColorIntensity: 0
+    - _GalaxyEmissionIntensity: 1
     - _GlowAlpha: 0.85
+    - _MaxY: 1
+    - _MinY: 0
     - _OutlineWidth: 0.045
+    - _Progress: 0
     - _RainbowSpeed: 0.25
     - _RainbowStrength: 1
+    - _RevealMode: 0
+    - _StarsEmissionIntensity: 100
+    - _StarsNoiseTileOverall: 1
+    - _StarsTileOverall: 7
     - _SurfaceOffset: 0.018
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _FresnelColor: {r: 0, g: 0.69, b: 1, a: 0}
+    - _GalaxyTint: {r: 0.6, g: 0.43999997, b: 1, a: 0}
+    - _StarsColor01: {r: 0, g: 0.94, b: 1, a: 0}
+    - _StarsColor02: {r: 1, g: 1, b: 1, a: 0}
+    - _StarsNoiseSpeed: {r: 0.1, g: 0.03, b: 0, a: 0}
+    - _StarsNoiseTile: {r: 1, g: 1, b: 0, a: 0}
+    - _StarsSpeed: {r: -0.03, g: -0.02, b: 0, a: 0}
+    - _StarsTile: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
