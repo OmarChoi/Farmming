@@ -275,6 +275,21 @@ public class EvolutionManager : MonoBehaviour
 
     public void Timeline_PlayEvolvedIdle() => PlayIdle(_afterInstance);
 
+    private void EnsureInitialTimelineModelVisibility()
+    {
+        SetRoot(_beforeModelRoot, true);
+        SetRoot(_afterModelRoot, false);
+
+        if (_beforeInstance != null)
+        {
+            _beforeInstance.SetActive(true);
+            PlayIdle(_beforeInstance);
+        }
+
+        if (_afterInstance != null)
+            _afterInstance.SetActive(false);
+    }
+
     private IEnumerator StartEvolutionCutscene()
     {
         // 1. 은하수 페이드 인 (게임 화면 가림)
@@ -299,6 +314,7 @@ public class EvolutionManager : MonoBehaviour
             _director.stopped += OnDirectorStopped;
             _director.time = 0d;
             _director.Evaluate();
+            EnsureInitialTimelineModelVisibility();
             _director.Play();
             StartEvolutionSfxTrigger();
             StartEvolvedModelShownFallbackTrigger();
@@ -429,7 +445,16 @@ public class EvolutionManager : MonoBehaviour
         while (IsPlaying && _director != null && _director.playableAsset != null && _director.time < triggerTime)
             yield return null;
 
-        NotifyEvolvedModelShown();
+        if (IsPlaying && _afterInstance != null &&
+            (_afterModelRoot == null || !_afterModelRoot.gameObject.activeInHierarchy || !_afterInstance.activeSelf))
+        {
+            Timeline_SwapToEvolvedModel();
+        }
+        else
+        {
+            NotifyEvolvedModelShown();
+        }
+
         _evolvedModelShownRoutine = null;
     }
 
