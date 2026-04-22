@@ -45,26 +45,29 @@ MonoBehaviour:
   FinalRotationAlignDuration: 2
   FinalFrontYawOffset: 180
   FinalRotationExtraTurns: 0
-  BeforeEnergyRiseSourceMaterial: {fileID: 2100000, guid: cc14c327fbd45b44d804d4304f949f8a, type: 2}
+  EnergyRiseGalaxyTexture: {fileID: 8900000, guid: e7673ad71a048f24c9fa5db0ba2adaa0, type: 3}
+  EnergyRiseStarsTexture: {fileID: 8900000, guid: b8dd52c568b8d7c4185c2d99211aeb3c, type: 3}
+  EnergyRiseStarsNoiseTexture: {fileID: 8900000, guid: ecd814ff6d20aa5488eee46181eba549, type: 3}
+  BeforeEnergyRiseSourceMaterial: {fileID: 2100000, guid: 4d8ea741d9bb4bb4a94e3fe3610da7f7, type: 2}
   BeforeEnergyRiseStartDelay: 1
   BeforeEnergyRiseDuration: 3.45
-  BeforeEnergyRiseColor: {r: 1, g: 1, b: 1, a: 1}
+  BeforeEnergyRiseColor: {r: 0, g: 0, b: 0, a: 1}
   BeforeEnergyRiseBandWidth: 0.22
   BeforeEnergyRiseFillAlpha: 1
-  BeforeEnergyRiseGlowAlpha: 0.65
-  BeforeEnergyRiseEffectStrength: 1
+  BeforeEnergyRiseGlowAlpha: 0.4
+  BeforeEnergyRiseEffectStrength: 0.9
   BeforeEnergyRiseOutlineWidth: 0.01
   BeforeEnergyRiseVerticalPadding: 0.1
   BeforeEnergyRiseRainbowStrength: 1
   BeforeEnergyRiseRainbowSpeed: 0.3
   BeforeEnergyRiseSurfaceOffset: 0.025
-  AfterEnergyClearSourceMaterial: {fileID: 2100000, guid: cc14c327fbd45b44d804d4304f949f8a, type: 2}
+  AfterEnergyClearSourceMaterial: {fileID: 2100000, guid: 4d8ea741d9bb4bb4a94e3fe3610da7f7, type: 2}
   AfterEnergyClearStartOffset: 0
   AfterEnergyClearEndOffset: 0
   AfterEnergyClearBandWidth: 0.22
   AfterEnergyClearFillAlpha: 1
-  AfterEnergyClearGlowAlpha: 0.65
-  AfterEnergyClearEffectStrength: 1
+  AfterEnergyClearGlowAlpha: 0.4
+  AfterEnergyClearEffectStrength: 0.9
   AfterEnergyClearOutlineWidth: 0.01
   AfterEnergyClearVerticalPadding: 0.1
   AfterEnergyClearSurfaceOffset: 0.025
