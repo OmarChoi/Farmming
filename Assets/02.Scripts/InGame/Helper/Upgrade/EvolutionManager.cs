@@ -283,7 +283,7 @@ public class EvolutionManager : MonoBehaviour
         if (_beforeInstance != null)
         {
             _beforeInstance.SetActive(true);
-            PlayIdle(_beforeInstance);
+            PlayHappy(_beforeInstance);
         }
 
         if (_afterInstance != null)
@@ -1280,12 +1280,22 @@ public class EvolutionManager : MonoBehaviour
 
     private static void PlayIdle(GameObject target)
     {
+        PlayHelperAnimation(target, EHelperAnim.Idle);
+    }
+
+    private static void PlayHappy(GameObject target)
+    {
+        PlayHelperAnimation(target, EHelperAnim.Happy);
+    }
+
+    private static void PlayHelperAnimation(GameObject target, EHelperAnim animation)
+    {
         if (target == null) return;
 
         Animator animator = target.GetComponentInChildren<Animator>(true);
         if (animator == null) return;
         PrepareAnimator(animator);
-        animator.SetInteger(AnimHash, (int)EHelperAnim.Idle);
+        animator.SetInteger(AnimHash, (int)animation);
         animator.Update(0f);
     }
 
