@@ -1,8 +1,9 @@
-using System;
 using Cysharp.Threading.Tasks;
 using ExitGames.Client.Photon;
 using Photon.Pun;
+using System;
 using UnityEngine;
+using static TutorialManager;
 
 public class GameSceneInit : MonoBehaviour
 {
@@ -76,6 +77,8 @@ public class GameSceneInit : MonoBehaviour
         // 던전 복귀 시 캐시에서 마을 복원
         if (ReturningFromDungeon)
         {
+            TutorialAutoInteractGate.SuppressOnceAfterDungeonReturn = true;
+
             if (VillageCache.HasCache)
             {
                 _mapManager.ImportVillageSaveData(VillageCache.Terrain);
@@ -284,6 +287,8 @@ public class GameSceneInit : MonoBehaviour
 
         if (returning && VillageCache.HasCache)
         {
+            TutorialAutoInteractGate.SuppressOnceAfterDungeonReturn = true;
+
             if (MapSyncManager.Instance != null)
                 MapSyncManager.Instance.HoldRequests();
 
