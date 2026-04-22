@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "GatheringObject", menuName = "Gathering/GatheringObjectSO")]
@@ -8,7 +9,7 @@ public class GatheringObjectSO : ScriptableObject
     {
         [SerializeField] private DropEntry[] _drops;
 
-        public DropEntry[] Drops => _drops;
+        public DropEntry[] Drops => _drops ?? Array.Empty<DropEntry>();
         public bool HasDrops => _drops != null && _drops.Length > 0;
     }
 
@@ -37,7 +38,7 @@ public class GatheringObjectSO : ScriptableObject
         if (_modelPrefabs == null || _modelPrefabs.Length == 0)
             return null;
 
-        return _modelPrefabs[Random.Range(0, _modelPrefabs.Length)];
+        return _modelPrefabs[UnityEngine.Random.Range(0, _modelPrefabs.Length)];
     }
 
     public GameObject GetModelByIndex(int index)
@@ -49,9 +50,9 @@ public class GatheringObjectSO : ScriptableObject
     }
 
     public int ModelCount => _modelPrefabs != null ? _modelPrefabs.Length : 0;
-    public DropEntry[] Drops => _drops;
+    public DropEntry[] Drops => _drops ?? Array.Empty<DropEntry>();
 
-    public DropEntry[] GetDropsForModelIndex(int index)
+    public DropEntry[] GetModelOverrideDropsForIndex(int index)
     {
         if (_modelDropOverrides != null
             && index >= 0
@@ -61,6 +62,13 @@ public class GatheringObjectSO : ScriptableObject
             return _modelDropOverrides[index].Drops;
         }
 
-        return _drops;
+        return Array.Empty<DropEntry>();
+    }
+
+    public DropEntry[] GetDropsForModelIndex(int index)
+    {
+        DropEntry[] modelDrops = GetModelOverrideDropsForIndex(index);
+
+        return modelDrops.Length > 0 ? modelDrops : Drops;
     }
 }
