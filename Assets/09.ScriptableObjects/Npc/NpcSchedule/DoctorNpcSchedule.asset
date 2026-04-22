@@ -18,6 +18,7 @@ MonoBehaviour:
       _minute: 0
     NpcLocationType: 0
     LocationKey: 
+    InteractionRule: 2
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -27,6 +28,7 @@ MonoBehaviour:
       _minute: 4
     NpcLocationType: 2
     LocationKey: Doctor_Wandering1
+    InteractionRule: 1
     WanderingDirection: {x: 1, y: 0, z: 0}
     WanderingDistance: 14
     WanderingRadius: 4
@@ -36,6 +38,7 @@ MonoBehaviour:
       _minute: 6
     NpcLocationType: 6
     LocationKey: 
+    InteractionRule: 1
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -45,6 +48,7 @@ MonoBehaviour:
       _minute: 6
     NpcLocationType: 2
     LocationKey: Doctor_Wandering2
+    InteractionRule: 1
     WanderingDirection: {x: -1, y: 0, z: -1}
     WanderingDistance: 24
     WanderingRadius: 8
@@ -54,6 +58,7 @@ MonoBehaviour:
       _minute: 4
     NpcLocationType: 2
     LocationKey: Doctor_Wandering3
+    InteractionRule: 1
     WanderingDirection: {x: 1, y: 0, z: 0}
     WanderingDistance: 18
     WanderingRadius: 8
@@ -63,6 +68,7 @@ MonoBehaviour:
       _minute: 24
     NpcLocationType: 0
     LocationKey: 
+    InteractionRule: 2
     WanderingDirection: {x: 0, y: 0, z: -1}
     WanderingDistance: 24
     WanderingRadius: 4

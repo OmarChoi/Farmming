@@ -42,4 +42,21 @@ public class NpcInteractionComponent : MonoBehaviour, IInteraction
         _playerInteraction = null;
         _playerController = null;
     }
+
+    public void ForceEndInteraction()
+    {
+        _playerController?.SetCursorLock(true);
+
+        _dialogueController?.Close();
+        _npcController?.ForceEndInteraction();
+        _playerInteraction?.EndInteraction();
+
+        _playerInteraction = null;
+        _playerController = null;
+    }
+
+    public bool CanShowPrompt()
+    {
+        return _npcController != null && _npcController.IsInteractionAvailableNow();
+    }
 }

@@ -151,6 +151,11 @@ public class NpcController : MonoBehaviour
             return false;
         }
 
+        if (!IsInteractionAvailableNow())
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -226,6 +231,37 @@ public class NpcController : MonoBehaviour
         _isInteracting = false;
         _currentInteractor = null;
 
+        if (_npcSchedule != null && _currentScheduleIndex < _npcSchedule.ScheduleEntries.Count)
+        {
+            ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
+        }
+    }
+
+    // 필요 시 강제로 대화를 종료합니다.
+    public void ForceEndInteraction()
+    {
+        _isInteracting = false;
+        _currentInteractor = null;
+
+        if (!IsMine && !IsLocalOnly)
+        {
+            PhotonView.RPC(nameof(RPC_ForceEndInteraction), RpcTarget.MasterClient);
+            return;
+        }
+
+        ResumeScheduleAfterForceEnd();
+    }
+
+    [PunRPC]
+    private void RPC_ForceEndInteraction()
+    {
+        _isInteracting = false;
+        _currentInteractor = null;
+        ResumeScheduleAfterForceEnd();
+    }
+
+    private void ResumeScheduleAfterForceEnd()
+    {
         if (_npcSchedule != null && _currentScheduleIndex < _npcSchedule.ScheduleEntries.Count)
         {
             ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
@@ -444,5 +480,74 @@ public class NpcController : MonoBehaviour
         _runtimeInteractionOptions.CopyTo(_interactionOptionCache, serializedCount);
 
         return _interactionOptionCache;
+    }
+
+    // 상호작용이 가능한 지 판단하는 메서드입니다.
+    public bool IsInteractionAvailableNow()
+    {
+        if (_npcData == null) return false;
+
+        NpcScheduleEntry currentEntry = GetCurrentScheduleEntry(TimeEvents.CurrentTime);
+        if (currentEntry != null)
+        {
+            switch (currentEntry.InteractionRule)
+            {
+                case ENpcInteractionRule.Allow:
+                    return true;
+
+                case ENpcInteractionRule.Block:
+                    return false;
+
+                case ENpcInteractionRule.UseDefault:
+                    break;
+            }
+        }
+
+        return IsWithinDefaultInteractionTime(TimeEvents.CurrentTime);
+    }
+
+    private NpcScheduleEntry GetCurrentScheduleEntry(GameTime currentTime)
+    {
+        if (_npcSchedule == null || _npcSchedule.ScheduleEntries == null || _npcSchedule.ScheduleEntries.Count == 0) return null;
+
+        NpcScheduleEntry currentEntry = null;
+
+        for (int i = 0; i < _npcSchedule.ScheduleEntries.Count; i++)
+        {
+            NpcScheduleEntry entry = _npcSchedule.ScheduleEntries[i];
+            int scheduleMinutes = entry.ScheduleTime.TotalMinutes + _timeOffset;
+
+            if (currentTime.TotalMinutes >= scheduleMinutes)
+            {
+                currentEntry = entry;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return currentEntry;
+    }
+
+    private bool IsWithinDefaultInteractionTime(GameTime currentTime)
+    {
+        if (_npcData == null || !_npcData.UseInteractionTimeRange) return true;
+
+        int currentMinutes = currentTime.TotalMinutes;
+        int startMinutes = _npcData.InteractionStartTime.TotalMinutes;
+        int endMinutes = _npcData.InteractionEndTime.TotalMinutes;
+
+        // 시작과 끝이 같으면 하루 종일 허용으로 봅니다.
+        if (startMinutes == endMinutes) return true;
+
+        // 일반 구간: 예) 08:00 ~ 22:00
+        if (startMinutes < endMinutes)
+        {
+            return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+        }
+
+        // 자정 넘김 구간: 예) 20:00 ~ 06:00
+        return currentMinutes >= startMinutes || currentMinutes < endMinutes;
     }
 }

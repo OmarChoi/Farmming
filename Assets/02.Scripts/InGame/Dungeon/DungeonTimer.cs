@@ -1,8 +1,9 @@
-using System;
 using ExitGames.Client.Photon;
 using Photon.Pun;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static TutorialManager;
 
 public class DungeonTimer : MonoBehaviourPunCallbacks
 {

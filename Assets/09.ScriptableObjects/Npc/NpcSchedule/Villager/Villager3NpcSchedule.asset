@@ -18,6 +18,7 @@ MonoBehaviour:
       _minute: 0
     NpcLocationType: 0
     LocationKey: Inside
+    InteractionRule: 2
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -27,6 +28,7 @@ MonoBehaviour:
       _minute: 0
     NpcLocationType: 0
     LocationKey: Outside
+    InteractionRule: 0
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -36,6 +38,7 @@ MonoBehaviour:
       _minute: 0
     NpcLocationType: 0
     LocationKey: Inside
+    InteractionRule: 2
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -45,6 +48,7 @@ MonoBehaviour:
       _minute: 0
     NpcLocationType: 2
     LocationKey: Villager3_Wandering1
+    InteractionRule: 0
     WanderingDirection: {x: 0.2, y: 0, z: 0.2}
     WanderingDistance: 8
     WanderingRadius: 4
@@ -54,6 +58,7 @@ MonoBehaviour:
       _minute: 10
     NpcLocationType: 0
     LocationKey: Outside
+    InteractionRule: 0
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
@@ -63,6 +68,7 @@ MonoBehaviour:
       _minute: 0
     NpcLocationType: 0
     LocationKey: Inside
+    InteractionRule: 2
     WanderingDirection: {x: 0, y: 0, z: 0}
     WanderingDistance: 0
     WanderingRadius: 0
