@@ -95,6 +95,9 @@ public class EvolutionManager : MonoBehaviour
     private bool _wasOverlayEnabled;
     private bool _wasStacked;
     private int _previousPriority;
+    private bool _hasBaseCameraCullingMaskCache;
+    private int _cachedBaseCameraCullingMask;
+    private Camera _cachedBaseCameraForCullingMask;
     private float _currentSpinSpeed;
     private Coroutine _spinRoutine;
     private Coroutine _whiteFlashRoutine;
@@ -504,6 +507,8 @@ public class EvolutionManager : MonoBehaviour
 
         if (_baseCamera != null)
         {
+            IncludeFocusLayerInBaseCameraCullingMask(_baseCamera);
+
             UniversalAdditionalCameraData baseData = _baseCamera.GetUniversalAdditionalCameraData();
             UniversalAdditionalCameraData overlayData = _evolutionOverlayCamera.GetUniversalAdditionalCameraData();
             if (overlayData != null)
@@ -552,6 +557,7 @@ public class EvolutionManager : MonoBehaviour
     private void DisableEvolutionCamera()
     {
         DisableEvolutionLighting();
+        RestoreBaseCameraCullingMask();
 
         if (_evolutionOverlayCamera != null)
         {
@@ -570,6 +576,32 @@ public class EvolutionManager : MonoBehaviour
             _evolutionCinemachine.Follow = null;
             _evolutionCinemachine.LookAt = null;
         }
+    }
+
+    private void IncludeFocusLayerInBaseCameraCullingMask(Camera baseCamera)
+    {
+        int focusLayer = FocusLayer;
+        if (baseCamera == null || focusLayer < 0)
+            return;
+
+        if (!_hasBaseCameraCullingMaskCache || _cachedBaseCameraForCullingMask != baseCamera)
+        {
+            _cachedBaseCameraForCullingMask = baseCamera;
+            _cachedBaseCameraCullingMask = baseCamera.cullingMask;
+            _hasBaseCameraCullingMaskCache = true;
+        }
+
+        baseCamera.cullingMask |= 1 << focusLayer;
+    }
+
+    private void RestoreBaseCameraCullingMask()
+    {
+        if (!_hasBaseCameraCullingMaskCache || _cachedBaseCameraForCullingMask == null)
+            return;
+
+        _cachedBaseCameraForCullingMask.cullingMask = _cachedBaseCameraCullingMask;
+        _cachedBaseCameraForCullingMask = null;
+        _hasBaseCameraCullingMaskCache = false;
     }
 
     private void EnableEvolutionLighting()
