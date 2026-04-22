@@ -38,16 +38,10 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
     private static readonly int GalaxyEmissionIntensityId = Shader.PropertyToID("_GalaxyEmissionIntensity");
     private static readonly int GalaxyBaseColorIntensityId = Shader.PropertyToID("_GalaxyBaseColorIntensity");
     private static readonly int StarsTextureId = Shader.PropertyToID("_StarsTexture");
-    private static readonly int StarsTileId = Shader.PropertyToID("_StarsTile");
-    private static readonly int StarsTileOverallId = Shader.PropertyToID("_StarsTileOverall");
-    private static readonly int StarsSpeedId = Shader.PropertyToID("_StarsSpeed");
     private static readonly int StarsColor01Id = Shader.PropertyToID("_StarsColor01");
     private static readonly int StarsColor02Id = Shader.PropertyToID("_StarsColor02");
     private static readonly int StarsEmissionIntensityId = Shader.PropertyToID("_StarsEmissionIntensity");
     private static readonly int StarsNoiseTextureId = Shader.PropertyToID("_StarsNoiseTexture");
-    private static readonly int StarsNoiseTileId = Shader.PropertyToID("_StarsNoiseTile");
-    private static readonly int StarsNoiseTileOverallId = Shader.PropertyToID("_StarsNoiseTileOverall");
-    private static readonly int StarsNoiseSpeedId = Shader.PropertyToID("_StarsNoiseSpeed");
     private static readonly int FresnelColorId = Shader.PropertyToID("_FresnelColor");
     private static readonly int FresnelEmissionIntensityId = Shader.PropertyToID("_FresnelEmissionIntensity");
     private static readonly int FresnelBiasId = Shader.PropertyToID("_FresnelBias");
@@ -319,7 +313,7 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
         overlay.layer = overlayState.Root != null ? overlayState.Root.gameObject.layer : source.gameObject.layer;
 
         Material materialInstance = new Material(_energyRiseMaterial);
-        CopyGalaxyMaterialProperties(materialInstance, sourceMaterial);
+        CopyGalaxyMaterialProperties(materialInstance, sourceMaterial, _profile);
         InitializeHiddenMaterial(materialInstance);
 
         if (source is SkinnedMeshRenderer sourceSkinned)
@@ -406,28 +400,22 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
         SetFloatIfPresent(material, EffectStrengthId, 0f);
     }
 
-    private static void CopyGalaxyMaterialProperties(Material target, Material source)
+    private static void CopyGalaxyMaterialProperties(Material target, Material source, HelperEvolutionProfileSO profile)
     {
-        if (target == null || source == null)
+        if (target == null || source == null || profile == null)
             return;
 
-        CopyTexture(source, target, GalaxyTextureId);
+        ApplyTexture(target, GalaxyTextureId, profile.EnergyRiseGalaxyTexture);
         CopyColor(source, target, GalaxyTintId);
         CopyFloat(source, target, GalaxyEmissionIntensityId);
         CopyFloat(source, target, GalaxyBaseColorIntensityId);
 
-        CopyTexture(source, target, StarsTextureId);
-        CopyVector(source, target, StarsTileId);
-        CopyFloat(source, target, StarsTileOverallId);
-        CopyVector(source, target, StarsSpeedId);
+        ApplyTexture(target, StarsTextureId, profile.EnergyRiseStarsTexture);
         CopyColor(source, target, StarsColor01Id);
         CopyColor(source, target, StarsColor02Id);
         CopyFloat(source, target, StarsEmissionIntensityId);
 
-        CopyTexture(source, target, StarsNoiseTextureId);
-        CopyVector(source, target, StarsNoiseTileId);
-        CopyFloat(source, target, StarsNoiseTileOverallId);
-        CopyVector(source, target, StarsNoiseSpeedId);
+        ApplyTexture(target, StarsNoiseTextureId, profile.EnergyRiseStarsNoiseTexture);
 
         CopyColor(source, target, FresnelColorId);
         CopyFloat(source, target, FresnelEmissionIntensityId);
@@ -436,10 +424,10 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
         CopyFloat(source, target, FresnelPowerId);
     }
 
-    private static void CopyTexture(Material source, Material target, int propertyId)
+    private static void ApplyTexture(Material target, int propertyId, Texture texture)
     {
-        if (source.HasProperty(propertyId) && target.HasProperty(propertyId))
-            target.SetTexture(propertyId, source.GetTexture(propertyId));
+        if (texture != null && target.HasProperty(propertyId))
+            target.SetTexture(propertyId, texture);
     }
 
     private static void CopyColor(Material source, Material target, int propertyId)

@@ -23,19 +23,13 @@ Shader "Farmming/EvolutionEnergyRise"
         _GalaxyTint ("Galaxy Tint", Color) = (0.6, 0.44, 1, 0)
 
         [Header(Stars)]
-        _StarsTexture ("Stars Texture", 2D) = "white" {}
-        _StarsTile ("Stars Tile", Vector) = (1, 1, 0, 0)
-        _StarsTileOverall ("Stars Tile Overall", Float) = 7
-        _StarsSpeed ("Stars Speed", Vector) = (-0.03, -0.02, 0, 0)
+        _StarsTexture ("Stars Texture", CUBE) = "white" {}
         _StarsColor01 ("Stars Color 01", Color) = (0, 0.94, 1, 0)
         _StarsColor02 ("Stars Color 02", Color) = (1, 1, 1, 0)
         _StarsEmissionIntensity ("Stars Emission Intensity", Float) = 100
 
         [Header(Stars Noise)]
-        _StarsNoiseTexture ("Stars Noise Texture", 2D) = "black" {}
-        _StarsNoiseTile ("Stars Noise Tile", Vector) = (1, 1, 0, 0)
-        _StarsNoiseTileOverall ("Stars Noise Tile Overall", Float) = 1
-        _StarsNoiseSpeed ("Stars Noise Speed", Vector) = (0.1, 0.03, 0, 0)
+        _StarsNoiseTexture ("Stars Noise Texture", CUBE) = "black" {}
 
         [Header(Fresnel)]
         _FresnelColor ("Fresnel Color", Color) = (0, 0.69, 1, 0)
@@ -70,9 +64,9 @@ Shader "Farmming/EvolutionEnergyRise"
 
             TEXTURECUBE(_GalaxyTexture);
             SAMPLER(sampler_GalaxyTexture);
-            TEXTURE2D(_StarsTexture);
+            TEXTURECUBE(_StarsTexture);
             SAMPLER(sampler_StarsTexture);
-            TEXTURE2D(_StarsNoiseTexture);
+            TEXTURECUBE(_StarsNoiseTexture);
             SAMPLER(sampler_StarsNoiseTexture);
 
             CBUFFER_START(UnityPerMaterial)
@@ -92,15 +86,9 @@ Shader "Farmming/EvolutionEnergyRise"
                 float _GalaxyEmissionIntensity;
                 float _GalaxyBaseColorIntensity;
                 half4 _GalaxyTint;
-                float4 _StarsTile;
-                float _StarsTileOverall;
-                float4 _StarsSpeed;
                 half4 _StarsColor01;
                 half4 _StarsColor02;
                 float _StarsEmissionIntensity;
-                float4 _StarsNoiseTile;
-                float _StarsNoiseTileOverall;
-                float4 _StarsNoiseSpeed;
                 half4 _FresnelColor;
                 float _FresnelEmissionIntensity;
                 float _FresnelBias;
@@ -169,10 +157,8 @@ Shader "Farmming/EvolutionEnergyRise"
                 galaxy *= lerp(half3(1.0h, 1.0h, 1.0h), _GalaxyTint.rgb, 0.65h);
                 galaxy *= max(0.0, _GalaxyEmissionIntensity + _GalaxyBaseColorIntensity);
 
-                float2 starsUv = input.uv * _StarsTile.xy * max(0.0001, _StarsTileOverall) + _Time.y * _StarsSpeed.xy;
-                float2 noiseUv = input.uv * _StarsNoiseTile.xy * max(0.0001, _StarsNoiseTileOverall) + _Time.y * _StarsNoiseSpeed.xy;
-                half star = SAMPLE_TEXTURE2D(_StarsTexture, sampler_StarsTexture, starsUv).r;
-                half noise = SAMPLE_TEXTURE2D(_StarsNoiseTexture, sampler_StarsNoiseTexture, noiseUv).r;
+                half star = SAMPLE_TEXTURECUBE(_StarsTexture, sampler_StarsTexture, reflectionDir).r;
+                half noise = SAMPLE_TEXTURECUBE(_StarsNoiseTexture, sampler_StarsNoiseTexture, reflectionDir).r;
                 half3 starColor = lerp(_StarsColor01.rgb, _StarsColor02.rgb, noise);
                 half3 stars = starColor * saturate(star * (0.35h + noise * 1.25h)) * (_StarsEmissionIntensity * 0.01h);
 
