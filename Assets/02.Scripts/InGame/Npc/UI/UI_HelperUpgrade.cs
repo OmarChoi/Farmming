@@ -406,6 +406,9 @@ public class UI_HelperUpgrade : MonoBehaviour
     {
         if (_selectedIndex < 0 || _selectedIndex >= _currentHelpers.Count) return;
 
+        if (_upgradeButton != null)
+            _upgradeButton.interactable = false;
+
         OnUpgradeRequested?.Invoke(_currentHelpers[_selectedIndex]);
     }
 
