@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e83d8a57de1fda54baf0c16b6c9c0d7a
+guid: 3ac01b30c53a05b4794a39043beba349
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: DayNightBackground_0
+      name: "\uBB3C\uC57D_0"
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1456
-        height: 734
+        x: 16
+        y: 330
+        width: 354
+        height: 354
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +125,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5cdc702dafe6a504e9cb840ab35516ea
-      internalID: 1591471126
+      spriteID: 73f89143dfbc61844b4ad5e13e2f50f3
+      internalID: -86690335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uBB3C\uC57D_1"
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 331
+        width: 344
+        height: 344
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 15b54ec99d8214f41aa032ad043fe294
+      internalID: -1464314351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uBB3C\uC57D_2"
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 327
+        width: 364
+        height: 364
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d5eb22371fbd4849a2b70d528c505b0
+      internalID: 711566080
       vertices: []
       indices: 
       edges: []
@@ -135,7 +179,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 457db935850abb44884db5321611b22b
+    spriteID: 326d85a4e906ab1498972c689e3fb420
     internalID: 0
     vertices: []
     indices: 
@@ -147,7 +191,9 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      DayNightBackground_0: 1591471126
+      "\uBB3C\uC57D_0": -86690335
+      "\uBB3C\uC57D_1": -1464314351
+      "\uBB3C\uC57D_2": 711566080
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

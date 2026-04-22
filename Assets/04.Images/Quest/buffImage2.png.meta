@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e83d8a57de1fda54baf0c16b6c9c0d7a
+guid: 74ebdb27a8f1dd7489b3d9f0725b9962
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -106,17 +106,30 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: DayNightBackground_0
+      name: BuffIcon
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1456
-        height: 734
+        x: 129
+        y: 215
+        width: 596
+        height: 530
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +138,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5cdc702dafe6a504e9cb840ab35516ea
-      internalID: 1591471126
+      spriteID: 03fa91371add7e748b7e233eeb7ff5af
+      internalID: -1871281825
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DebuffIcon
+      rect:
+        serializedVersion: 2
+        x: 810
+        y: 215
+        width: 656
+        height: 530
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2cb1c79d007f5744ac3fe9b74429df4
+      internalID: 2017217976
       vertices: []
       indices: 
       edges: []
@@ -135,7 +170,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 457db935850abb44884db5321611b22b
+    spriteID: 8041de597615b9d4aa91ca14a2f36fdf
     internalID: 0
     vertices: []
     indices: 
@@ -147,7 +182,10 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      DayNightBackground_0: 1591471126
+      BuffIcon: -1871281825
+      DebuffIcon: 2017217976
+      buffImage_2: 947918986
+      buffImage_3: -682063747
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

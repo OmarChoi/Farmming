@@ -110,7 +110,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0.19999695, y: 3}
-  m_SizeDelta: {x: 85, y: 85}
+  m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6428629290599499011
 CanvasRenderer:
@@ -140,7 +140,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -951350018, guid: f17511135de3b1c4ca0463740b510d40, type: 3}
+  m_Sprite: {fileID: 925341708, guid: 89d95065da938e048b322447a9474189, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -215,7 +215,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a796dcbf7a574f54aa86d4299c997df0, type: 3}
+  m_Sprite: {fileID: 1591471126, guid: e83d8a57de1fda54baf0c16b6c9c0d7a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -250,7 +250,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8782876335895918372}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -291,5 +291,5 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 357cfbe4084808b409b92489eeb7a657, type: 3}
   - {fileID: 21300000, guid: 43bced11243c1884382786201befffbf, type: 3}
   _iconSprites:
-  - {fileID: 709669313, guid: b1712a5d0645e4a4db6a5404474316ab, type: 3}
-  - {fileID: -951350018, guid: f17511135de3b1c4ca0463740b510d40, type: 3}
+  - {fileID: -643840938, guid: 28664531d32cd6e4e854bf04052ecea9, type: 3}
+  - {fileID: 925341708, guid: 89d95065da938e048b322447a9474189, type: 3}
