@@ -249,6 +249,7 @@ public class HelperUpgradeService : MonoBehaviour
         EHelperGrade currentGrade = _helperInventoryAbility.GetHelperGrade(data);
         _isUpgradeInProgress = true;
         _upgradeInProgressData = data;
+        ResolveEvolutionManager();
 
         if (TryPlayEvolutionCutscene(data, currentGrade)) return;
 
@@ -289,11 +290,7 @@ public class HelperUpgradeService : MonoBehaviour
 
         if (_evolutionManager == null)
         {
-            ResolveEvolutionManager();
-            if (_evolutionManager == null)
-            {
-                return false;
-            }
+            return false;
         }
 
         if (_evolutionManager.IsPlaying)
