@@ -133,6 +133,7 @@ public class WorldEffectQuestService : MonoBehaviour
         _state.AcceptedDay = currentDay;
         _state.ExpireDay = currentDay + rule.DurationDays;
         _state.LastTriggerDay = currentDay;
+        UI_UnableActionText.Show("새로운 월드 퀘스트가 발생했습니다.");
     }
 
     private void ApplyExpireEffect(string questId)
