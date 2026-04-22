@@ -42,4 +42,11 @@ MonoBehaviour:
   UseRandomTimeOffset: 0
   MinTimeOffset: 0
   MaxTimeOffset: 0
+  UseInteractionTimeRange: 1
+  InteractionStartTime:
+    _hour: 4
+    _minute: 0
+  InteractionEndTime:
+    _hour: 23
+    _minute: 0
   AutoStartQuestOnInteract: 0
