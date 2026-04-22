@@ -38,16 +38,10 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
     private static readonly int GalaxyEmissionIntensityId = Shader.PropertyToID("_GalaxyEmissionIntensity");
     private static readonly int GalaxyBaseColorIntensityId = Shader.PropertyToID("_GalaxyBaseColorIntensity");
     private static readonly int StarsTextureId = Shader.PropertyToID("_StarsTexture");
-    private static readonly int StarsTileId = Shader.PropertyToID("_StarsTile");
-    private static readonly int StarsTileOverallId = Shader.PropertyToID("_StarsTileOverall");
-    private static readonly int StarsSpeedId = Shader.PropertyToID("_StarsSpeed");
     private static readonly int StarsColor01Id = Shader.PropertyToID("_StarsColor01");
     private static readonly int StarsColor02Id = Shader.PropertyToID("_StarsColor02");
     private static readonly int StarsEmissionIntensityId = Shader.PropertyToID("_StarsEmissionIntensity");
     private static readonly int StarsNoiseTextureId = Shader.PropertyToID("_StarsNoiseTexture");
-    private static readonly int StarsNoiseTileId = Shader.PropertyToID("_StarsNoiseTile");
-    private static readonly int StarsNoiseTileOverallId = Shader.PropertyToID("_StarsNoiseTileOverall");
-    private static readonly int StarsNoiseSpeedId = Shader.PropertyToID("_StarsNoiseSpeed");
     private static readonly int FresnelColorId = Shader.PropertyToID("_FresnelColor");
     private static readonly int FresnelEmissionIntensityId = Shader.PropertyToID("_FresnelEmissionIntensity");
     private static readonly int FresnelBiasId = Shader.PropertyToID("_FresnelBias");
@@ -408,7 +402,7 @@ public class EvolutionTimelineEnergyRiseController : MonoBehaviour
 
     private static void CopyGalaxyMaterialProperties(Material target, Material source, HelperEvolutionProfileSO profile)
     {
-        if (target == null || source == null)
+        if (target == null || source == null || profile == null)
             return;
 
         ApplyTexture(target, GalaxyTextureId, profile.EnergyRiseGalaxyTexture);

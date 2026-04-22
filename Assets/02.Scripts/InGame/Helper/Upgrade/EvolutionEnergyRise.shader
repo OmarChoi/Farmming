@@ -24,18 +24,12 @@ Shader "Farmming/EvolutionEnergyRise"
 
         [Header(Stars)]
         _StarsTexture ("Stars Texture", CUBE) = "white" {}
-        _StarsTile ("Stars Tile", Vector) = (1, 1, 0, 0)
-        _StarsTileOverall ("Stars Tile Overall", Float) = 7
-        _StarsSpeed ("Stars Speed", Vector) = (-0.03, -0.02, 0, 0)
         _StarsColor01 ("Stars Color 01", Color) = (0, 0.94, 1, 0)
         _StarsColor02 ("Stars Color 02", Color) = (1, 1, 1, 0)
         _StarsEmissionIntensity ("Stars Emission Intensity", Float) = 100
 
         [Header(Stars Noise)]
         _StarsNoiseTexture ("Stars Noise Texture", CUBE) = "black" {}
-        _StarsNoiseTile ("Stars Noise Tile", Vector) = (1, 1, 0, 0)
-        _StarsNoiseTileOverall ("Stars Noise Tile Overall", Float) = 1
-        _StarsNoiseSpeed ("Stars Noise Speed", Vector) = (0.1, 0.03, 0, 0)
 
         [Header(Fresnel)]
         _FresnelColor ("Fresnel Color", Color) = (0, 0.69, 1, 0)
