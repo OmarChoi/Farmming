@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e83d8a57de1fda54baf0c16b6c9c0d7a
+guid: 2a130a1254c6b06479de407b8495aa70
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: DayNightBackground_0
+      name: "\uAD11\uC11D_0"
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1456
-        height: 734
+        x: 102
+        y: 1127
+        width: 484
+        height: 484
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +125,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5cdc702dafe6a504e9cb840ab35516ea
-      internalID: 1591471126
+      spriteID: f9d90ac83368fa748aece6b68d59b113
+      internalID: -927110096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uAD11\uC11D_3"
+      rect:
+        serializedVersion: 2
+        x: 1097
+        y: 1106
+        width: 480
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a7e6160b5c633624f98420a0d760099e
+      internalID: -1134220295
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uAD11\uC11D_4"
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 281
+        width: 436
+        height: 436
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 460c0fadae072f34f9ca70d397bad786
+      internalID: -725052196
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uAD11\uC11D_5"
+      rect:
+        serializedVersion: 2
+        x: 1113
+        y: 312
+        width: 420
+        height: 420
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e01534ff39c5c5b4a89d13d7761572da
+      internalID: -1591387384
       vertices: []
       indices: 
       edges: []
@@ -135,7 +201,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 457db935850abb44884db5321611b22b
+    spriteID: 278958a6ed9305f4da424e18de11bd4f
     internalID: 0
     vertices: []
     indices: 
@@ -147,7 +213,12 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      DayNightBackground_0: 1591471126
+      "\uAD11\uC11D_0": -927110096
+      "\uAD11\uC11D_1": -831102415
+      "\uAD11\uC11D_2": 1813219759
+      "\uAD11\uC11D_3": -1134220295
+      "\uAD11\uC11D_4": -725052196
+      "\uAD11\uC11D_5": -1591387384
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

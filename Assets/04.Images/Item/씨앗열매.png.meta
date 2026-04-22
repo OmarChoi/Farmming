@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e83d8a57de1fda54baf0c16b6c9c0d7a
+guid: a024b1f48d839ca46ba0e76216415f7c
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: DayNightBackground_0
+      name: "\uC528\uC557\uC5F4\uB9E4_2"
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1456
-        height: 734
+        x: 2
+        y: 527
+        width: 366
+        height: 366
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +125,96 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5cdc702dafe6a504e9cb840ab35516ea
-      internalID: 1591471126
+      spriteID: 800accd8e0c42d14095047f88dc66076
+      internalID: -9664130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC528\uC557\uC5F4\uB9E4_3"
+      rect:
+        serializedVersion: 2
+        x: 367
+        y: 549
+        width: 309
+        height: 309
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6549bc14fd4eebd4792747d6036ad375
+      internalID: 544969698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC528\uC557\uC5F4\uB9E4_4"
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 114
+        width: 297
+        height: 297
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9ca6bcc634586e4b9c87d3e028eb167
+      internalID: -1455026589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC528\uC557\uC5F4\uB9E4_5"
+      rect:
+        serializedVersion: 2
+        x: 359
+        y: 111
+        width: 315
+        height: 315
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db6c812c541ade649be4320a9c68ab36
+      internalID: -657663912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uC528\uC557\uC5F4\uB9E4_6"
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 106
+        width: 331
+        height: 331
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d8c494f04133cf4aa47eaa37966d7c9
+      internalID: -1854851619
       vertices: []
       indices: 
       edges: []
@@ -135,7 +223,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 457db935850abb44884db5321611b22b
+    spriteID: 0a0510fabea1fe54987f07038edf56e1
     internalID: 0
     vertices: []
     indices: 
@@ -147,7 +235,13 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      DayNightBackground_0: 1591471126
+      "\uC528\uC557\uC5F4\uB9E4_0": -368349561
+      "\uC528\uC557\uC5F4\uB9E4_1": 296179949
+      "\uC528\uC557\uC5F4\uB9E4_2": -9664130
+      "\uC528\uC557\uC5F4\uB9E4_3": 544969698
+      "\uC528\uC557\uC5F4\uB9E4_4": -1455026589
+      "\uC528\uC557\uC5F4\uB9E4_5": -657663912
+      "\uC528\uC557\uC5F4\uB9E4_6": -1854851619
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
