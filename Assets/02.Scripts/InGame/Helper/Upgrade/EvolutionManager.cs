@@ -50,6 +50,7 @@ public class EvolutionManager : MonoBehaviour
     [Header("White Flash")]
     [SerializeField] private CanvasGroup _whiteFlashCanvasGroup;
     [SerializeField] private Color _whiteFlashColor = Color.white;
+    [SerializeField] private float _whiteFlashLeadTime = 0.2f;
     [SerializeField] private float _whiteFlashFadeIn = 0.06f;
     [SerializeField] private float _whiteFlashHold = 0.03f;
     [SerializeField] private float _whiteFlashFadeOut = 0.18f;
@@ -77,6 +78,13 @@ public class EvolutionManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float _cutsceneFogDensity;
     [SerializeField] private Material _cutsceneSkybox;
 
+    [Header("Preview Render Safety")]
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    [SerializeField] private bool _logPreviewRenderDiagnostics = true;
+#endif
+    [SerializeField] private bool _replaceInvalidPreviewMaterials = true;
+    [SerializeField] private Material _previewFallbackMaterial;
+
     public event Action<HelperDataSO> OnEvolutionFinished;
     public bool IsPlaying => _currentData != null;
 
@@ -90,14 +98,19 @@ public class EvolutionManager : MonoBehaviour
     private bool _wasOverlayEnabled;
     private bool _wasStacked;
     private int _previousPriority;
+    private bool _hasBaseCameraCullingMaskCache;
+    private int _cachedBaseCameraCullingMask;
+    private Camera _cachedBaseCameraForCullingMask;
     private float _currentSpinSpeed;
     private Coroutine _spinRoutine;
     private Coroutine _whiteFlashRoutine;
+    private Coroutine _whiteFlashFallbackRoutine;
     private Coroutine _fallbackRoutine;
     private Coroutine _evolutionSfxRoutine;
     private Coroutine _evolvedModelShownRoutine;
     private float _evolutionSfxEndRealtime;
     private bool _evolutionSfxPlayed;
+    private bool _whiteFlashPlayed;
     private bool _evolvedModelShownNotified;
     private bool _hasRenderSettingsCache;
     private AmbientMode _cachedAmbientMode;
@@ -193,6 +206,7 @@ public class EvolutionManager : MonoBehaviour
         _onFinished = onFinished;
         _onEvolvedModelShown = onEvolvedModelShown;
         _evolvedModelShownNotified = false;
+        _whiteFlashPlayed = false;
 
         ApplyProfile(_currentProfile);
 
@@ -206,6 +220,10 @@ public class EvolutionManager : MonoBehaviour
         PreparePreview(_afterInstance, _afterModelRoot, _afterLocalEuler, false);
         SetLayerRecursively(_beforeInstance, FocusLayer);
         SetLayerRecursively(_afterInstance, FocusLayer);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        LogEvolutionPreviewRenderState("Before", _beforeInstance);
+        LogEvolutionPreviewRenderState("After", _afterInstance);
+#endif
 
        // StartEvolutionCutscene 하나만 실행 (내부에서 카메라/스핀/연출 처리)
         StartCoroutine(StartEvolutionCutscene());
@@ -228,12 +246,14 @@ public class EvolutionManager : MonoBehaviour
         if (_spinRoutine != null) StopCoroutine(_spinRoutine);
         if (_evolutionSfxRoutine != null) StopCoroutine(_evolutionSfxRoutine);
         if (_evolvedModelShownRoutine != null) StopCoroutine(_evolvedModelShownRoutine);
+        if (_whiteFlashFallbackRoutine != null) StopCoroutine(_whiteFlashFallbackRoutine);
         if (_timelineCameraController != null) _timelineCameraController.Stop();
         if (_timelineRotationController != null) _timelineRotationController.Stop();
         if (_timelineEnergyRiseController != null) _timelineEnergyRiseController.Stop();
         _spinRoutine = null;
         _evolutionSfxRoutine = null;
         _evolvedModelShownRoutine = null;
+        _whiteFlashFallbackRoutine = null;
         if (_director != null) { _director.stopped -= OnDirectorStopped; _director.Stop(); }
         FinishEvolution(false);
     }
@@ -241,6 +261,10 @@ public class EvolutionManager : MonoBehaviour
     // Timeline Signal에서 호출
     public void Timeline_PlayWhiteFlash()
     {
+        if (_whiteFlashPlayed)
+            return;
+
+        _whiteFlashPlayed = true;
         if (_whiteFlashRoutine != null) StopCoroutine(_whiteFlashRoutine);
         _whiteFlashRoutine = StartCoroutine(WhiteFlash());
     }
@@ -257,6 +281,21 @@ public class EvolutionManager : MonoBehaviour
     }
 
     public void Timeline_PlayEvolvedIdle() => PlayIdle(_afterInstance);
+
+    private void EnsureInitialTimelineModelVisibility()
+    {
+        SetRoot(_beforeModelRoot, true);
+        SetRoot(_afterModelRoot, false);
+
+        if (_beforeInstance != null)
+        {
+            _beforeInstance.SetActive(true);
+            PlayHappy(_beforeInstance);
+        }
+
+        if (_afterInstance != null)
+            _afterInstance.SetActive(false);
+    }
 
     private IEnumerator StartEvolutionCutscene()
     {
@@ -282,8 +321,10 @@ public class EvolutionManager : MonoBehaviour
             _director.stopped += OnDirectorStopped;
             _director.time = 0d;
             _director.Evaluate();
+            EnsureInitialTimelineModelVisibility();
             _director.Play();
             StartEvolutionSfxTrigger();
+            StartWhiteFlashFallbackTrigger();
             StartEvolvedModelShownFallbackTrigger();
         }
         else
@@ -306,6 +347,7 @@ public class EvolutionManager : MonoBehaviour
         if (_timelineRotationController != null) _timelineRotationController.Stop();
         if (_timelineEnergyRiseController != null) _timelineEnergyRiseController.Stop();
         if (_whiteFlashRoutine != null) { StopCoroutine(_whiteFlashRoutine); _whiteFlashRoutine = null; }
+        if (_whiteFlashFallbackRoutine != null) { StopCoroutine(_whiteFlashFallbackRoutine); _whiteFlashFallbackRoutine = null; }
         if (_evolutionSfxRoutine != null) { StopCoroutine(_evolutionSfxRoutine); _evolutionSfxRoutine = null; }
         if (_evolvedModelShownRoutine != null) { StopCoroutine(_evolvedModelShownRoutine); _evolvedModelShownRoutine = null; }
         if (_whiteFlashCanvasGroup != null)
@@ -396,9 +438,22 @@ public class EvolutionManager : MonoBehaviour
         _evolvedModelShownRoutine = StartCoroutine(NotifyEvolvedModelShownAtTimelineTime(GetModelSwapTime()));
     }
 
+    private void StartWhiteFlashFallbackTrigger()
+    {
+        if (_whiteFlashFallbackRoutine != null)
+            StopCoroutine(_whiteFlashFallbackRoutine);
+
+        _whiteFlashFallbackRoutine = StartCoroutine(PlayWhiteFlashAtTimelineTime(GetWhiteFlashTriggerTime()));
+    }
+
     private float GetModelSwapTime()
     {
         return _currentProfile != null ? Mathf.Max(0f, _currentProfile.ModelSwapTime) : 0f;
+    }
+
+    private float GetWhiteFlashTriggerTime()
+    {
+        return Mathf.Max(0f, GetModelSwapTime() - Mathf.Max(0f, _whiteFlashLeadTime));
     }
 
     private float GetEvolutionSfxTriggerTime()
@@ -407,12 +462,32 @@ public class EvolutionManager : MonoBehaviour
         return Mathf.Max(0f, swapTime - _evolutionSfxLeadTime);
     }
 
+    private IEnumerator PlayWhiteFlashAtTimelineTime(float triggerTime)
+    {
+        while (IsPlaying && !_whiteFlashPlayed && _director != null && _director.playableAsset != null && _director.time < triggerTime)
+            yield return null;
+
+        if (IsPlaying && !_whiteFlashPlayed)
+            Timeline_PlayWhiteFlash();
+
+        _whiteFlashFallbackRoutine = null;
+    }
+
     private IEnumerator NotifyEvolvedModelShownAtTimelineTime(float triggerTime)
     {
         while (IsPlaying && _director != null && _director.playableAsset != null && _director.time < triggerTime)
             yield return null;
 
-        NotifyEvolvedModelShown();
+        if (IsPlaying && _afterInstance != null &&
+            (_afterModelRoot == null || !_afterModelRoot.gameObject.activeInHierarchy || !_afterInstance.activeSelf))
+        {
+            Timeline_SwapToEvolvedModel();
+        }
+        else
+        {
+            NotifyEvolvedModelShown();
+        }
+
         _evolvedModelShownRoutine = null;
     }
 
@@ -490,13 +565,39 @@ public class EvolutionManager : MonoBehaviour
 
         if (_baseCamera != null)
         {
+            IncludeFocusLayerInBaseCameraCullingMask(_baseCamera);
+
             UniversalAdditionalCameraData baseData = _baseCamera.GetUniversalAdditionalCameraData();
             UniversalAdditionalCameraData overlayData = _evolutionOverlayCamera.GetUniversalAdditionalCameraData();
-            if (overlayData != null) overlayData.renderType = CameraRenderType.Overlay;
+            if (overlayData != null)
+            {
+                overlayData.renderType = CameraRenderType.Overlay;
+            }
+            else
+            {
+                Debug.LogError("[EvolutionManager] Evolution overlay camera has no UniversalAdditionalCameraData. URP camera stack may not render the evolution models.");
+            }
+
             if (baseData != null)
             {
                 _wasStacked = baseData.cameraStack.Contains(_evolutionOverlayCamera);
                 if (!_wasStacked) baseData.cameraStack.Add(_evolutionOverlayCamera);
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                if (_logPreviewRenderDiagnostics)
+                {
+                    Debug.Log(
+                        $"[EvolutionManager] Evolution camera stack state. " +
+                        $"BaseCamera:{_baseCamera.name}, OverlayCamera:{_evolutionOverlayCamera.name}, " +
+                        $"OverlayType:{(overlayData != null ? overlayData.renderType.ToString() : "MissingURPData")}, " +
+                        $"StackContains:{baseData.cameraStack.Contains(_evolutionOverlayCamera)}, " +
+                        $"OverlayCullingMask:{_evolutionOverlayCamera.cullingMask}, FocusLayer:{FocusLayer}");
+                }
+#endif
+            }
+            else
+            {
+                Debug.LogError("[EvolutionManager] Base camera has no UniversalAdditionalCameraData. Evolution overlay camera cannot be stacked in URP.");
             }
         }
         else
@@ -516,6 +617,7 @@ public class EvolutionManager : MonoBehaviour
     private void DisableEvolutionCamera()
     {
         DisableEvolutionLighting();
+        RestoreBaseCameraCullingMask();
 
         if (_evolutionOverlayCamera != null)
         {
@@ -534,6 +636,32 @@ public class EvolutionManager : MonoBehaviour
             _evolutionCinemachine.Follow = null;
             _evolutionCinemachine.LookAt = null;
         }
+    }
+
+    private void IncludeFocusLayerInBaseCameraCullingMask(Camera baseCamera)
+    {
+        int focusLayer = FocusLayer;
+        if (baseCamera == null || focusLayer < 0)
+            return;
+
+        if (!_hasBaseCameraCullingMaskCache || _cachedBaseCameraForCullingMask != baseCamera)
+        {
+            _cachedBaseCameraForCullingMask = baseCamera;
+            _cachedBaseCameraCullingMask = baseCamera.cullingMask;
+            _hasBaseCameraCullingMaskCache = true;
+        }
+
+        baseCamera.cullingMask |= 1 << focusLayer;
+    }
+
+    private void RestoreBaseCameraCullingMask()
+    {
+        if (!_hasBaseCameraCullingMaskCache || _cachedBaseCameraForCullingMask == null)
+            return;
+
+        _cachedBaseCameraForCullingMask.cullingMask = _cachedBaseCameraCullingMask;
+        _cachedBaseCameraForCullingMask = null;
+        _hasBaseCameraCullingMaskCache = false;
     }
 
     private void EnableEvolutionLighting()
@@ -931,6 +1059,8 @@ public class EvolutionManager : MonoBehaviour
         foreach (SkinnedMeshRenderer renderer in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             renderer.updateWhenOffscreen = true;
 
+        EnsurePreviewRenderersVisible(root);
+
         foreach (Collider col in root.GetComponentsInChildren<Collider>(true))
             col.enabled = false;
 
@@ -968,6 +1098,138 @@ public class EvolutionManager : MonoBehaviour
 
         return false;
     }
+
+    private void EnsurePreviewRenderersVisible(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
+        {
+            if (renderer == null || IsCutsceneHiddenTransform(renderer.transform))
+                continue;
+
+            renderer.enabled = true;
+            renderer.forceRenderingOff = false;
+            renderer.shadowCastingMode = ShadowCastingMode.On;
+
+            if (renderer is SkinnedMeshRenderer skinnedRenderer)
+                skinnedRenderer.updateWhenOffscreen = true;
+
+            if (_replaceInvalidPreviewMaterials)
+                ReplaceInvalidPreviewMaterials(renderer);
+        }
+    }
+
+    private void ReplaceInvalidPreviewMaterials(Renderer renderer)
+    {
+        if (renderer == null)
+            return;
+
+        Material[] materials = renderer.sharedMaterials;
+        if (materials == null || materials.Length == 0)
+            return;
+
+        bool changed = false;
+        for (int i = 0; i < materials.Length; i++)
+        {
+            if (!IsInvalidPreviewMaterial(materials[i]))
+                continue;
+
+            Material fallback = GetPreviewFallbackMaterial();
+            if (fallback == null)
+                continue;
+
+            materials[i] = fallback;
+            changed = true;
+        }
+
+        if (changed)
+            renderer.sharedMaterials = materials;
+    }
+
+    private static bool IsInvalidPreviewMaterial(Material material)
+    {
+        if (material == null)
+            return true;
+
+        Shader shader = material.shader;
+        if (shader == null || !shader.isSupported)
+            return true;
+
+        return string.Equals(shader.name, "Hidden/InternalErrorShader", StringComparison.Ordinal);
+    }
+
+    private Material GetPreviewFallbackMaterial()
+    {
+        if (_previewFallbackMaterial != null)
+            return _previewFallbackMaterial;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        Debug.LogWarning("[EvolutionManager] Preview fallback material is missing. Invalid preview materials cannot be replaced.");
+#endif
+        return null;
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void LogEvolutionPreviewRenderState(string label, GameObject instance)
+    {
+        if (!_logPreviewRenderDiagnostics)
+            return;
+
+        if (instance == null)
+        {
+            Debug.LogError($"[EvolutionManager] {label} preview instance is null.");
+            return;
+        }
+
+        Renderer[] renderers = instance.GetComponentsInChildren<Renderer>(true);
+        int enabledCount = 0;
+        int focusLayerCount = 0;
+        int invalidMaterialCount = 0;
+        int focusLayer = FocusLayer;
+        int focusMask = focusLayer >= 0 ? 1 << focusLayer : 0;
+
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null || IsCutsceneHiddenTransform(renderer.transform))
+                continue;
+
+            if (renderer.enabled && !renderer.forceRenderingOff)
+                enabledCount++;
+
+            if (focusLayer >= 0 && renderer.gameObject.layer == focusLayer)
+                focusLayerCount++;
+
+            Material[] materials = renderer.sharedMaterials;
+            if (materials == null)
+                continue;
+
+            for (int i = 0; i < materials.Length; i++)
+            {
+                if (IsInvalidPreviewMaterial(materials[i]))
+                    invalidMaterialCount++;
+            }
+        }
+
+        string cameraInfo = _evolutionOverlayCamera == null
+            ? "OverlayCamera:null"
+            : $"OverlayCamera:{_evolutionOverlayCamera.name}, Enabled:{_evolutionOverlayCamera.enabled}, CullingMask:{_evolutionOverlayCamera.cullingMask}, SeesFocus:{(_evolutionOverlayCamera.cullingMask & focusMask) != 0}";
+
+        Debug.Log(
+            $"[EvolutionManager] {label} preview render state. " +
+            $"Instance:{instance.name}, Active:{instance.activeInHierarchy}, " +
+            $"RendererTotal:{renderers.Length}, EnabledRenderable:{enabledCount}, FocusLayerRenderable:{focusLayerCount}, " +
+            $"InvalidMaterials:{invalidMaterialCount}, FocusLayer:{focusLayer}, {cameraInfo}");
+
+        if (renderers.Length == 0 || enabledCount == 0 || focusLayerCount == 0 || invalidMaterialCount > 0)
+        {
+            Debug.LogWarning(
+                $"[EvolutionManager] {label} preview may not render correctly in build. " +
+                $"RendererTotal:{renderers.Length}, EnabledRenderable:{enabledCount}, FocusLayerRenderable:{focusLayerCount}, InvalidMaterials:{invalidMaterialCount}");
+        }
+    }
+#endif
 
     private void CleanupInstances()
     {
@@ -1010,12 +1272,22 @@ public class EvolutionManager : MonoBehaviour
 
     private static void PlayIdle(GameObject target)
     {
+        PlayHelperAnimation(target, EHelperAnim.Idle);
+    }
+
+    private static void PlayHappy(GameObject target)
+    {
+        PlayHelperAnimation(target, EHelperAnim.Happy);
+    }
+
+    private static void PlayHelperAnimation(GameObject target, EHelperAnim animation)
+    {
         if (target == null) return;
 
         Animator animator = target.GetComponentInChildren<Animator>(true);
         if (animator == null) return;
         PrepareAnimator(animator);
-        animator.SetInteger(AnimHash, (int)EHelperAnim.Idle);
+        animator.SetInteger(AnimHash, (int)animation);
         animator.Update(0f);
     }
 

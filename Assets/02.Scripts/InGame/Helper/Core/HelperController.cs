@@ -137,6 +137,8 @@ public class HelperController : MonoBehaviourPunCallbacks
 
     public void Equip(Transform equipSlot, bool isBack = false)
     {
+        GetAbility<HelperSummonVfxAbility>()?.StopScaleTween();
+
         SetTransformSync(false);
         State = EHelperState.Equipped;
         _isBackEquipped = isBack;

@@ -41,6 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5118190384479608389}
   - component: {fileID: 3270950351638537384}
+  - component: {fileID: 6020469881745184302}
   - component: {fileID: 5123183178874242405}
   - component: {fileID: 1432701858986619791}
   m_Layer: 0
@@ -94,10 +95,11 @@ MonoBehaviour:
   _evolutionCinemachine: {fileID: 1317633885511355583}
   _timelineCameraController: {fileID: 0}
   _timelineRotationController: {fileID: 0}
-  _timelineEnergyRiseController: {fileID: 0}
+  _timelineEnergyRiseController: {fileID: 6020469881745184302}
   _cutsceneCameraPriority: 100
   _whiteFlashCanvasGroup: {fileID: 0}
   _whiteFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  _whiteFlashLeadTime: 0.2
   _whiteFlashFadeIn: 0.05
   _whiteFlashHold: 0.2
   _whiteFlashFadeOut: 0.05
@@ -111,6 +113,26 @@ MonoBehaviour:
   _cutsceneFogColor: {r: 0, g: 0, b: 0, a: 1}
   _cutsceneFogDensity: 0
   _cutsceneSkybox: {fileID: 0}
+  _logPreviewRenderDiagnostics: 1
+  _replaceInvalidPreviewMaterials: 1
+  _previewFallbackMaterial: {fileID: 2100000, guid: 00f473a7be5a4c24481dbddfdb7c5992, type: 2}
+--- !u!114 &6020469881745184302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2585105227420182878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3da131c29f9e4c7aa0161b083da4d947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EvolutionTimelineEnergyRiseController
+  _director: {fileID: 5123183178874242405}
+  _beforeModelRoot: {fileID: 6207020528738554993}
+  _afterModelRoot: {fileID: 5927917081371918408}
+  _focusLayerName: Evolution_Focus
+  _energyRiseMaterial: {fileID: 2100000, guid: 4d8ea741d9bb4bb4a94e3fe3610da7f7, type: 2}
 --- !u!320 &5123183178874242405
 PlayableDirector:
   m_ObjectHideFlags: 0
