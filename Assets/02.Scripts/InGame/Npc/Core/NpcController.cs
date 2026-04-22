@@ -237,6 +237,37 @@ public class NpcController : MonoBehaviour
         }
     }
 
+    // 필요 시 강제로 대화를 종료합니다.
+    public void ForceEndInteraction()
+    {
+        _isInteracting = false;
+        _currentInteractor = null;
+
+        if (!IsMine && !IsLocalOnly)
+        {
+            PhotonView.RPC(nameof(RPC_ForceEndInteraction), RpcTarget.MasterClient);
+            return;
+        }
+
+        ResumeScheduleAfterForceEnd();
+    }
+
+    [PunRPC]
+    private void RPC_ForceEndInteraction()
+    {
+        _isInteracting = false;
+        _currentInteractor = null;
+        ResumeScheduleAfterForceEnd();
+    }
+
+    private void ResumeScheduleAfterForceEnd()
+    {
+        if (_npcSchedule != null && _currentScheduleIndex < _npcSchedule.ScheduleEntries.Count)
+        {
+            ResumeScheduleByCurrentTime(TimeEvents.CurrentTime);
+        }
+    }
+
     // 시간이 되면 Npc가 다음 일정대로 움직이는 것을 시도합니다.
     public bool TryGetNextScheduleEntry(GameTime time, out NpcScheduleEntry entry)
     {
