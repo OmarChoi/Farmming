@@ -99,6 +99,7 @@ MonoBehaviour:
   _cutsceneCameraPriority: 100
   _whiteFlashCanvasGroup: {fileID: 0}
   _whiteFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  _whiteFlashLeadTime: 0.2
   _whiteFlashFadeIn: 0.05
   _whiteFlashHold: 0.2
   _whiteFlashFadeOut: 0.05
@@ -112,6 +113,9 @@ MonoBehaviour:
   _cutsceneFogColor: {r: 0, g: 0, b: 0, a: 1}
   _cutsceneFogDensity: 0
   _cutsceneSkybox: {fileID: 0}
+  _logPreviewRenderDiagnostics: 1
+  _replaceInvalidPreviewMaterials: 1
+  _previewFallbackMaterial: {fileID: 2100000, guid: 00f473a7be5a4c24481dbddfdb7c5992, type: 2}
 --- !u!114 &6020469881745184302
 MonoBehaviour:
   m_ObjectHideFlags: 0

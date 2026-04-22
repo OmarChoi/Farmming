@@ -79,7 +79,9 @@ public class EvolutionManager : MonoBehaviour
     [SerializeField] private Material _cutsceneSkybox;
 
     [Header("Preview Render Safety")]
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     [SerializeField] private bool _logPreviewRenderDiagnostics = true;
+#endif
     [SerializeField] private bool _replaceInvalidPreviewMaterials = true;
     [SerializeField] private Material _previewFallbackMaterial;
 
@@ -118,7 +120,6 @@ public class EvolutionManager : MonoBehaviour
     private Color _cachedFogColor;
     private float _cachedFogDensity;
     private Material _cachedSkybox;
-    private Material _runtimePreviewFallbackMaterial;
 
     private int FocusLayer => LayerMask.NameToLayer(_focusLayerName);
 
@@ -150,12 +151,6 @@ public class EvolutionManager : MonoBehaviour
             _director.stopped -= OnDirectorStopped;
 
         DisableEvolutionLighting();
-    }
-
-    private void OnDestroy()
-    {
-        if (_runtimePreviewFallbackMaterial != null)
-            Destroy(_runtimePreviewFallbackMaterial);
     }
 
     private void LateUpdate()
@@ -225,8 +220,10 @@ public class EvolutionManager : MonoBehaviour
         PreparePreview(_afterInstance, _afterModelRoot, _afterLocalEuler, false);
         SetLayerRecursively(_beforeInstance, FocusLayer);
         SetLayerRecursively(_afterInstance, FocusLayer);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         LogEvolutionPreviewRenderState("Before", _beforeInstance);
         LogEvolutionPreviewRenderState("After", _afterInstance);
+#endif
 
        // StartEvolutionCutscene 하나만 실행 (내부에서 카메라/스핀/연출 처리)
         StartCoroutine(StartEvolutionCutscene());
@@ -586,6 +583,7 @@ public class EvolutionManager : MonoBehaviour
                 _wasStacked = baseData.cameraStack.Contains(_evolutionOverlayCamera);
                 if (!_wasStacked) baseData.cameraStack.Add(_evolutionOverlayCamera);
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 if (_logPreviewRenderDiagnostics)
                 {
                     Debug.Log(
@@ -595,6 +593,7 @@ public class EvolutionManager : MonoBehaviour
                         $"StackContains:{baseData.cameraStack.Contains(_evolutionOverlayCamera)}, " +
                         $"OverlayCullingMask:{_evolutionOverlayCamera.cullingMask}, FocusLayer:{FocusLayer}");
                 }
+#endif
             }
             else
             {
@@ -1137,7 +1136,7 @@ public class EvolutionManager : MonoBehaviour
             if (!IsInvalidPreviewMaterial(materials[i]))
                 continue;
 
-            Material fallback = GetPreviewFallbackMaterial(materials[i]);
+            Material fallback = GetPreviewFallbackMaterial();
             if (fallback == null)
                 continue;
 
@@ -1161,62 +1160,18 @@ public class EvolutionManager : MonoBehaviour
         return string.Equals(shader.name, "Hidden/InternalErrorShader", StringComparison.Ordinal);
     }
 
-    private Material GetPreviewFallbackMaterial(Material source)
+    private Material GetPreviewFallbackMaterial()
     {
         if (_previewFallbackMaterial != null)
             return _previewFallbackMaterial;
 
-        if (_runtimePreviewFallbackMaterial != null)
-            return _runtimePreviewFallbackMaterial;
-
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null)
-            shader = Shader.Find("Universal Render Pipeline/Unlit");
-        if (shader == null)
-            shader = Shader.Find("Standard");
-
-        if (shader == null)
-            return null;
-
-        _runtimePreviewFallbackMaterial = new Material(shader)
-        {
-            name = "Runtime_EvolutionPreviewFallback"
-        };
-
-        CopyPreviewMaterialVisuals(source, _runtimePreviewFallbackMaterial);
-        return _runtimePreviewFallbackMaterial;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        Debug.LogWarning("[EvolutionManager] Preview fallback material is missing. Invalid preview materials cannot be replaced.");
+#endif
+        return null;
     }
 
-    private static void CopyPreviewMaterialVisuals(Material source, Material target)
-    {
-        if (source == null || target == null)
-            return;
-
-        if (source.HasProperty("_BaseColor") && target.HasProperty("_BaseColor"))
-            target.SetColor("_BaseColor", source.GetColor("_BaseColor"));
-        else if (source.HasProperty("_Color"))
-        {
-            if (target.HasProperty("_BaseColor"))
-                target.SetColor("_BaseColor", source.GetColor("_Color"));
-            if (target.HasProperty("_Color"))
-                target.SetColor("_Color", source.GetColor("_Color"));
-        }
-
-        Texture texture = null;
-        if (source.HasProperty("_BaseMap"))
-            texture = source.GetTexture("_BaseMap");
-        if (texture == null && source.HasProperty("_MainTex"))
-            texture = source.GetTexture("_MainTex");
-
-        if (texture == null)
-            return;
-
-        if (target.HasProperty("_BaseMap"))
-            target.SetTexture("_BaseMap", texture);
-        if (target.HasProperty("_MainTex"))
-            target.SetTexture("_MainTex", texture);
-    }
-
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     private void LogEvolutionPreviewRenderState(string label, GameObject instance)
     {
         if (!_logPreviewRenderDiagnostics)
@@ -1274,6 +1229,7 @@ public class EvolutionManager : MonoBehaviour
                 $"RendererTotal:{renderers.Length}, EnabledRenderable:{enabledCount}, FocusLayerRenderable:{focusLayerCount}, InvalidMaterials:{invalidMaterialCount}");
         }
     }
+#endif
 
     private void CleanupInstances()
     {
