@@ -696,6 +696,38 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.7512532, y: 0.39843118, z: 0}
     m_Extent: {x: 0.6024086, y: 0.5226205, z: 0.12464859}
   m_DirtyAABB: 0
+--- !u!1 &932631866548409561
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 125131321544573971}
+  m_Layer: 0
+  m_Name: Pointer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &125131321544573971
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 932631866548409561}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7776811636462920147}
+  m_Father: {fileID: 4690583271421996957}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1001812259673312281
 GameObject:
   m_ObjectHideFlags: 0
@@ -1578,7 +1610,7 @@ Transform:
   - {fileID: 3202693743903777222}
   - {fileID: 5169033845734614517}
   - {fileID: 8617225533249831567}
-  - {fileID: 7776811636462920147}
+  - {fileID: 125131321544573971}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5498832943509097334
@@ -1671,7 +1703,7 @@ MonoBehaviour:
   _lastPlaceMarker: {fileID: 5341827969200495173}
   _markerHeadOffset: {x: 0, y: 2, z: 0}
   _markerScaleDuration: 0.3
-  _selectedRunnerMarker: {fileID: 2917257743092998518}
+  _selectedRunnerMarker: {fileID: 932631866548409561}
   _selectedMarkerHeadOffset: {x: 0, y: 2, z: 0}
 --- !u!114 &4232245645617834607
 MonoBehaviour:
@@ -2187,7 +2219,7 @@ GameObject:
   - component: {fileID: 2324989261480773896}
   - component: {fileID: 841983195744876905}
   m_Layer: 0
-  m_Name: Pointer
+  m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2202,11 +2234,11 @@ Transform:
   m_GameObject: {fileID: 2917257743092998518}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.6, y: 2, z: -5.1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4690583271421996957}
+  m_Father: {fileID: 125131321544573971}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3294854494401241892
 MeshFilter:
