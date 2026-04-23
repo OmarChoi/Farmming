@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: DoctorAcceptDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: DoctorAcceptDialogue
+  Lines:
+  - Text: "\uD06C\uD06C\uD06D... \uC9C0\uAE08 \uD2B9\uBCC4 \uD589\uC0AC\uB85C \uC544\uC8FC
+      \uC88B\uC740 \uAC78 \uB098\uB220\uC8FC\uACE0 \uC788\uC9C0."
+    NextDialogue: {fileID: 0}
+  - Text: "\uD55C \uBC88\uB3C4 \uB9C8\uC154\uBCF8 \uC801\uC740 \uC5C6\uC5B4\uB3C4,
+      \uD55C \uBC88\uB9CC \uB9C8\uC154\uBCF8 \uC0AC\uB78C\uC740 \uC5C6\uB294, \uC544\uC8FC
+      \uC88B\uC740 \uC57D\uC774\uC9C0. \uD6C4\uD6C4... \uC5B4\uB54C. \uAD00\uC2EC
+      \uC788\uB098?"
+    NextDialogue: {fileID: 0}

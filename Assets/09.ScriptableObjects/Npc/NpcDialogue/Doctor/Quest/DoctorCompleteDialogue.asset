@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9fc87e559961a47b33e7a3c95bc051, type: 3}
+  m_Name: DoctorCompleteDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueSO
+  Id: DoctorCompleteDialogue
+  Lines:
+  - Text: "\uC790, \uC774\uAC78 \uBC1B\uC544. \uC2A4\uD0DC\uBBF8\uB108\uB97C \uD68C\uBCF5\uC2DC\uCF1C\uC8FC\uB294
+      \uC57D\uC774\uC9C0."
+    NextDialogue: {fileID: 0}
+  - Text: "\uADF8\uAC78 \uB9C8\uC2DC\uBA74 \uC628 \uBAB8\uC5D0 \uD65C\uB825\uC774
+      \uB3CC\uAC8C \uB420 \uAC70\uC57C. \uBB34\uC2A8 \uC77C\uC774\uB4E0 \uD558\uACE0
+      \uC2F6\uC5B4\uC9C8 \uC815\uB3C4\uB85C \uB9D0\uC774\uC57C."
+    NextDialogue: {fileID: 0}
+  - Text: "\uB178\uB791\uC0C9\uC774 \uB124 \uAC70\uACE0, \uCD08\uB85D\uC0C9\uC774
+      \uB124 \uC5B4\uB9AC\uBC84\uB9AC\uD55C \uCE5C\uAD6C\uB4E4 \uC57D\uC774\uB2C8\uAE4C
+      \uD5F7\uAC08\uB9AC\uC9C0 \uB9D0\uB77C\uACE0. \uC798\uBABB \uB9C8\uC154\uB3C4
+      \uB0B4 \uCC45\uC784\uC740 \uC544\uB2C8\uB77C\uACE0?"
+    NextDialogue: {fileID: 0}
+  - Text: "\uB354 \uD544\uC694\uD558\uBA74 \uC6B0\uB9AC \uC57D\uAD6D\uC5D0\uC11C
+      \uD314\uACE0 \uC788\uC73C\uB2C8\uAE4C... \uC5B8\uC81C\uB4E0\uC9C0 \uCC3E\uC544\uC640\uC11C
+      \uAD6C\uB9E4\uD558\uC138\uC694, \uD658\uC790 \uBD84? \uD06C\uD750\uD750\uD750."
+    NextDialogue: {fileID: 0}
