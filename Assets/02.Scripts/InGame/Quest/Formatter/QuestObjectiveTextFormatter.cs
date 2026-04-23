@@ -2,18 +2,6 @@ using System.Collections.Generic;
 
 public class QuestObjectiveTextFormatter
 {
-    private static NpcDataContainerSO _npcDataContainer;
-    public static void SetNpcDataContainer(NpcDataContainerSO container)
-    {
-        _npcDataContainer = container;
-    }
-
-    private static string GetNpcDisplayName(string npcId)
-    {
-        if (_npcDataContainer == null || string.IsNullOrEmpty(npcId)) return npcId;
-        return _npcDataContainer.GetNpcName(npcId);
-    }
-
     public static string BuildTargetText(QuestDataSO questData)
     {
         if (questData == null) return string.Empty;
@@ -33,11 +21,11 @@ public class QuestObjectiveTextFormatter
                 }
                 else
                 {
-                    return $"{GetNpcDisplayName(questData.TargetNpcId)}에게 {BuildItemRequirementText(questData.ItemRequirements)} 가져다주기";
+                    return $"{QuestTextUtility.GetNpcDisplayName(questData.TargetNpcId)}에게 {BuildItemRequirementText(questData.ItemRequirements)} 가져다주기";
                 }
 
             case EQuestObjectiveType.TalkToNpc:
-                return $"{GetNpcDisplayName(questData.TargetNpcId)} 찾아가기";
+                return $"{QuestTextUtility.GetNpcDisplayName(questData.TargetNpcId)} 찾아가기";
 
             case EQuestObjectiveType.DryFarmTile:
                 return $"땅을 {questData.RequiredAmount}만큼 경작하기";
