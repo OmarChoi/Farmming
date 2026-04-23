@@ -27,4 +27,15 @@ public class DungeonEnvironmentProfile : ScriptableObject
     public float PostExposure = -0.8f;
     [Range(0f, 1f)]
     public float VignetteIntensity = 0.28f;
+
+    [Header("Depth of Field (Gaussian)")]
+    public bool UseDepthOfField = true;
+    [Tooltip("블러가 시작되는 거리(m)")]
+    [Min(0f)]
+    public float DofGaussianStart = 30f;
+    [Tooltip("블러가 최대치가 되는 거리(m)")]
+    [Min(0f)]
+    public float DofGaussianEnd = 85f;
+    [Range(0.5f, 1.5f)]
+    public float DofGaussianMaxRadius = 0.7f;
 }
