@@ -20,9 +20,11 @@ MonoBehaviour:
   _depth: 3
   _constructionDays: 1
   _costs:
-  - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
+  - _item: {fileID: 11400000, guid: ec9354d33039f9a479c64d3c0056ac1b, type: 2}
     _amount: 30
-  - _item: {fileID: 11400000, guid: b3dc8d39e92ffeb4a9a04a9fbce28ec7, type: 2}
-    _amount: 10
-  _requiredVillageLevel: 2
+  - _item: {fileID: 11400000, guid: 78d7924df0e35d34397129f8fba7695b, type: 2}
+    _amount: 15
+  - _item: {fileID: 11400000, guid: 0656c5a7fb99a7045a4bba1595690f67, type: 2}
+    _amount: 15
+  _requiredVillageLevel: 4
   _firstBuildGaugeContribution: 20

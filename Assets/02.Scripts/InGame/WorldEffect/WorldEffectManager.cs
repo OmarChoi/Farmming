@@ -28,6 +28,14 @@ public class WorldEffectManager : MonoBehaviour
             _   => baseValue
         };
     }
+
+    public static int ApplyAcquireMultiplier(int baseValue, float multiplier)
+    {
+        if (baseValue <= 0)
+            return 0;
+
+        return Mathf.Max(1, ApplyMultiplier(baseValue, multiplier));
+    }
     
     private void Awake()
     {

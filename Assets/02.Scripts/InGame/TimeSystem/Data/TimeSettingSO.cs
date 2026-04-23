@@ -21,23 +21,43 @@ public class TimeSettingSO : ScriptableObject
 
     [Space(10)]
     [Header("Real Time to Game Time Ratio")]
-    [Tooltip("How many game minutes pass per real second.")]
+    [Tooltip("How many game minutes pass per real second during daytime.")]
     [Min(0f)]
-    public float GameMinutesPerSecond = 1f;
+    public float DayGameMinutesPerSecond = 1f;
+
+    [Tooltip("How many game minutes pass per real second during nighttime.")]
+    [Min(0f)]
+    public float NightGameMinutesPerSecond = 1f;
 
     [SerializeField, HideInInspector, FormerlySerializedAs("RealSecondsPerGameMinute")]
     private float _legacyRealSecondsPerGameMinute = -1f;
+
+    [SerializeField, HideInInspector, FormerlySerializedAs("GameMinutesPerSecond")]
+    private float _legacyUnifiedGameMinutesPerSecond = -1f;
 
     private void OnValidate()
     {
         if (_legacyRealSecondsPerGameMinute > 0f)
         {
-            GameMinutesPerSecond = 1f / _legacyRealSecondsPerGameMinute;
+            float converted = 1f / _legacyRealSecondsPerGameMinute;
+            DayGameMinutesPerSecond = converted;
+            NightGameMinutesPerSecond = converted;
             _legacyRealSecondsPerGameMinute = -1f;
         }
 
+        if (_legacyUnifiedGameMinutesPerSecond > 0f)
+        {
+            if (DayGameMinutesPerSecond <= 0f)
+                DayGameMinutesPerSecond = _legacyUnifiedGameMinutesPerSecond;
+            if (NightGameMinutesPerSecond <= 0f)
+                NightGameMinutesPerSecond = _legacyUnifiedGameMinutesPerSecond;
+
+            _legacyUnifiedGameMinutesPerSecond = -1f;
+        }
+
         DefaultDay = Mathf.Max(1, DefaultDay);
-        GameMinutesPerSecond = Mathf.Max(0f, GameMinutesPerSecond);
+        DayGameMinutesPerSecond = Mathf.Max(0f, DayGameMinutesPerSecond);
+        NightGameMinutesPerSecond = Mathf.Max(0f, NightGameMinutesPerSecond);
 
         DefaultTime = DefaultTime.NormalizeClock();
         DayStartTime = DayStartTime.NormalizeBoundary();

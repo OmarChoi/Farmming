@@ -283,7 +283,7 @@ public class HarvestActionAbility : HelperAbility, IHelperAction, ISecondaryInte
         int harvestAmount = UnityEngine.Random.Range(seed.HarvestAmountMin, seed.HarvestAmountMax + 1);
         if (WorldEffectManager.Instance != null)
         {
-            harvestAmount = WorldEffectManager.ApplyMultiplier(
+            harvestAmount = WorldEffectManager.ApplyAcquireMultiplier(
                 harvestAmount, WorldEffectManager.Instance.GetAcquireMultiplier());
         }
 
