@@ -132,6 +132,7 @@ public static class AssetKey
         public const string StartScene = "BGMStartScene";
         public const string Village = "BGMVillage";
         public const string Dungeon1 = "Dungeon1Bgm";
+        public const string Dungeon2 = "Dungeon2Bgm";
         public const string HelperEvolution = "HelperEvolutionBGM";
     }
 
