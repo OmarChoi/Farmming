@@ -63,7 +63,8 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
         // 클립 설정 및 공간 모드 적용
         source.clip = clip;
         source.loop = false;
-        source.volume = 1f;
+        source.volume = Mathf.Max(0f, request.Volume);
+        source.pitch = Mathf.Max(0.01f, request.Pitch);
         ConfigureSpatial(source, request);
         source.Play();
 
@@ -87,7 +88,8 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
 
         source.clip = clip;
         source.loop = clip.length < safeDuration;
-        source.volume = 1f;
+        source.volume = Mathf.Max(0f, request.Volume);
+        source.pitch = Mathf.Max(0.01f, request.Pitch);
         ConfigureSpatial(source, request);
         source.Play();
 
@@ -95,7 +97,8 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
             source,
             request.ESpatialMode == ESpatialMode.FollowTransform ? request.FollowTarget : null,
             safeDuration,
-            fadeOutDuration);
+            fadeOutDuration,
+            Mathf.Max(0f, request.Volume));
     }
 
     private void ConfigureSpatial(AudioSource source, SfxPlayRequest request)
@@ -144,7 +147,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
         _pool.Release(source);
     }
 
-    private async UniTask WaitTimedAndReturnAsync(AudioSource source, Transform followTarget, float duration, float fadeOutDuration)
+    private async UniTask WaitTimedAndReturnAsync(AudioSource source, Transform followTarget, float duration, float fadeOutDuration, float startVolume)
     {
         bool isFollowing = followTarget != null;
         float safeFadeOutDuration = Mathf.Clamp(fadeOutDuration, 0f, duration);
@@ -161,7 +164,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
             if (safeFadeOutDuration > 0f && elapsed >= fadeStartTime)
             {
                 float fadeProgress = Mathf.Clamp01((elapsed - fadeStartTime) / safeFadeOutDuration);
-                source.volume = Mathf.Lerp(1f, 0f, fadeProgress);
+                source.volume = Mathf.Lerp(startVolume, 0f, fadeProgress);
             }
 
             elapsed += Time.deltaTime;
@@ -173,6 +176,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
         source.Stop();
         source.loop = false;
         source.volume = 1f;
+        source.pitch = 1f;
         source.clip = null;
         source.transform.SetParent(_poolRoot);
         _pool.Release(source);
@@ -194,6 +198,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
         source.gameObject.SetActive(true);
         source.loop = false;
         source.volume = 1f;
+        source.pitch = 1f;
     }
 
     private void OnReleaseSource(AudioSource source)
@@ -201,6 +206,7 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
         source.Stop();
         source.loop = false;
         source.volume = 1f;
+        source.pitch = 1f;
         source.clip = null;
         source.gameObject.SetActive(false);
     }
