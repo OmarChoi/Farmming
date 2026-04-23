@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using UnityEngine;
 
 public class Wood : GatheringObject
@@ -7,9 +7,13 @@ public class Wood : GatheringObject
     [SerializeField] private float _shakeAngle = 5f;
     [SerializeField] private float _shakeDuration = 0.4f;
     [SerializeField] private int _shakeCount = 3;
+    [SerializeField, Min(0f)] private float _breakSfxDelay = 0f;
+    [SerializeField, Min(1)] private int _breakSfxLayerCount = 3;
 
     private Tween _shakeTween;
+    private Tween _breakSfxTween;
     private Quaternion _originalRotation;
+    private bool _breakSfxPlayed;
 
     protected override void Init()
     {
@@ -38,7 +42,53 @@ public class Wood : GatheringObject
     protected override void OnDepleted(GatheringInfo info)
     {
         _shakeTween?.Kill();
-        // TODO: 나무 벌목 연출 (파티클, 사운드 등)
+        PlayBreakSfxOnce();
         base.OnDepleted(info);
+    }
+
+    private void PlayBreakSfxOnce()
+    {
+        if (_breakSfxPlayed)
+            return;
+
+        _breakSfxPlayed = true;
+        Vector3 breakSfxPosition = GetBreakSfxPosition();
+
+        _breakSfxTween?.Kill();
+        if (_breakSfxDelay > 0f)
+        {
+            _breakSfxTween = DOVirtual.DelayedCall(_breakSfxDelay, () =>
+            {
+                PlayBreakSfxAt(breakSfxPosition);
+                _breakSfxTween = null;
+            });
+            return;
+        }
+
+        PlayBreakSfxAt(breakSfxPosition);
+    }
+
+    private void PlayBreakSfxAt(Vector3 position)
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        int layerCount = Mathf.Max(1, _breakSfxLayerCount);
+        for (int i = 0; i < layerCount; i++)
+        {
+            SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+                clipKey: AssetKey.SFX.WoodBreak,
+                spatialMode: ESpatialMode.Positional3D,
+                position: position));
+        }
+    }
+
+    private Vector3 GetBreakSfxPosition()
+    {
+        Collider woodCollider = GetComponentInChildren<Collider>();
+        if (woodCollider != null)
+            return woodCollider.bounds.center;
+
+        return transform.position;
     }
 }
