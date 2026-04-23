@@ -8,7 +8,7 @@ public class Wood : GatheringObject
     [SerializeField] private float _shakeDuration = 0.4f;
     [SerializeField] private int _shakeCount = 3;
     [SerializeField, Min(0f)] private float _breakSfxDelay = 0f;
-    [SerializeField, Min(1)] private int _breakSfxLayerCount = 3;
+    [SerializeField, Min(0f)] private float _breakSfxVolume = 2f;
 
     private Tween _shakeTween;
     private Tween _breakSfxTween;
@@ -73,14 +73,11 @@ public class Wood : GatheringObject
         if (SoundManager.Instance == null)
             return;
 
-        int layerCount = Mathf.Max(1, _breakSfxLayerCount);
-        for (int i = 0; i < layerCount; i++)
-        {
-            SoundManager.Instance.PlaySfx(new SfxPlayRequest(
-                clipKey: AssetKey.SFX.WoodBreak,
-                spatialMode: ESpatialMode.Positional3D,
-                position: position));
-        }
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.WoodBreak,
+            spatialMode: ESpatialMode.Positional3D,
+            position: position,
+            volume: _breakSfxVolume));
     }
 
     private Vector3 GetBreakSfxPosition()
