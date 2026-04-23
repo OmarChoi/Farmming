@@ -27,7 +27,7 @@ MonoBehaviour:
     Level: 1
     SpawnChance: 0.08
   DungeonName: "\uC815\uAE00"
-  TimeLimitSeconds: 180
+  TimeLimitSeconds: 60
   EntryCost: 500
   EntryRequirements:
   - Item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
@@ -43,6 +43,10 @@ MonoBehaviour:
   ChestPrefab: {fileID: 1725259873546053907, guid: c195d47ad9b6dee41a802a02aff23963, type: 3}
   ChestCount: 5
   ChestLootTables:
-  - {fileID: 11400000, guid: 8d248e013d730ab46b8385229742ed03, type: 2}
+  - {fileID: 11400000, guid: fe83eb626f1588f49b80f58162a95a55, type: 2}
+  - {fileID: 11400000, guid: a39e17cea0ee6f24584c3c76065e4639, type: 2}
+  - {fileID: 11400000, guid: 02b5253b653b4d7419383f4641c7236f, type: 2}
+  - {fileID: 11400000, guid: a49957e4b18d441488bc9edda8426d07, type: 2}
+  - {fileID: 11400000, guid: fc722e3fe9060ba4691473e28c328bf9, type: 2}
   EnvironmentProfile: {fileID: 11400000, guid: ba35128e8efe23944a7fa109fdf9a2c5, type: 2}
   TroublemakerSpawnList: {fileID: 11400000, guid: d1964adf91de27f40b7912db39e6c45c, type: 2}

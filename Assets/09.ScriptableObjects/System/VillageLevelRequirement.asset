@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d6a30ecc00430b83ed9a7bedf41b3c, type: 3}
   m_Name: VillageLevelRequirement
   m_EditorClassIdentifier: Assembly-CSharp::VillageLevelRequirementSO
-  _maxLevel: 3
+  _maxLevel: 4
   _requirements:
-  - VitalityThreshold: 100
+  - VitalityThreshold: 90
     BuildingCountThreshold: 3
-  - VitalityThreshold: 20
+  - VitalityThreshold: 150
+    BuildingCountThreshold: 3
+  - VitalityThreshold: 120
     BuildingCountThreshold: 3

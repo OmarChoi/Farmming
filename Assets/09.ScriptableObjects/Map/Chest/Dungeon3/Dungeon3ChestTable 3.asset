@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35da03c9b58c37644a1e5153fda4cc65, type: 3}
+  m_Name: Dungeon3ChestTable 3
+  m_EditorClassIdentifier: Assembly-CSharp::ChestLootTable
+  Entries:
+  - Item: {fileID: 11400000, guid: 9f4f1a5e6aa74fd08a8d3dc7c9d4ac84, type: 2}
+    Amount: 30
