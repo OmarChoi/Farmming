@@ -10,7 +10,7 @@ public class TimeSystem : MonoBehaviour
     private GameClock _clock;
     private float _accumulatedGameMinutes;
 
-    private const float SyncInterval = 10f;
+    private const float SyncInterval = 5f;
     private float _syncTimer;
 
     public int CurrentDay => _clock?.CurrentDay ?? 0;

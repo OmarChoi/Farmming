@@ -43,6 +43,18 @@ public class SaveManager : MonoBehaviourPun
         _isLoadCompleted = false;
     }
 
+    private void OnEnable()
+    {
+        TimeEvents.OnNetDayStarted += HandleTimedAutoSave;
+        TimeEvents.OnNetSunSet += HandleTimedAutoSave;
+    }
+
+    private void OnDisable()
+    {
+        TimeEvents.OnNetDayStarted -= HandleTimedAutoSave;
+        TimeEvents.OnNetSunSet -= HandleTimedAutoSave;
+    }
+
     public void EnsureBaseLoadedData()
     {
         if (_loadedData != null) return;
@@ -176,6 +188,20 @@ public class SaveManager : MonoBehaviourPun
     public void UnregisterPlayer(string playerId)
     {
         _players.Remove(playerId);
+    }
+
+    private void HandleTimedAutoSave()
+    {
+        TriggerAutoSaveForSelectedSlot();
+    }
+
+    public void TriggerAutoSaveForSelectedSlot()
+    {
+        if (!_isLoadCompleted) return;
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
+
+        int slot = RoomManager.Instance != null ? RoomManager.Instance.SelectedSlot : 0;
+        SaveAsync(slot).Forget();
     }
 
     private readonly List<PlayerSaveData> _receivedSaveData = new();

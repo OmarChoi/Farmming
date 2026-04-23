@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
   QuestId: CollectItemWorldQuest2
   QuestName: "\uAC15\uD654 \uD3EC\uC158\uC744 \uBC14\uCCD0\uB77C"
-  Description: "\uAC15\uD654 \uD3EC\uC158\uC744 25\uAC1C \uBAA8\uC544\uC11C \uBC14\uCE58\uC790"
+  Description: "\uAC15\uD654 \uD3EC\uC158\uC744 5\uAC1C \uBAA8\uC544\uC11C \uBC14\uCE58\uC790"
   QuestCategory: 3
   IsTutorial: 0
   StartNpcId: 
@@ -26,7 +26,7 @@ MonoBehaviour:
   - _item: {fileID: 11400000, guid: 23f586b2b6f49e0418c2d40a1eccd1e8, type: 2}
     _amount: 25
   TargetNpcId: 
-  RequiredAmount: 25
+  RequiredAmount: 5
   PrerequisiteQuests: []
   RequiredFriendship: 0
   Reward:
