@@ -30,6 +30,11 @@ MonoBehaviour:
   RequiredFriendship: 40
   Reward:
     Rewards:
+    - RewardType: 0
+      RewardItem: {fileID: 0}
+      Amount: 500
+      RewardHelper: {fileID: 0}
+      TargetNpcId: 
     - RewardType: 2
       RewardItem: {fileID: 0}
       Amount: 100

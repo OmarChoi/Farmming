@@ -15,5 +15,6 @@ public class QuestFormatterInitializer : MonoBehaviour
         }
 
         QuestObjectiveTextFormatter.SetNpcDataContainer(_npcDataContainer);
+        QuestRewardTextFormatter.SetNpcDataContainer(_npcDataContainer);
     }
 }
