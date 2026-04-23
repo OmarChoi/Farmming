@@ -21,6 +21,8 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
     [SerializeField, Min(0f)] private float _fadeDuration = 0.5f;
     [SerializeField, Min(0f)] private float _endHoldDuration = 1.5f;
     [SerializeField] private bool _playOnStart = true;
+    [Tooltip("체크 시 영상 자체의 모든 오디오 트랙을 음소거한다.")]
+    [SerializeField] private bool _muteVideoAudio = true;
 
     private Coroutine _routine;
     private bool _clipFinished;
@@ -108,6 +110,9 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
         _videoPlayer.Prepare();
         while (!_videoPlayer.isPrepared) yield return null;
 
+        if (_muteVideoAudio)
+            ApplyMuteAllTracks();
+
         _clipFinished = false;
         _videoPlayer.loopPointReached -= HandleClipEnd;
         _videoPlayer.loopPointReached += HandleClipEnd;
@@ -123,6 +128,27 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
     }
 
     private void HandleClipEnd(VideoPlayer _) => _clipFinished = true;
+
+    // VideoPlayer는 Audio Output Mode 에 따라 트랙 볼륨 경로가 달라지므로
+    // Direct / AudioSource 양쪽을 모두 0으로 맞춰 어떤 출력 모드든 들리지 않게 한다.
+    private void ApplyMuteAllTracks()
+    {
+        if (_videoPlayer == null) return;
+
+        ushort trackCount = _videoPlayer.audioTrackCount;
+        for (ushort i = 0; i < trackCount; i++)
+        {
+            _videoPlayer.SetDirectAudioMute(i, true);
+            _videoPlayer.SetDirectAudioVolume(i, 0f);
+
+            AudioSource target = _videoPlayer.GetTargetAudioSource(i);
+            if (target != null)
+            {
+                target.mute = true;
+                target.volume = 0f;
+            }
+        }
+    }
 
     private IEnumerator FadeTo(float target, float duration)
     {
