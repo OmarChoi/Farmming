@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 35da03c9b58c37644a1e5153fda4cc65, type: 3}
-  m_Name: Dungeon1ChestTable
+  m_Name: Dungeon2ChestTable
   m_EditorClassIdentifier: Assembly-CSharp::ChestLootTable
   Entries:
-  - Item: {fileID: 11400000, guid: 24de9fedc805cb949b6138f5ef3d08d9, type: 2}
+  - Item: {fileID: 11400000, guid: 04606260641d2ad4ea518a138ff62bf6, type: 2}
     Amount: 20
-  - Item: {fileID: 11400000, guid: c814777b6fa687947916f653bc9b010f, type: 2}
-    Amount: 20
-  - Item: {fileID: 11400000, guid: 5c80f0a8661a09445ba403bb3428a287, type: 2}
+  - Item: {fileID: 11400000, guid: dcc4279e267ba5148b4c8fd2e86566f7, type: 2}
     Amount: 20
   - Item: {fileID: 11400000, guid: 9f4f1a5e6aa74fd08a8d3dc7c9d4ac84, type: 2}
-    Amount: 10
+    Amount: 20
+  - Item: {fileID: 11400000, guid: c558e2f649524882960abddccd7fde57, type: 2}
+    Amount: 5
   - Item: {fileID: 11400000, guid: c4a9d1aa8f7c4d8aaef7452a304f5123, type: 2}
-    Amount: 10
+    Amount: 20
