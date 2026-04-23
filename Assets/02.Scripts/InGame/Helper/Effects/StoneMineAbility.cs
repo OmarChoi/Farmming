@@ -31,10 +31,14 @@ public class StoneMineAbility : HelperAbility
     [SerializeField] private float _targetStoneEffectDuration = 2f;
     [SerializeField] private float _targetStoneEffectSimulationSpeed = 2.5f;
     [SerializeField] private float _cameraShakePerRockMultiplier = 0.35f;
+    [SerializeField, Min(0f)] private float _normalStoneSfxLeadTimeWithoutRangeBoost = 0.5f;
+    [SerializeField, Min(0f)] private float _epicLegendaryStoneSfxLeadTimeWithoutRangeBoost = 0.3f;
 
     private HelperAnimationAbility _animAbility;
     private RangeBoostEffect _rangeBoostEffect;
     private bool _isJumping = false;
+    private bool _stoneSecondarySfxPlayedForAction;
+    private Tween _stoneSecondarySfxDelayTween;
 
     private void Start()
     {
@@ -45,6 +49,7 @@ public class StoneMineAbility : HelperAbility
     private void OnDisable()
     {
         _isJumping = false;
+        ResetStoneSecondarySfxForAction();
         _owner?.transform.DOKill();
         _owner?.EndAction();
     }
@@ -78,12 +83,14 @@ public class StoneMineAbility : HelperAbility
 
                 bool isRockTarget = cell.Data.ObjectType == EGridObjectType.Rock;
                 Vector3 targetEffectPosition = GetCellSurfaceEffectPosition(cell);
+                ResetStoneSecondarySfxForAction();
                 StartCoroutine(JumpCoroutine(targetPos, gatherable, wideCells, isRockTarget, targetEffectPosition));
             }
         }
         else
         {
             Vector3 targetPos = GetTerrainLandPosition(cell);
+            ResetStoneSecondarySfxForAction();
             StartCoroutine(JumpCoroutine(targetPos));
         }
     }
@@ -196,12 +203,21 @@ public class StoneMineAbility : HelperAbility
         }
 
         _animAbility.Play(EHelperAnim.Jump);
+        bool shouldPlayStoneSfxEarly = !useWideScale && isRockTarget && gatherable != null;
+        Vector3 stoneSfxPosition = targetEffectPosition ?? targetPosition;
+        if (shouldPlayStoneSfxEarly)
+        {
+            float delay = Mathf.Max(0f, _jumpDuration - GetStoneSfxLeadTimeWithoutRangeBoost(currentGrade));
+            ScheduleStoneSecondarySfx(delay, stoneSfxPosition, currentGrade, false);
+        }
+
         yield return Move(_owner.transform, targetPosition, jumpHeight, _jumpDuration);
 
         bool shouldSpawnCenterTargetEffect = isRockTarget && gatherable != null;
+        bool spawnedStoneEffect = false;
         if ((currentGrade == EHelperGrade.Epic || currentGrade == EHelperGrade.Legendary) && shouldSpawnCenterTargetEffect)
         {
-            SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
+            spawnedStoneEffect |= SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
         }
 
         if ((currentGrade == EHelperGrade.Epic || currentGrade == EHelperGrade.Legendary) && wideCells != null)
@@ -212,17 +228,20 @@ public class StoneMineAbility : HelperAbility
                 if (wideCell.Data.ObjectType != EGridObjectType.Rock) continue;
                 if (!wideCell.CurrentObject.TryGetComponent<IGatherable>(out _)) continue;
 
-                SpawnStoneEffectAt(GetCellSurfaceEffectPosition(wideCell));
+                spawnedStoneEffect |= SpawnStoneEffectAt(GetCellSurfaceEffectPosition(wideCell));
             }
         }
 
         if (currentGrade == EHelperGrade.Normal && shouldSpawnCenterTargetEffect)
         {
-            SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
+            spawnedStoneEffect |= SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
         }
         PlayMiningCameraShake(shouldSpawnCenterTargetEffect, wideCells);
         _animAbility.Play(EHelperAnim.Stun);
-        SpawnStoneEffect();
+        spawnedStoneEffect |= SpawnStoneEffect();
+        if (spawnedStoneEffect && HasAnyStoneTarget(shouldSpawnCenterTargetEffect, wideCells))
+            PlayStoneSecondarySfxOnce(stoneSfxPosition, currentGrade, useWideScale);
+
         gatherable?.TryGather(new GatheringInfo(_owner));
 
         if (wideCells != null)
@@ -247,6 +266,7 @@ public class StoneMineAbility : HelperAbility
                 _owner.transform.localScale = detachedBaseScale;
 
             _isJumping = false;
+            ResetStoneSecondarySfxForAction();
             _owner.EndAction();
             yield break;
         }
@@ -272,6 +292,7 @@ public class StoneMineAbility : HelperAbility
 
         _animAbility.Play(EHelperAnim.Idle);
         _isJumping = false;
+        ResetStoneSecondarySfxForAction();
         _owner.EndAction();
     }
 
@@ -295,18 +316,19 @@ public class StoneMineAbility : HelperAbility
         };
     }
 
-    private void SpawnStoneEffect()
+    private bool SpawnStoneEffect()
     {
-        if (_effectStonePrefab == null) return;
+        if (_effectStonePrefab == null) return false;
         Vector3 spawnPos = _effectSpawnPoint != null ? _effectSpawnPoint.position : _owner.transform.position;
         GameObject effect = Instantiate(_effectStonePrefab, spawnPos, Quaternion.identity);
         Destroy(effect, _endEffect);
+        return true;
     }
 
-    private void SpawnStoneEffectAt(Vector3 worldPosition)
+    private bool SpawnStoneEffectAt(Vector3 worldPosition)
     {
         GameObject targetEffectPrefab = _targetStoneEffectPrefab != null ? _targetStoneEffectPrefab : _effectStonePrefab;
-        if (targetEffectPrefab == null) return;
+        if (targetEffectPrefab == null) return false;
         GameObject effect = Instantiate(targetEffectPrefab, worldPosition, Quaternion.identity);
 
         if (_targetStoneEffectSimulationSpeed > 0f)
@@ -320,5 +342,100 @@ public class StoneMineAbility : HelperAbility
         }
 
         Destroy(effect, _targetStoneEffectDuration);
+        return true;
+    }
+
+    private bool HasAnyStoneTarget(bool hasCenterStoneTarget, TerrainCell[] wideCells)
+    {
+        if (hasCenterStoneTarget)
+            return true;
+
+        if (wideCells == null)
+            return false;
+
+        foreach (TerrainCell wideCell in wideCells)
+        {
+            if (wideCell == null || wideCell.CurrentObject == null) continue;
+            if (wideCell.Data.ObjectType != EGridObjectType.Rock) continue;
+            if (wideCell.CurrentObject.TryGetComponent<IGatherable>(out _))
+                return true;
+        }
+
+        return false;
+    }
+
+    private float GetStoneSfxLeadTimeWithoutRangeBoost(EHelperGrade grade)
+    {
+        return grade switch
+        {
+            EHelperGrade.Epic => _epicLegendaryStoneSfxLeadTimeWithoutRangeBoost,
+            EHelperGrade.Legendary => _epicLegendaryStoneSfxLeadTimeWithoutRangeBoost,
+            _ => _normalStoneSfxLeadTimeWithoutRangeBoost
+        };
+    }
+
+    private void ResetStoneSecondarySfxForAction()
+    {
+        _stoneSecondarySfxDelayTween?.Kill();
+        _stoneSecondarySfxDelayTween = null;
+        _stoneSecondarySfxPlayedForAction = false;
+    }
+
+    private void ScheduleStoneSecondarySfx(float delay, Vector3 position, EHelperGrade grade, bool isRangeBoostActive)
+    {
+        _stoneSecondarySfxDelayTween?.Kill();
+
+        if (delay <= 0f)
+        {
+            PlayStoneSecondarySfxOnce(position, grade, isRangeBoostActive);
+            _stoneSecondarySfxDelayTween = null;
+            return;
+        }
+
+        _stoneSecondarySfxDelayTween = DOVirtual.DelayedCall(delay, () =>
+        {
+            PlayStoneSecondarySfxOnce(position, grade, isRangeBoostActive);
+            _stoneSecondarySfxDelayTween = null;
+        });
+    }
+
+    private void PlayStoneSecondarySfxOnce(Vector3 position, EHelperGrade grade, bool isRangeBoostActive)
+    {
+        if (_stoneSecondarySfxPlayedForAction)
+            return;
+
+        string clipKey = GetStoneSecondarySfxKey(grade, isRangeBoostActive);
+        if (string.IsNullOrEmpty(clipKey))
+            return;
+
+        if (SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: clipKey,
+            spatialMode: ESpatialMode.Positional3D,
+            position: position));
+
+        _stoneSecondarySfxPlayedForAction = true;
+    }
+
+    private string GetStoneSecondarySfxKey(EHelperGrade grade, bool isRangeBoostActive)
+    {
+        if (isRangeBoostActive)
+        {
+            return grade switch
+            {
+                EHelperGrade.Epic => AssetKey.SFX.StoneRangeEpicHelper,
+                EHelperGrade.Legendary => AssetKey.SFX.StoneRangeLegendaryHelper,
+                _ => AssetKey.SFX.StoneRangeNormalHelper
+            };
+        }
+
+        return grade switch
+        {
+            EHelperGrade.Epic => AssetKey.SFX.StoneEpicHelper,
+            EHelperGrade.Legendary => AssetKey.SFX.StoneLegendaryHelper,
+            _ => AssetKey.SFX.StoneNormalHelper
+        };
     }
 }
