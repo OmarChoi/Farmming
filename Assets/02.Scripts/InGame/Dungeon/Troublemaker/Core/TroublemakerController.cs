@@ -372,7 +372,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
             clipKey: key,
             spatialMode: ESpatialMode.Positional3D,
             position: transform.position,
-            followTarget: null,
+            followTarget: transform,
             volume: _data.SfxVolume,
             pitch: pitch));
     }

@@ -35,11 +35,14 @@ public class TroublemakerDataSO : ScriptableObject
     [Header("사운드 옵션")]
     [SerializeField] private string _detectSfxKey;
     [SerializeField] private string _troubleSfxKey;
-    public float SfxVolume = 1f;
-    public float SfxPitchMin = 0.95f;
-    public float SfxPitchMax = 1.05f;
+    [SerializeField] private float _sfxVolume = 1f;
+    [SerializeField] private float _sfxPitchMin = 0.95f;
+    [SerializeField] private float _sfxPitchMax = 1.05f;
 
 
     public string DetectSfxKey => _detectSfxKey;
     public string TroubleSfxKey => _troubleSfxKey;
+    public float SfxVolume => _sfxVolume;
+    public float SfxPitchMin => _sfxPitchMin;
+    public float SfxPitchMax => _sfxPitchMax;
 }

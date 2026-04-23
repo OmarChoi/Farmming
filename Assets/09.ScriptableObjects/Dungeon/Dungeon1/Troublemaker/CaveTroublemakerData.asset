@@ -24,13 +24,13 @@ MonoBehaviour:
   StopDistance: 5
   RetargetInterval: 0.2
   TroubleEffectType: 2
-  TroublePower: 0.3
+  TroublePower: 0.7
   TroubleDuration: 3
   TroubleCooldown: 5
   TroubleHitDelay: 0.08
   TroubleRange: 6
   _detectSfxKey: SFXmushroomdetect
   _troubleSfxKey: SFXmushroomtrouble
-  SfxVolume: 2
-  SfxPitchMin: 0.95
-  SfxPitchMax: 1.05
+  _sfxVolume: 2.2
+  _sfxPitchMin: 0.95
+  _sfxPitchMax: 1.05
