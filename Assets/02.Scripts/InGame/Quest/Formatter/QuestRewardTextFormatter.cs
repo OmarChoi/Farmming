@@ -2,13 +2,6 @@ using System.Collections.Generic;
 
 public static class QuestRewardTextFormatter
 {
-    private static NpcDataContainerSO _npcDataContainer;
-
-    public static void SetNpcDataContainer(NpcDataContainerSO container)
-    {
-        _npcDataContainer = container;
-    }
-
     public static string BuildQuestReward(QuestRewardData rewardData)
     {
         if (rewardData == null || rewardData.Rewards == null || rewardData.Rewards.Count == 0)
@@ -50,17 +43,10 @@ public static class QuestRewardTextFormatter
                 return $"{itemName} {reward.Amount}개";
 
             case EQuestRewardType.Friendship:
-                return $"{GetNpcDisplayName(reward.TargetNpcId)} 친밀도 +{reward.Amount}";
+                return $"{QuestTextUtility.GetNpcDisplayName(reward.TargetNpcId)} 친밀도 +{reward.Amount}";
 
             default:
                 return string.Empty;
         }
-    }
-
-    private static string GetNpcDisplayName(string npcId)
-    {
-        if (_npcDataContainer == null || string.IsNullOrEmpty(npcId)) return npcId;
-
-        return _npcDataContainer.GetNpcName(npcId);
     }
 }
