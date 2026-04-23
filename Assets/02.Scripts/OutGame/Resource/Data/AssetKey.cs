@@ -219,6 +219,7 @@ public static class AssetKey
         public const string HelperUnequip = "SFXhelperunequip";
         public const string HelperFollow = "SFXhelperfollow";
         public const string HelperEvolution = "HelperEvolution";
+        public const string QuestHelper = "QuestHelper";
 
         #endregion
 
