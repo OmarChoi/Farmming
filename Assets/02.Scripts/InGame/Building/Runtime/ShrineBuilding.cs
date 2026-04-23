@@ -11,6 +11,8 @@ public class ShrineBuilding : DefaultBuilding, IWorldInteractable
     private PlayerController _playerController;
     private PlayerNPCInteractionAbility _playerInteraction;
 
+    public bool CanInteract => IsConstructionComplete;
+
     private void Awake()
     {
         if (_questMarkService == null)
@@ -35,7 +37,7 @@ public class ShrineBuilding : DefaultBuilding, IWorldInteractable
     // 완료 버튼에서 호출. 실제 권한 검사는 WorldEffectQuestService가 마스터에서 처리합니다.
     public void RequestCompletion()
     {
-        if (!IsConstructionComplete) return;
+        if (!CanInteract) return;
 
         var service = WorldEffectQuestService.Instance;
         if (service == null || !service.HasActiveQuest) return;

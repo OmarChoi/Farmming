@@ -12,4 +12,7 @@ public interface IWorldInteractable
 
     /// 상호작용 시 재생할 애니메이션 트리거 이름. null이면 애니메이션 없음.
     string AnimationTrigger { get; }
+
+    /// 상호작용이 가능한 상태인 지 판단.
+    bool CanInteract { get; }
 }
