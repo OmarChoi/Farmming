@@ -22,6 +22,8 @@ MonoBehaviour:
   _constructionDays: 1
   _costs:
   - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
-    _amount: 5
+    _amount: 15
+  - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
+    _amount: 15
   _requiredVillageLevel: 1
-  _firstBuildGaugeContribution: 50
+  _firstBuildGaugeContribution: 30

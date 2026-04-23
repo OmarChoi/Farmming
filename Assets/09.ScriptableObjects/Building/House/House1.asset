@@ -18,11 +18,15 @@ MonoBehaviour:
   _description: "\uB9C8\uC744 \uC8FC\uBBFC\uC774 \uC0AC\uB294 \uC9D1\uC774\uB2E4."
   _width: 2
   _depth: 2
-  _constructionDays: 1
+  _constructionDays: 2
   _costs:
   - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
-    _amount: 2
+    _amount: 15
   - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
-    _amount: 2
-  _requiredVillageLevel: 1
+    _amount: 15
+  - _item: {fileID: 11400000, guid: b3dc8d39e92ffeb4a9a04a9fbce28ec7, type: 2}
+    _amount: 10
+  - _item: {fileID: 11400000, guid: dcc4279e267ba5148b4c8fd2e86566f7, type: 2}
+    _amount: 10
+  _requiredVillageLevel: 3
   _firstBuildGaugeContribution: 20
