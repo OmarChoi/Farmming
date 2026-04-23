@@ -28,8 +28,14 @@ MonoBehaviour:
     SpawnChance: 0.06
   DungeonName: "\uC6A9\uC554\uB3D9\uAD74"
   TimeLimitSeconds: 180
-  EntryCost: 0
-  EntryRequirements: []
+  EntryCost: 300
+  EntryRequirements:
+  - Item: {fileID: 11400000, guid: ec9354d33039f9a479c64d3c0056ac1b, type: 2}
+    Amount: 10
+  - Item: {fileID: 11400000, guid: 78d7924df0e35d34397129f8fba7695b, type: 2}
+    Amount: 5
+  - Item: {fileID: 11400000, guid: 0656c5a7fb99a7045a4bba1595690f67, type: 2}
+    Amount: 5
   CliffPrefab: {fileID: 7165573434335360052, guid: 2c6ffc61fc792a940bc44c78a6035fbe, type: 3}
   TreePrefab: {fileID: 5130300574329225930, guid: faa7465321db6904ab19f54e2cc33af2, type: 3}
   RockPrefab: {fileID: 5182465649738605643, guid: b979e73f4fec48d47a7516b117260c38, type: 3}
@@ -41,5 +47,8 @@ MonoBehaviour:
   - TileType: 6
     Weight: 0.35
   ChestPrefab: {fileID: 1725259873546053907, guid: c195d47ad9b6dee41a802a02aff23963, type: 3}
-  ChestCount: 3
+  ChestCount: 5
+  ChestLootTables:
+  - {fileID: 11400000, guid: 96b76ebce26efdf429daf898a02d34ae, type: 2}
   EnvironmentProfile: {fileID: 11400000, guid: ef10809ccd2d2bf4cbffde78fc17f9a1, type: 2}
+  TroublemakerSpawnList: {fileID: 0}
