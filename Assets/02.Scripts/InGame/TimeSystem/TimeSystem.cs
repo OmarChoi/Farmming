@@ -91,9 +91,12 @@ public class TimeSystem : MonoBehaviour
     private void Tick(float deltaTime)
     {
         if (!TryCreateClock()) return;
-        if (_timeSettings.GameMinutesPerSecond <= 0f) return;
+        float gameMinutesPerSecond = IsDayTime
+            ? _timeSettings.DayGameMinutesPerSecond
+            : _timeSettings.NightGameMinutesPerSecond;
+        if (gameMinutesPerSecond <= 0f) return;
 
-        _accumulatedGameMinutes += deltaTime * _timeSettings.GameMinutesPerSecond;
+        _accumulatedGameMinutes += deltaTime * gameMinutesPerSecond;
 
         int elapsedMinutes = (int)_accumulatedGameMinutes;
         if (elapsedMinutes <= 0) return;
