@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
@@ -25,6 +26,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private Action _onFirstVisit;
     private Action _onReturning;
     private bool _loadTitleSceneOnLeftRoom = true;
+    private bool _isLeavingRoom;
 
     private readonly Dictionary<string, RoomInfo> _cachedRoomList = new();
     private Action<bool> _onRoomCheckResult;
@@ -73,14 +75,37 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public void LeaveRoom(Action onLeftRoom = null, bool loadTitleScene = true)
     {
+        if (_isLeavingRoom)
+            return;
+
         _onLeftRoomCallback = onLeftRoom;
         _loadTitleSceneOnLeftRoom = loadTitleScene;
+        LeaveRoomInternalAsync().Forget();
+    }
+
+    private async UniTaskVoid LeaveRoomInternalAsync()
+    {
+        _isLeavingRoom = true;
 
         if (!PhotonNetwork.InRoom)
         {
             _onLeftRoomCallback?.Invoke();
             _onLeftRoomCallback = null;
+            _isLeavingRoom = false;
             return;
+        }
+
+        if (PhotonNetwork.IsMasterClient && SaveManager.Instance != null)
+        {
+            try
+            {
+                int slot = SelectedSlot;
+                await SaveManager.Instance.SaveAsync(slot);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[RoomManager] Save before leaving room failed.\n{e}");
+            }
         }
 
         PhotonNetwork.LeaveRoom();
@@ -133,6 +158,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
+        _isLeavingRoom = false;
         RoomId = null;
         PendingRoomId = null;
         PendingAction = ERoomAction.None;
