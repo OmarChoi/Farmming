@@ -23,6 +23,7 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
     public StorageDomain Storage => _storage;
     public StorageSyncHandler SyncHandler => _syncHandler;
     public int SlotCount => _storage != null ? _storage.SlotCount : _slotCount;
+    public bool CanInteract => _building != null && _building.IsConstructionComplete;
 
     private void Awake()
     {
@@ -48,7 +49,7 @@ public class StorageObject : MonoBehaviour, IWorldInteractable
 
     public void Interact(PlayerController player)
     {
-        if (!_building.IsConstructionComplete) return;
+        if (!CanInteract) return;
         if (!EnsureController()) return;
 
         _syncHandler?.RequestFullSync();
