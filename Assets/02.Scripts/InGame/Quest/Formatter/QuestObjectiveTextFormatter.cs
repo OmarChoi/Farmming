@@ -27,7 +27,14 @@ public class QuestObjectiveTextFormatter
                 return $"{BuildItemRequirementText(questData.ItemRequirements)} 가져오기";
 
             case EQuestObjectiveType.DeliverItem:
-                return $"{GetNpcDisplayName(questData.TargetNpcId)}에게 {BuildItemRequirementText(questData.ItemRequirements)} 가져다주기";
+                if (questData.QuestCategory == EQuestCategory.ForcedTimed)
+                {
+                    return $"신전에 {BuildItemRequirementText(questData.ItemRequirements)} 바치기";
+                }
+                else
+                {
+                    return $"{GetNpcDisplayName(questData.TargetNpcId)}에게 {BuildItemRequirementText(questData.ItemRequirements)} 가져다주기";
+                }
 
             case EQuestObjectiveType.TalkToNpc:
                 return $"{GetNpcDisplayName(questData.TargetNpcId)} 찾아가기";
