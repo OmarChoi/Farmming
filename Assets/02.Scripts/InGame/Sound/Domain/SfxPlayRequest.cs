@@ -10,12 +10,16 @@ public readonly struct SfxPlayRequest
     public ESpatialMode ESpatialMode { get; }
     public Vector3 Position { get; }
     public Transform FollowTarget { get; }
+    public float Volume { get; }
+    public float Pitch { get; }
 
-    public SfxPlayRequest(string clipKey, ESpatialMode spatialMode = ESpatialMode.Flat2D, Vector3 position = default, Transform followTarget = null)
+    public SfxPlayRequest(string clipKey, ESpatialMode spatialMode = ESpatialMode.Flat2D, Vector3 position = default, Transform followTarget = null, float volume = 1f, float pitch = 1f)
     {
         ClipKey = clipKey;
         ESpatialMode = spatialMode;
         Position = position;
         FollowTarget = followTarget;
+        Volume = volume;
+        Pitch = pitch;
     }
 }
