@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -12,9 +13,23 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
     private ObjectPool<AudioSource> _pool;
     private Transform _poolRoot;
     private AudioMixerGroup _effectGroup;
+    private readonly Dictionary<string, LoopingSfxState> _loopingSources = new Dictionary<string, LoopingSfxState>();
 
     private const int DefaultPoolSize = 15;
     private const int MaxPoolSize = 30;
+
+    private sealed class LoopingSfxState
+    {
+        public AudioSource Source;
+        public bool StopRequested;
+        public bool IsStopping;
+        public readonly float TargetVolume;
+
+        public LoopingSfxState(float targetVolume)
+        {
+            TargetVolume = targetVolume;
+        }
+    }
 
     // 초기화: SFX Pool을 생성한다
     public void Initialize(Transform parent, AudioMixerGroup effectGroup, int poolSize = DefaultPoolSize)
@@ -44,6 +59,36 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
     {
         if (string.IsNullOrEmpty(request.ClipKey)) return;
         PlayForDurationInternalAsync(request, duration, fadeOutDuration).Forget();
+    }
+
+    public void PlayLooping(string loopKey, SfxPlayRequest request, float fadeInDuration)
+    {
+        if (string.IsNullOrEmpty(request.ClipKey)) return;
+
+        string safeLoopKey = string.IsNullOrEmpty(loopKey) ? request.ClipKey : loopKey;
+        if (_loopingSources.ContainsKey(safeLoopKey))
+            return;
+
+        LoopingSfxState state = new LoopingSfxState(Mathf.Max(0f, request.Volume));
+        _loopingSources.Add(safeLoopKey, state);
+        PlayLoopingInternalAsync(safeLoopKey, request, Mathf.Max(0f, fadeInDuration), state).Forget();
+    }
+
+    public void StopLooping(string loopKey, float fadeOutDuration)
+    {
+        if (string.IsNullOrEmpty(loopKey)) return;
+        if (!_loopingSources.TryGetValue(loopKey, out LoopingSfxState state))
+            return;
+
+        state.StopRequested = true;
+
+        if (state.Source == null)
+        {
+            _loopingSources.Remove(loopKey);
+            return;
+        }
+
+        StopLoopingInternalAsync(loopKey, state, Mathf.Max(0f, fadeOutDuration)).Forget();
     }
 
     private async UniTaskVoid PlayInternalAsync(SfxPlayRequest request)
@@ -99,6 +144,103 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
             safeDuration,
             fadeOutDuration,
             Mathf.Max(0f, request.Volume));
+    }
+
+    private async UniTaskVoid PlayLoopingInternalAsync(string loopKey, SfxPlayRequest request, float fadeInDuration, LoopingSfxState state)
+    {
+        AudioClip clip = await ResourceManager.Instance.LoadAsync<AudioClip>(request.ClipKey);
+        if (clip == null)
+        {
+            Debug.LogWarning($"[SfxPlayer] SFX ?대┰ 濡쒕뱶 ?ㅽ뙣: {request.ClipKey}");
+            RemoveLoopingState(loopKey, state);
+            return;
+        }
+
+        if (state.StopRequested)
+        {
+            RemoveLoopingState(loopKey, state);
+            return;
+        }
+
+        AudioSource source = _pool.Get();
+        if (source == null)
+        {
+            RemoveLoopingState(loopKey, state);
+            return;
+        }
+
+        state.Source = source;
+        Transform followTarget = request.ESpatialMode == ESpatialMode.FollowTransform ? request.FollowTarget : null;
+
+        source.clip = clip;
+        source.loop = true;
+        source.volume = fadeInDuration > 0f ? 0f : state.TargetVolume;
+        source.pitch = Mathf.Max(0.01f, request.Pitch);
+        ConfigureSpatial(source, request);
+        source.Play();
+
+        await KeepLoopingSourceAliveAsync(source, followTarget, fadeInDuration, state);
+    }
+
+    private async UniTask KeepLoopingSourceAliveAsync(AudioSource source, Transform followTarget, float fadeInDuration, LoopingSfxState state)
+    {
+        bool isFollowing = followTarget != null;
+        float elapsed = 0f;
+
+        while (source != null && source.isPlaying && !state.StopRequested)
+        {
+            if (isFollowing && followTarget != null)
+                source.transform.position = followTarget.position;
+
+            if (fadeInDuration > 0f && elapsed < fadeInDuration)
+            {
+                elapsed += Time.deltaTime;
+                source.volume = Mathf.Lerp(0f, state.TargetVolume, Mathf.Clamp01(elapsed / fadeInDuration));
+            }
+            else
+            {
+                source.volume = state.TargetVolume;
+            }
+
+            await UniTask.Yield();
+        }
+    }
+
+    private async UniTaskVoid StopLoopingInternalAsync(string loopKey, LoopingSfxState state, float fadeOutDuration)
+    {
+        if (state.IsStopping)
+            return;
+
+        state.IsStopping = true;
+        AudioSource source = state.Source;
+
+        if (source != null)
+        {
+            float startVolume = source.volume;
+            float elapsed = 0f;
+
+            while (source != null && elapsed < fadeOutDuration)
+            {
+                elapsed += Time.deltaTime;
+                source.volume = Mathf.Lerp(startVolume, 0f, Mathf.Clamp01(elapsed / fadeOutDuration));
+                await UniTask.Yield();
+            }
+
+            if (source != null)
+            {
+                source.Stop();
+                source.loop = false;
+                _pool.Release(source);
+            }
+        }
+
+        RemoveLoopingState(loopKey, state);
+    }
+
+    private void RemoveLoopingState(string loopKey, LoopingSfxState state)
+    {
+        if (_loopingSources.TryGetValue(loopKey, out LoopingSfxState current) && current == state)
+            _loopingSources.Remove(loopKey);
     }
 
     private void ConfigureSpatial(AudioSource source, SfxPlayRequest request)
@@ -218,6 +360,13 @@ public class SfxPlayer : MonoBehaviour, ISfxPlayer
 
     private void OnDestroy()
     {
+        foreach (LoopingSfxState state in _loopingSources.Values)
+        {
+            state.StopRequested = true;
+            if (state.Source != null)
+                state.Source.Stop();
+        }
+        _loopingSources.Clear();
         _pool?.Dispose();
     }
 }

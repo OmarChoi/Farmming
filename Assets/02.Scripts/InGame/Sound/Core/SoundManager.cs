@@ -151,4 +151,10 @@ public class SoundManager : MonoBehaviour
 
     public void PlaySfxForDuration(SfxPlayRequest request, float duration, float fadeOutDuration = 0.2f)
         => _sfxPlayer.PlayForDuration(request, duration, fadeOutDuration);
+
+    public void PlayLoopingSfx(string loopKey, SfxPlayRequest request, float fadeInDuration = 0.25f)
+        => _sfxPlayer.PlayLooping(loopKey, request, fadeInDuration);
+
+    public void StopLoopingSfx(string loopKey, float fadeOutDuration = 0.5f)
+        => _sfxPlayer.StopLooping(loopKey, fadeOutDuration);
 }
