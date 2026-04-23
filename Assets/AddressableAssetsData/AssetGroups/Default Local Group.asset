@@ -36,6 +36,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0db0cc2254e87964c95c8df35d8e6245
+    m_Address: SFXmonkeydetect
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1054a5d7887492b41a6265fc1fc0f8d3
     m_Address: Smithy
     m_ReadOnly: 0
@@ -59,6 +65,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26d90a15e0224ab40905cfb79c0f15fc
+    m_Address: RI-EpicWoodHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2b156ee33f6f8894dbfee76307f4fdbe
     m_Address: UI_DinoRace
     m_ReadOnly: 0
@@ -79,6 +91,12 @@ MonoBehaviour:
     m_Address: BGMVillage
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 399187f1cf1cdb54d9580fef370ba60a
+    m_Address: NormalWoodHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3a29f65e6280eb241932e034c68f5f03
     m_Address: House2
@@ -136,10 +154,22 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5a0e73b62d1d3ca49b3950cd0042ec6e
+    m_Address: SFXmushroomdetect
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5dc103abe652e2b4b98c42bb9f1beaaf
     m_Address: UI_BuildingList
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5fa12affbf401494591ccce40778cb86
+    m_Address: RI-LegendaryWoodHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 60e3487e6ef02574790ea20bc99f8af7
     m_Address: SFXhelperfollow
@@ -167,6 +197,12 @@ MonoBehaviour:
     m_Address: Dungeon1Bgm
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a7080168f3e074468f038590995d5d2
+    m_Address: EpicWoodHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 867ed38f7606b2b47b03845b97e12417
     m_Address: Storage
@@ -198,10 +234,28 @@ MonoBehaviour:
     m_SerializedLabels:
     - NetworkPrefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a1651b1644655d94190163fce3b62076
+    m_Address: SFXmonkeytrouble
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a24c1884f3272ec4c924d623abf4af9d
+    m_Address: SFXmushroomtrouble
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a25295cd1fea3b149a967d7f586a5584
     m_Address: HelperEvolutionBGM
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3f4c6100c643de48819e3398f72d817
+    m_Address: RI-NormalWoodHelper
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a6ba1481c20cbf842b92dc12d87fc385
     m_Address: HelperEvolution
@@ -243,42 +297,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - CommonSound
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 399187f1cf1cdb54d9580fef370ba60a
-    m_Address: NormalWoodHelper
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CommonSound
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7a7080168f3e074468f038590995d5d2
-    m_Address: EpicWoodHelper
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CommonSound
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e8ac6f907e2141340983801d315ff9b3
-    m_Address: LegendaryWoodHelper
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CommonSound
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a3f4c6100c643de48819e3398f72d817
-    m_Address: RI-NormalWoodHelper
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CommonSound
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 26d90a15e0224ab40905cfb79c0f15fc
-    m_Address: RI-EpicWoodHelper
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CommonSound
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5fa12affbf401494591ccce40778cb86
-    m_Address: RI-LegendaryWoodHelper
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CommonSound
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c2a662cd160683c41838739982aa92fb
     m_Address: UI_VillageLevelUp
     m_ReadOnly: 0
@@ -298,6 +316,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e2cd546e2e4dc0843a048698f3da9a2c
     m_Address: SFXharvestnormal
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e8ac6f907e2141340983801d315ff9b3
+    m_Address: LegendaryWoodHelper
     m_ReadOnly: 0
     m_SerializedLabels:
     - CommonSound
