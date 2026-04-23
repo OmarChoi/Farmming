@@ -6,8 +6,10 @@ using System.Collections.Generic;
 public class NpcQuestService : MonoBehaviour
 {
     [SerializeField] private TutorialProgressController _tutorialProgressController;
+    [SerializeField, Min(0f)] private float _questHelperSfxMinInterval = 0.2f;
 
     private InfoPageController _infoPageController;
+    private float _lastQuestHelperSfxTime = float.MinValue;
     private void Start()
     {
         if (_tutorialProgressController == null)
@@ -487,6 +489,7 @@ public class NpcQuestService : MonoBehaviour
     public void ExecuteTutorialQuestInteraction(NpcInteractionContext context, QuestDataSO questData)
     {
         if (context == null || context.Npc == null || questData == null) return;
+        PlayQuestHelperSfxForLocalTutorialPlayer(context);
 
         if (!CanOfferQuest(context, questData))
         {
@@ -522,6 +525,8 @@ public class NpcQuestService : MonoBehaviour
         if (context == null || context.Npc == null) return false;
         if (_tutorialProgressController == null) return false;
         if (!_tutorialProgressController.IsTutorialNpc(context.Npc)) return false;
+
+        PlayQuestHelperSfxForLocalTutorialPlayer(context);
 
         if (!_tutorialProgressController.TryGetCurrentTutorialQuest(out QuestDataSO currentQuest) || currentQuest == null)
         {
@@ -560,6 +565,21 @@ public class NpcQuestService : MonoBehaviour
 
         HandleNoQuest(context);
         return true;
+    }
+
+    private void PlayQuestHelperSfxForLocalTutorialPlayer(NpcInteractionContext context)
+    {
+        if (context?.Interactor == null || !context.Interactor.IsMine)
+            return;
+        if (SoundManager.Instance == null)
+            return;
+        if (Time.unscaledTime - _lastQuestHelperSfxTime < _questHelperSfxMinInterval)
+            return;
+
+        _lastQuestHelperSfxTime = Time.unscaledTime;
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.QuestHelper,
+            spatialMode: ESpatialMode.Flat2D));
     }
 
     private QuestRuntimeData FindActiveQuestRuntime(string questId)
