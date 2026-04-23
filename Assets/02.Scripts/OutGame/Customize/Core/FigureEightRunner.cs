@@ -39,7 +39,10 @@ public class FigureEightRunner : MonoBehaviour
         _origin = _center != null ? _center.position : transform.position;
     }
 
-    private void Update()
+    // Animator의 본 평가는 Update 이후 LateUpdate 이전에 수행된다.
+    // Update에서 transform을 수정하면 같은 프레임에 Animator가 루트를 덮어써 회전이 고정될 수 있어
+    // 이동·회전 적용은 LateUpdate에서 수행한다.
+    private void LateUpdate()
     {
         _elapsed += Time.deltaTime * _speed;
 

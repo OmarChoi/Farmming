@@ -220,6 +220,10 @@ public static class AssetKey
 
         #region Dungeon
         public const string ChestOpen = "SFXchestopen";
+        public const string MonkeyDetect = "SFXmonkeydetect";
+        public const string MonkeyTrouble = "SFXmonkeytrouble";
+        public const string MushroomDetect = "SFXmushroomdetect";
+        public const string MushroomTrouble = "SFXmushroomtrouble";
 
         #endregion
     }

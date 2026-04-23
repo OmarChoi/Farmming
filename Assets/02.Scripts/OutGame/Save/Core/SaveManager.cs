@@ -7,6 +7,8 @@ public class SaveManager : MonoBehaviourPun
 {
     public static SaveManager Instance { get; private set; }
 
+    private const int MaxSpawnCheckHeight = 20;
+
     [SerializeField] private TerrainGridManager _terrainGridManager;
     [SerializeField] private MapManager _mapManager;
 
@@ -97,6 +99,8 @@ public class SaveManager : MonoBehaviourPun
             return;
         }
 
+        RestoreCorruptedZeroPosition(save);
+
         if (player.PhotonView == null || player.PhotonView.IsMine)
         {
             // 로컬 플레이어: 직접 적용
@@ -108,6 +112,65 @@ public class SaveManager : MonoBehaviourPun
             string json = JsonUtility.ToJson(save);
             player.PhotonView.RPC(nameof(PlayerController.RPC_RestoreSaveData), player.PhotonView.Owner, json);
         }
+    }
+
+    private void RestoreCorruptedZeroPosition(PlayerSaveData save)
+    {
+        if (save == null) return;
+        if (!IsZeroPosition(save)) return;
+        if (!TryFindSpawnPosition(out Vector3 spawnPos)) return;
+
+        save.PosX = spawnPos.x;
+        save.PosY = spawnPos.y;
+        save.PosZ = spawnPos.z;
+    }
+
+    private static bool IsZeroPosition(PlayerSaveData save)
+    {
+        return Mathf.Approximately(save.PosX, 0f)
+               && Mathf.Approximately(save.PosY, 0f)
+               && Mathf.Approximately(save.PosZ, 0f);
+    }
+
+    private bool TryFindSpawnPosition(out Vector3 spawnPos)
+    {
+        spawnPos = Vector3.zero;
+
+        TerrainGridManager gridManager = _terrainGridManager;
+        if (gridManager == null && _mapManager != null)
+            gridManager = _mapManager.GridManager;
+        if (gridManager == null)
+            gridManager = TerrainGridManager.Instance;
+        if (gridManager == null)
+            return false;
+
+        TerrainGridData gridData = gridManager.GetGridData();
+        if (gridData == null || gridData.Cells.Count == 0)
+            return false;
+
+        int minX = int.MaxValue, maxX = int.MinValue;
+        int minZ = int.MaxValue, maxZ = int.MinValue;
+        foreach (var pos in gridData.Cells.Keys)
+        {
+            if (pos.x < minX) minX = pos.x;
+            if (pos.x > maxX) maxX = pos.x;
+            if (pos.z < minZ) minZ = pos.z;
+            if (pos.z > maxZ) maxZ = pos.z;
+        }
+
+        int cx = (minX + maxX) / 2;
+        int cz = (minZ + maxZ) / 2;
+
+        for (int y = MaxSpawnCheckHeight; y >= 0; y--)
+        {
+            if (!gridData.HasCell(new Vector3Int(cx, y, cz)))
+                continue;
+
+            spawnPos = gridManager.GridToWorld(new Vector3Int(cx, y + 1, cz));
+            return true;
+        }
+
+        return false;
     }
 
     public void UnregisterPlayer(string playerId)
