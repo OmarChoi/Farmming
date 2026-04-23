@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91e655f62aab8974fa49294ca5af0839, type: 3}
+  m_Name: Dungeon1EnvironmentProfile
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonEnvironmentProfile
+  AmbientColor: {r: 0.7176471, g: 0.84705883, b: 0.5411765, a: 1}
+  AmbientIntensity: 1.15
+  DirectionalLightColor: {r: 1, g: 0.9490196, b: 0.72156864, a: 1}
+  DirectionalLightIntensity: 1.45
+  UseFog: 1
+  FogColor: {r: 0.93718696, g: 0.9764151, b: 0.91654056, a: 1}
+  FogDensity: 0.008
+  SkyboxMaterial: {fileID: 2100000, guid: 2bd8959f5fbd3644aa33af1a155fc147, type: 2}
+  PostExposure: 0.15
+  VignetteIntensity: 0.08
