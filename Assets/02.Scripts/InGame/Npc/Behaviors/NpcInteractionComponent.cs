@@ -22,7 +22,11 @@ public class NpcInteractionComponent : MonoBehaviour, IInteraction
     {
         if (player == null || !player.IsMine) return;
 
-        if (!_npcController.CanStartInteraction(player)) return;
+        if (!_npcController.CanStartInteraction(player))
+        {
+            UI_UnableActionText.Show("NPC는 집에서 쉬고 싶습니다.");
+            return;
+        }
 
         _playerController = player;
         _playerInteraction = player.GetAbility<PlayerNPCInteractionAbility>();
