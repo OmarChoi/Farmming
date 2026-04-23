@@ -364,15 +364,6 @@ public class UI_Inventory : MonoBehaviour, ISlotContainer
     {
         if (_isDragging) return;
 
-        if (_clickMode == EInventoryClickMode.Normal)
-        {
-            if (clicked.CurrentItem is PotionDataSO)
-            {
-                bool used = _potionAbility != null && _potionAbility.TryUsePotion(clicked.SlotIndex);
-                return;
-            }
-        }
-
         if (_clickMode == EInventoryClickMode.Trading)
         {
             if (_tradeAmountPopup != null && _tradeAmountPopup.IsOpen) return;
