@@ -131,7 +131,7 @@ public abstract class GatheringObject : MonoBehaviour, IGatherable
 
         foreach (DropEntry entry in drops)
         {
-            int qty = WorldEffectManager.ApplyMultiplier(entry.GetRandomQuantity(), yieldMultiplier);
+            int qty = WorldEffectManager.ApplyAcquireMultiplier(entry.GetRandomQuantity(), yieldMultiplier);
             if (entry.Item == null || qty <= 0)
                 continue;
 
