@@ -49,7 +49,6 @@ public class UI_Slot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         if (eventData.button != PointerEventData.InputButton.Left)
             return;
         if (_currentItem == null) return;
-        if (_currentItem is PotionDataSO) return;
 
         bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         _container.BeginDrag(this, shift);
