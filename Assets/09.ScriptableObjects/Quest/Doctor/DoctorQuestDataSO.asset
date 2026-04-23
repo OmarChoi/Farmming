@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002c5ad1e0e02f74784441da1d9fa045, type: 3}
+  m_Name: DoctorQuestDataSO
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
+  QuestId: DoctorQuestData01
+  QuestName: "\uD798\uC774 \uC19F\uB294 \uC57D?"
+  Description: "\uB2E5\uD130 \uADF8\uB7A8\uC774 \uBB54\uAC00 \uC88B\uC740 \uAC78
+    \uC900\uB2E4\uACE0 \uD55C\uB2E4..."
+  QuestCategory: 1
+  IsTutorial: 0
+  StartNpcId: Doctor
+  CompleteNpcId: Doctor
+  IsForcedAccept: 0
+  ObjectiveType: 3
+  TargetId: 
+  ItemRequirements: []
+  TargetNpcId: Doctor
+  RequiredAmount: 1
+  PrerequisiteQuests: []
+  RequiredFriendship: 0
+  Reward:
+    Rewards:
+    - RewardType: 1
+      RewardItem: {fileID: 11400000, guid: 9f4f1a5e6aa74fd08a8d3dc7c9d4ac84, type: 2}
+      Amount: 5
+      RewardHelper: {fileID: 0}
+      TargetNpcId: 
+    - RewardType: 1
+      RewardItem: {fileID: 11400000, guid: c4a9d1aa8f7c4d8aaef7452a304f5123, type: 2}
+      Amount: 3
+      RewardHelper: {fileID: 0}
+      TargetNpcId: 
+    - RewardType: 2
+      RewardItem: {fileID: 0}
+      Amount: 20
+      RewardHelper: {fileID: 0}
+      TargetNpcId: Doctor
+  AcceptDialogue: {fileID: 11400000, guid: c08c04d039b5f70448bd62355af6868b, type: 2}
+  AcceptResultDialogue: {fileID: 11400000, guid: 7d407ba5f477f0b42bda25d56b1b2b85, type: 2}
+  DeclineDialogue: {fileID: 11400000, guid: f5105bad09c18d34ea2dff21cb31db12, type: 2}
+  InProgressDialogue: {fileID: 11400000, guid: 882c86a7147d35340b4c7d08a66f0a0a, type: 2}
+  CompleteDialogue: {fileID: 11400000, guid: 70ca78f50c39e13478d3a9f72e64e598, type: 2}
+  NoQuestDialogue: {fileID: 11400000, guid: 6fa96329a69abbe42a6c4f62dba8af0b, type: 2}
+  AcceptInfoPageSet: {fileID: 0}
+  CompleteInfoPageSet: {fileID: 0}

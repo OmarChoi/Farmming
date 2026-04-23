@@ -254,7 +254,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04bc102508ba35244b56f5645f16abd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcQuest
-  _quests: []
+  _quests:
+  - {fileID: 11400000, guid: de420575d23591d4b97e3aea7dd73cf3, type: 2}
 --- !u!95 &526476110738173426
 Animator:
   serializedVersion: 7
