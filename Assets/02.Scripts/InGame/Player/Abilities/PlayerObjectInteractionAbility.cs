@@ -53,6 +53,9 @@ public class PlayerObjectInteractionAbility : PlayerAbility
             IWorldInteractable interactable = hit.GetComponentInParent<IWorldInteractable>();
             if (interactable == null) continue;
 
+            // 상호작용 불가능한 상태(예: 건설 중)면 후보에서 제외
+            if (!interactable.CanInteract) continue;
+
             float dist = Vector3.Distance(transform.position, hit.transform.position);
             if (dist < minDist)
             {

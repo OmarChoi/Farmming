@@ -43,7 +43,7 @@ public static class QuestRewardTextFormatter
                 return $"{itemName} {reward.Amount}개";
 
             case EQuestRewardType.Friendship:
-                return $"친밀도 +{reward.Amount}";
+                return $"{QuestTextUtility.GetNpcDisplayName(reward.TargetNpcId)} 친밀도 +{reward.Amount}";
 
             default:
                 return string.Empty;
