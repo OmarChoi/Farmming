@@ -315,6 +315,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     private void PlayDetectAll()
     {
         _anim?.PlayDetect();
+        PlaySfxLocal(_data?.DetectSfxKey);
 
         if (HasAuthority && PhotonNetwork.IsConnected && PhotonView != null)
         {
@@ -325,6 +326,7 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     public void PlayTroubleAll()
     {
         _anim?.PlayTrouble();
+        PlaySfxLocal(_data?.TroubleSfxKey);
 
         if (HasAuthority && PhotonNetwork.IsConnected && PhotonView != null)
         {
@@ -336,12 +338,14 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     private void RPC_PlayDetect()
     {
         _anim?.PlayDetect();
+        PlaySfxLocal(_data?.DetectSfxKey);
     }
 
     [PunRPC]
     private void RPC_PlayTrouble()
     {
         _anim?.PlayTrouble();
+        PlaySfxLocal(_data?.TroubleSfxKey);
     }
 
     [PunRPC]
@@ -355,5 +359,21 @@ public class TroublemakerController : MonoBehaviourPunCallbacks
     {
         var cave = GetComponent<CaveTroublemakerBehaviour>();
         cave?.SpawnTroubleEffectLocal();
+    }
+
+    private void PlaySfxLocal(string key)
+    {
+        if (SoundManager.Instance == null) return;
+        if (string.IsNullOrEmpty(key) || _data == null) return;
+
+        float pitch = UnityEngine.Random.Range(_data.SfxPitchMin, _data.SfxPitchMax);
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: key,
+            spatialMode: ESpatialMode.Positional3D,
+            position: transform.position,
+            followTarget: transform,
+            volume: _data.SfxVolume,
+            pitch: pitch));
     }
 }
