@@ -25,8 +25,18 @@ public class DungeonEnvironmentController : MonoBehaviour
     private bool _hasVignetteState;
     private float _vignetteIntensity;
     private bool _vignetteOverrideState;
+    private bool _hasDepthOfFieldState;
+    private DepthOfFieldMode _dofMode;
+    private bool _dofModeOverrideState;
+    private float _dofGaussianStart;
+    private bool _dofGaussianStartOverrideState;
+    private float _dofGaussianEnd;
+    private bool _dofGaussianEndOverrideState;
+    private float _dofGaussianMaxRadius;
+    private bool _dofGaussianMaxRadiusOverrideState;
     private ColorAdjustments _colorAdjustments;
     private Vignette _vignette;
+    private DepthOfField _depthOfField;
 
     private void Awake()
     {
@@ -106,6 +116,19 @@ public class DungeonEnvironmentController : MonoBehaviour
             _hasVignetteState = true;
         }
 
+        if (TryGetVolumeComponent(out _depthOfField))
+        {
+            _dofMode = _depthOfField.mode.value;
+            _dofModeOverrideState = _depthOfField.mode.overrideState;
+            _dofGaussianStart = _depthOfField.gaussianStart.value;
+            _dofGaussianStartOverrideState = _depthOfField.gaussianStart.overrideState;
+            _dofGaussianEnd = _depthOfField.gaussianEnd.value;
+            _dofGaussianEndOverrideState = _depthOfField.gaussianEnd.overrideState;
+            _dofGaussianMaxRadius = _depthOfField.gaussianMaxRadius.value;
+            _dofGaussianMaxRadiusOverrideState = _depthOfField.gaussianMaxRadius.overrideState;
+            _hasDepthOfFieldState = true;
+        }
+
         _hasCachedState = true;
     }
 
@@ -137,6 +160,22 @@ public class DungeonEnvironmentController : MonoBehaviour
         {
             _vignette.intensity.overrideState = true;
             _vignette.intensity.value = profile.VignetteIntensity;
+        }
+
+        if (_depthOfField != null)
+        {
+            _depthOfField.mode.overrideState = true;
+            _depthOfField.mode.value = profile.UseDepthOfField ? DepthOfFieldMode.Gaussian : DepthOfFieldMode.Off;
+
+            if (profile.UseDepthOfField)
+            {
+                _depthOfField.gaussianStart.overrideState = true;
+                _depthOfField.gaussianStart.value = profile.DofGaussianStart;
+                _depthOfField.gaussianEnd.overrideState = true;
+                _depthOfField.gaussianEnd.value = profile.DofGaussianEnd;
+                _depthOfField.gaussianMaxRadius.overrideState = true;
+                _depthOfField.gaussianMaxRadius.value = profile.DofGaussianMaxRadius;
+            }
         }
     }
 
@@ -180,6 +219,18 @@ public class DungeonEnvironmentController : MonoBehaviour
         {
             _vignette.intensity.overrideState = _vignetteOverrideState;
             _vignette.intensity.value = _vignetteIntensity;
+        }
+
+        if (_hasDepthOfFieldState && _depthOfField != null)
+        {
+            _depthOfField.mode.overrideState = _dofModeOverrideState;
+            _depthOfField.mode.value = _dofMode;
+            _depthOfField.gaussianStart.overrideState = _dofGaussianStartOverrideState;
+            _depthOfField.gaussianStart.value = _dofGaussianStart;
+            _depthOfField.gaussianEnd.overrideState = _dofGaussianEndOverrideState;
+            _depthOfField.gaussianEnd.value = _dofGaussianEnd;
+            _depthOfField.gaussianMaxRadius.overrideState = _dofGaussianMaxRadiusOverrideState;
+            _depthOfField.gaussianMaxRadius.value = _dofGaussianMaxRadius;
         }
 
         _hasCachedState = false;
