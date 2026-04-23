@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
   QuestId: DeliverItemBoardQuest1
   QuestName: "\uD3ED\uB82C\uD654\uAC00 \uBCF4\uACE0 \uC2F6\uC5B4!"
-  Description: "\uC608\uC220\uC740 \uD3ED\uBC1C\uC774\uB2C8 \uD3ED\uB82C\uD654\uB97C
-    \uAE38\uB7EC\uBCF4\uACE0 \uC2F6\uC5B4\uC694. \uB204\uAC00 \uC528\uC557\uC744
-    \uD558\uB098 \uAD6C\uD574\uB2E4 \uC8FC\uC138\uC694. \uBCF4\uC0C1\uC740 \uB450\uB451\uD788
-    \uB4DC\uB9BD\uB2C8\uB2E4."
+  Description: "\uC608\uC220\uC740 \uD3ED\uBC1C\uC774\uC9C0. \uC751? \uBB34\uC2A8
+    \uC18C\uB9AC\uB0D0\uACE0? \uC5B4\uB514\uC11C \uB4E4\uC5C8\uB354\uB77C... \uC544\uBB34\uD2BC
+    \uADF8\uB7F0 \uC758\uBBF8\uC5D0\uC11C \uD3ED\uB82C\uD654\uAC00 \uBCF4\uACE0 \uC2F6\uC5B4\uC9C0\uB294\uAD70.
+    \uB204\uAD70\uAC00 \uAC00\uC838\uC640\uC900\uB2E4\uBA74 \uC0AC\uB840\uB294 \uD574\uC8FC\uB3C4\uB85D
+    \uD558\uC9C0."
   QuestCategory: 2
   IsTutorial: 0
   StartNpcId: 
@@ -41,7 +42,7 @@ MonoBehaviour:
       TargetNpcId: 
     - RewardType: 2
       RewardItem: {fileID: 0}
-      Amount: 100
+      Amount: 40
       RewardHelper: {fileID: 0}
       TargetNpcId: Merchant
   AcceptDialogue: {fileID: 0}
