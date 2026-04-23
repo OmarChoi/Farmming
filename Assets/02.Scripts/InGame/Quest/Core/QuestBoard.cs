@@ -21,6 +21,9 @@ public class QuestBoard : MonoBehaviour, IWorldInteractable
     public QuestBoardDataSO BoardQuest => _boardQuest;
     public string AnimationTrigger => string.Empty;
 
+    // 건설 완료된 경우에만 상호작용 가능.
+    public bool CanInteract => _building != null && _building.IsConstructionComplete;
+
     private void Awake()
     {
         if (DailyQuestManager.Instance != null)
@@ -37,7 +40,8 @@ public class QuestBoard : MonoBehaviour, IWorldInteractable
 
     public void Interact(PlayerController player)
     {
-        if (!_building.IsConstructionComplete) return;
+        if (!CanInteract) return;
+
         // 이미 상호작용 중이면 재진입 방지 (UI 열리는 도중 Interact 중복 방지).
         if (_isInteracting) return;
 

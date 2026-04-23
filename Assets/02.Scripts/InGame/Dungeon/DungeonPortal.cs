@@ -18,6 +18,9 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
     private BaseBuilding _building;
     private PhotonView _photonView;
 
+    // 건설 완료된 경우에만 상호작용 가능.
+    public bool CanInteract => _building != null && _building.IsConstructionComplete;
+
     private void Awake()
     {
         _building = GetComponent<BaseBuilding>();
@@ -39,7 +42,8 @@ public class DungeonPortal : MonoBehaviour, IWorldInteractable
 
     public void Interact(PlayerController player)
     {
-        if (!_building.IsConstructionComplete) return;
+        if (!CanInteract) return;
+
         if (!ResolveUI())
         {
             Debug.LogError("[DungeonPortal] UI_DungeonPortal not found.");
