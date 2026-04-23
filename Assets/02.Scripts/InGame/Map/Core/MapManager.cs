@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
@@ -111,6 +111,9 @@ public class MapManager : MonoBehaviour
                 break;
             case EMapType.Dungeon1:
                 SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Dungeon1);
+                break;
+            case EMapType.Dungeon2:
+                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Dungeon2);
                 break;
         }
     }
