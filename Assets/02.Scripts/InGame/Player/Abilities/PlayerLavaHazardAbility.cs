@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Photon.Pun;
 using UnityEngine;
 
 public class PlayerLavaHazardAbility : PlayerAbility
@@ -7,11 +8,13 @@ public class PlayerLavaHazardAbility : PlayerAbility
     [SerializeField] private float _jumpDuration = 0.5f;
     [SerializeField] private int _searchRadius = 5;
     [SerializeField] private float _lavaStaminaCost = 10f;
+    [SerializeField, Min(0f)] private float _steamSfxCooldown = 1f;
 
     private CharacterController _cc;
     private PlayerAnimationAbility _animation;
     private PlayerStaminaAbility _stamina;
     private bool _isJumping;
+    private float _lastSteamSfxTime = float.MinValue;
 
     private void Start()
     {
@@ -46,16 +49,20 @@ public class PlayerLavaHazardAbility : PlayerAbility
         if (gridManager == null) return;
 
         Vector3Int gridPos = gridManager.WorldToGrid(_owner.transform.position);
+        Vector3Int contactGrid = gridPos;
 
         // 발밑 셀 확인 (현재 위치 또는 한 칸 아래)
         var cell = gridManager.GetGridData().GetCell(gridPos);
         if (cell == null)
-            cell = gridManager.GetGridData().GetCell(gridPos + Vector3Int.down);
+        {
+            contactGrid = gridPos + Vector3Int.down;
+            cell = gridManager.GetGridData().GetCell(contactGrid);
+        }
 
         if (cell == null) return;
         if (cell.TileType != ETileType.Dungeon3Lava) return;
 
-        OnLavaContact(gridPos).Forget();
+        OnLavaContact(contactGrid).Forget();
     }
 
     private async UniTaskVoid OnLavaContact(Vector3Int currentGrid)
@@ -64,6 +71,7 @@ public class PlayerLavaHazardAbility : PlayerAbility
         _owner.LockAction();
         _stamina?.Consume(_lavaStaminaCost);
         _animation?.PlayLavaHit();
+        PlaySteamSfx(currentGrid);
 
         Vector3? safePos = FindNearestSafeTile(currentGrid);
         if (safePos.HasValue)
@@ -133,5 +141,39 @@ public class PlayerLavaHazardAbility : PlayerAbility
         _owner.transform.position = target;
 
         if (_cc != null) _cc.enabled = true;
+    }
+
+    private void PlaySteamSfx(Vector3Int lavaGrid)
+    {
+        if (Time.time - _lastSteamSfxTime < _steamSfxCooldown)
+            return;
+
+        _lastSteamSfxTime = Time.time;
+
+        TerrainGridManager gridManager = TerrainGridManager.Instance;
+        Vector3 position = gridManager != null
+            ? gridManager.GridToWorld(lavaGrid) + Vector3.up * (gridManager.CellSize * 0.5f)
+            : _owner.transform.position;
+
+        PlaySteamSfxAt(position);
+
+        if (_owner.PhotonView != null && PhotonNetwork.IsConnected)
+        {
+            _owner.PhotonView.RpcSafe(
+                nameof(PlayerController.RPC_PlayLavaSteamSfx),
+                RpcTarget.Others,
+                position);
+        }
+    }
+
+    private static void PlaySteamSfxAt(Vector3 position)
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.Steam,
+            spatialMode: ESpatialMode.Positional3D,
+            position: position));
     }
 }

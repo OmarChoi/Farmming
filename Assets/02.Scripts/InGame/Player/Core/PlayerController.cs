@@ -240,6 +240,18 @@ public class PlayerController : MonoBehaviour
     }
 
     [PunRPC]
+    public void RPC_PlayLavaSteamSfx(Vector3 position)
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.Steam,
+            spatialMode: ESpatialMode.Positional3D,
+            position: position));
+    }
+
+    [PunRPC]
     public void RPC_InitializeEmptyPlayerState()
     {
         GetAbility<PlayerQuestAbility>()?.InitializeEmptyState();
