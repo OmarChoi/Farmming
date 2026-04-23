@@ -338,6 +338,8 @@ public class NpcDialogueController : MonoBehaviour
     {
         if (_currentNpc == null || _interactionService == null) return;
 
+        _uiDialogue?.HideButtons();
+
         switch (type)
         {
             case ENpcInteractionType.Talk:
