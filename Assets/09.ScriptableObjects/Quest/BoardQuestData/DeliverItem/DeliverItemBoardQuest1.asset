@@ -21,14 +21,14 @@ MonoBehaviour:
   QuestCategory: 2
   IsTutorial: 0
   StartNpcId: 
-  CompleteNpcId: Shopper
+  CompleteNpcId: Merchant
   IsForcedAccept: 0
   ObjectiveType: 2
   TargetId: 
   ItemRequirements:
   - _item: {fileID: 11400000, guid: ef234c8f445434c4b99b956a0afdc7e6, type: 2}
     _amount: 1
-  TargetNpcId: Shopper
+  TargetNpcId: Merchant
   RequiredAmount: 1
   PrerequisiteQuests: []
   RequiredFriendship: 0
