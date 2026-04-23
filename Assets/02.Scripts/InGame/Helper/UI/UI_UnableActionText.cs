@@ -36,13 +36,13 @@ public class UI_UnableActionText : MonoBehaviour
 
     public static void Show(string message, float fadeDuration = 1.5f)
     {
-        if (Instance == null)
+        if (Instance != null)
         {
-            Debug.Log(message);
+            Instance.ShowInternal(message, fadeDuration);
             return;
         }
 
-        Instance.ShowInternal(message, fadeDuration);
+        Debug.Log(message);
     }
 
     private void ShowInternal(string message, float fadeDuration)

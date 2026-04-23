@@ -12,9 +12,9 @@ public enum EGatherType
 
 public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrimaryInteractBlockNotifier, ISecondaryInteractBlockNotifier
 {
-    private const string UnableTreeGatherMessage = "\uC544\uC9C1 \uCC44\uC9D1\uD560 \uC218 \uC5C6\uB294 \uB098\uBB34\uC785\uB2C8\uB2E4.";
-    private const string UnableStoneGatherMessage = "\uC544\uC9C1 \uCC44\uC9D1\uD560 \uC218 \uC5C6\uB294 \uB3CC\uC785\uB2C8\uB2E4.";
-    private const float UnableTreeGatherFadeDuration = 1.5f;
+    private const string UnableTreeGatherMessage = "아직 채집할 수 없는 나무입니다.";
+    private const string UnableStoneGatherMessage = "아직 채집할 수 없는 돌입니다.";
+    private const float UnableGatherFadeDuration = 1.5f;
 
     [SerializeField] protected GameObject _effectWoodPrefab;
     [SerializeField] private GameObject _woodNormalEffect;
@@ -97,7 +97,7 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return false;
-        if (cell.Data.ObjectType != EGridObjectType.Tree) return false;
+        if (!TryGetWood(cell, out _)) return false;
         if (IsTreeGradeBlocked(cell)) return false;
         return true;
     }
@@ -111,14 +111,14 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
         if (!IsTreeGradeBlocked(cell))
             return;
 
-        UI_UnableActionText.Show(UnableTreeGatherMessage, UnableTreeGatherFadeDuration);
+        ShowUnableTreeGatherMessage();
     }
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return false;
-        if (cell.Data.ObjectType != EGridObjectType.Rock) return false;
+        if (!TryGetStone(cell, out _)) return false;
         if (IsStoneGradeBlocked(cell)) return false;
         return true;
     }
@@ -132,14 +132,18 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
         if (!IsStoneGradeBlocked(cell))
             return;
 
-        UI_UnableActionText.Show(UnableStoneGatherMessage, UnableTreeGatherFadeDuration);
+        ShowUnableStoneGatherMessage();
     }
 
     public void InteractPrimary(TerrainCell cell)
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return;
-        if (IsTreeGradeBlocked(cell)) return;
+        if (IsTreeGradeBlocked(cell))
+        {
+            ShowUnableTreeGatherMessage();
+            return;
+        }
 
         _woodPrimarySfxPlayed = false;
         _woodRangeBoostSfxPlayed = false;
@@ -290,13 +294,9 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return;
-        if (cell.CurrentObject == null) return;
-        if (cell.Data.ObjectType != EGridObjectType.Tree) return;
 
-        if (cell.CurrentObject.TryGetComponent<IGatherable>(out IGatherable gatherable) && gatherable is Wood)
-        {
-            gatherable.TryGather(info);
-        }
+        if (TryGetWood(cell, out Wood wood))
+            wood.TryGather(info);
     }
 
     private void PlayWoodPrimarySfxOnce(TerrainCell cell)
@@ -417,12 +417,27 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
         return _owner.Grade.CurrentGrade < gatheringData.RequiredLevel;
     }
 
+    private void ShowUnableTreeGatherMessage()
+    {
+        if (_owner != null && !_owner.IsMine)
+            return;
+
+        UI_UnableActionText.Show(UnableTreeGatherMessage, UnableGatherFadeDuration);
+    }
+
+    private void ShowUnableStoneGatherMessage()
+    {
+        if (_owner != null && !_owner.IsMine)
+            return;
+
+        UI_UnableActionText.Show(UnableStoneGatherMessage, UnableGatherFadeDuration);
+    }
+
     private static bool TryGetWood(TerrainCell cell, out Wood wood)
     {
         wood = null;
         if (cell == null) return false;
         if (cell.CurrentObject == null) return false;
-        if (cell.Data.ObjectType != EGridObjectType.Tree) return false;
 
         if (cell.CurrentObject.TryGetComponent(out wood))
             return true;
@@ -436,7 +451,6 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
         stone = null;
         if (cell == null) return false;
         if (cell.CurrentObject == null) return false;
-        if (cell.Data.ObjectType != EGridObjectType.Rock) return false;
 
         if (cell.CurrentObject.TryGetComponent(out stone))
             return true;
@@ -1179,7 +1193,11 @@ public class WoodCuttingMineActionAbility : HelperAbility, IHelperAction, IPrima
     {
         cell = GetInteractableCell(cell);
         if (cell == null) return;
-        if (IsStoneGradeBlocked(cell)) return;
+        if (IsStoneGradeBlocked(cell))
+        {
+            ShowUnableStoneGatherMessage();
+            return;
+        }
 
         if (cell != null && cell.CurrentObject != null && cell.Data.ObjectType == EGridObjectType.Tree)
             return;
