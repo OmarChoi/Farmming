@@ -31,4 +31,15 @@ public class TroublemakerDataSO : ScriptableObject
     public float TroubleCooldown = 2.5f;
     public float TroubleHitDelay = 0.25f;
     public float TroubleRange = 4f;
+
+    [Header("사운드 옵션")]
+    [SerializeField] private string _detectSfxKey;
+    [SerializeField] private string _troubleSfxKey;
+    public float SfxVolume = 1f;
+    public float SfxPitchMin = 0.95f;
+    public float SfxPitchMax = 1.05f;
+
+
+    public string DetectSfxKey => _detectSfxKey;
+    public string TroubleSfxKey => _troubleSfxKey;
 }
