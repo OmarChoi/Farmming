@@ -343,7 +343,7 @@ public class GameSceneInit : MonoBehaviour
             }
             else
             {
-                localPlayer = SpawnPlayer(Vector3.zero);
+                localPlayer = SpawnPlayer(FindSpawnPosition());
             }
 
             await UniTask.Yield();
