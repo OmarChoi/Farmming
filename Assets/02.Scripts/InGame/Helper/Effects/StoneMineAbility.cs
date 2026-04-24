@@ -7,6 +7,7 @@ public class StoneMineAbility : HelperAbility
 {
     [SerializeField] private GameObject _effectStonePrefab;
     [SerializeField] private GameObject _targetStoneEffectPrefab;
+    [SerializeField] private GameObject _rangeBoostNormalTargetStoneEffectPrefab;
     [SerializeField] private Transform _effectSpawnPoint;
     [SerializeField] private float _jumpHeight = 2f;
     [SerializeField] private float _epicJumpHeight = 3.2f;
@@ -215,6 +216,7 @@ public class StoneMineAbility : HelperAbility
 
         bool shouldSpawnCenterTargetEffect = isRockTarget && gatherable != null;
         bool spawnedStoneEffect = false;
+        bool isRangeBoostActive = wideCells != null;
         if ((currentGrade == EHelperGrade.Epic || currentGrade == EHelperGrade.Legendary) && shouldSpawnCenterTargetEffect)
         {
             spawnedStoneEffect |= SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
@@ -234,7 +236,23 @@ public class StoneMineAbility : HelperAbility
 
         if (currentGrade == EHelperGrade.Normal && shouldSpawnCenterTargetEffect)
         {
-            spawnedStoneEffect |= SpawnStoneEffectAt(targetEffectPosition ?? targetPosition);
+            spawnedStoneEffect |= SpawnStoneEffectAt(
+                targetEffectPosition ?? targetPosition,
+                isRangeBoostActive ? _rangeBoostNormalTargetStoneEffectPrefab : null);
+        }
+
+        if (currentGrade == EHelperGrade.Normal && isRangeBoostActive && wideCells != null)
+        {
+            foreach (TerrainCell wideCell in wideCells)
+            {
+                if (wideCell == null || wideCell.CurrentObject == null) continue;
+                if (wideCell.Data.ObjectType != EGridObjectType.Rock) continue;
+                if (!wideCell.CurrentObject.TryGetComponent<IGatherable>(out _)) continue;
+
+                spawnedStoneEffect |= SpawnStoneEffectAt(
+                    GetCellSurfaceEffectPosition(wideCell),
+                    _rangeBoostNormalTargetStoneEffectPrefab);
+            }
         }
         PlayMiningCameraShake(shouldSpawnCenterTargetEffect, wideCells);
         _animAbility.Play(EHelperAnim.Stun);
@@ -325,9 +343,11 @@ public class StoneMineAbility : HelperAbility
         return true;
     }
 
-    private bool SpawnStoneEffectAt(Vector3 worldPosition)
+    private bool SpawnStoneEffectAt(Vector3 worldPosition, GameObject overridePrefab = null)
     {
-        GameObject targetEffectPrefab = _targetStoneEffectPrefab != null ? _targetStoneEffectPrefab : _effectStonePrefab;
+        GameObject targetEffectPrefab = overridePrefab != null
+            ? overridePrefab
+            : (_targetStoneEffectPrefab != null ? _targetStoneEffectPrefab : _effectStonePrefab);
         if (targetEffectPrefab == null) return false;
         GameObject effect = Instantiate(targetEffectPrefab, worldPosition, Quaternion.identity);
 
