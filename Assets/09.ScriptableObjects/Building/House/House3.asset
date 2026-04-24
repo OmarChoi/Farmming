@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd2a9ca7cb51afd4e99fac6204fb4665, type: 3}
-  m_Name: House1
+  m_Name: House3
   m_EditorClassIdentifier: Assembly-CSharp::BuildingDataSO
-  _buildingId: House1
-  _displayName: "\uBE68\uAC04 \uC9C0\uBD95 \uC9D1"
-  _icon: {fileID: 21300000, guid: 5aab9f9704be4524499dae7012920d3c, type: 3}
+  _buildingId: House3
+  _displayName: "\uB178\uB791 \uC9C0\uBD95 \uC9D1"
+  _icon: {fileID: 21300000, guid: 3ac7f8d084a873849843d4f6c8019d97, type: 3}
   _description: "\uB9C8\uC744 \uC8FC\uBBFC\uC774 \uC0AC\uB294 \uC9D1\uC774\uB2E4."
   _width: 2
   _depth: 2
   _constructionDays: 1
   _costs:
   - _item: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
-    _amount: 15
+    _amount: 10
   - _item: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
-    _amount: 15
-  - _item: {fileID: 11400000, guid: b3dc8d39e92ffeb4a9a04a9fbce28ec7, type: 2}
     _amount: 10
-  - _item: {fileID: 11400000, guid: dcc4279e267ba5148b4c8fd2e86566f7, type: 2}
+  - _item: {fileID: 11400000, guid: 24de9fedc805cb949b6138f5ef3d08d9, type: 2}
     _amount: 10
-  _requiredVillageLevel: 3
+  - _item: {fileID: 11400000, guid: c814777b6fa687947916f653bc9b010f, type: 2}
+    _amount: 10
+  _requiredVillageLevel: 2
   _firstBuildGaugeContribution: 20
