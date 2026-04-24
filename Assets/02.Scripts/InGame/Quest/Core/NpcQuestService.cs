@@ -6,8 +6,10 @@ using System.Collections.Generic;
 public class NpcQuestService : MonoBehaviour
 {
     [SerializeField] private TutorialProgressController _tutorialProgressController;
+    [SerializeField, Min(0f)] private float _questHelperSfxMinInterval = 0.2f;
 
     private InfoPageController _infoPageController;
+    private float _lastQuestHelperSfxTime = float.MinValue;
     private void Start()
     {
         if (_tutorialProgressController == null)
@@ -35,6 +37,7 @@ public class NpcQuestService : MonoBehaviour
     {
         IQuestProgressService questProgressService = QuestManager.Instance;
         if (context == null || context.Npc == null || questProgressService == null) return;
+        TryPlayQuestHelperSfxForTutorialNpc(context);
 
         List<NpcQuestEntry> entries = FindQuestEntries(context);
 
@@ -487,6 +490,7 @@ public class NpcQuestService : MonoBehaviour
     public void ExecuteTutorialQuestInteraction(NpcInteractionContext context, QuestDataSO questData)
     {
         if (context == null || context.Npc == null || questData == null) return;
+        TryPlayQuestHelperSfxForTutorialNpc(context);
 
         if (!CanOfferQuest(context, questData))
         {
@@ -500,6 +504,7 @@ public class NpcQuestService : MonoBehaviour
     public void ExecuteAutoQuestInteraction(NpcInteractionContext context)
     {
         if (context == null || context.Npc == null) return;
+        TryPlayQuestHelperSfxForTutorialNpc(context);
 
         if (TryExecuteTutorialInteraction(context))
         {
@@ -560,6 +565,50 @@ public class NpcQuestService : MonoBehaviour
 
         HandleNoQuest(context);
         return true;
+    }
+
+    private void TryPlayQuestHelperSfxForTutorialNpc(NpcInteractionContext context)
+    {
+        if (!IsTutorialQuestNpc(context))
+            return;
+
+        PlayQuestHelperSfxForLocalTutorialPlayer(context);
+    }
+
+    private bool IsTutorialQuestNpc(NpcInteractionContext context)
+    {
+        if (context == null || context.Npc == null)
+            return false;
+
+        if (_tutorialProgressController != null && _tutorialProgressController.IsTutorialNpc(context.Npc))
+            return true;
+
+        NpcQuest provider = context.Npc.Quest;
+        if (provider?.Quests == null)
+            return false;
+
+        foreach (QuestDataSO questData in provider.Quests)
+        {
+            if (questData != null && questData.IsTutorial)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void PlayQuestHelperSfxForLocalTutorialPlayer(NpcInteractionContext context)
+    {
+        if (context?.Interactor == null || !context.Interactor.IsMine)
+            return;
+        if (SoundManager.Instance == null)
+            return;
+        if (Time.unscaledTime - _lastQuestHelperSfxTime < _questHelperSfxMinInterval)
+            return;
+
+        _lastQuestHelperSfxTime = Time.unscaledTime;
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: AssetKey.SFX.QuestHelper,
+            spatialMode: ESpatialMode.Flat2D));
     }
 
     private QuestRuntimeData FindActiveQuestRuntime(string questId)

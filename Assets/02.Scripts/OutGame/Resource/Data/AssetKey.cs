@@ -132,6 +132,8 @@ public static class AssetKey
         public const string StartScene = "BGMStartScene";
         public const string Village = "BGMVillage";
         public const string Dungeon1 = "Dungeon1Bgm";
+        public const string Dungeon2 = "Dungeon2Bgm";
+        public const string LavaDungeon = "LavaDungeonBGM";
         public const string HelperEvolution = "HelperEvolutionBGM";
     }
 
@@ -209,12 +211,15 @@ public static class AssetKey
         public const string StoneRangeNormalHelper = "RI-StoneNormal";
         public const string StoneRangeEpicHelper = "RI-StoneEpic";
         public const string StoneRangeLegendaryHelper = "RI-StoneLegendary";
+        public const string GroundDig = "Dig";
+        public const string GroundGenerate = "DigGenerate";
         public const string DirtSizzleLava = "DirtSizzle-Lava";
         public const string HelperSummon = "SFXhelpersummon";
         public const string HelperEquip = "SFXhelperequip";
         public const string HelperUnequip = "SFXhelperunequip";
         public const string HelperFollow = "SFXhelperfollow";
         public const string HelperEvolution = "HelperEvolution";
+        public const string QuestHelper = "QuestHelper";
 
         #endregion
 
@@ -224,6 +229,8 @@ public static class AssetKey
         public const string MonkeyTrouble = "SFXmonkeytrouble";
         public const string MushroomDetect = "SFXmushroomdetect";
         public const string MushroomTrouble = "SFXmushroomtrouble";
+        public const string LavaDungeonEffect = "LavaDungeonEffect";
+        public const string Steam = "Steam";
 
         #endregion
     }

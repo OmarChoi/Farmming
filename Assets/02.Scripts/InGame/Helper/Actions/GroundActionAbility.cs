@@ -107,6 +107,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
             }
 
             StartPrimaryDigAction();
+            PlayGroundDigSfx(detachedCell.transform.position);
             PlayPrimaryDigAnimation(detachedCell);
             FinishPrimaryDigAction();
 
@@ -183,6 +184,11 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         _animAbility?.Play(EHelperAnim.EatGround);
 
         TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
+        Vector3 placedWorldPosition = newCell != null
+            ? newCell.transform.position
+            : TerrainGridManager.Instance.GridToWorld(targetGridPos);
+        PlayGroundGenerateSfx(placedWorldPosition);
+
         if (newCell != null && _mouthPoint != null)
         {
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
@@ -411,6 +417,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
             return;
 
         StartPrimaryDigAction();
+        PlayGroundDigSfx(detachedCell.transform.position);
         PlayPrimaryDigAnimation(detachedCell);
         SyncPrimaryDigState(detachedCell.GridPosition, cell.GridPosition, isFarmLand, broadcastAnimationToOthers);
         HandlePrimaryDigRewards(removedTileType, grantLocalReward, rewardTarget);
@@ -847,6 +854,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
             new Vector3Int(gridX, gridY, gridZ), toolLevel);
         if (detachedCell == null) return;
 
+        PlayGroundDigSfx(detachedCell.transform.position);
         AnimateCellToMouth(detachedCell);
     }
 
@@ -867,6 +875,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         TerrainCell detachedCell = TerrainGridManager.Instance.TryDetachForAnimation(pos, toolLevel);
         if (detachedCell == null) return;
 
+        PlayGroundDigSfx(detachedCell.transform.position);
         AnimateCellToMouth(detachedCell);
     }
 
@@ -881,6 +890,11 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         _animAbility?.Play(EHelperAnim.EatGround);
 
         TerrainCell newCell = TerrainGridManager.Instance.GetCell(targetGridPos);
+        Vector3 placedWorldPosition = newCell != null
+            ? newCell.transform.position
+            : TerrainGridManager.Instance.GridToWorld(targetGridPos);
+        PlayGroundGenerateSfx(placedWorldPosition);
+
         if (newCell != null && _mouthPoint != null)
         {
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
@@ -912,5 +926,26 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
             return false;
 
         return CanPlaceGroundOnCell(belowCell);
+    }
+
+    private static void PlayGroundDigSfx(Vector3 position)
+    {
+        PlayGroundSfx(AssetKey.SFX.GroundDig, position);
+    }
+
+    private static void PlayGroundGenerateSfx(Vector3 position)
+    {
+        PlayGroundSfx(AssetKey.SFX.GroundGenerate, position);
+    }
+
+    private static void PlayGroundSfx(string clipKey, Vector3 position)
+    {
+        if (SoundManager.Instance == null)
+            return;
+
+        SoundManager.Instance.PlaySfx(new SfxPlayRequest(
+            clipKey: clipKey,
+            spatialMode: ESpatialMode.Positional3D,
+            position: position));
     }
 }
