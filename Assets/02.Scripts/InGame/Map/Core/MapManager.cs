@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
@@ -9,6 +9,15 @@ public class MapManager : MonoBehaviour
     [Header("Map Configs")]
     [SerializeField] private MapConfig _villageConfig;
     [SerializeField] private DungeonMapConfig[] _dungeonConfigs;
+
+    [Header("Map Audio")]
+    [SerializeField, Min(0f)] private float _bgmFadeOutDuration = 0.5f;
+    [SerializeField, Min(0f)] private float _bgmFadeInDuration = 1f;
+    [SerializeField, Range(0f, 1f)] private float _lavaDungeonEffectVolume = 0.7f;
+    [SerializeField, Min(0f)] private float _lavaDungeonEffectFadeInDuration = 0.6f;
+    [SerializeField, Min(0f)] private float _lavaDungeonEffectFadeOutDuration = 1.2f;
+
+    private const string LavaDungeonEffectLoopKey = "Dungeon3_LavaDungeonEffect";
 
     public TerrainGridManager GridManager => _gridManager;
     public EMapType CurrentMap { get; private set; }
@@ -34,7 +43,7 @@ public class MapManager : MonoBehaviour
         _gridManager.LoadFromData(result.GridData);
         _gridManager.SetMaxHeight(_villageConfig.MaxHeight);
         CurrentMap = EMapType.Village;
-        PlayCurrentMapBgm();
+        PlayCurrentMapAudio();
 
         if (player != null)
             PlacePlayer(player, result.SpawnPoint);
@@ -63,7 +72,7 @@ public class MapManager : MonoBehaviour
             2 => EMapType.Dungeon2,
             _ => EMapType.Dungeon3
         };
-        PlayCurrentMapBgm();
+        PlayCurrentMapAudio();
 
         if (player != null)
             PlacePlayer(player, result.SpawnPoint);
@@ -72,6 +81,7 @@ public class MapManager : MonoBehaviour
     public void ExitDungeon()
     {
         CurrentMap = EMapType.Village;
+        PlayCurrentMapAudio();
     }
 
     // 세이브 데이터로 마을 복원 시 호출. MaxHeight도 함께 설정.
@@ -80,7 +90,7 @@ public class MapManager : MonoBehaviour
         _gridManager.ImportSaveData(saveData);
         _gridManager.SetMaxHeight(_villageConfig.MaxHeight);
         CurrentMap = EMapType.Village;
-        PlayCurrentMapBgm();
+        PlayCurrentMapAudio();
     }
 
     private void PlacePlayer(Transform player, Vector3Int spawnPoint)
@@ -99,19 +109,48 @@ public class MapManager : MonoBehaviour
         return _dungeonConfigs[index];
     }
 
-    private void PlayCurrentMapBgm()
+    private void PlayCurrentMapAudio()
     {
         if (SoundManager.Instance == null)
             return;
 
+        StopLavaDungeonEffectIfNeeded();
+        BgmTransitionConfig bgmConfig = new BgmTransitionConfig(_bgmFadeOutDuration, _bgmFadeInDuration);
+
         switch (CurrentMap)
         {
             case EMapType.Village:
-                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Village);
+                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Village, bgmConfig);
                 break;
             case EMapType.Dungeon1:
-                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Dungeon1);
+                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Dungeon1, bgmConfig);
+                break;
+            case EMapType.Dungeon2:
+                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.Dungeon2, bgmConfig);
+                break;
+            case EMapType.Dungeon3:
+                SoundManager.Instance.CrossfadeBgm(AssetKey.BGM.LavaDungeon, bgmConfig);
+                PlayLavaDungeonEffect();
                 break;
         }
+    }
+
+    private void PlayLavaDungeonEffect()
+    {
+        SoundManager.Instance.PlayLoopingSfx(
+            LavaDungeonEffectLoopKey,
+            new SfxPlayRequest(
+                clipKey: AssetKey.SFX.LavaDungeonEffect,
+                spatialMode: ESpatialMode.Flat2D,
+                volume: _lavaDungeonEffectVolume),
+            _lavaDungeonEffectFadeInDuration);
+    }
+
+    private void StopLavaDungeonEffectIfNeeded()
+    {
+        if (CurrentMap == EMapType.Dungeon3)
+            return;
+
+        SoundManager.Instance.StopLoopingSfx(LavaDungeonEffectLoopKey, _lavaDungeonEffectFadeOutDuration);
     }
 }

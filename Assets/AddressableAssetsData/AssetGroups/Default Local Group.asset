@@ -121,6 +121,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 418dbf59eb9ff594c90fac9223aabf7b
+    m_Address: LavaDungeonBGM
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 46f5e5cfad5f9954eb152d6ac8db3438
     m_Address: BGMStartScene
     m_ReadOnly: 0
@@ -154,8 +159,20 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 580005d286198084ba1db6e5568489e6
+    m_Address: LavaDungeonEffect
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5a0e73b62d1d3ca49b3950cd0042ec6e
     m_Address: SFXmushroomdetect
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 616e533c535038142bc7eaaa6e18fa61
+    m_Address: QuestHelper
     m_ReadOnly: 0
     m_SerializedLabels:
     - CommonSound
@@ -195,6 +212,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 72602af694dd7f040b9c4b9fefa5b1ab
     m_Address: Dungeon1Bgm
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 63de21806df453f4998f3cf7d04fd8d5
+    m_Address: Dungeon2Bgm
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -352,6 +374,24 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c34f3e32dca0e1f468e426a876a72c3d
     m_Address: DirtSizzle-Lava
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c26e17629885d21418fc20ceca1ca578
+    m_Address: Steam
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: de5d9b85709379d489692a1e4bb323e1
+    m_Address: Dig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - CommonSound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a99c852ce881aae4c8179c367a14a983
+    m_Address: DigGenerate
     m_ReadOnly: 0
     m_SerializedLabels:
     - CommonSound

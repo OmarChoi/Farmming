@@ -6,4 +6,6 @@ public interface ISfxPlayer
 {
     void Play(SfxPlayRequest request);
     void PlayForDuration(SfxPlayRequest request, float duration, float fadeOutDuration);
+    void PlayLooping(string loopKey, SfxPlayRequest request, float fadeInDuration);
+    void StopLooping(string loopKey, float fadeOutDuration);
 }

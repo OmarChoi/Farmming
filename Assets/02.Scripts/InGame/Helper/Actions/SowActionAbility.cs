@@ -15,6 +15,8 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
     private const string NoSeedItemMessage = "씨앗 아이템이 없습니다";
 
+    private const string UnavailableSeedGradeMessage = "아직 심을 수 없는 등급의 씨앗입니다";
+
     [SerializeField] private Transform _mouthPoint;
     [SerializeField] private GameObject _seedVfxPrefab;
     [SerializeField] private GameObject _cultivateGroundEffectPrefab;
@@ -46,6 +48,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
     private Coroutine _secondaryCompleteFallbackCoroutine;
     private bool _secondaryOpened;
     private bool _showNoSeedMessageOnSecondaryComplete;
+    private bool _showUnavailableSeedGradeMessageOnSecondaryComplete;
     private float _lastEpicCultivateSfxTime = float.MinValue;
 
     protected override void Awake()
@@ -109,16 +112,25 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         EHelperGrade grade = _owner.Grade.CurrentGrade;
         List<SowPlantPlan> targets = GetSowPlantTargets(cell, grade);
         if (targets.Count == 0)
-            return;
-
-        List<SowPlantPlan> plantPlan = BuildLocalSowPlantPlan(targets, out bool hasUnplannedTargets);
-        if (plantPlan.Count == 0)
         {
-            ShowNoSeedItemMessage();
+            ShowUnavailableSeedGradeMessage();
             return;
         }
 
-        StartSecondaryAction(plantPlan, grade, hasUnplannedTargets);
+        List<SowPlantPlan> plantPlan = BuildLocalSowPlantPlan(
+            targets,
+            out bool hasUnplannedTargets,
+            out bool hasUnavailableSeedGradeTargets);
+        if (plantPlan.Count == 0)
+        {
+            if (hasUnavailableSeedGradeTargets)
+                ShowUnavailableSeedGradeMessage();
+            else
+                ShowNoSeedItemMessage();
+            return;
+        }
+
+        StartSecondaryAction(plantPlan, grade, hasUnplannedTargets, hasUnavailableSeedGradeTargets);
         SendPlantPlanRpc(plantPlan, grade);
     }
 
@@ -175,7 +187,11 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         StartSecondaryAction(plantPlan, (EHelperGrade)grade);
     }
 
-    private void StartSecondaryAction(List<SowPlantPlan> plantPlan, EHelperGrade grade, bool showNoSeedMessageOnComplete = false)
+    private void StartSecondaryAction(
+        List<SowPlantPlan> plantPlan,
+        EHelperGrade grade,
+        bool showNoSeedMessageOnComplete = false,
+        bool showUnavailableSeedGradeMessageOnComplete = false)
     {
         if (plantPlan == null || plantPlan.Count == 0)
             return;
@@ -184,15 +200,25 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         {
             case EHelperGrade.Epic:
             case EHelperGrade.Legendary:
-                StartGradeSecondary(plantPlan, grade, showNoSeedMessageOnComplete);
+                StartGradeSecondary(
+                    plantPlan,
+                    grade,
+                    showNoSeedMessageOnComplete,
+                    showUnavailableSeedGradeMessageOnComplete);
                 break;
             default:
-                StartNormalSecondary(plantPlan, showNoSeedMessageOnComplete);
+                StartNormalSecondary(
+                    plantPlan,
+                    showNoSeedMessageOnComplete,
+                    showUnavailableSeedGradeMessageOnComplete);
                 break;
         }
     }
 
-    private void StartNormalSecondary(List<SowPlantPlan> plantPlan, bool showNoSeedMessageOnComplete = false)
+    private void StartNormalSecondary(
+        List<SowPlantPlan> plantPlan,
+        bool showNoSeedMessageOnComplete = false,
+        bool showUnavailableSeedGradeMessageOnComplete = false)
     {
         if (plantPlan == null || plantPlan.Count == 0)
             return;
@@ -202,13 +228,18 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         _currentPlantPlan = plantPlan;
         _secondaryOpened = false;
         _showNoSeedMessageOnSecondaryComplete = showNoSeedMessageOnComplete;
+        _showUnavailableSeedGradeMessageOnSecondaryComplete = showUnavailableSeedGradeMessageOnComplete;
 
         _owner.BeginAction();
         StartSecondaryFallbacks(requireOpenFallback: true);
         _animAbility?.Play(EHelperAnim.Sow);
     }
 
-    private void StartGradeSecondary(List<SowPlantPlan> plantPlan, EHelperGrade grade, bool showNoSeedMessageOnComplete = false)
+    private void StartGradeSecondary(
+        List<SowPlantPlan> plantPlan,
+        EHelperGrade grade,
+        bool showNoSeedMessageOnComplete = false,
+        bool showUnavailableSeedGradeMessageOnComplete = false)
     {
         if (plantPlan == null || plantPlan.Count == 0)
             return;
@@ -218,6 +249,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         _currentPlantPlan = null;
         _secondaryOpened = false;
         _showNoSeedMessageOnSecondaryComplete = showNoSeedMessageOnComplete;
+        _showUnavailableSeedGradeMessageOnSecondaryComplete = showUnavailableSeedGradeMessageOnComplete;
 
         _owner.BeginAction();
         StartSecondaryFallbacks(requireOpenFallback: false);
@@ -681,9 +713,13 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         return targets;
     }
 
-    private List<SowPlantPlan> BuildLocalSowPlantPlan(List<SowPlantPlan> targets, out bool hasUnplannedTargets)
+    private List<SowPlantPlan> BuildLocalSowPlantPlan(
+        List<SowPlantPlan> targets,
+        out bool hasUnplannedTargets,
+        out bool hasUnavailableSeedGradeTargets)
     {
         hasUnplannedTargets = false;
+        hasUnavailableSeedGradeTargets = false;
         var plantPlan = new List<SowPlantPlan>();
         if (targets == null || targets.Count == 0)
             return plantPlan;
@@ -700,6 +736,12 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             ? _seedSelector.SelectedSeed
             : FindFirstAvailableSeedInSnapshot(inventory, availableCounts);
 
+        if (seed != null && !CanCurrentHelperPlantSeed(seed))
+        {
+            hasUnavailableSeedGradeTargets = true;
+            return plantPlan;
+        }
+
         if (seed != null)
             _seedSelector?.TrySelectSeed(seed);
 
@@ -708,6 +750,12 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             if (!HasSeedCountInSnapshot(seed, availableCounts))
             {
                 seed = FindFirstAvailableSeedInSnapshot(inventory, availableCounts);
+                if (seed != null && !CanCurrentHelperPlantSeed(seed))
+                {
+                    hasUnavailableSeedGradeTargets = true;
+                    break;
+                }
+
                 if (seed != null)
                     _seedSelector?.TrySelectSeed(seed);
             }
@@ -1139,16 +1187,28 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             return;
 
         cell = GetInteractableCell(cell);
-        if (cell == null || !CanSow(cell))
+        if (cell == null)
             return;
 
-        EnsureSeedReadyForInteraction(showNoSeedMessage: true);
+        if (!EnsureSeedReadyForInteraction(showNoSeedMessage: true))
+            return;
+
+        if (!CanSow(cell))
+            ShowUnavailableSeedGradeMessage();
     }
 
     private bool EnsureSeedReadyForInteraction(bool showNoSeedMessage)
     {
         if (HasAvailableSelectedSeed())
-            return true;
+        {
+            if (CanCurrentHelperPlantSeed(_seedSelector.SelectedSeed))
+                return true;
+
+            if (showNoSeedMessage)
+                ShowUnavailableSeedGradeMessage();
+
+            return false;
+        }
 
         if (PhotonNetwork.IsConnected && !_owner.IsMine)
             return false;
@@ -1162,12 +1222,28 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         }
 
         if (selected)
-            return true;
+        {
+            if (CanCurrentHelperPlantSeed(_seedSelector.SelectedSeed))
+                return true;
+
+            if (showNoSeedMessage)
+                ShowUnavailableSeedGradeMessage();
+
+            return false;
+        }
 
         if (showNoSeedMessage)
             ShowNoSeedItemMessage();
 
         return false;
+    }
+
+    private bool CanCurrentHelperPlantSeed(SeedItemDataSO seed)
+    {
+        if (seed == null || _owner == null)
+            return false;
+
+        return (int)seed.SeedGrade <= (int)_owner.Grade.CurrentGrade;
     }
 
     private bool ConsumeSeed(SeedItemDataSO seed)
@@ -1250,7 +1326,9 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         if (_anySeedPlanted)
             _owner.Experience.Add(_sowExperience);
 
-        if (_owner.IsMine && _showNoSeedMessageOnSecondaryComplete)
+        if (_owner.IsMine && _showUnavailableSeedGradeMessageOnSecondaryComplete)
+            ShowUnavailableSeedGradeMessage();
+        else if (_owner.IsMine && _showNoSeedMessageOnSecondaryComplete)
             ShowNoSeedItemMessage();
 
         _animAbility?.Play(EHelperAnim.Idle);
@@ -1259,6 +1337,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         _anySeedPlanted = false;
         _secondaryOpened = false;
         _showNoSeedMessageOnSecondaryComplete = false;
+        _showUnavailableSeedGradeMessageOnSecondaryComplete = false;
         _owner.EndAction();
     }
 
@@ -1272,6 +1351,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         _anySeedPlanted = false;
         _secondaryOpened = false;
         _showNoSeedMessageOnSecondaryComplete = false;
+        _showUnavailableSeedGradeMessageOnSecondaryComplete = false;
     }
 
     private void OnDisable()
@@ -1306,5 +1386,19 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         }
 
         Debug.Log(NoSeedItemMessage);
+    }
+
+    private void ShowUnavailableSeedGradeMessage()
+    {
+        if (PhotonNetwork.IsConnected && _owner != null && !_owner.IsMine)
+            return;
+
+        if (HarvestNotificationManager.Instance != null)
+        {
+            HarvestNotificationManager.Instance.ShowMessage(UnavailableSeedGradeMessage);
+            return;
+        }
+
+        UI_UnableActionText.Show(UnavailableSeedGradeMessage);
     }
 }
