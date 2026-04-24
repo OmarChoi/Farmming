@@ -209,7 +209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80246df92dcd39141b7cef5cb3daf55d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestInteracter
-  _radius: 5
+  _radius: 3
   _interactionLayer:
     serializedVersion: 2
     m_Bits: 128
@@ -273,6 +273,7 @@ MonoBehaviour:
   _jumpDuration: 0.5
   _searchRadius: 5
   _lavaStaminaCost: 10
+  _steamSfxCooldown: 1
 --- !u!114 &2155480617688705000
 MonoBehaviour:
   m_ObjectHideFlags: 0
