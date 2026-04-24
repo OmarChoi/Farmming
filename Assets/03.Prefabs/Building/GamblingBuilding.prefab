@@ -539,37 +539,6 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.5292212, y: 0.03656758, z: -0.000000059604645}
     m_Extent: {x: 0.23282257, y: 0.111050025, z: 0.53088146}
   m_DirtyAABB: 0
---- !u!1 &719554535638770585
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8226884138422657161}
-  m_Layer: 14
-  m_Name: NPCSpawnPoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8226884138422657161
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 719554535638770585}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.25, y: 0, z: -5.07}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4690583271421996957}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &728332416333289641
 GameObject:
   m_ObjectHideFlags: 0
@@ -1599,7 +1568,6 @@ Transform:
   - {fileID: 7352384682495447897}
   - {fileID: 7112168036991491162}
   - {fileID: 2951510001035650750}
-  - {fileID: 8226884138422657161}
   - {fileID: 6830983681045163087}
   - {fileID: 7578714934819036344}
   - {fileID: 3656661927789428181}
@@ -1660,7 +1628,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingNpcSpawner
   _npcData: {fileID: 11400000, guid: f52c3577b02addd44977a5b15a4009e2, type: 2}
-  _spawnPoint: {fileID: 8226884138422657161}
+  _spawnPoint: {fileID: 0}
 --- !u!114 &700091961969064174
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6407,7 +6375,7 @@ Transform:
   m_GameObject: {fileID: 7307016313232193995}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.5, y: 0, z: -7.4}
+  m_LocalPosition: {x: -0.5, y: 0, z: -9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9469,7 +9437,7 @@ Transform:
   m_GameObject: {fileID: 8639545374750013816}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 0, z: -9}
+  m_LocalPosition: {x: 4.5, y: 0, z: -7.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
