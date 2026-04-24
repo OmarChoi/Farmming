@@ -17,7 +17,6 @@ public class PlayerNPCInteractionAbility : PlayerAbility
 
     private NpcInteractionComponent _currentNpcInteraction;
 
-    public bool IsInteractingWithNpc => _currentNpcInteraction != null || _faceTarget != null;
 
     protected override void Awake()
     {
@@ -30,7 +29,7 @@ public class PlayerNPCInteractionAbility : PlayerAbility
     {
         if (!_owner.IsMine) return;
 
-        if (Input.GetKeyDown(KeyCode.F4) && IsInteractingWithNpc)
+        if (Input.GetKeyDown(KeyCode.F4))
         {
             ForceCancelCurrentInteraction();
             return;
