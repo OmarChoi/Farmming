@@ -72,7 +72,11 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
     public bool CanInteractSecondary(TerrainCell cell)
     {
-        return CanSow(cell) && EnsureSeedReadyForInteraction(showNoSeedMessage: false);
+        if (IsSowBlockedByDungeon())
+            return false;
+
+        return HasSowableTarget(cell, _owner != null ? _owner.Grade.CurrentGrade : EHelperGrade.Normal)
+            && EnsureSeedReadyForInteraction(showNoSeedMessage: false);
     }
 
     public void InteractPrimary(TerrainCell cell)
@@ -105,6 +109,10 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
             return;
         if (_owner.IsMine && _isSecondaryActing)
             return;
+        if (IsSowBlockedByDungeon())
+            return;
+        if (!HasSowableTarget(cell, _owner.Grade.CurrentGrade))
+            return;
 
         if (!EnsureSeedReadyForInteraction(showNoSeedMessage: true))
             return;
@@ -112,10 +120,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         EHelperGrade grade = _owner.Grade.CurrentGrade;
         List<SowPlantPlan> targets = GetSowPlantTargets(cell, grade);
         if (targets.Count == 0)
-        {
-            ShowUnavailableSeedGradeMessage();
             return;
-        }
 
         List<SowPlantPlan> plantPlan = BuildLocalSowPlantPlan(
             targets,
@@ -602,7 +607,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
     private bool CanSow(TerrainCell cell)
     {
         FarmTile farmTile = GetFarmTile(cell);
-        return farmTile != null && farmTile.IsReadyToSow;
+        return IsTileReadyForSeedPlanting(farmTile);
     }
 
     private FarmTile GetFarmTile(TerrainCell cell)
@@ -689,6 +694,9 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
     private List<SowPlantPlan> GetSowPlantTargets(TerrainCell centerCell, EHelperGrade grade)
     {
+        if (IsSowBlockedByDungeon())
+            return new List<SowPlantPlan>();
+
         List<TerrainCell> cells = grade switch
         {
             EHelperGrade.Epic => GetEpicOrderedTargetCells(centerCell),
@@ -700,7 +708,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         foreach (TerrainCell cell in cells)
         {
             FarmTile tile = GetFarmTile(cell);
-            if (tile != null && tile.IsReadyToSow)
+            if (IsTileReadyForSeedPlanting(tile))
             {
                 targets.Add(new SowPlantPlan
                 {
@@ -794,7 +802,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
             SeedItemDataSO seed = TerrainGridManager.Instance.SeedDatabase?.GetById(seedIds[i]);
             FarmTile tile = GetFarmTile(cell);
-            if (seed == null || tile == null || !tile.IsReadyToSow)
+            if (seed == null || !IsTileReadyForSeedPlanting(tile))
                 continue;
 
             plantPlan.Add(new SowPlantPlan
@@ -1073,7 +1081,7 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
 
         foreach (SowPlantPlan plan in plantPlan)
         {
-            if (plan?.Tile != null && plan.Tile.IsReadyToSow)
+            if (plan?.Tile != null && IsTileReadyForSeedPlanting(plan.Tile))
                 PlantSeed(plan.Tile, plan.Seed);
         }
     }
@@ -1082,6 +1090,9 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
     {
         yield return new WaitForSeconds(_sowDelay);
         if (farmTile == null)
+            yield break;
+
+        if (!IsTileReadyForSeedPlanting(farmTile))
             yield break;
 
         PlantSeed(farmTile, seed);
@@ -1189,12 +1200,31 @@ public class SowActionAbility : HelperAbility, IHelperAction, ISecondaryInteract
         cell = GetInteractableCell(cell);
         if (cell == null)
             return;
+        if (IsSowBlockedByDungeon())
+            return;
+        if (!HasSowableTarget(cell, _owner != null ? _owner.Grade.CurrentGrade : EHelperGrade.Normal))
+            return;
 
         if (!EnsureSeedReadyForInteraction(showNoSeedMessage: true))
             return;
+    }
 
-        if (!CanSow(cell))
-            ShowUnavailableSeedGradeMessage();
+    private bool HasSowableTarget(TerrainCell centerCell, EHelperGrade grade)
+    {
+        return GetSowPlantTargets(centerCell, grade).Count > 0;
+    }
+
+    private bool IsSowBlockedByDungeon()
+    {
+        return MapManager.Instance != null && MapManager.Instance.IsDungeon;
+    }
+
+    private static bool IsTileReadyForSeedPlanting(FarmTile farmTile)
+    {
+        return farmTile != null
+            && !farmTile.HasSeed
+            && farmTile.StateMachine != null
+            && farmTile.StateMachine.CurrentStateType == EFarmTileStateType.FarmDry;
     }
 
     private bool EnsureSeedReadyForInteraction(bool showNoSeedMessage)
