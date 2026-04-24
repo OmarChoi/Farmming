@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.Video;
 
 /// <summary>
@@ -24,8 +25,37 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
     [Tooltip("체크 시 영상 자체의 모든 오디오 트랙을 음소거한다.")]
     [SerializeField] private bool _muteVideoAudio = true;
 
+    [Header("BGM")]
+    [Tooltip("컷씬 시작과 함께 재생하고 종료 시 페이드 아웃할 BGM 클립. 비워두면 BGM 없이 영상만 재생한다.")]
+    [SerializeField] private AudioClip _bgmClip;
+    [Tooltip("Music 출력 그룹을 연결하면 사운드 설정의 마스터/음악 볼륨에 반영된다.")]
+    [SerializeField] private AudioMixerGroup _bgmMixerGroup;
+    [SerializeField, Range(0f, 1f)] private float _bgmVolume = 1f;
+    [SerializeField, Min(0f)] private float _bgmFadeInDuration = 0.5f;
+    [SerializeField, Min(0f)] private float _bgmFadeOutDuration = 1.5f;
+    [Tooltip("체크 시 컷씬 동안 SoundManager의 메인 BGM(예: 타이틀 BGM)을 덕킹(볼륨 0)했다가 컷씬 종료 시 복원한다.")]
+    [SerializeField] private bool _duckMainBgm = true;
+    [SerializeField, Min(0f)] private float _mainBgmDuckDuration = 0.5f;
+    [SerializeField, Min(0f)] private float _mainBgmRestoreDuration = 1.0f;
+
     private Coroutine _routine;
+    private Coroutine _bgmFadeRoutine;
+    private AudioSource _bgmSource;
     private bool _clipFinished;
+
+    private void Awake()
+    {
+        if (_bgmClip != null)
+        {
+            _bgmSource = gameObject.AddComponent<AudioSource>();
+            _bgmSource.clip = _bgmClip;
+            _bgmSource.outputAudioMixerGroup = _bgmMixerGroup;
+            _bgmSource.loop = true;
+            _bgmSource.playOnAwake = false;
+            _bgmSource.spatialBlend = 0f;
+            _bgmSource.volume = 0f;
+        }
+    }
 
     private void Start()
     {
@@ -51,6 +81,9 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
             _videoPlayer.loopPointReached -= HandleClipEnd;
             _videoPlayer.Stop();
         }
+        StopBgmImmediate();
+        if (_duckMainBgm && SoundManager.Instance != null)
+            SoundManager.Instance.RestoreMainBgm(_mainBgmRestoreDuration);
         if (_videoRoot != null) _videoRoot.SetActive(false);
     }
 
@@ -64,6 +97,13 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
         // 시작은 완전히 가린 상태에서 첫 영상 준비 후 페이드 인
         SetFadeAlpha(1f);
 
+        // 기존 메인 BGM(타이틀 BGM 등)을 덕킹하여 컷씬 BGM과 겹치지 않게 한다. 컷씬 끝날 때 복원.
+        if (_duckMainBgm && SoundManager.Instance != null)
+            SoundManager.Instance.DuckMainBgm(_mainBgmDuckDuration);
+
+        // 컷씬 시작과 함께 BGM 페이드 인
+        StartBgmFadeIn();
+
         for (int i = 0; i < _videoClips.Length; i++)
         {
             VideoClip clip = _videoClips[i];
@@ -75,6 +115,13 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
 
             if (isLast)
             {
+                // 마지막 영상 종료 직후 BGM도 병행으로 페이드 아웃 시작
+                StartBgmFadeOut();
+
+                // 컷씬 BGM이 빠지는 만큼 메인 BGM을 다시 끌어올려 자연스러운 크로스페이드
+                if (_duckMainBgm && SoundManager.Instance != null)
+                    SoundManager.Instance.RestoreMainBgm(_mainBgmRestoreDuration);
+
                 // 마지막 영상 종료 후에만 검정으로 페이드 인
                 yield return FadeTo(1f, _fadeDuration);
                 if (_endHoldDuration > 0f)
@@ -88,6 +135,63 @@ public class CustomizeIntroVideoSequencer : MonoBehaviour
         yield return FadeTo(0f, _fadeDuration);
         if (_videoRoot != null) _videoRoot.SetActive(false);
         _routine = null;
+    }
+
+    private void StartBgmFadeIn()
+    {
+        if (_bgmSource == null) return;
+        if (_bgmFadeRoutine != null) StopCoroutine(_bgmFadeRoutine);
+        _bgmSource.volume = 0f;
+        _bgmSource.Play();
+        _bgmFadeRoutine = StartCoroutine(FadeBgmVolume(_bgmVolume, _bgmFadeInDuration, stopOnComplete: false));
+    }
+
+    private void StartBgmFadeOut()
+    {
+        if (_bgmSource == null || !_bgmSource.isPlaying) return;
+        if (_bgmFadeRoutine != null) StopCoroutine(_bgmFadeRoutine);
+        _bgmFadeRoutine = StartCoroutine(FadeBgmVolume(0f, _bgmFadeOutDuration, stopOnComplete: true));
+    }
+
+    private void StopBgmImmediate()
+    {
+        if (_bgmFadeRoutine != null)
+        {
+            StopCoroutine(_bgmFadeRoutine);
+            _bgmFadeRoutine = null;
+        }
+        if (_bgmSource != null)
+        {
+            _bgmSource.Stop();
+            _bgmSource.volume = 0f;
+        }
+    }
+
+    private IEnumerator FadeBgmVolume(float target, float duration, bool stopOnComplete)
+    {
+        if (_bgmSource == null) yield break;
+
+        if (duration <= 0f)
+        {
+            _bgmSource.volume = target;
+        }
+        else
+        {
+            float start = _bgmSource.volume;
+            float t = 0f;
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                _bgmSource.volume = Mathf.Lerp(start, target, Mathf.Clamp01(t / duration));
+                yield return null;
+            }
+            _bgmSource.volume = target;
+        }
+
+        if (stopOnComplete)
+            _bgmSource.Stop();
+
+        _bgmFadeRoutine = null;
     }
 
     private void ClearVideoTexture()
