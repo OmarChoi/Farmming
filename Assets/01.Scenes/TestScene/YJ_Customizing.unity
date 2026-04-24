@@ -1608,6 +1608,15 @@ MonoBehaviour:
   _fadeDuration: 0.6
   _endHoldDuration: 1.5
   _playOnStart: 1
+  _muteVideoAudio: 1
+  _bgmClip: {fileID: 8300000, guid: e08a5bda3f388174badc8c64618733eb, type: 3}
+  _bgmMixerGroup: {fileID: -6457210437922429609, guid: 0c4ec56d16a734a4e9d8f28e3b4a8c8a, type: 2}
+  _bgmVolume: 0.5
+  _bgmFadeInDuration: 0.5
+  _bgmFadeOutDuration: 1.5
+  _duckMainBgm: 1
+  _mainBgmDuckDuration: 0.5
+  _mainBgmRestoreDuration: 1
 --- !u!328 &529289182
 VideoPlayer:
   m_ObjectHideFlags: 0
