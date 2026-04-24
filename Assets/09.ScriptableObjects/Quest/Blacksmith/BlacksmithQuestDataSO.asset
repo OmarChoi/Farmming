@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002c5ad1e0e02f74784441da1d9fa045, type: 3}
+  m_Name: BlacksmithQuestDataSO
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
+  QuestId: BlacksmithQuestData01
+  QuestName: "\uC5C5\uADF8\uB808\uC774\uB4DC\uC5D0 \uB300\uD574\uC11C"
+  Description: "\uC5C5\uADF8\uB808\uC774\uB4DC\uC5D0 \uB300\uD574\uC11C \uC54C\uC544\uBCF4\uC790."
+  QuestCategory: 1
+  IsTutorial: 0
+  StartNpcId: Blacksmith
+  CompleteNpcId: Blacksmith
+  IsForcedAccept: 0
+  ObjectiveType: 3
+  TargetId: 
+  ItemRequirements: []
+  TargetNpcId: Blacksmith
+  RequiredAmount: 1
+  PrerequisiteQuests: []
+  RequiredFriendship: 0
+  Reward:
+    Rewards:
+    - RewardType: 0
+      RewardItem: {fileID: 0}
+      Amount: 3000
+      RewardHelper: {fileID: 0}
+      TargetNpcId: 
+    - RewardType: 2
+      RewardItem: {fileID: 0}
+      Amount: 30
+      RewardHelper: {fileID: 0}
+      TargetNpcId: Blacksmith
+  AcceptDialogue: {fileID: 11400000, guid: 2e734d1db513b7a41a2b06dca89757e8, type: 2}
+  AcceptResultDialogue: {fileID: 11400000, guid: ca67a72800f8d2b458f59f18e99d148d, type: 2}
+  DeclineDialogue: {fileID: 11400000, guid: 2062560c66d0ca54180fcc23ea56d810, type: 2}
+  InProgressDialogue: {fileID: 11400000, guid: 6362129c8ba914840b01864d112e50bf, type: 2}
+  CompleteDialogue: {fileID: 11400000, guid: 0e0ed6ae5e11a1f4eb91d691c3dd2be5, type: 2}
+  NoQuestDialogue: {fileID: 11400000, guid: a126e4f859087d14488cde6e639a2a34, type: 2}
+  AcceptInfoPageSet: {fileID: 0}
+  CompleteInfoPageSet: {fileID: 0}

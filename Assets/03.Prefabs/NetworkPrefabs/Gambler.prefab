@@ -1426,6 +1426,7 @@ GameObject:
   - component: {fileID: 3180320364963987102}
   - component: {fileID: 1716715608959294897}
   - component: {fileID: 7190614943350309037}
+  - component: {fileID: 7556502959118092488}
   m_Layer: 7
   m_Name: Gambler
   m_TagString: Untagged
@@ -1618,7 +1619,7 @@ MonoBehaviour:
   _runtimeNpcKey: 
   _shop: {fileID: 0}
   _npcData: {fileID: 11400000, guid: f52c3577b02addd44977a5b15a4009e2, type: 2}
-  _npcQuest: {fileID: 0}
+  _npcQuest: {fileID: 7556502959118092488}
 --- !u!114 &8631433124512019319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1850,6 +1851,20 @@ MonoBehaviour:
   _volume: 0.7
   _skipDuplicateConsonant: 1
   _streamInterval: 0.07
+--- !u!114 &7556502959118092488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7840605641264675590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04bc102508ba35244b56f5645f16abd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcQuest
+  _quests:
+  - {fileID: 11400000, guid: 8b290f8f3f967da498f460b555163797, type: 2}
 --- !u!1 &9180410730555872442
 GameObject:
   m_ObjectHideFlags: 0

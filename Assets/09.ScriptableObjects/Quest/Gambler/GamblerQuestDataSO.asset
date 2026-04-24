@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002c5ad1e0e02f74784441da1d9fa045, type: 3}
+  m_Name: GamblerQuestDataSO
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDataSO
+  QuestId: GamblerQuestData01
+  QuestName: "\uB450\uADFC\uB450\uADFC! \uACE1\uB8E1 \uB808\uC774\uC2F1!"
+  Description: "\uACE1\uB8E1 \uB808\uC774\uC2F1\uC5D0 \uB300\uD55C \uC124\uBA85\uC744
+    \uB4E4\uC5B4\uBCF4\uC790\uAD6C\uC694!!"
+  QuestCategory: 1
+  IsTutorial: 0
+  StartNpcId: Gambler
+  CompleteNpcId: Gambler
+  IsForcedAccept: 0
+  ObjectiveType: 3
+  TargetId: 
+  ItemRequirements: []
+  TargetNpcId: Gambler
+  RequiredAmount: 1
+  PrerequisiteQuests: []
+  RequiredFriendship: 0
+  Reward:
+    Rewards:
+    - RewardType: 0
+      RewardItem: {fileID: 0}
+      Amount: 2000
+      RewardHelper: {fileID: 0}
+      TargetNpcId: 
+    - RewardType: 2
+      RewardItem: {fileID: 0}
+      Amount: 30
+      RewardHelper: {fileID: 0}
+      TargetNpcId: Gambler
+  AcceptDialogue: {fileID: 11400000, guid: f3e1b98027aa52345a287eff0ba4cba0, type: 2}
+  AcceptResultDialogue: {fileID: 11400000, guid: f56dbc6fd2a9cdb49bb7d3efacb28bf4, type: 2}
+  DeclineDialogue: {fileID: 11400000, guid: 1d948061e99021c48a697f1519b8b2f0, type: 2}
+  InProgressDialogue: {fileID: 11400000, guid: 33591f18fdb52b741bbd2d261aaa9957, type: 2}
+  CompleteDialogue: {fileID: 11400000, guid: dcc9a8a187b158e4dad070d7584ced74, type: 2}
+  NoQuestDialogue: {fileID: 11400000, guid: 1c04dc1d6b8b01d4480e4e3fd46cc4a0, type: 2}
+  AcceptInfoPageSet: {fileID: 0}
+  CompleteInfoPageSet: {fileID: 0}

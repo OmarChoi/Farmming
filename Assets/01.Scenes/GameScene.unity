@@ -388,61 +388,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6409980755568412604, guid: 326f4493c83b2764d9472e9943d7761c, type: 3}
   m_PrefabInstance: {fileID: 41390139}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &64813524
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 64813525}
-  - component: {fileID: 64813526}
-  m_Layer: 0
-  m_Name: TestHelperUpgrade
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &64813525
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 64813524}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 256, y: 789, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1857056278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &64813526
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 64813524}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4c0ff8f6d6fd65245815e3d655be1e92, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestHelperUpgrade
-  _playerHelperInteraction: {fileID: 0}
-  _playerHelperInventory: {fileID: 0}
-  _fillExpKey: 117
-  _upgradeKey: 105
-  _addExpKey: 106
-  _printStatusKey: 107
-  _setNormalKey: 55
-  _setEpicKey: 56
-  _setLegendaryKey: 57
-  _expAddAmount: 1000
-  _targetBackHelper: 0
 --- !u!1001 &69070360
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -698,51 +643,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4295118858983376541, guid: f7e09c1121360f6458e0fe37405cdc5a, type: 3}
   m_PrefabInstance: {fileID: 95179862}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &95600617
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 95600618}
-  - component: {fileID: 95600619}
-  m_Layer: 0
-  m_Name: TestSaveLoader
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &95600618
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95600617}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1857056278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &95600619
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95600617}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a22f856c1d67c344d94283c630574571, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestSaveLoader
-  _saveManager: {fileID: 539819331}
 --- !u!1 &143565383
 GameObject:
   m_ObjectHideFlags: 0
@@ -986,53 +886,6 @@ MonoBehaviour:
     HalfStepValue: 50
     HalfStepsPerHeart: 2
     DailyGreetingReward: 20
---- !u!1 &165344618
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 165344619}
-  - component: {fileID: 165344620}
-  m_Layer: 0
-  m_Name: TestSeed
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &165344619
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 165344618}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -81.01298, y: 0, z: 63.756}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1857056278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &165344620
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 165344618}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84c912b46bb12cd4cbfcffc9ffbc3deb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestSeedAdd
-  _seedItem: {fileID: 11400000, guid: 126f95a0ef92a304dbe5201eb77ff2de, type: 2}
-  _amount: 10
-  _inventory: {fileID: 0}
 --- !u!1001 &221505136
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4069,54 +3922,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f09748ad6535da4f965066d97185cc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLocationManager
---- !u!1 &1110676720
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1110676721}
-  - component: {fileID: 1110676722}
-  m_Layer: 0
-  m_Name: TestInventory
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1110676721
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1110676720}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1857056278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1110676722
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1110676720}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 609b52cd6dc9c9e4f9717a02a2ef044f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestInventory
-  _woodItem: {fileID: 11400000, guid: 56e10fec962b6784190069bebdd59471, type: 2}
-  _dirtItem: {fileID: 11400000, guid: 5a1ae85f64a3e244a82f05d74c0b476e, type: 2}
-  _testGoldAmount: 1000
-  _inventoryAbility: {fileID: 0}
 --- !u!1001 &1131000095
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5102,54 +4907,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f34556b8db8d4d748951d52c5125ff31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestDatabase
---- !u!1 &1446317462
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1446317463}
-  - component: {fileID: 1446317464}
-  m_Layer: 0
-  m_Name: TestMapGenerator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1446317463
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1446317462}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1857056278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1446317464
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1446317462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f7163862f7cc9c448e59d1b611e55d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestMapGenerator
-  _mapManager: {fileID: 1173538006}
-  _player: {fileID: 0}
-  _generateVillageKey: 286
-  _mapNavMeshController: {fileID: 0}
 --- !u!1 &1456682623
 GameObject:
   m_ObjectHideFlags: 0
@@ -6857,12 +6614,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2055661206}
-  - {fileID: 1110676721}
-  - {fileID: 95600618}
-  - {fileID: 1446317463}
-  - {fileID: 165344619}
   - {fileID: 1293124456}
-  - {fileID: 64813525}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1880385662
@@ -7196,6 +6948,7 @@ Transform:
   - {fileID: 498964908}
   - {fileID: 1178235441}
   - {fileID: 730240383}
+  - {fileID: 2077994031}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2016740554
@@ -7393,6 +7146,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2077994030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2077994031}
+  - component: {fileID: 2077994032}
+  m_Layer: 0
+  m_Name: NpcCuringService
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2077994031
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077994030}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2016740553}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2077994032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077994030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b4ef48be6237c344bf16fe2e0da7a77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcCuringService
+  _dialogueController: {fileID: 2028739916}
 --- !u!224 &2102573820 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 771961537484705076, guid: b20a7e52360dc71449eee5b7290961c9, type: 3}
