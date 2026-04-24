@@ -50,6 +50,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
     private GroundSelectAbility _groundSelector;
     private bool _suppressSelectionBubble;
     private readonly HashSet<Vector3Int> _lavaMeltGridPositions = new HashSet<Vector3Int>();
+    private readonly HashSet<Vector3Int> _lockedPlacementGridPositions = new HashSet<Vector3Int>();
 
     public bool ShouldShowSelectionBubble => !_suppressSelectionBubble;
 
@@ -127,6 +128,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         cell = GetInteractableCell(cell);
         if (cell == null) return;
         if (!CanPlaceGroundOnCell(cell)) return;
+        Vector3Int targetGridPos = GetPlacePosition(cell);
+        if (!CanPlaceGroundAt(targetGridPos)) return;
 
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return;
@@ -145,9 +148,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
 
         if (cell.Data.ObjectType != EGridObjectType.None && cell.Data.ObjectType != EGridObjectType.FarmLand)
             return;
-
         ETileType tileType = GetTileTypeForItem(selectedGround, cell.Data.TileType);
-        Vector3Int targetGridPos = GetPlacePosition(cell);
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
         {
             _owner.PhotonView.RpcSafe(
@@ -177,6 +178,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         if (!placed) return;
 
         bool meltsOnLava = ShouldMeltPlacedGroundOnLava(tileType, targetGridPos);
+        if (meltsOnLava)
+            LockPlacementGrid(targetGridPos);
 
         ClearFarmLandIfCovered(targetGridPos);
 
@@ -255,6 +258,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         cell = GetInteractableCell(cell);
         if (cell == null) return false;
         if (!CanPlaceGroundOnCell(cell)) return false;
+        if (!CanPlaceGroundAt(GetPlacePosition(cell))) return false;
 
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return false;
@@ -270,6 +274,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         cell = GetInteractableCell(cell);
         if (cell == null) return;
         if (!CanPlaceGroundOnCell(cell)) return;
+        if (!CanPlaceGroundAt(GetPlacePosition(cell))) return;
 
         PlayerInventoryAbility inventory = GetInventory();
         if (inventory == null) return;
@@ -729,6 +734,7 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         TerrainCell cell = TerrainGridManager.Instance?.GetCell(gridPos);
         if (cell == null)
         {
+            UnlockPlacementGrid(gridPos);
             _lavaMeltGridPositions.Remove(gridPos);
             return;
         }
@@ -752,8 +758,24 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
                     RestoreBelowCellTopAfterImmediateDestroy(gridPos);
                 }
 
+                UnlockPlacementGrid(gridPos);
                 _lavaMeltGridPositions.Remove(gridPos);
             });
+    }
+
+    private bool IsPlacementLocked(Vector3Int gridPos)
+    {
+        return _lockedPlacementGridPositions.Contains(gridPos);
+    }
+
+    private void LockPlacementGrid(Vector3Int gridPos)
+    {
+        _lockedPlacementGridPositions.Add(gridPos);
+    }
+
+    private void UnlockPlacementGrid(Vector3Int gridPos)
+    {
+        _lockedPlacementGridPositions.Remove(gridPos);
     }
 
     private void SpawnLavaMeltSmoke(Vector3 position)
@@ -795,6 +817,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
     private void OnDisable()
     {
         RestoreSelectionBubble();
+        _lockedPlacementGridPositions.Clear();
+        _lavaMeltGridPositions.Clear();
         _owner?.EndAction();
     }
 
@@ -886,6 +910,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         ETileType placedTileType = (ETileType)tileType;
         bool placed = TerrainGridManager.Instance.TryPlaceBlock(targetGridPos, placedTileType, dirtLevel);
         if (!placed) return;
+        bool meltsOnLava = ShouldMeltPlacedGroundOnLava(placedTileType, targetGridPos);
+        if (meltsOnLava)
+            LockPlacementGrid(targetGridPos);
 
         _animAbility?.Play(EHelperAnim.EatGround);
 
@@ -898,9 +925,9 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
         if (newCell != null && _mouthPoint != null)
         {
             Vector3 targetWorldPos = TerrainGridManager.Instance.GridToWorld(targetGridPos);
-            StartPlaceCellAnimation(newCell, targetWorldPos, ShouldMeltPlacedGroundOnLava(placedTileType, targetGridPos));
+            StartPlaceCellAnimation(newCell, targetWorldPos, meltsOnLava);
         }
-        else if (ShouldMeltPlacedGroundOnLava(placedTileType, targetGridPos))
+        else if (meltsOnLava)
         {
             DOVirtual.DelayedCall(GetRemotePlaceAnimationDuration(), () => StartLavaMeltSequence(targetGridPos))
                      .SetTarget(gameObject);
@@ -913,6 +940,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
             return false;
         if (targetGridPos.y >= TerrainGridManager.Instance.MaxHeight)
             return false;
+        if (IsPlacementLocked(targetGridPos))
+            return false;
 
         TerrainCell targetCell = TerrainGridManager.Instance.GetCell(targetGridPos);
         if (targetCell != null && targetCell.Data != null && targetCell.Data.CellType != ECellType.Empty)
@@ -920,6 +949,8 @@ public class GroundActionAbility : HelperAbility, IHelperAction, ISecondaryInter
 
         TerrainCell belowCell = TerrainGridManager.Instance.GetCell(targetGridPos + Vector3Int.down);
         if (belowCell == null || belowCell.Data == null)
+            return false;
+        if (IsPlacementLocked(belowCell.GridPosition))
             return false;
 
         if (!belowCell.Data.IsTop)
