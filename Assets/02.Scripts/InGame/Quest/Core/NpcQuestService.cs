@@ -37,6 +37,7 @@ public class NpcQuestService : MonoBehaviour
     {
         IQuestProgressService questProgressService = QuestManager.Instance;
         if (context == null || context.Npc == null || questProgressService == null) return;
+        TryPlayQuestHelperSfxForTutorialNpc(context);
 
         List<NpcQuestEntry> entries = FindQuestEntries(context);
 
@@ -489,7 +490,7 @@ public class NpcQuestService : MonoBehaviour
     public void ExecuteTutorialQuestInteraction(NpcInteractionContext context, QuestDataSO questData)
     {
         if (context == null || context.Npc == null || questData == null) return;
-        PlayQuestHelperSfxForLocalTutorialPlayer(context);
+        TryPlayQuestHelperSfxForTutorialNpc(context);
 
         if (!CanOfferQuest(context, questData))
         {
@@ -503,6 +504,7 @@ public class NpcQuestService : MonoBehaviour
     public void ExecuteAutoQuestInteraction(NpcInteractionContext context)
     {
         if (context == null || context.Npc == null) return;
+        TryPlayQuestHelperSfxForTutorialNpc(context);
 
         if (TryExecuteTutorialInteraction(context))
         {
@@ -525,8 +527,6 @@ public class NpcQuestService : MonoBehaviour
         if (context == null || context.Npc == null) return false;
         if (_tutorialProgressController == null) return false;
         if (!_tutorialProgressController.IsTutorialNpc(context.Npc)) return false;
-
-        PlayQuestHelperSfxForLocalTutorialPlayer(context);
 
         if (!_tutorialProgressController.TryGetCurrentTutorialQuest(out QuestDataSO currentQuest) || currentQuest == null)
         {
@@ -565,6 +565,35 @@ public class NpcQuestService : MonoBehaviour
 
         HandleNoQuest(context);
         return true;
+    }
+
+    private void TryPlayQuestHelperSfxForTutorialNpc(NpcInteractionContext context)
+    {
+        if (!IsTutorialQuestNpc(context))
+            return;
+
+        PlayQuestHelperSfxForLocalTutorialPlayer(context);
+    }
+
+    private bool IsTutorialQuestNpc(NpcInteractionContext context)
+    {
+        if (context == null || context.Npc == null)
+            return false;
+
+        if (_tutorialProgressController != null && _tutorialProgressController.IsTutorialNpc(context.Npc))
+            return true;
+
+        NpcQuest provider = context.Npc.Quest;
+        if (provider?.Quests == null)
+            return false;
+
+        foreach (QuestDataSO questData in provider.Quests)
+        {
+            if (questData != null && questData.IsTutorial)
+                return true;
+        }
+
+        return false;
     }
 
     private void PlayQuestHelperSfxForLocalTutorialPlayer(NpcInteractionContext context)
