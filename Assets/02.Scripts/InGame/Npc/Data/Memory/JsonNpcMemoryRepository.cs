@@ -46,4 +46,30 @@ public class JsonNpcMemoryRepository : INpcMemoryRepository
     {
         return Path.Combine(_rootPath, $"{npcId}_{playerId}.json");
     }
+
+    public bool DeleteMemory(string npcId, string playerId)
+    {
+        string path = GetPath(npcId, playerId);
+
+        if (!File.Exists(path)) return false;
+
+        File.Delete(path);
+        return true;
+    }
+
+    public int DeleteAllMemories()
+    {
+        if (!Directory.Exists(_rootPath)) return 0;
+
+        string[] files = Directory.GetFiles(_rootPath, "*.json");
+        int deletedCount = 0;
+
+        foreach (string file in files)
+        {
+            File.Delete(file);
+            deletedCount++;
+        }
+
+        return deletedCount;
+    }
 }

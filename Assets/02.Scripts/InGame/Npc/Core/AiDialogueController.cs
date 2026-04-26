@@ -15,6 +15,11 @@ public class AiDialogueController : MonoBehaviour
     [Header("RAG에서 가져올 기억 개수")]
     [SerializeField] private int _memoryTopK = 4;
 
+    [Header("AI 대화 제한")]
+    [SerializeField] private int _maxPlayerInputLength = 300;
+    [SerializeField] private int _maxAiReplyLength = 600;
+    [SerializeField] private int _maxSessionTurnCount = 20;
+
     private readonly NpcPromptBuilder _promptBuilder = new();
     private NpcMemoryService _memoryService;
     private readonly NpcMemoryExtractor _memoryExtractor = new();
@@ -109,6 +114,7 @@ public class AiDialogueController : MonoBehaviour
         _uiDialogue.ClearMessages();
         _uiDialogue.SetGenerating(false);
         _uiDialogue.AddSystemMessage("대화할 준비 중이에요.");
+        _uiDialogue.SetNpcStatusMessage("(당신과 대화하기 위해 준비 중이다. 잠시 기다려주자.)");
 
         _llmAgent.CancelRequests();
         await _llmAgent.ClearHistory();
@@ -121,6 +127,7 @@ public class AiDialogueController : MonoBehaviour
 
         _uiDialogue.ClearMessagesExcludePlayer();
         _uiDialogue.AddSystemMessage("준비가 끝났어요.");
+        _uiDialogue.SetNpcStatusMessage("(당신과 대화할 준비가 끝났다.)");
     }
 
     private async UniTask RestoreRecentTurnsAsync(NpcMemoryProfile profile)
@@ -155,6 +162,10 @@ public class AiDialogueController : MonoBehaviour
     {
         if (_currentContext == null || _llmAgent == null || _uiDialogue == null) return;
 
+        playerInput = ClampText(playerInput, _maxPlayerInputLength);
+
+        if (string.IsNullOrWhiteSpace(playerInput)) return;
+
         _isGenerating = true;
         _uiDialogue.ClearMessagesExcludePlayer();
         _uiDialogue.SetGenerating(true);
@@ -184,10 +195,8 @@ public class AiDialogueController : MonoBehaviour
                 true
             );
 
-            string sanitizedReply = Sanitize(reply);
-
-            _sessionTurns.Add(new DialogueTurnRecord{Role = "assistant", Text = sanitizedReply, Ticks = DateTime.UtcNow.Ticks});
-
+            string sanitizedReply = ClampText(reply, _maxAiReplyLength);
+            AddSessionTurn("assistant", sanitizedReply, _maxAiReplyLength);
             _uiDialogue.CompleteNpcStreaming(sanitizedReply);
         }
         catch (OperationCanceledException)
@@ -218,14 +227,47 @@ public class AiDialogueController : MonoBehaviour
 
     private void HandleFallback(string message)
     {
+        AddSessionTurn("assistant", message, _maxAiReplyLength);
+        _uiDialogue.CompleteNpcStreaming(message);
+    }
+
+    private string ClampText(string text, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        text = Sanitize(text);
+
+        if (text.Length <= maxLength)
+        {
+            return text;
+        }
+
+        return text.Substring(0, maxLength);
+    }
+
+    private void AddSessionTurn(string role, string text, int maxLength)
+    {
+        string clampedText = ClampText(text, maxLength);
+
+        if (string.IsNullOrWhiteSpace(clampedText))
+        {
+            return;
+        }
+
         _sessionTurns.Add(new DialogueTurnRecord
         {
-            Role = "assistant",
-            Text = message,
+            Role = role,
+            Text = clampedText,
             Ticks = DateTime.UtcNow.Ticks
         });
 
-        _uiDialogue.CompleteNpcStreaming(message);
+        while (_sessionTurns.Count > _maxSessionTurnCount)
+        {
+            _sessionTurns.RemoveAt(0);
+        }
     }
 
     private void HandleStopRequested()
@@ -333,5 +375,15 @@ public class AiDialogueController : MonoBehaviour
         text = text.Trim();
         text = text.Replace("\r", " ").Replace("\n", " ");
         return text;
+    }
+
+    public void ForceCloseInteraction()
+    {
+        ForceCloseInteractionAsync().Forget();
+    }
+
+    private async UniTask ForceCloseInteractionAsync()
+    {
+        await CloseSessionAsync(false);
     }
 }

@@ -157,6 +157,27 @@ public class UI_NpcAiDialogue : MonoBehaviour
         // 대화창이 닫히거나 다음 발화가 시작되면 Stop이 호출된다.
     }
 
+    public void SetNpcStatusMessage(string message)
+    {
+        if (_npcChatText == null) return;
+
+        _currentNpcStreamingRaw = message ?? string.Empty;
+
+        if (_wrapper != null)
+        {
+            _npcChatText.text = _wrapper.WrapText(_currentNpcStreamingRaw, _npcChatText);
+        }
+        else
+        {
+            _npcChatText.text = _currentNpcStreamingRaw;
+        }
+
+        if (!_npcChatText.text.EndsWith("\n"))
+        {
+            _npcChatText.text += "\n";
+        }
+    }
+
     public void MarkStreamingStopped()
     {
         if (_npcChatText == null) return;

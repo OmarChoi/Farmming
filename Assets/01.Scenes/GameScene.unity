@@ -1322,6 +1322,9 @@ MonoBehaviour:
   _llmAgent: {fileID: 925923208}
   _ragService: {fileID: 925923210}
   _memoryTopK: 4
+  _maxPlayerInputLength: 300
+  _maxAiReplyLength: 600
+  _maxSessionTurnCount: 20
 --- !u!1 &395103920
 GameObject:
   m_ObjectHideFlags: 0
@@ -3361,7 +3364,7 @@ MonoBehaviour:
   _numThreads: -1
   _numGPULayers: 0
   _parallelPrompts: 1
-  _contextSize: 8192
+  _contextSize: 5120
   _batchSize: 512
   _model: gemma-3-4b-it-Q4_K_M.gguf
   _flashAttention: 0
@@ -4061,6 +4064,11 @@ MonoBehaviour:
   _villageConfig: {fileID: 11400000, guid: 512eb238706cea248bb7d52c59f89cf2, type: 2}
   _dungeonConfigs:
   - {fileID: 11400000, guid: c41889c3eba534f4e874f82549244dd1, type: 2}
+  _bgmFadeOutDuration: 0.5
+  _bgmFadeInDuration: 1
+  _lavaDungeonEffectVolume: 0.7
+  _lavaDungeonEffectFadeInDuration: 0.6
+  _lavaDungeonEffectFadeOutDuration: 1.2
 --- !u!4 &1173538007
 Transform:
   m_ObjectHideFlags: 0
@@ -6615,6 +6623,7 @@ Transform:
   m_Children:
   - {fileID: 2055661206}
   - {fileID: 1293124456}
+  - {fileID: 2059279024}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1880385662
@@ -7100,6 +7109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcQuestService
   _tutorialProgressController: {fileID: 1652054065}
+  _questHelperSfxMinInterval: 0.2
 --- !u!4 &2058502417
 Transform:
   m_ObjectHideFlags: 0
@@ -7115,6 +7125,54 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2016740553}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2059279023
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2059279024}
+  - component: {fileID: 2059279025}
+  m_Layer: 0
+  m_Name: NpcMemoryDebugResetter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2059279024
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059279023}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1857056278}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2059279025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059279023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72f2f65c99a88ed4496527e1b0132f3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcMemoryDebugResetter
+  _deleteAllMemoryKey: 286
+  _deleteTargetMemoryKey: 287
+  _targetNpcId: Merchant
+  _targetPlayerId: UnknownPlayer
 --- !u!1 &2061716857
 GameObject:
   m_ObjectHideFlags: 0

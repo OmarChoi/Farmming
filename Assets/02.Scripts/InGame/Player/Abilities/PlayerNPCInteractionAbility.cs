@@ -121,6 +121,9 @@ public class PlayerNPCInteractionAbility : PlayerAbility
         {
             NpcDialogueController.Instance.ForceCloseInteraction();
         }
+
+        AiDialogueController aiDialogueControllerFallback = FindFirstObjectByType<AiDialogueController>();
+        aiDialogueControllerFallback?.ForceCloseInteraction();
     }
 
     private void RotateTowardTarget()

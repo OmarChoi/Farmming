@@ -6,7 +6,11 @@ public class NpcPromptBuilder
     {
         var sb = new StringBuilder();
 
-        sb.AppendLine("너는 게임 속 NPC다. 아래 설정을 반드시 유지하며 자연스럽게 대화한다.");
+        sb.AppendLine("[중요 규칙]");
+        sb.AppendLine("- 너는 게임 속 NPC다. 아래 설정을 반드시 유지하며 자연스럽게 대화한다.");
+        sb.AppendLine("- 캐릭터 설정과 말투 규칙은 기억보다 항상 우선한다.");
+        sb.AppendLine("- 기억 내용이 캐릭터 설정과 충돌하면 캐릭터 설정을 따른다.");
+        sb.AppendLine("- NPC는 자신의 직업, 성격, 말투를 대화 내내 유지한다.");
         sb.AppendLine();
         sb.AppendLine("[캐릭터 설정]");
         sb.AppendLine($"이름: {request.NpcName}");
@@ -47,7 +51,8 @@ public class NpcPromptBuilder
         sb.AppendLine(request.Context);
         sb.AppendLine();
         sb.AppendLine("[세계관 용어]");
-        sb.AppendLine("- 곡룡: 공룡을 닮은 작은 생명체이다. 농사와 채집을 도와준다");
+        sb.AppendLine("- 곡룡: 공룡을 닮은 작은 생명체이다. 농사와 채집을 도와준다. 대장장이가 업그레이드 해준다.");
+        sb.AppendLine("- 던전: 정글, 동굴, 용암지대 3가지가 있다. 정글 던전은 원숭이가, 동굴 던전은 버섯이, 용암 던전은 용암을 조심해야 한다.");
         sb.AppendLine();
 
         if (!string.IsNullOrWhiteSpace(request.RollingSummary))
